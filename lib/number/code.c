@@ -10,29 +10,43 @@
 
 #include "../../utils/clu/bin/header.h"
 
-bool number_immed(number_p num, uint64_t n, ...)
+number_p number_create_variadic(uint64_t n, va_list args)
+{
+    number_p num = NULL;
+    for(uint64_t i=0; i<n; i++)
+    {
+        uint64_t value = va_arg(args, uint64_t);
+        num = number_create(value, num);
+    }
+    return num;
+}
+
+number_p number_create_immed(uint64_t n, ...)
 {
     va_list args;
     va_start(args, n);
+    return number_create_variadic(n, args);
+}
 
-    uint64_t i;
-    for(i=0; i<n && num; i++, num = num->next)
+
+bool number(number_p num_1, number_p num_2)
+{
+    for(uint64_t i=0; num_1 && num_2; i++, num_1 = num_1->next, num_2 = num_2->next)
     {
-        uint64_t value = va_arg(args, uint64_t);
-        if(num->value == value)
+        if(num_1->value == num_2->value)
             continue;
 
-        printf("\n\tNUMBER ASSET ERROR | DIFFERENCE IN VALUE %ld | %ld %ld", i, num->value, value);
+        printf("\n\tNUMBER ASSET ERROR | DIFFERENCE IN VALUE %ld | %ld %ld", i, num_1->value, num_2->value);
         return false;
     }
 
-    if(num != NULL)
+    if(num_1 != NULL)
     {
         printf("\n\tNUMBER ASSET ERROR | NUMBER LONGER THAN EXPECTED");
         return false;
     }
 
-    if(i < n)
+    if(num_2 != NULL)
     {
         printf("\n\tNUMBER ASSET ERROR | NUMBER SHORTER THAN EXPECTED");
         return false;
@@ -41,16 +55,28 @@ bool number_immed(number_p num, uint64_t n, ...)
     return true;
 }
 
+bool number_immed(number_p num, uint64_t n, ...)
+{
+    va_list args;
+    va_start(args, n);
+    number_p num_2 = number_create_variadic(n, args);
+    bool res = number(num, num_2);
+    number_free(num_2);
+    return res;
+}
+
 #endif
 
-number_p number_create(uint64_t value)
+
+
+number_p number_create(uint64_t value, number_p next)
 {
     assert(value != 0);
 
     number_p num = malloc(sizeof(number_t));
     assert(num);
     
-    *num = (number_t){value, NULL};
+    *num = (number_t){value, next};
     return num;
 }
 
@@ -72,11 +98,26 @@ number_p number_add_uint(number_p num, uint64_t value)
         return num;
 
     if(num == NULL)
-        return number_create(value);
+        return number_create(value, NULL);
 
     num->value += value;
     if(num->value < value)
         num->next = number_add_uint(num->next, 1);
 
     return num;
+}
+
+
+
+number_p number_add(number_p num_1, number_p num_2)
+{
+    if(num_1 == NULL) return num_2;
+    if(num_2 == NULL) return num_1;
+
+    number_add_uint(num_1, num_2->value);
+    
+    number_p aux = num_2->next;
+    free(num_2);
+    number_add(num_1->next, aux);
+    return num_1;
 }
