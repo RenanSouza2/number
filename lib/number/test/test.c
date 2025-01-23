@@ -4,7 +4,7 @@
 
 
 
-void test_example()
+void test_number()
 {
     printf("\n%s", __func__);
 
@@ -15,7 +15,7 @@ void test_example()
 int main() 
 {
     setbuf(stdout, NULL);
-    test_example();
+    test_number();
     printf("\n\n\tTest successful\n\n");
     return 0;
 }
