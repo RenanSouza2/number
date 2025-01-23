@@ -10,13 +10,36 @@ void test_number_create()
 
     number_p num = number_create(1, NULL);
     assert(num->value == 1);
-    assert(num->next == NULL);
+    assert(num->next  == NULL);
     free(num);
 
     num = number_create(2, (number_p)1);
     assert(num->value == 2);
-    assert(num->next == (number_p)1);
+    assert(num->next  == (number_p)1);
     free(num);
+
+    assert(clu_mem_empty());
+}
+
+void test_number_create_immed()
+{
+    printf("\n\t%s", __func__);
+
+    number_p num = number_create_immed(0);
+    assert(num == NULL);
+    number_free(num);
+
+    num = number_create_immed(1, 1);
+    assert(num->value == 1);
+    assert(num->next  == NULL);
+    number_free(num);
+
+    num = number_create_immed(2, 2, 1);
+    assert(num->value == 1);
+    assert(num->next  != NULL);
+    assert(num->next->value == 2);
+    assert(num->next->next  == NULL);
+    number_free(num);
 
     assert(clu_mem_empty());
 }
@@ -83,11 +106,13 @@ void test_number_add()
 }
 
 
+
 void test_number()
 {
     printf("\n%s", __func__);
 
     test_number_create();
+    test_number_create_immed();
     test_number_add_uint();
     test_number_add();
 
