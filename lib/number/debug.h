@@ -12,6 +12,8 @@ bool number_immed(number_p num, uint64_t n, ...);
 
 #endif
 
+void number_display(number_p num);
+
 number_p number_create(uint64_t value, number_p next);
 void number_free(number_p num);
 

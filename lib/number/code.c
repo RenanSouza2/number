@@ -29,6 +29,7 @@ number_p number_create_immed(uint64_t n, ...)
 }
 
 
+
 bool number(number_p num_1, number_p num_2)
 {
     for(uint64_t i=0; num_1 && num_2; i++, num_1 = num_1->next, num_2 = num_2->next)
@@ -36,19 +37,19 @@ bool number(number_p num_1, number_p num_2)
         if(num_1->value == num_2->value)
             continue;
 
-        printf("\n\tNUMBER ASSET ERROR | DIFFERENCE IN VALUE %ld | %ld %ld", i, num_1->value, num_2->value);
+        printf("\n\n\tNUMBER ASSET ERROR | DIFFERENCE IN VALUE %ld | %ld %ld", i, num_1->value, num_2->value);
         return false;
     }
 
     if(num_1 != NULL)
     {
-        printf("\n\tNUMBER ASSET ERROR | NUMBER LONGER THAN EXPECTED");
+        printf("\n\n\tNUMBER ASSET ERROR | NUMBER LONGER THAN EXPECTED");
         return false;
     }
 
     if(num_2 != NULL)
     {
-        printf("\n\tNUMBER ASSET ERROR | NUMBER SHORTER THAN EXPECTED");
+        printf("\n\n\tNUMBER ASSET ERROR | NUMBER SHORTER THAN EXPECTED");
         return false;
     }
 
@@ -68,11 +69,24 @@ bool number_immed(number_p num, uint64_t n, ...)
 #endif
 
 
+void number_display(number_p num)
+{
+    printf("\n");
+
+    if(num == NULL)
+    {
+        printf("0");
+        return;
+    }
+
+    for(; num; num = num->next)
+        printf("%ld ", num->value);
+}
+
+
 
 number_p number_create(uint64_t value, number_p next)
 {
-    assert(value != 0);
-
     number_p num = malloc(sizeof(number_t));
     assert(num);
     
