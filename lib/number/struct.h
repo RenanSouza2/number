@@ -3,4 +3,14 @@
 
 #include "header.h"
 
+#include <stdint.h>
+
+// NOTE: NULL number pointer represents zero
+
+STRUCT(number)
+{
+    uint64_t value;
+    number_p next;
+};
+
 #endif
