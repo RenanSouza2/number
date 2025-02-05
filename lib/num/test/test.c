@@ -41,6 +41,13 @@ void test_num_create_immed()
     assert(num->next->next  == NULL);
     num_free(num);
 
+    num = num_create_immed(2, 2, 0);
+    assert(num->value == 0);
+    assert(num->next  != NULL);
+    assert(num->next->value == 2);
+    assert(num->next->next  == NULL);
+    num_free(num);
+
     assert(clu_mem_empty());
 }
 
@@ -274,9 +281,23 @@ void test_num_mul(bool show)
 
     if(show) printf("\n\t\t%s 8", __func__);
     num_1 = num_create_immed(2, 1, 0);
-    num_2 = num_create_immed(2, 1);
+    num_2 = num_create_immed(1, 1);
     num_res = num_mul(num_1, num_2);
-    assert(num_immed(num_res, 1, 1, 0));
+    assert(num_immed(num_res, 2, 1, 0));
+    num_free(num_res);
+
+    if(show) printf("\n\t\t%s 9", __func__);
+    num_1 = num_create_immed(1, 1);
+    num_2 = num_create_immed(2, 1, 0);
+    num_res = num_mul(num_1, num_2);
+    assert(num_immed(num_res, 2, 1, 0));
+    num_free(num_res);
+
+    if(show) printf("\n\t\t%s 10", __func__);
+    num_1 = num_create_immed(2, 1, 0);
+    num_2 = num_create_immed(2, 1, 0);
+    num_res = num_mul(num_1, num_2);
+    assert(num_immed(num_res, 3, 1, 0, 0));
     num_free(num_res);
 
     assert(clu_mem_empty());
@@ -297,7 +318,7 @@ void test_num()
     test_num_mul_uint(false);
 
     test_num_add(false);
-    test_num_mul(true);
+    test_num_mul(false);
 
     assert(clu_mem_empty());
 }
