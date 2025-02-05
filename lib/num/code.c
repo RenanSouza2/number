@@ -30,6 +30,13 @@ num_p num_create_immed(uint64_t n, ...)
 
 
 
+void num_display_immed(char *tag, num_p num)
+{
+    printf("\n%s: ", tag);num_display(num);
+}
+
+
+
 bool num_str(num_p num_1, num_p num_2)
 {
     for(uint64_t i=0; num_1 && num_2; i++, num_1 = num_1->next, num_2 = num_2->next)
@@ -191,7 +198,7 @@ num_p num_mul_rec(num_p num_res, num_p num_1, num_p num_2)
     if(num_2 == NULL)
     {
         num_free(num_1);
-        return NULL;
+        return num_res;
     }
 
     num_res = num_mul_uint_rec(num_res, num_1, num_2->value);

@@ -8,6 +8,7 @@
 #include <stdbool.h>
 
 num_p num_create_immed(uint64_t n, ...);
+void num_display_immed(char *tag, num_p num);
 bool num_immed(num_p num, uint64_t n, ...);
 
 #endif

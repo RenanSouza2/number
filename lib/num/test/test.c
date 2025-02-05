@@ -244,6 +244,13 @@ void test_num_mul(bool show)
     assert(num_immed(num_res, 1, 6));
     num_free(num_res);
 
+    if(show) printf("\n\t\t%s 5", __func__);
+    num_1 = num_create_immed(1, UINT64_MAX);
+    num_2 = num_create_immed(1, UINT64_MAX);
+    num_res = num_mul(num_1, num_2);
+    assert(num_immed(num_res, 2, UINT64_MAX - 1, 1));
+    num_free(num_res);
+
     assert(clu_mem_empty());
 }
 
