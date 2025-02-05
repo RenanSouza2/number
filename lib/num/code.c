@@ -157,6 +157,20 @@ num_p num_add_uint(num_p num, uint64_t value)
     return num;
 }
 
+num_p num_sub_uint(num_p num, uint64_t value)
+{
+    if(value == 0)
+        return num;
+
+    assert(num);
+
+    num->value -= value;
+    if(num->value > value)
+        num->next = num_sub_uint(num->next, 1);
+
+    return num;
+}
+
 num_p num_mul_uint_rec(num_p num_res, num_p num, uint64_t value)
 {
     if(num == NULL)
