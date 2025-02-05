@@ -65,16 +65,16 @@ void test_num_consume()
     assert(clu_mem_empty());
 }
 
-void test_num_normalize()
+void test_num_denormalize()
 {
     printf("\n\t%s", __func__);
 
-    num_p num = num_normalize(NULL);
+    num_p num = num_denormalize(NULL);
     assert(num_immed(num, 1, 0));
     num_free(num);
 
     num = num_create(1, NULL);
-    num = num_normalize(num);
+    num = num_denormalize(num);
     assert(num_immed(num, 1, 1));
     num_free(num);
 
@@ -106,6 +106,22 @@ void test_num_add_uint()
     num = num_add_uint(num, 3);
     assert(num_immed(num, 2, 1, 2));
     num_free(num);
+
+    assert(clu_mem_empty());
+}
+
+void test_num_sub_uint(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s 1", __func__);
+    num_p num_res = num_sub_uint(NULL, 0);
+    assert(num_immed(num_res, 0));
+
+    if(show) printf("\n\t\t%s 2", __func__);
+    num_p num = num_create_immed(1, 1);
+    num_res = num_sub_uint(num, 0);
+    assert(num_immed(num_res, 0));
 
     assert(clu_mem_empty());
 }
@@ -311,10 +327,11 @@ void test_num()
 
     test_num_create();
     test_num_create_immed();
-    test_num_normalize();
+    test_num_denormalize();
     test_num_consume();
 
     test_num_add_uint();
+    test_num_sub_uint(true);
     test_num_mul_uint(false);
 
     test_num_add(false);
