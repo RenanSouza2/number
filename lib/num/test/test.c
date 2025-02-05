@@ -241,7 +241,6 @@ void test_num_mul(bool show)
     num_1 = num_create_immed(1, 2);
     num_2 = num_create_immed(1, 3);
     num_res = num_mul(num_1, num_2);
-    printf("\n");num_display(num_res);
     assert(num_immed(num_res, 1, 6));
     num_free(num_res);
 

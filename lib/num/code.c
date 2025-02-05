@@ -167,8 +167,8 @@ num_p num_mul_uint_rec(num_p num_res, num_p num, uint64_t value)
 num_p num_mul_uint(num_p num_res, num_p num, uint64_t value)
 {
     if(value == 0)
-        return NULL;
-        
+        return num_res;
+
     return num_mul_uint_rec(NULL, num, value);
 }
 
@@ -186,6 +186,22 @@ num_p num_add(num_p num_1, num_p num_2)
     return num_1;
 }
 
+num_p num_mul_rec(num_p num_res, num_p num_1, num_p num_2)
+{
+    if(num_2 == NULL)
+    {
+        num_free(num_1);
+        return NULL;
+    }
+
+    num_res = num_mul_uint_rec(num_res, num_1, num_2->value);
+
+    num_res = num_normalize(num_res);
+    num_2 = num_consume(num_2);
+    num_res->next = num_mul_rec(num_res->next, num_1, num_2);
+    return num_res;
+}
+
 num_p num_mul(num_p num_1, num_p num_2)
 {
     if(num_1 == NULL)
@@ -194,24 +210,5 @@ num_p num_mul(num_p num_1, num_p num_2)
         return NULL;
     }
 
-    if(num_2 == NULL)
-    {
-        num_free(num_1);
-        return NULL;
-    }
-
-    num_p num_res = num_create(0, NULL);
-    printf("\ninitial num_res: ");num_display(num_res);
-    for(num_p num_aux = num_res; num_2; num_2 = num_consume(num_2))
-    {
-        printf("\n\nnum_1 value: %lu", num_1->value);
-        if(num_2->value != 0)
-            num_aux = num_mul_uint_rec(num_aux, num_1, num_2->value);
-
-        printf("\nv1: ");num_display(num_res);
-        num_aux = num_aux->next = num_normalize(num_aux->next);
-        printf("\nv1: ");num_display(num_res);
-    }
-    num_free(num_1);
-    return num_res;
+    return num_mul_rec(NULL, num_1, num_2);
 }
