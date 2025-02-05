@@ -37,7 +37,7 @@ bool num_str(num_p num_1, num_p num_2)
         if(num_1->value == num_2->value)
             continue;
 
-        printf("\n\n\tNUMBER ASSET ERROR | DIFFERENCE IN VALUE %ld | %ld %ld", i, num_1->value, num_2->value);
+        printf("\n\n\tNUMBER ASSET ERROR | DIFFERENCE IN VALUE %lu | %lu %lu", i, num_1->value, num_2->value);
         return false;
     }
 
@@ -81,7 +81,7 @@ void num_display(num_p num)
     }
 
     for(; num; num = num->next)
-        printf("%ld ", num->value);
+        printf("%lu ", num->value);
 }
 
 typedef __int128_t uint128_t;
@@ -144,23 +144,23 @@ num_p num_add_uint(num_p num, uint64_t value)
     return num;
 }
 
-num_p num_mult_uint_rec(num_p num_res, num_p num, uint64_t value)
+num_p num_mul_uint_rec(num_p num_res, num_p num, uint64_t value)
 {
     if(num == NULL)
         return num_res;
 
     uint128_t u = MUL(num->value, value);
     num_res = num_add_uint(num_res, LOW(u));
-    num_res = num_normalize(num);
+    num_res = num_normalize(num_res);
     num_res->next = num_add_uint(num_res->next, HIGH(u));
-    num_res->next = num_mult_uint_rec(num_res->next, num->next, value);
+    num_res->next = num_mul_uint_rec(num_res->next, num->next, value);
     return num_res;
 }
 
 /* preserves NUM */
-num_p num_mult_uint(num_p num, uint64_t value)
+num_p num_mul_uint(num_p num, uint64_t value)
 {
-    return num_mult_uint_rec(NULL, num, value);
+    return num_mul_uint_rec(NULL, num, value);
 }
 
 
@@ -184,19 +184,19 @@ num_p num_add(num_p num_1, num_p num_2)
 //         num_free(num_2);
 //         return NULL;
 //     }
-
+//
 //     if(num_2 == NULL)
 //     {
 //         num_free(num_1);
 //         return NULL;
 //     }
-
+//
 //     num_p num_res = NULL;
 //     for(num_p num_c = num_1; num_c; num_c = num_c->next)
 //     {
 //         if(num_c->value == 0)
 //             continue;
-        
+//
 //         num_res = num_add(num_res)
 //     }
 // }
