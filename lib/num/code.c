@@ -101,20 +101,23 @@ num_p num_create(uint64_t value, num_p next)
     return num;
 }
 
-/* free NUM struct and return next */
-num_p num_consume(num_p num)
-{
-    num_p num_next = num->next;
-    free(num);
-    return num_next;
-}
-
 /* creates a num struct with value 0 if NUM is null */
 num_p num_normalize(num_p num)
 {
     if(num) return num;
 
     return num_create(0, NULL);
+}
+
+/* free NUM struct and return next */
+num_p num_consume(num_p num)
+{
+    if(num == NULL)
+        return NULL;
+
+    num_p num_next = num->next;
+    free(num);
+    return num_next;
 }
 
 /* free NUM list */

@@ -44,6 +44,36 @@ void test_num_create_immed()
     assert(clu_mem_empty());
 }
 
+void test_num_consume()
+{
+    printf("\n\t%s", __func__);
+
+    num_p num = num_consume(NULL);
+    assert(num == NULL);
+
+    num = num_create(1, NULL);
+    num = num_consume(num);
+    assert(num == NULL);
+
+    assert(clu_mem_empty());
+}
+
+void test_num_normalize()
+{
+    printf("\n\t%s", __func__);
+
+    num_p num = num_normalize(NULL);
+    assert(num_immed(num, 1, 0));
+    num_free(num);
+
+    num = num_create(1, NULL);
+    num = num_normalize(num);
+    assert(num_immed(num, 1, 1));
+    num_free(num);
+
+    assert(clu_mem_empty());
+}
+
 
 
 void test_num_add_uint()
@@ -138,6 +168,8 @@ void test_num()
 
     test_num_create();
     test_num_create_immed();
+    test_num_consume();
+    test_num_normalize();
     test_num_add_uint();
     test_num_add(false);
 
