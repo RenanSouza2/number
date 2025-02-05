@@ -212,6 +212,35 @@ void test_num_add(bool show)
     assert(clu_mem_empty());
 }
 
+void test_num_mul(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s 1", __func__);
+    num_p num_res = num_mul(NULL, NULL);
+    assert(num_immed(num_res, 0));
+
+    if(show) printf("\n\t\t%s 2", __func__);
+    num_p num_1 = num_create_immed(1, 1);
+    num_res = num_mul(num_1, NULL);
+    assert(num_immed(num_res, 0));
+
+    if(show) printf("\n\t\t%s 3", __func__);
+    num_p num_2 = num_create_immed(1, 1);
+    num_res = num_mul(NULL, num_2);
+    assert(num_immed(num_res, 0));
+
+    if(show) printf("\n\t\t%s 4", __func__);
+    num_1 = num_create_immed(1, 2);
+    num_2 = num_create_immed(1, 3);
+    num_res = num_mul(num_1, num_2);
+    printf("\n");num_display(num_res);
+    assert(num_immed(num_res, 1, 6));
+    num_free(num_res);
+
+    assert(clu_mem_empty());
+}
+
 
 
 void test_num()
@@ -227,6 +256,7 @@ void test_num()
     test_num_mul_uint(false);
 
     test_num_add(false);
+    test_num_mul(true);
 
     assert(clu_mem_empty());
 }

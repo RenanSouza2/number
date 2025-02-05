@@ -70,18 +70,24 @@ bool num_immed(num_p num, uint64_t n, ...)
 
 
 
+void num_display_rec(num_p num)
+{
+    if(num == NULL)
+        return;
+
+    num_display_rec(num->next);
+    printf("%lu ", num->value);
+}
+
 void num_display(num_p num)
 {
-    printf("\n");
-
     if(num == NULL)
     {
         printf("0");
         return;
     }
 
-    for(; num; num = num->next)
-        printf("%lu ", num->value);
+    num_display_rec(num);
 }
 
 typedef __int128_t uint128_t;
@@ -177,26 +183,32 @@ num_p num_add(num_p num_1, num_p num_2)
     return num_1;
 }
 
-// num_p num_mul(num_p num_1, num_p num_2)
-// {
-//     if(num_1 == NULL)
-//     {
-//         num_free(num_2);
-//         return NULL;
-//     }
-//
-//     if(num_2 == NULL)
-//     {
-//         num_free(num_1);
-//         return NULL;
-//     }
-//
-//     num_p num_res = NULL;
-//     for(num_p num_c = num_1; num_c; num_c = num_c->next)
-//     {
-//         if(num_c->value == 0)
-//             continue;
-//
-//         num_res = num_add(num_res)
-//     }
-// }
+num_p num_mul(num_p num_1, num_p num_2)
+{
+    if(num_1 == NULL)
+    {
+        num_free(num_2);
+        return NULL;
+    }
+
+    if(num_2 == NULL)
+    {
+        num_free(num_1);
+        return NULL;
+    }
+
+    num_p num_res = num_create(0, NULL);
+    printf("\ninitial num_res: ");num_display(num_res);
+    for(num_p num_aux = num_res; num_2; num_2 = num_consume(num_2))
+    {
+        printf("\n\nnum_1 value: %lu", num_1->value);
+        if(num_2->value != 0)
+            num_aux = num_mul_uint_rec(num_aux, num_1, num_2->value);
+
+        printf("\nv1: ");num_display(num_res);
+        num_aux = num_aux->next = num_normalize(num_aux->next);
+        printf("\nv1: ");num_display(num_res);
+    }
+    num_free(num_1);
+    return num_res;
+}
