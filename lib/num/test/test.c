@@ -108,44 +108,51 @@ void test_num_mul_uint(bool show)
     printf("\n\t%s", __func__);
 
     if(show) printf("\n\t\t%s 1", __func__);
-    num_p num = num_mul_uint(NULL, 0);
+    num_p num = num_mul_uint(NULL, NULL, 0);
     assert(num == NULL);
 
     if(show) printf("\n\t\t%s 2", __func__);
-    num = num_mul_uint(NULL, 1);
+    num = num_mul_uint(NULL, NULL, 1);
     assert(num == NULL);
     
     if(show) printf("\n\t\t%s 3", __func__);
     num = num_create_immed(1, 2);
-    num_p num_res = num_mul_uint(num, 3);
-    assert(num_immed(num_res, 1, 6));
+    num_p num_res = num_mul_uint(NULL, num, 0);
+    assert(num_immed(num_res, 0));
     num_free(num);
     num_free(num_res);
     
     if(show) printf("\n\t\t%s 4", __func__);
     num = num_create_immed(1, 2);
-    num_res = num_mul_uint(num, UINT64_MAX);
-    assert(num_immed(num_res, 2, 1, UINT64_MAX - 1));
+    num_res = num_mul_uint(NULL, num, 3);
+    assert(num_immed(num_res, 1, 6));
     num_free(num);
     num_free(num_res);
     
     if(show) printf("\n\t\t%s 5", __func__);
-    num = num_create_immed(2, 2, 3);
-    num_res = num_mul_uint(num, 4);
-    assert(num_immed(num_res, 2, 8, 12));
+    num = num_create_immed(1, 2);
+    num_res = num_mul_uint(NULL, num, UINT64_MAX);
+    assert(num_immed(num_res, 2, 1, UINT64_MAX - 1));
     num_free(num);
     num_free(num_res);
     
     if(show) printf("\n\t\t%s 6", __func__);
-    num = num_create_immed(2, UINT64_MAX, UINT64_MAX);
-    num_res = num_mul_uint(num, UINT64_MAX);
-    assert(num_immed(num_res, 3, UINT64_MAX - 1, UINT64_MAX, 1));
+    num = num_create_immed(2, 2, 3);
+    num_res = num_mul_uint(NULL, num, 4);
+    assert(num_immed(num_res, 2, 8, 12));
     num_free(num);
     num_free(num_res);
     
     if(show) printf("\n\t\t%s 7", __func__);
+    num = num_create_immed(2, UINT64_MAX, UINT64_MAX);
+    num_res = num_mul_uint(NULL, num, UINT64_MAX);
+    assert(num_immed(num_res, 3, UINT64_MAX - 1, UINT64_MAX, 1));
+    num_free(num);
+    num_free(num_res);
+    
+    if(show) printf("\n\t\t%s 8", __func__);
     num = num_create_immed(2, 2, 0);
-    num_res = num_mul_uint(num, 3);
+    num_res = num_mul_uint(NULL, num, 3);
     assert(num_immed(num_res, 2, 6, 0));
     num_free(num);
     num_free(num_res);

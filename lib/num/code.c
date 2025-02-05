@@ -164,8 +164,11 @@ num_p num_mul_uint_rec(num_p num_res, num_p num, uint64_t value)
 }
 
 /* preserves NUM */
-num_p num_mul_uint(num_p num, uint64_t value)
+num_p num_mul_uint(num_p num_res, num_p num, uint64_t value)
 {
+    if(value == 0)
+        return NULL;
+        
     return num_mul_uint_rec(NULL, num, value);
 }
 
