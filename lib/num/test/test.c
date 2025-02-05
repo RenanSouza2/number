@@ -119,6 +119,13 @@ void test_num_add(bool show)
     num_1 = num_add(num_1, num_2);
     assert(num_immed(num_1, 3, 1, 0, 0));
     num_free(num_1);
+    
+    if(show) printf("\n\t\t%s 7", __func__);
+    num_1 = num_create_immed(1, 1);
+    num_2 = num_create_immed(2, UINT64_MAX, UINT64_MAX);
+    num_1 = num_add(num_1, num_2);
+    assert(num_immed(num_1, 3, 1, 0, 0));
+    num_free(num_1);
 
     assert(clu_mem_empty());
 }
