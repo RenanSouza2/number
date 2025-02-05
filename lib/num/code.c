@@ -10,27 +10,27 @@
 
 #include "../../utils/clu/bin/header.h"
 
-number_p number_create_variadic(uint64_t n, va_list args)
+num_p num_create_variadic(uint64_t n, va_list args)
 {
-    number_p num = NULL;
+    num_p num = NULL;
     for(uint64_t i=0; i<n; i++)
     {
         uint64_t value = va_arg(args, uint64_t);
-        num = number_create(value, num);
+        num = num_create(value, num);
     }
     return num;
 }
 
-number_p number_create_immed(uint64_t n, ...)
+num_p num_create_immed(uint64_t n, ...)
 {
     va_list args;
     va_start(args, n);
-    return number_create_variadic(n, args);
+    return num_create_variadic(n, args);
 }
 
 
 
-bool number(number_p num_1, number_p num_2)
+bool num(num_p num_1, num_p num_2)
 {
     for(uint64_t i=0; num_1 && num_2; i++, num_1 = num_1->next, num_2 = num_2->next)
     {
@@ -56,20 +56,21 @@ bool number(number_p num_1, number_p num_2)
     return true;
 }
 
-bool number_immed(number_p num, uint64_t n, ...)
+bool num_immed(num_p num_1, uint64_t n, ...)
 {
     va_list args;
     va_start(args, n);
-    number_p num_2 = number_create_variadic(n, args);
-    bool res = number(num, num_2);
-    number_free(num_2);
+    num_p num_2 = num_create_variadic(n, args);
+    bool res = num(num_1, num_2);
+    num_free(num_2);
     return res;
 }
 
 #endif
 
 
-void number_display(number_p num)
+
+void num_display(num_p num)
 {
     printf("\n");
 
@@ -85,20 +86,20 @@ void number_display(number_p num)
 
 
 
-number_p number_create(uint64_t value, number_p next)
+num_p num_create(uint64_t value, num_p next)
 {
-    number_p num = malloc(sizeof(number_t));
+    num_p num = malloc(sizeof(num_t));
     assert(num);
     
-    *num = (number_t){value, next};
+    *num = (num_t){value, next};
     return num;
 }
 
-void number_free(number_p num)
+void num_free(num_p num)
 {
     while(num)
     {
-        number_p aux = num->next;
+        num_p aux = num->next;
         free(num);
         num = aux;
     }
@@ -106,32 +107,37 @@ void number_free(number_p num)
 
 
 
-number_p number_add_uint(number_p num, uint64_t value)
+num_p num_add_uint(num_p num, uint64_t value)
 {
     if(value == 0)
         return num;
 
     if(num == NULL)
-        return number_create(value, NULL);
+        return num_create(value, NULL);
 
     num->value += value;
     if(num->value < value)
-        num->next = number_add_uint(num->next, 1);
+        num->next = num_add_uint(num->next, 1);
 
     return num;
 }
 
 
 
-number_p number_add(number_p num_1, number_p num_2)
+num_p num_add(num_p num_1, num_p num_2)
 {
     if(num_1 == NULL) return num_2;
     if(num_2 == NULL) return num_1;
 
-    number_add_uint(num_1, num_2->value);
+    num_add_uint(num_1, num_2->value);
     
-    number_p aux = num_2->next;
+    num_p aux = num_2->next;
     free(num_2);
-    number_add(num_1->next, aux);
+    num_add(num_1->next, aux);
     return num_1;
 }
+
+// num_p num_mul(num_p num_1, num_p num_2)
+// {
+
+// }
