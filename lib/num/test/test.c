@@ -762,7 +762,7 @@ void test_num_mod(bool show)
     num_1 = num_create_immed(3, 1, 0, 0);
     num_2 = num_create_immed(2, 1, 0);
     num_res = num_mod(num_1, num_2);
-    assert(num_immed(num_res, 2, 0));
+    assert(num_immed(num_res, 0));
     num_free(num_res);
 
     if(show) printf("\n\t\t%s 7", __func__);
@@ -800,7 +800,7 @@ void test_num()
     test_num_sub(false);
     test_num_mul(false);
     test_num_div(false);
-    test_num_mod(true);
+    test_num_mod(false);
 
     assert(clu_mem_empty());
 }
