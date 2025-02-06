@@ -174,11 +174,12 @@ num_p num_sub_uint(num_p num, uint64_t value)
 
     assert(num);
 
+    bool do_next = num->value < value;
     num->value -= value;
-    if(num->value > value)
+    if(do_next)
         num->next = num_sub_uint(num->next, 1);
 
-    return num;
+    return num_normalize(num);
 }
 
 num_p num_mul_uint_rec(num_p num_res, num_p num, uint64_t value)

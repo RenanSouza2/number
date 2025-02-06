@@ -149,7 +149,26 @@ void test_num_sub_uint(bool show)
     if(show) printf("\n\t\t%s 2", __func__);
     num_p num = num_create_immed(1, 1);
     num_res = num_sub_uint(num, 0);
+    assert(num_immed(num_res, 1, 1));
+    num_free(num_res);
+
+    if(show) printf("\n\t\t%s 3", __func__);
+    num = num_create_immed(1, 1);
+    num_res = num_sub_uint(num, 1);
     assert(num_immed(num_res, 0));
+    num_free(num_res);
+
+    if(show) printf("\n\t\t%s 4", __func__);
+    num = num_create_immed(1, 2);
+    num_res = num_sub_uint(num, 1);
+    assert(num_immed(num_res, 1, 1));
+    num_free(num_res);
+
+    if(show) printf("\n\t\t%s 5", __func__);
+    num = num_create_immed(2, 1, 0);
+    num_res = num_sub_uint(num, 1);
+    assert(num_immed(num_res, 1, UINT64_MAX));
+    num_free(num_res);
 
     assert(clu_mem_empty());
 }
@@ -357,10 +376,10 @@ void test_num()
     test_num_create_immed();
     test_num_consume();
     test_num_denormalize();
-    test_num_normalize(true);
+    test_num_normalize(false);
 
     test_num_add_uint();
-    test_num_sub_uint(true);
+    test_num_sub_uint(false);
     test_num_mul_uint(false);
 
     test_num_add(false);
