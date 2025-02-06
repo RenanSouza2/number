@@ -325,6 +325,8 @@ num_p num_div(num_p num_1, num_p num_2)
         num_res = num_add(num_res, num_base, true);
         num_1 = num_sub(num_1, num_2, true);
     }
+    num_free(num_1);
+    num_free(num_2);
     return num_res;
 }
 
