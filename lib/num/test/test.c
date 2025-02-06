@@ -717,7 +717,6 @@ void test_num_div(bool show)
     num_res = num_div(num_1, num_2);
     assert(num_immed(num_res, 0));
     num_free(num_res);
-<<<<<<< HEAD
 
     assert(clu_mem_empty());
 }
@@ -772,8 +771,6 @@ void test_num_mod(bool show)
     num_res = num_mod(num_1, num_2);
     assert(num_immed(num_res, 1, 1));
     num_free(num_res);
-=======
->>>>>>> main
 
     assert(clu_mem_empty());
 }
@@ -803,10 +800,7 @@ void test_num()
     test_num_sub(false);
     test_num_mul(false);
     test_num_div(false);
-<<<<<<< HEAD
     test_num_mod(false);
-=======
->>>>>>> main
 
     assert(clu_mem_empty());
 }
