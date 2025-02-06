@@ -293,6 +293,51 @@ void test_num_sub(bool show)
 {
     printf("\n\t%s", __func__);
 
+    if(show) printf("\n\t\t%s 1", __func__);
+    num_p num_res = num_sub(NULL, NULL);
+    assert(num_immed(num_res, 0));
+
+    if(show) printf("\n\t\t%s 2", __func__);
+    num_p num_1 = num_create_immed(1, 1);
+    num_res = num_sub(num_1, NULL);
+    assert(num_immed(num_res, 1, 1));
+    num_free(num_res);
+
+    if(show) printf("\n\t\t%s 3", __func__);
+    num_1 = num_create_immed(1, 2);
+    num_p num_2 = num_create_immed(1, 1);
+    num_res = num_sub(num_1, num_2);
+    assert(num_immed(num_res, 1, 1));
+    num_free(num_res);
+
+    if(show) printf("\n\t\t%s 3", __func__);
+    num_1 = num_create_immed(1, 2);
+    num_2 = num_create_immed(1, 2);
+    num_res = num_sub(num_1, num_2);
+    assert(num_immed(num_res, 0));
+    num_free(num_res);
+
+    if(show) printf("\n\t\t%s 4", __func__);
+    num_1 = num_create_immed(2, 1, 0);
+    num_2 = num_create_immed(1, 1);
+    num_res = num_sub(num_1, num_2);
+    assert(num_immed(num_res, 1, UINT64_MAX));
+    num_free(num_res);
+
+    if(show) printf("\n\t\t%s 5", __func__);
+    num_1 = num_create_immed(2, 4, 3);
+    num_2 = num_create_immed(2, 1, 2);
+    num_res = num_sub(num_1, num_2);
+    assert(num_immed(num_res, 2, 3, 1));
+    num_free(num_res);
+
+    if(show) printf("\n\t\t%s 6", __func__);
+    num_1 = num_create_immed(2, 1, 0);
+    num_2 = num_create_immed(2, 1, 0);
+    num_res = num_sub(num_1, num_2);
+    assert(num_immed(num_res, 0));
+    num_free(num_res);
+
     assert(clu_mem_empty());
 }
 
@@ -390,7 +435,7 @@ void test_num()
     test_num_mul_uint(false);
 
     test_num_add(false);
-    test_num_sub(true);
+    test_num_sub(false);
     test_num_mul(false);
 
     assert(clu_mem_empty());
