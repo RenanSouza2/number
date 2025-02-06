@@ -24,6 +24,8 @@ num_p num_normalize(num_p num);
 num_p num_add_uint(num_p n, uint64_t value);
 num_p num_sub_uint(num_p num, uint64_t value);
 num_p num_mul_uint(num_p num_res, num_p num, uint64_t value);
+num_p num_shl(num_p num);
+num_p num_shr(num_p num);
 
 num_p num_add(num_p num_1, num_p num_2);
 num_p num_sub(num_p num_1, num_p num_2);

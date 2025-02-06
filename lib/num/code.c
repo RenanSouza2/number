@@ -45,7 +45,7 @@ bool num_str(num_p num_1, num_p num_2)
         if(num_1->value == num_2->value)
             continue;
 
-        printf("\n\n\tNUMBER ASSET ERROR | DIFFERENCE IN VALUE %lu | %lu %lu", i, num_1->value, num_2->value);
+        printf("\n\n\tNUMBER ASSET ERROR | DIFFERENCE IN VALUE %lu | %lx %lx", i, num_1->value, num_2->value);
         return false;
     }
 
@@ -84,7 +84,7 @@ void num_display_rec(num_p num)
         return;
 
     num_display_rec(num->next);
-    printf("%lu ", num->value);
+    printf("%lx ", num->value);
 }
 
 void num_display(num_p num)
@@ -205,6 +205,33 @@ num_p num_mul_uint(num_p num_res, num_p num, uint64_t value)
     return num_mul_uint_rec(NULL, num, value);
 }
 
+num_p num_shl_rec(num_p num, bool carry)
+{
+    if(num == NULL)
+        return carry ? num_create(1, NULL) : NULL;
+
+    bool carry_next = num->value >> 63;
+    num->value = num->value << 1 | carry;
+    num->next = num_shl_rec(num->next, carry_next);
+    return num;
+}
+
+num_p num_shl(num_p num)
+{
+    return num_shl_rec(num, false);
+}
+
+num_p num_shr(num_p num)
+{
+    if(num == NULL)
+        return NULL;
+
+    uint64_t carry = num->next ? num->next->value & 1 : 0;
+    num->value = num->value >> 1 | carry << 63;
+    num->next = num_shr(num->next);
+    return num_normalize(num);
+}
+
 
 
 num_p num_add(num_p num_1, num_p num_2)
@@ -258,8 +285,6 @@ num_p num_mul(num_p num_1, num_p num_2)
 
     return num_mul_rec(NULL, num_1, num_2);
 }
-
-
 
 int64_t num_cmp(num_p num_1, num_p num_2)
 {
