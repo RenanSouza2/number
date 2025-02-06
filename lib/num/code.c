@@ -327,9 +327,6 @@ num_p num_div(num_p num_1, num_p num_2)
     num_p num_base = num_create(1, NULL);
     while(num_cmp(num_2, num_1) <= 0)
     {
-        num_display_immed("a", num_1);
-        num_display_immed("a", num_2);
-        printf("\nbool: %lu", num_cmp(num_2, num_1));
         num_2 = num_shl(num_2);
         num_base = num_shl(num_base);
     }
