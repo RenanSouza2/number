@@ -318,15 +318,23 @@ num_p num_mul(num_p num_1, num_p num_2)
     return num_mul_rec(NULL, num_1, num_2);
 }
 
+<<<<<<< HEAD
 void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
+=======
+num_p num_div(num_p num_1, num_p num_2)
+>>>>>>> main
 {
     assert(num_2);
 
     if(num_1 == NULL)
     {
         num_free(num_2);
+<<<<<<< HEAD
         *out_num_q = *out_num_r = NULL;
         return;
+=======
+        return NULL;
+>>>>>>> main
     }
 
     num_p num_base = num_create(1, NULL);
@@ -335,13 +343,17 @@ void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
         num_2 = num_shl(num_2);
         num_base = num_shl(num_base);
     }
+<<<<<<< HEAD
     
     num_2 = num_shr(num_2);
     num_base = num_shr(num_base);
+=======
+>>>>>>> main
 
     num_p num_res = NULL;
     while(num_base)
     {
+<<<<<<< HEAD
         if(num_cmp(num_1, num_2) >= 0)
         {
             num_res = num_add(num_res, num_base, true);
@@ -370,4 +382,17 @@ num_p num_mod(num_p num_1, num_p num_2)
     num_div_mod(&num_q, &num_r, num_1, num_2);
     num_free(num_r);
     return num_q;
+=======
+        num_2 = num_shr(num_2);
+        num_base = num_shr(num_base);
+        if(num_cmp(num_1, num_2) < 0)
+            continue;
+
+        num_res = num_add(num_res, num_base, true);
+        num_1 = num_sub(num_1, num_2, true);
+    }
+    num_free(num_1);
+    num_free(num_2);
+    return num_res;
+>>>>>>> main
 }
