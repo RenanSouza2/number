@@ -214,8 +214,8 @@ num_p num_add(num_p num_1, num_p num_2)
 
     num_add_uint(num_1, num_2->value);
     
-    num_p num_next = num_consume(num_2);
-    num_add(num_1->next, num_next);
+    num_2 = num_consume(num_2);
+    num_1->next = num_add(num_1->next, num_2);
     return num_1;
 }
 
