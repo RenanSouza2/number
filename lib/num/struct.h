@@ -3,8 +3,6 @@
 
 #include "header.h"
 
-#include <stdint.h>
-
 // NOTE: NULL num pointer represents zero
 
 STRUCT(num)

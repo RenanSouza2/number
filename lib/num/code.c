@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 
 #include "debug.h"
 #include "../../utils/assert.h"
@@ -27,13 +26,6 @@ num_p num_create_immed(uint64_t n, ...)
     va_list args;
     va_start(args, n);
     return num_create_variadic(n, args);
-}
-
-
-
-void num_display_immed(char *tag, num_p num)
-{
-    printf("\n%s: ", tag);num_display(num);
 }
 
 
@@ -98,6 +90,13 @@ void num_display(num_p num)
     num_display_rec(num);
 }
 
+void num_display_immed(char *tag, num_p num)
+{
+    printf("\n%s: ", tag);num_display(num);
+}
+
+
+
 typedef __int128_t uint128_t;
 #define U128(V) ((uint128_t)(V))
 #define MUL(V1, V2) U128(V1) * U128(V2)
@@ -113,6 +112,11 @@ num_p num_create(uint64_t value, num_p next)
     
     *num = (num_t){value, next};
     return num;
+}
+
+num_p num_wrap(uint64_t value)
+{
+    return num_create(value, NULL);
 }
 
 /* free NUM struct and return next */
@@ -314,14 +318,15 @@ num_p num_mul(num_p num_1, num_p num_2)
     return num_mul_rec(NULL, num_1, num_2);
 }
 
-num_p num_div(num_p num_1, num_p num_2)
+void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
 {
     assert(num_2);
 
     if(num_1 == NULL)
     {
         num_free(num_2);
-        return NULL;
+        *out_num_q = *out_num_r = NULL;
+        return;
     }
 
     num_p num_base = num_create(1, NULL);
@@ -330,19 +335,39 @@ num_p num_div(num_p num_1, num_p num_2)
         num_2 = num_shl(num_2);
         num_base = num_shl(num_base);
     }
+    
+    num_2 = num_shr(num_2);
+    num_base = num_shr(num_base);
 
     num_p num_res = NULL;
     while(num_base)
     {
+        if(num_cmp(num_1, num_2) >= 0)
+        {
+            num_res = num_add(num_res, num_base, true);
+            num_1 = num_sub(num_1, num_2, true);
+        }
+        
         num_2 = num_shr(num_2);
         num_base = num_shr(num_base);
-        if(num_cmp(num_1, num_2) < 0)
-            continue;
-
-        num_res = num_add(num_res, num_base, true);
-        num_1 = num_sub(num_1, num_2, true);
     }
-    num_free(num_1);
     num_free(num_2);
-    return num_res;
+    *out_num_q = num_1;
+    *out_num_r = num_res;
+}
+
+num_p num_div(num_p num_1, num_p num_2)
+{
+    num_p num_q, num_r;
+    num_div_mod(&num_q, &num_r, num_1, num_2);
+    num_free(num_q);
+    return num_r;
+}
+
+num_p num_mod(num_p num_1, num_p num_2)
+{
+    num_p num_q, num_r;
+    num_div_mod(&num_q, &num_r, num_1, num_2);
+    num_free(num_r);
+    return num_q;
 }
