@@ -218,6 +218,19 @@ num_p num_add(num_p num_1, num_p num_2)
     return num_1;
 }
 
+num_p num_sub(num_p num_1, num_p num_2)
+{
+    if(num_2 == NULL) return num_1;
+    assert(num_1);
+
+    num_1 = num_sub_uint(num_1, num_2->value);
+    
+    num_1 = num_denormalize(num_1);
+    num_2 = num_consume(num_2);
+    num_1->next = num_sub(num_1->next, num_2);
+    return num_normalize(num_1);
+}
+
 num_p num_mul_rec(num_p num_res, num_p num_1, num_p num_2)
 {
     if(num_2 == NULL)

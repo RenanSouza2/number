@@ -289,6 +289,13 @@ void test_num_add(bool show)
     assert(clu_mem_empty());
 }
 
+void test_num_sub(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    assert(clu_mem_empty());
+}
+
 void test_num_mul(bool show)
 {
     printf("\n\t%s", __func__);
@@ -383,6 +390,7 @@ void test_num()
     test_num_mul_uint(false);
 
     test_num_add(false);
+    test_num_sub(true);
     test_num_mul(false);
 
     assert(clu_mem_empty());
