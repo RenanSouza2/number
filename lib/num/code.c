@@ -116,13 +116,13 @@ num_p num_create(uint64_t value, num_p next)
 }
 
 /* free NUM struct and return next */
-num_p num_consume(num_p num)
+num_p num_consume(num_p num, bool keep)
 {
     if(num == NULL)
         return NULL;
 
     num_p num_next = num->next;
-    free(num);
+    if(!keep) free(num);
     return num_next;
 }
 
@@ -130,7 +130,7 @@ num_p num_consume(num_p num)
 void num_free(num_p num)
 {
     while(num)
-        num = num_consume(num);
+        num = num_consume(num, false);
 }
 
 /* creates a num struct with value 0 if NUM is null */
@@ -149,6 +149,15 @@ num_p num_normalize(num_p num)
         
     free(num);
     return NULL;
+}
+
+num_p num_copy(num_p num)
+{
+    if(num == NULL)
+        return NULL;
+
+    num_p num_2 = num_copy(num->next);
+    return num_create(num->value, num_2);
 }
 
 
@@ -234,19 +243,38 @@ num_p num_shr(num_p num)
 
 
 
-num_p num_add(num_p num_1, num_p num_2)
+int64_t num_cmp(num_p num_1, num_p num_2)
 {
-    if(num_1 == NULL) return num_2;
+    if(num_1 == NULL)
+        return num_2 ? -1 : 0;
+
+    if(num_2 == NULL)
+        return 1;
+
+    int64_t next = num_cmp(num_1->next, num_2->next);
+    if(next != 0) return next;
+
+    if(num_1->value > num_2->value) return 1;
+    return num_1->value < num_2->value ? -1 : 0;
+}
+
+
+
+num_p num_add(num_p num_1, num_p num_2, bool keep)
+{
+    if(num_1 == NULL) 
+        return keep ? num_copy(num_2) : num_2;
+
     if(num_2 == NULL) return num_1;
 
     num_add_uint(num_1, num_2->value);
     
-    num_2 = num_consume(num_2);
-    num_1->next = num_add(num_1->next, num_2);
+    num_2 = num_consume(num_2, keep);
+    num_1->next = num_add(num_1->next, num_2, keep);
     return num_1;
 }
 
-num_p num_sub(num_p num_1, num_p num_2)
+num_p num_sub(num_p num_1, num_p num_2, bool keep)
 {
     if(num_2 == NULL) return num_1;
     assert(num_1);
@@ -254,8 +282,8 @@ num_p num_sub(num_p num_1, num_p num_2)
     num_1 = num_sub_uint(num_1, num_2->value);
     
     num_1 = num_denormalize(num_1);
-    num_2 = num_consume(num_2);
-    num_1->next = num_sub(num_1->next, num_2);
+    num_2 = num_consume(num_2, keep);
+    num_1->next = num_sub(num_1->next, num_2, keep);
     return num_normalize(num_1);
 }
 
@@ -270,7 +298,7 @@ num_p num_mul_rec(num_p num_res, num_p num_1, num_p num_2)
     num_res = num_mul_uint_rec(num_res, num_1, num_2->value);
 
     num_res = num_denormalize(num_res);
-    num_2 = num_consume(num_2);
+    num_2 = num_consume(num_2, false);
     num_res->next = num_mul_rec(num_res->next, num_1, num_2);
     return num_res;
 }
@@ -286,17 +314,35 @@ num_p num_mul(num_p num_1, num_p num_2)
     return num_mul_rec(NULL, num_1, num_2);
 }
 
-int64_t num_cmp(num_p num_1, num_p num_2)
+num_p num_div(num_p num_1, num_p num_2)
 {
+    assert(num_2);
+
     if(num_1 == NULL)
-        return num_2 ? -1 : 0;
+    {
+        num_free(num_2);
+        return NULL;
+    }
 
-    if(num_2 == NULL)
-        return 1;
+    num_p num_base = num_create(1, NULL);
+    while(num_cmp(num_2, num_1) <= 0)
+    {
+        num_2 = num_shl(num_2);
+        num_base = num_shl(num_base);
+    }
 
-    int64_t next = num_cmp(num_1->next, num_2->next);
-    if(next != 0) return 0;
+    num_p num_res = NULL;
+    while(num_base)
+    {
+        num_2 = num_shr(num_2);
+        num_base = num_shr(num_base);
+        if(num_cmp(num_1, num_2) < 0)
+            continue;
 
-    if(num_1->value > num_2->value) return 1;
-    return num_1->value < num_2->value ? -1 : 0;
+        num_res = num_add(num_res, num_base, true);
+        num_1 = num_sub(num_1, num_2, true);
+    }
+    num_free(num_1);
+    num_free(num_2);
+    return num_res;
 }
