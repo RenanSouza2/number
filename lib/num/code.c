@@ -151,6 +151,15 @@ num_p num_normalize(num_p num)
     return NULL;
 }
 
+num_p num_copy(num_p num)
+{
+    if(num == NULL)
+        return NULL;
+
+    num_p num_2 = num_copy(num->next);
+    return num_create(num->value, num_2);
+}
+
 
 
 num_p num_add_uint(num_p num, uint64_t value)
@@ -285,6 +294,8 @@ num_p num_mul(num_p num_1, num_p num_2)
 
     return num_mul_rec(NULL, num_1, num_2);
 }
+
+
 
 int64_t num_cmp(num_p num_1, num_p num_2)
 {

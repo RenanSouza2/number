@@ -125,6 +125,31 @@ void test_num_normalize(bool show)
     assert(clu_mem_empty());
 }
 
+void test_num_copy(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s 1", __func__);
+    num_p num_res = num_copy(NULL);
+    assert(num_immed(num_res, 0));
+
+    if(show) printf("\n\t\t%s 2", __func__);
+    num_p num = num_create_immed(1, 1);
+    num_res = num_copy(num);
+    assert(num_immed(num_res, 1, 1));
+    num_free(num);
+    num_free(num_res);
+
+    if(show) printf("\n\t\t%s 3", __func__);
+    num = num_create_immed(2, 1, 2);
+    num_res = num_copy(num);
+    assert(num_immed(num_res, 2, 1, 2));
+    num_free(num);
+    num_free(num_res);
+
+    assert(clu_mem_empty());
+}
+
 
 
 void test_num_add_uint(bool show)
@@ -586,6 +611,7 @@ void test_num()
     test_num_consume(false);
     test_num_denormalize(false);
     test_num_normalize(false);
+    test_num_copy(false);
 
     test_num_add_uint(false);
     test_num_sub_uint(false);
