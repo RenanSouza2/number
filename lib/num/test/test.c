@@ -489,7 +489,7 @@ void test_num()
     test_num_sub(false);
     test_num_mul(false);
 
-    test_num_cmp(true);
+    test_num_cmp(false);
 
     assert(clu_mem_empty());
 }
