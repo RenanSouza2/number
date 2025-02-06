@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "debug.h"
 #include "../../utils/assert.h"
@@ -114,14 +115,6 @@ num_p num_create(uint64_t value, num_p next)
     return num;
 }
 
-/* creates a num struct with value 0 if NUM is null */
-num_p num_normalize(num_p num)
-{
-    if(num) return num;
-
-    return num_create(0, NULL);
-}
-
 /* free NUM struct and return next */
 num_p num_consume(num_p num)
 {
@@ -138,6 +131,24 @@ void num_free(num_p num)
 {
     while(num)
         num = num_consume(num);
+}
+
+/* creates a num struct with value 0 if NUM is null */
+num_p num_denormalize(num_p num)
+{
+    if(num) return num;
+
+    return num_create(0, NULL);
+}
+
+/* creates a num struct with value 0 if NUM is null */
+num_p num_normalize(num_p num)
+{
+    if(num == NULL || num->value != 0 || num->next != NULL)
+        return num;
+        
+    free(num);
+    return NULL;
 }
 
 
@@ -157,6 +168,21 @@ num_p num_add_uint(num_p num, uint64_t value)
     return num;
 }
 
+num_p num_sub_uint(num_p num, uint64_t value)
+{
+    if(value == 0)
+        return num;
+
+    assert(num);
+
+    bool do_next = num->value < value;
+    num->value -= value;
+    if(do_next)
+        num->next = num_sub_uint(num->next, 1);
+
+    return num_normalize(num);
+}
+
 num_p num_mul_uint_rec(num_p num_res, num_p num, uint64_t value)
 {
     if(num == NULL)
@@ -164,7 +190,7 @@ num_p num_mul_uint_rec(num_p num_res, num_p num, uint64_t value)
 
     uint128_t u = MUL(num->value, value);
     num_res = num_add_uint(num_res, LOW(u));
-    num_res = num_normalize(num_res);
+    num_res = num_denormalize(num_res);
     num_res->next = num_add_uint(num_res->next, HIGH(u));
     num_res->next = num_mul_uint_rec(num_res->next, num->next, value);
     return num_res;
@@ -193,6 +219,19 @@ num_p num_add(num_p num_1, num_p num_2)
     return num_1;
 }
 
+num_p num_sub(num_p num_1, num_p num_2)
+{
+    if(num_2 == NULL) return num_1;
+    assert(num_1);
+
+    num_1 = num_sub_uint(num_1, num_2->value);
+    
+    num_1 = num_denormalize(num_1);
+    num_2 = num_consume(num_2);
+    num_1->next = num_sub(num_1->next, num_2);
+    return num_normalize(num_1);
+}
+
 num_p num_mul_rec(num_p num_res, num_p num_1, num_p num_2)
 {
     if(num_2 == NULL)
@@ -203,7 +242,7 @@ num_p num_mul_rec(num_p num_res, num_p num_1, num_p num_2)
 
     num_res = num_mul_uint_rec(num_res, num_1, num_2->value);
 
-    num_res = num_normalize(num_res);
+    num_res = num_denormalize(num_res);
     num_2 = num_consume(num_2);
     num_res->next = num_mul_rec(num_res->next, num_1, num_2);
     return num_res;
