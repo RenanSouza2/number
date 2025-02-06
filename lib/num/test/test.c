@@ -385,6 +385,79 @@ void test_num_shr(bool show)
 
 
 
+void test_num_cmp(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s 1", __func__);
+    int64_t cmp = num_cmp(NULL, NULL);
+    assert(cmp == 0);
+
+    if(show) printf("\n\t\t%s 2", __func__);
+    num_p num_1 = num_create_immed(1, 1);
+    cmp = num_cmp(num_1, NULL);
+    assert(cmp > 0);
+    num_free(num_1);
+
+    if(show) printf("\n\t\t%s 3", __func__);
+    num_p num_2 = num_create_immed(1, 1);
+    cmp = num_cmp(NULL, num_2);
+    assert(cmp < 0);
+    num_free(num_2);
+
+    if(show) printf("\n\t\t%s 4", __func__);
+    num_1 = num_create_immed(1, 1);
+    num_2 = num_create_immed(1, 2);
+    cmp = num_cmp(num_1, num_2);
+    assert(cmp < 0);
+    num_free(num_1);
+    num_free(num_2);
+
+    if(show) printf("\n\t\t%s 5", __func__);
+    num_1 = num_create_immed(1, 2);
+    num_2 = num_create_immed(1, 2);
+    cmp = num_cmp(num_1, num_2);
+    assert(cmp == 0);
+    num_free(num_1);
+    num_free(num_2);
+
+    if(show) printf("\n\t\t%s 6", __func__);
+    num_1 = num_create_immed(1, 3);
+    num_2 = num_create_immed(1, 2);
+    cmp = num_cmp(num_1, num_2);
+    assert(cmp > 0);
+    num_free(num_1);
+    num_free(num_2);
+
+    if(show) printf("\n\t\t%s 7", __func__);
+    num_1 = num_create_immed(2, 2, 0);
+    num_2 = num_create_immed(2, 1, 0);
+    cmp = num_cmp(num_1, num_2);
+    assert(cmp > 0);
+    num_free(num_1);
+    num_free(num_2);
+
+    if(show) printf("\n\t\t%s 8", __func__);
+    num_1 = num_create_immed(2, 2, 0);
+    num_2 = num_create_immed(2, 2, 0);
+    cmp = num_cmp(num_1, num_2);
+    assert(cmp == 0);
+    num_free(num_1);
+    num_free(num_2);
+
+    if(show) printf("\n\t\t%s 9", __func__);
+    num_1 = num_create_immed(2, 2, 0);
+    num_2 = num_create_immed(2, 3, 0);
+    cmp = num_cmp(num_1, num_2);
+    assert(cmp < 0);
+    num_free(num_1);
+    num_free(num_2);
+
+    assert(clu_mem_empty());
+}
+
+
+
 void test_num_add(bool show)
 {
     printf("\n\t%s", __func__);
@@ -594,51 +667,49 @@ void test_num_mul(bool show)
     assert(clu_mem_empty());
 }
 
-
-
-void test_num_cmp(bool show)
+void test_num_div(bool show)
 {
     printf("\n\t%s", __func__);
 
     if(show) printf("\n\t\t%s 1", __func__);
-    int64_t cmp = num_cmp(NULL, NULL);
-    assert(cmp == 0);
+    num_p num_2 = num_create_immed(1, 1);
+    num_p num_res = num_div(NULL, num_2);
+    assert(num_immed(num_res, 0));
 
     if(show) printf("\n\t\t%s 2", __func__);
-    num_p num_1 = num_create_immed(1, 1);
-    cmp = num_cmp(num_1, NULL);
-    assert(cmp > 0);
-    num_free(num_1);
+    num_p num_1 = num_create_immed(1, 4);
+    num_2 = num_create_immed(1, 2);
+    num_res = num_div(num_1, num_2);
+    assert(num_immed(num_res, 1, 2));
+    num_free(num_res);
 
     if(show) printf("\n\t\t%s 3", __func__);
-    num_p num_2 = num_create_immed(1, 1);
-    cmp = num_cmp(NULL, num_2);
-    assert(cmp < 0);
-    num_free(num_2);
+    num_1 = num_create_immed(1, 5);
+    num_2 = num_create_immed(1, 2);
+    num_res = num_div(num_1, num_2);
+    assert(num_immed(num_res, 1, 2));
+    num_free(num_res);
 
     if(show) printf("\n\t\t%s 4", __func__);
-    num_1 = num_create_immed(1, 1);
-    num_2 = num_create_immed(1, 2);
-    cmp = num_cmp(num_1, num_2);
-    assert(cmp < 0);
-    num_free(num_1);
-    num_free(num_2);
+    num_1 = num_create_immed(1, 5);
+    num_2 = num_create_immed(1, 5);
+    num_res = num_div(num_1, num_2);
+    assert(num_immed(num_res, 1, 1));
+    num_free(num_res);
 
     if(show) printf("\n\t\t%s 5", __func__);
-    num_1 = num_create_immed(1, 2);
-    num_2 = num_create_immed(1, 2);
-    cmp = num_cmp(num_1, num_2);
-    assert(cmp == 0);
-    num_free(num_1);
-    num_free(num_2);
+    num_1 = num_create_immed(1, 9);
+    num_2 = num_create_immed(1, 3);
+    num_res = num_div(num_1, num_2);
+    assert(num_immed(num_res, 1, 3));
+    num_free(num_res);
 
     if(show) printf("\n\t\t%s 6", __func__);
-    num_1 = num_create_immed(1, 3);
-    num_2 = num_create_immed(1, 2);
-    cmp = num_cmp(num_1, num_2);
-    assert(cmp > 0);
-    num_free(num_1);
-    num_free(num_2);
+    num_1 = num_create_immed(3, 1, 0, 0);
+    num_2 = num_create_immed(2, 1, 0);
+    num_res = num_div(num_1, num_2);
+    assert(num_immed(num_res, 1, 3));
+    num_free(num_res);
 
     assert(clu_mem_empty());
 }
@@ -661,12 +732,13 @@ void test_num()
     test_num_mul_uint(false);
     test_num_shl(false);
     test_num_shr(false);
+    
+    test_num_cmp(true);
 
     test_num_add(false);
     test_num_sub(false);
     test_num_mul(false);
-
-    test_num_cmp(false);
+    // test_num_div(true);
 
     assert(clu_mem_empty());
 }

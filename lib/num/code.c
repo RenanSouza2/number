@@ -243,6 +243,23 @@ num_p num_shr(num_p num)
 
 
 
+int64_t num_cmp(num_p num_1, num_p num_2)
+{
+    if(num_1 == NULL)
+        return num_2 ? -1 : 0;
+
+    if(num_2 == NULL)
+        return 1;
+
+    int64_t next = num_cmp(num_1->next, num_2->next);
+    if(next != 0) return next;
+
+    if(num_1->value > num_2->value) return 1;
+    return num_1->value < num_2->value ? -1 : 0;
+}
+
+
+
 num_p num_add(num_p num_1, num_p num_2, bool keep)
 {
     if(num_1 == NULL) 
@@ -310,6 +327,9 @@ num_p num_div(num_p num_1, num_p num_2)
     num_p num_base = num_create(1, NULL);
     while(num_cmp(num_2, num_1) <= 0)
     {
+        num_display_immed("a", num_1);
+        num_display_immed("a", num_2);
+        printf("\nbool: %lu", num_cmp(num_2, num_1));
         num_2 = num_shl(num_2);
         num_base = num_shl(num_base);
     }
@@ -328,21 +348,4 @@ num_p num_div(num_p num_1, num_p num_2)
     num_free(num_1);
     num_free(num_2);
     return num_res;
-}
-
-
-
-int64_t num_cmp(num_p num_1, num_p num_2)
-{
-    if(num_1 == NULL)
-        return num_2 ? -1 : 0;
-
-    if(num_2 == NULL)
-        return 1;
-
-    int64_t next = num_cmp(num_1->next, num_2->next);
-    if(next != 0) return 0;
-
-    if(num_1->value > num_2->value) return 1;
-    return num_1->value < num_2->value ? -1 : 0;
 }
