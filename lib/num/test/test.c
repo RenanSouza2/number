@@ -248,6 +248,47 @@ void test_num_mul_uint(bool show)
     assert(clu_mem_empty());
 }
 
+void test_num_shl(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s 1", __func__);
+    num_p num_res = num_shl(NULL);
+    assert(num_immed(num_res, 0));
+
+    if(show) printf("\n\t\t%s 2", __func__);
+    num_p num = num_create_immed(1, 1);
+    num_res = num_shl(num);
+    assert(num_immed(num_res, 1, 2));
+    num_free(num);
+
+    if(show) printf("\n\t\t%s 3", __func__);
+    num = num_create_immed(1, 3);
+    num_res = num_shl(num);
+    assert(num_immed(num_res, 1, 6));
+    num_free(num);
+
+    if(show) printf("\n\t\t%s 4", __func__);
+    num = num_create_immed(1, UINT64_MAX);
+    num_res = num_shl(num);
+    assert(num_immed(num_res, 2, 1, UINT64_MAX - 1));
+    num_free(num);
+
+    if(show) printf("\n\t\t%s 5", __func__);
+    num = num_create_immed(2, 1, 2);
+    num_res = num_shl(num);
+    assert(num_immed(num_res, 2, 2, 4));
+    num_free(num);
+
+    if(show) printf("\n\t\t%s 6", __func__);
+    num = num_create_immed(2, 1, UINT64_MAX);
+    num_res = num_shl(num);
+    assert(num_immed(num_res, 2, 3, UINT64_MAX - 1));
+    num_free(num);
+
+    assert(clu_mem_empty());
+}
+
 
 
 void test_num_add(bool show)
@@ -493,21 +534,22 @@ void test_num()
 {
     printf("\n%s", __func__);
 
-    test_num_create(true);
-    test_num_create_immed(true);
-    test_num_consume(true);
-    test_num_denormalize(true);
-    test_num_normalize(true);
+    test_num_create(false);
+    test_num_create_immed(false);
+    test_num_consume(false);
+    test_num_denormalize(false);
+    test_num_normalize(false);
 
-    test_num_add_uint(true);
-    test_num_sub_uint(true);
-    test_num_mul_uint(true);
+    test_num_add_uint(false);
+    test_num_sub_uint(false);
+    test_num_mul_uint(false);
+    test_num_shl(false);
 
-    test_num_add(true);
-    test_num_sub(true);
-    test_num_mul(true);
+    test_num_add(false);
+    test_num_sub(false);
+    test_num_mul(false);
 
-    test_num_cmp(true);
+    test_num_cmp(false);
 
     assert(clu_mem_empty());
 }

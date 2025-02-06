@@ -205,6 +205,22 @@ num_p num_mul_uint(num_p num_res, num_p num, uint64_t value)
     return num_mul_uint_rec(NULL, num, value);
 }
 
+num_p num_shl_rec(num_p num, bool carry)
+{
+    if(num == NULL)
+        return carry ? num_create(1, NULL) : NULL;
+
+    bool carry_next = num->value >> 63;
+    num->value = num->value << 1 | carry;
+    num->next = num_shl_rec(num->next, carry_next);
+    return num;
+}
+
+num_p num_shl(num_p num)
+{
+    return num_shl_rec(num, false);
+}
+
 
 
 num_p num_add(num_p num_1, num_p num_2)
@@ -258,8 +274,6 @@ num_p num_mul(num_p num_1, num_p num_2)
 
     return num_mul_rec(NULL, num_1, num_2);
 }
-
-
 
 int64_t num_cmp(num_p num_1, num_p num_2)
 {
