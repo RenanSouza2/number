@@ -114,14 +114,6 @@ num_p num_create(uint64_t value, num_p next)
     return num;
 }
 
-/* creates a num struct with value 0 if NUM is null */
-num_p num_denormalize(num_p num)
-{
-    if(num) return num;
-
-    return num_create(0, NULL);
-}
-
 /* free NUM struct and return next */
 num_p num_consume(num_p num)
 {
@@ -138,6 +130,24 @@ void num_free(num_p num)
 {
     while(num)
         num = num_consume(num);
+}
+
+/* creates a num struct with value 0 if NUM is null */
+num_p num_denormalize(num_p num)
+{
+    if(num) return num;
+
+    return num_create(0, NULL);
+}
+
+/* creates a num struct with value 0 if NUM is null */
+num_p num_normalize(num_p num)
+{
+    if(num == NULL || num->value != 0 || num->next != NULL)
+        return num;
+        
+    free(num);
+    return NULL;
 }
 
 
