@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 
 #include "debug.h"
 #include "../../utils/assert.h"
@@ -27,13 +26,6 @@ num_p num_create_immed(uint64_t n, ...)
     va_list args;
     va_start(args, n);
     return num_create_variadic(n, args);
-}
-
-
-
-void num_display_immed(char *tag, num_p num)
-{
-    printf("\n%s: ", tag);num_display(num);
 }
 
 
@@ -98,6 +90,13 @@ void num_display(num_p num)
     num_display_rec(num);
 }
 
+void num_display_immed(char *tag, num_p num)
+{
+    printf("\n%s: ", tag);num_display(num);
+}
+
+
+
 typedef __int128_t uint128_t;
 #define U128(V) ((uint128_t)(V))
 #define MUL(V1, V2) U128(V1) * U128(V2)
@@ -113,6 +112,11 @@ num_p num_create(uint64_t value, num_p next)
     
     *num = (num_t){value, next};
     return num;
+}
+
+num_p num_wrap(uint64_t value)
+{
+    return num_create(value, NULL);
 }
 
 /* free NUM struct and return next */
