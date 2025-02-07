@@ -807,26 +807,28 @@ void test_num()
 {
     printf("\n%s", __func__);
 
-    test_num_create(false);
-    test_num_create_immed(false);
-    test_num_consume(false);
-    test_num_denormalize(false);
-    test_num_normalize(false);
-    test_num_copy(false);
+    bool show = true;
 
-    test_num_add_uint(false);
-    test_num_sub_uint(false);
-    test_num_mul_uint(false);
-    test_num_shl(false);
-    test_num_shr(false);
+    test_num_create(show);
+    test_num_create_immed(show);
+    test_num_consume(show);
+    test_num_denormalize(show);
+    test_num_normalize(show);
+    test_num_copy(show);
+
+    test_num_add_uint(show);
+    test_num_sub_uint(show);
+    test_num_mul_uint(show);
+    test_num_shl(show);
+    test_num_shr(show);
     
-    test_num_cmp(false);
+    test_num_cmp(show);
 
-    test_num_add(false);
-    test_num_sub(false);
-    test_num_mul(false);
-    test_num_div(false);
-    test_num_mod(false);
+    test_num_add(show);
+    test_num_sub(show);
+    test_num_mul(show);
+    test_num_div(show);
+    test_num_mod(show);
 
     assert(clu_mem_empty());
 }
