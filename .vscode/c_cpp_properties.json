@@ -6,7 +6,8 @@
                 "${workspaceFolder}/**"
             ],
             "defines": [
-                "DEBUG"
+                "DEBUG",
+                "__ASSERT_FILE_NAME"
             ],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "c17",
