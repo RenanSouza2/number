@@ -15,6 +15,8 @@ void num_free(num_p num);
 void num_display(num_p num);
 void num_display_immed(char *tag, num_p num);
 
+int64_t num_cmp(num_p num_1, num_p num_2);
+
 num_p num_add(num_p num_1, num_p num_2, bool keep);
 num_p num_sub(num_p num_1, num_p num_2, bool keep);
 num_p num_mul(num_p num_1, num_p num_2);

@@ -74,3 +74,10 @@ mod_t mod_sub(mod_t mod_1, mod_t mod_2)
     num = num_sub(num, mod_2.num, false);
     return mod_create(num, mod_1.p);
 }
+
+mod_t mod_mul(mod_t mod_1, mod_t mod_2)
+{
+    num_p num = num_mul(mod_1.num, mod_2.num);
+    num = num_mod(num, mod_1.p, true);
+    return mod_create(num, mod_1.p);
+}

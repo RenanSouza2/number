@@ -28,6 +28,4 @@ num_p num_mul_uint(num_p num_res, num_p num, uint64_t value);
 num_p num_shl(num_p num);
 num_p num_shr(num_p num);
 
-int64_t num_cmp(num_p num_1, num_p num_2);
-
 #endif
