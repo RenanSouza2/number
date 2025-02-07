@@ -1,4 +1,5 @@
 #include "../debug.h"
+#include "../../../utils/U64.h"
 #include "../../../utils/assert.h"
 #include "../../../utils/clu/bin/header.h"
 
@@ -464,7 +465,7 @@ void test_num_add(bool show)
 
     for(uint64_t keep = 0; keep < 2; keep++)
     {
-        if(show) printf("\n\n\t\t%s | keep: %lu", __func__, keep);
+        if(show) printf("\n\n\t\t%s | keep: " U64P "", __func__, keep);
 
         if(show) printf("\n\t\t\t%s 1", __func__);
         num_p num_res = num_add(NULL, NULL, keep);
@@ -534,7 +535,7 @@ void test_num_sub(bool show)
 
     for(uint64_t keep = 0; keep < 2; keep++)
     {        
-        if(show) printf("\n\n\t\t%s | keep: %lu", __func__, keep);
+        if(show) printf("\n\n\t\t%s | keep: " U64P "", __func__, keep);
 
         if(show) printf("\n\t\t\t%s 1", __func__);
         num_p num_res = num_sub(NULL, NULL, keep);

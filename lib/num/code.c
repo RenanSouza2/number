@@ -3,6 +3,7 @@
 
 #include "debug.h"
 #include "../../utils/assert.h"
+#include "../../utils/U64.h"
 
 #ifdef DEBUG
 
@@ -37,7 +38,7 @@ bool num_str(num_p num_1, num_p num_2)
         if(num_1->value == num_2->value)
             continue;
 
-        printf("\n\n\tNUMBER ASSET ERROR | DIFFERENCE IN VALUE %lu | %lx %lx", i, num_1->value, num_2->value);
+        printf("\n\n\tNUMBER ASSET ERROR | DIFFERENCE IN VALUE " U64P " | " U64PX " " U64PX "", i, num_1->value, num_2->value);
         return false;
     }
 
@@ -76,7 +77,7 @@ void num_display_rec(num_p num)
         return;
 
     num_display_rec(num->next);
-    printf("%lx ", num->value);
+    printf("" U64PX " ", num->value);
 }
 
 void num_display(num_p num)
