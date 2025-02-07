@@ -39,6 +39,11 @@ mod_t mod_wrap(uint64_t value, num_p p)
     };
 }
 
+void mod_free(mod_t mod)
+{
+    num_free(mod.num);
+}
+
 
 
 mod_t mod_add(mod_t mod_1, mod_t mod_2)

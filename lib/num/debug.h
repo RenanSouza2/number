@@ -19,7 +19,6 @@ bool num_immed(num_p num, uint64_t n, ...);
 
 num_p num_create(uint64_t value, num_p next);
 num_p num_consume(num_p num, bool keep);
-void num_free(num_p num);
 num_p num_denormalize(num_p num);
 num_p num_normalize(num_p num);
 
