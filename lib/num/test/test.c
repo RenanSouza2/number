@@ -30,6 +30,22 @@ void test_num_create(bool show)
     assert(clu_mem_empty());
 }
 
+void test_num_wrap(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s 1", __func__);
+    num_p num = num_wrap(0);
+    assert(num_immed(num, 0));
+
+    if(show) printf("\n\t\t%s 2", __func__);
+    num = num_wrap(1);
+    assert(num_immed(num, 1, 1));
+    num_free(num);
+
+    assert(clu_mem_empty());
+}
+
 void test_num_create_immed(bool show)
 {
     printf("\n\t%s", __func__);
@@ -807,9 +823,10 @@ void test_num()
 {
     printf("\n%s", __func__);
 
-    bool show = true;
+    bool show = false;
 
     test_num_create(show);
+    test_num_wrap(show);
     test_num_create_immed(show);
     test_num_consume(show);
     test_num_denormalize(show);

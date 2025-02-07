@@ -7,6 +7,18 @@
 
 #include "../../utils/clu/bin/header.h"
 
+#include "../num/debug.h"
+
+bool mod_immed(mod_t mod, uint64_t n, ...)
+{
+    va_list args;
+    va_start(args, n);
+    num_p num = num_create_variadic(n, args);
+    bool res = num_str(mod.num, num);
+    num_free(num);
+    return res;
+}
+
 #endif
 
 mod_t mod_create(num_p num, num_p p)
@@ -18,9 +30,20 @@ mod_t mod_create(num_p num, num_p p)
     };
 }
 
-mod_t mod_add(mod_t m1, mod_t m2)
+mod_t mod_wrap(uint64_t value, num_p p)
 {
-    num_p num = num_add(m1.num, m2.num, false);
-    num = num_mod(num, m1.p);
-    return mod_create(num, m1.p);
+    return (mod_t)
+    {
+        .num = num_wrap(value),
+        .p = p
+    };
+}
+
+
+
+mod_t mod_add(mod_t mod_1, mod_t mod_2)
+{
+    num_p num = num_add(mod_1.num, mod_2.num, false);
+    num = num_mod(num, mod_1.p, true);
+    return mod_create(num, mod_1.p);
 }

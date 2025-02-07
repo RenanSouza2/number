@@ -7,8 +7,6 @@
 
 #ifdef DEBUG
 
-#include <stdarg.h>
-
 #include "../../utils/clu/bin/header.h"
 
 num_p num_create_variadic(uint64_t n, va_list args)
@@ -117,7 +115,7 @@ num_p num_create(uint64_t value, num_p next)
 
 num_p num_wrap(uint64_t value)
 {
-    return num_create(value, NULL);
+    return value ? num_create(value, NULL) : NULL;
 }
 
 /* free NUM struct and return next */
