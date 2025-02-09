@@ -58,7 +58,7 @@ void mod_display(mod_t mod)
 mod_t mod_add(mod_t mod_1, mod_t mod_2)
 {
     num_p num = num_add(mod_1.num, mod_2.num, false);
-    num = num_mod(num, mod_1.p, true);
+    num = num_mod(num, false, mod_1.p, true);
     return mod_create(num, mod_1.p);
 }
 
@@ -78,6 +78,16 @@ mod_t mod_sub(mod_t mod_1, mod_t mod_2)
 mod_t mod_mul(mod_t mod_1, mod_t mod_2)
 {
     num_p num = num_mul(mod_1.num, mod_2.num);
-    num = num_mod(num, mod_1.p, true);
+    num = num_mod(num, false, mod_1.p, true);
     return mod_create(num, mod_1.p);
 }
+
+// mod_t mod_mul(mod_t mod_1, mod_t mod_2)
+// {
+//     assert(mod_2.num);
+//     num_p num_mod_res = num_mod(mod_1.num, mod_2.num, true);
+//     if(num_mod_res == NULL)
+//     {
+//         return 
+//     }
+// }
