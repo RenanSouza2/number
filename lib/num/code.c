@@ -291,7 +291,7 @@ num_p num_sub(num_p num_1, bool keep_1, num_p num_2, bool keep_2)
     return num_normalize(num_1);
 }
 
-num_p num_mul_rec(num_p num_res, num_p num_1, num_p num_2)
+num_p num_mul_rec(num_p num_res, num_p num_1, num_p num_2, bool keep)
 {
     if(num_2 == NULL)
     {
@@ -302,20 +302,20 @@ num_p num_mul_rec(num_p num_res, num_p num_1, num_p num_2)
     num_res = num_mul_uint_rec(num_res, num_1, num_2->value);
 
     num_res = num_denormalize(num_res);
-    num_2 = num_consume(num_2, false);
-    num_res->next = num_mul_rec(num_res->next, num_1, num_2);
+    num_2 = num_consume(num_2, keep);
+    num_res->next = num_mul_rec(num_res->next, num_1, num_2, keep);
     return num_res;
 }
 
-num_p num_mul(num_p num_1, num_p num_2)
+num_p num_mul(num_p num_1, num_p num_2, bool keep)
 {
     if(num_1 == NULL)
     {
-        num_free(num_2);
+        if(!keep) num_free(num_2);
         return NULL;
     }
 
-    return num_mul_rec(NULL, num_1, num_2);
+    return num_mul_rec(NULL, num_1, num_2, keep);
 }
 
 void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, bool keep_1, num_p num_2, bool keep_2)

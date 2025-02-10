@@ -8,7 +8,7 @@ int main(int argc, char** argv)
     for(;;)
     {
         num_p num_2 = num_copy(num_1);
-        num_1 = num_mul(num_1, num_2);
+        num_1 = num_mul(num_1, num_2, false);
         num_2 = num_wrap(1);
         num_1 = num_add(num_1, num_2, false);
         num_display_immed("num", num_1);
