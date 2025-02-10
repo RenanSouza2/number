@@ -18,5 +18,6 @@ void mod_display(mod_t mod);
 mod_t mod_add(mod_t mod_1, mod_t mod_2);
 mod_t mod_sub(mod_t mod_1, mod_t mod_2);
 mod_t mod_mul(mod_t mod_1, mod_t mod_2);
+mod_t mod_div(mod_t mod_1, mod_t mod_2);
 
 #endif
