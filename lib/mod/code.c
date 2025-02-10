@@ -63,7 +63,7 @@ void mod_display_immed(char tag[], mod_t mod)
 mod_t mod_add(mod_t mod_1, mod_t mod_2)
 {
     num_p num = num_add(mod_1.num, mod_2.num);
-    num = num_mod(num, false, mod_1.p, true);
+    num = num_mod(num, num_copy(mod_1.p));
     return mod_create(num, mod_1.p);
 }
 
@@ -83,7 +83,7 @@ mod_t mod_sub(mod_t mod_1, mod_t mod_2)
 mod_t mod_mul(mod_t mod_1, mod_t mod_2)
 {
     num_p num = num_mul(mod_1.num, mod_2.num);
-    num = num_mod(num, false, mod_1.p, true);
+    num = num_mod(num, num_copy(mod_1.p));
     return mod_create(num, mod_1.p);
 }
 
@@ -91,18 +91,18 @@ mod_t mod_div_rec(mod_t mod_1, mod_t mod_2)
 {
     assert(mod_2.num);
 
-    num_p num_mod_res = num_mod(mod_1.num, true, mod_2.num, true);
+    num_p num_mod_res = num_mod(num_copy(mod_1.num), num_copy(mod_2.num));
     if(num_mod_res == NULL)
     {
-        num_p num = num_div(mod_1.num, true, mod_2.num, true);
+        num_p num = num_div(num_copy(mod_1.num), num_copy(mod_2.num));
         return mod_create(num, mod_1.p);
     }
     num_free(num_mod_res);
 
-    num_p num_1 = num_mod(mod_1.num, true, mod_2.num, true);
+    num_p num_1 = num_mod(num_copy(mod_1.num), num_copy(mod_2.num));
     mod_t mod_1_next = mod_create(num_1, mod_2.num);
 
-    num_p num_2 = num_mod(mod_1.p, true, mod_2.num, true);
+    num_p num_2 = num_mod(num_copy(mod_1.p), num_copy(mod_2.num));
     num_2 = num_sub(num_copy(mod_2.num), num_2);
     mod_t mod_2_next = mod_create(num_2, mod_2.num);
 
@@ -112,7 +112,7 @@ mod_t mod_div_rec(mod_t mod_1, mod_t mod_2)
 
     num_p num = num_mul(mod_n.num, num_copy(mod_1.p));
     num = num_add(num, num_copy(mod_1.num));
-    num = num_div(num, false, mod_2.num, true);
+    num = num_div(num, num_copy(mod_2.num));
     return mod_create(num, mod_1.p);
 }
 
