@@ -277,16 +277,17 @@ num_p num_add(num_p num_1, num_p num_2, bool keep)
     return num_1;
 }
 
-num_p num_sub(num_p num_1, num_p num_2, bool keep)
+num_p num_sub(num_p num_1, bool keep_1, num_p num_2, bool keep_2)
 {
+    if(keep_1) num_1 = num_copy(num_1);
     if(num_2 == NULL) return num_1;
     assert(num_1);
 
     num_1 = num_sub_uint(num_1, num_2->value);
     
     num_1 = num_denormalize(num_1);
-    num_2 = num_consume(num_2, keep);
-    num_1->next = num_sub(num_1->next, num_2, keep);
+    num_2 = num_consume(num_2, keep_2);
+    num_1->next = num_sub(num_1->next, false, num_2, keep_2);
     return num_normalize(num_1);
 }
 
@@ -346,7 +347,7 @@ void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, bool keep_1, n
         if(num_cmp(num_1, num_2) >= 0)
         {
             num_res = num_add(num_res, num_base, true);
-            num_1 = num_sub(num_1, num_2, true);
+            num_1 = num_sub(num_1, false, num_2, true);
         }
         
         num_2 = num_shr(num_2);

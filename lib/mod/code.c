@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "debug.h"
+#include "../../utils/assert.h"
 
 #ifdef DEBUG
 
@@ -66,12 +67,12 @@ mod_t mod_sub(mod_t mod_1, mod_t mod_2)
 {
     if(num_cmp(mod_1.num, mod_2.num) >= 0)
     {
-        num_p num = num_sub(mod_1.num, mod_2.num, false);
+        num_p num = num_sub(mod_1.num, false, mod_2.num, false);
         return mod_create(num, mod_1.p);
     }
     
     num_p num = num_add(mod_1.num, mod_1.p, true);
-    num = num_sub(num, mod_2.num, false);
+    num = num_sub(num, false, mod_2.num, false);
     return mod_create(num, mod_1.p);
 }
 
@@ -82,12 +83,18 @@ mod_t mod_mul(mod_t mod_1, mod_t mod_2)
     return mod_create(num, mod_1.p);
 }
 
-// mod_t mod_mul(mod_t mod_1, mod_t mod_2)
+// mod_t mod_div(mod_t mod_1, mod_t mod_2)
 // {
 //     assert(mod_2.num);
-//     num_p num_mod_res = num_mod(mod_1.num, mod_2.num, true);
+//
+//     num_p num_mod_res = num_mod(mod_1.num, true, mod_2.num, true);
 //     if(num_mod_res == NULL)
 //     {
-//         return 
+//         num_p num = num_div(mod_1.num, false, mod_2.num, false);
+//         return mod_create(num, mod_1.p);
 //     }
+//
+//     num_p num_1 = num_mod(mod_1.num, true, mod_2.num, true);
+//     num_p num_2 = num_mod(mod_1.p, true, mod_2.num, true);
+//     num_2 = num_sub(mod_2.num, true, num_2, false);
 // }
