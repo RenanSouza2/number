@@ -742,6 +742,7 @@ void test_num_div_mod(bool show)
             num_2 = num_create_immed(1, 2);
             num_div_mod(&num_q, &num_r, num_1, keep_1, num_2, keep_2);
             assert(num_immed(num_q, 1, 2));
+            assert(num_immed(num_r, 0));
             num_free(num_q);
             num_free(num_r);
             if(keep_1) num_free(num_1);
@@ -752,6 +753,7 @@ void test_num_div_mod(bool show)
             num_2 = num_create_immed(1, 2);
             num_div_mod(&num_q, &num_r, num_1, keep_1, num_2, keep_2);
             assert(num_immed(num_q, 1, 2));
+            assert(num_immed(num_r, 1, 1));
             num_free(num_q);
             num_free(num_r);
             if(keep_1) num_free(num_1);
@@ -762,6 +764,7 @@ void test_num_div_mod(bool show)
             num_2 = num_create_immed(1, 5);
             num_div_mod(&num_q, &num_r, num_1, keep_1, num_2, keep_2);
             assert(num_immed(num_q, 1, 1));
+            assert(num_immed(num_r, 0));
             num_free(num_q);
             num_free(num_r);
             if(keep_1) num_free(num_1);
@@ -772,6 +775,7 @@ void test_num_div_mod(bool show)
             num_2 = num_create_immed(1, 3);
             num_div_mod(&num_q, &num_r, num_1, keep_1, num_2, keep_2);
             assert(num_immed(num_q, 1, 3));
+            assert(num_immed(num_r, 0));
             num_free(num_q);
             num_free(num_r);
             if(keep_1) num_free(num_1);
@@ -782,6 +786,7 @@ void test_num_div_mod(bool show)
             num_2 = num_create_immed(2, 1, 0);
             num_div_mod(&num_q, &num_r, num_1, keep_1, num_2, keep_2);
             assert(num_immed(num_q, 2, 1, 0));
+            assert(num_immed(num_r, 0));
             num_free(num_q);
             num_free(num_r);
             if(keep_1) num_free(num_1);
@@ -792,6 +797,7 @@ void test_num_div_mod(bool show)
             num_2 = num_create_immed(2, 1, 0);
             num_div_mod(&num_q, &num_r, num_1, keep_1, num_2, keep_2);
             assert(num_immed(num_q, 0));
+            assert(num_immed(num_r, 1, 1));
             num_free(num_q);
             num_free(num_r);
             if(keep_1) num_free(num_1);
@@ -829,7 +835,7 @@ void test_num()
     test_num_add(show);
     test_num_sub(show);
     test_num_mul(show);
-    test_num_div_mod(true);
+    test_num_div_mod(show);
 
     assert(clu_mem_empty());
 }
