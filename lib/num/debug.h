@@ -18,7 +18,7 @@ bool num_immed(num_p num, uint64_t n, ...);
 #endif
 
 num_p num_create(uint64_t value, num_p next);
-num_p num_consume(num_p num, bool keep);
+num_p num_consume(num_p num);
 num_p num_denormalize(num_p num);
 num_p num_normalize(num_p num);
 
@@ -28,6 +28,6 @@ num_p num_mul_uint(num_p num_res, num_p num, uint64_t value);
 num_p num_shl(num_p num);
 num_p num_shr(num_p num);
 
-void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, bool keep_1, num_p num_2, bool keep_2);
+void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2);
 
 #endif
