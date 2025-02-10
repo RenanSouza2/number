@@ -7,8 +7,6 @@
 
 #ifdef DEBUG
 
-#include <stdarg.h>
-
 #include "../../utils/clu/bin/header.h"
 
 num_p num_create_variadic(uint64_t n, va_list args)
@@ -117,7 +115,7 @@ num_p num_create(uint64_t value, num_p next)
 
 num_p num_wrap(uint64_t value)
 {
-    return num_create(value, NULL);
+    return value ? num_create(value, NULL) : NULL;
 }
 
 /* free NUM struct and return next */
@@ -279,20 +277,21 @@ num_p num_add(num_p num_1, num_p num_2, bool keep)
     return num_1;
 }
 
-num_p num_sub(num_p num_1, num_p num_2, bool keep)
+num_p num_sub(num_p num_1, bool keep_1, num_p num_2, bool keep_2)
 {
+    if(keep_1) num_1 = num_copy(num_1);
     if(num_2 == NULL) return num_1;
     assert(num_1);
 
     num_1 = num_sub_uint(num_1, num_2->value);
     
     num_1 = num_denormalize(num_1);
-    num_2 = num_consume(num_2, keep);
-    num_1->next = num_sub(num_1->next, num_2, keep);
+    num_2 = num_consume(num_2, keep_2);
+    num_1->next = num_sub(num_1->next, false, num_2, keep_2);
     return num_normalize(num_1);
 }
 
-num_p num_mul_rec(num_p num_res, num_p num_1, num_p num_2)
+num_p num_mul_rec(num_p num_res, num_p num_1, num_p num_2, bool keep)
 {
     if(num_2 == NULL)
     {
@@ -303,32 +302,35 @@ num_p num_mul_rec(num_p num_res, num_p num_1, num_p num_2)
     num_res = num_mul_uint_rec(num_res, num_1, num_2->value);
 
     num_res = num_denormalize(num_res);
-    num_2 = num_consume(num_2, false);
-    num_res->next = num_mul_rec(num_res->next, num_1, num_2);
+    num_2 = num_consume(num_2, keep);
+    num_res->next = num_mul_rec(num_res->next, num_1, num_2, keep);
     return num_res;
 }
 
-num_p num_mul(num_p num_1, num_p num_2)
+num_p num_mul(num_p num_1, num_p num_2, bool keep)
 {
     if(num_1 == NULL)
     {
-        num_free(num_2);
+        if(!keep) num_free(num_2);
         return NULL;
     }
 
-    return num_mul_rec(NULL, num_1, num_2);
+    return num_mul_rec(NULL, num_1, num_2, keep);
 }
 
-void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
+void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, bool keep_1, num_p num_2, bool keep_2)
 {
     assert(num_2);
 
     if(num_1 == NULL)
     {
-        num_free(num_2);
+        if(!keep_2) num_free(num_2);
         *out_num_q = *out_num_r = NULL;
         return;
     }
+    
+    if(keep_1) num_1 = num_copy(num_1);
+    if(keep_2) num_2 = num_copy(num_2);
 
     num_p num_base = num_create(1, NULL);
     while(num_cmp(num_2, num_1) <= 0)
@@ -340,35 +342,35 @@ void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
     num_2 = num_shr(num_2);
     num_base = num_shr(num_base);
 
-    num_p num_res = NULL;
+    num_p num_q = NULL;
     while(num_base)
     {
         if(num_cmp(num_1, num_2) >= 0)
         {
-            num_res = num_add(num_res, num_base, true);
-            num_1 = num_sub(num_1, num_2, true);
+            num_q = num_add(num_q, num_base, true);
+            num_1 = num_sub(num_1, false, num_2, true);
         }
         
         num_2 = num_shr(num_2);
         num_base = num_shr(num_base);
     }
     num_free(num_2);
-    *out_num_q = num_1;
-    *out_num_r = num_res;
+    *out_num_q = num_q;
+    *out_num_r = num_1;
 }
 
-num_p num_div(num_p num_1, num_p num_2)
+num_p num_div(num_p num_1, bool keep_1, num_p num_2, bool keep_2)
 {
     num_p num_q, num_r;
-    num_div_mod(&num_q, &num_r, num_1, num_2);
-    num_free(num_q);
-    return num_r;
-}
-
-num_p num_mod(num_p num_1, num_p num_2)
-{
-    num_p num_q, num_r;
-    num_div_mod(&num_q, &num_r, num_1, num_2);
+    num_div_mod(&num_q, &num_r, num_1, keep_1, num_2, keep_2);
     num_free(num_r);
     return num_q;
+}
+
+num_p num_mod(num_p num_1, bool keep_1, num_p num_2, bool keep_2)
+{
+    num_p num_q, num_r;
+    num_div_mod(&num_q, &num_r, num_1, keep_1, num_2, keep_2);
+    num_free(num_q);
+    return num_r;
 }
