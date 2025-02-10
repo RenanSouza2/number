@@ -101,6 +101,7 @@ mod_t mod_div_rec(mod_t mod_1, mod_t mod_2)
         num_p num = num_div(mod_1.num, true, mod_2.num, true);
         return mod_create(num, mod_1.p);
     }
+    num_free(num_mod_res);
 
     num_p num_1 = num_mod(mod_1.num, true, mod_2.num, true);
     mod_t mod_1_next = mod_create(num_1, mod_2.num);
