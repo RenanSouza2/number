@@ -184,7 +184,9 @@ void test_mod_div(bool show)
 {
     char offset[] = "\t";
     printf("\n%s%s", offset, __func__);
-    
+
+    bool test_partial_memory = true;
+
     num_p p = num_wrap(7);
 
     if(show) printf("\n%s\t%s 1", offset, __func__);
@@ -192,18 +194,48 @@ void test_mod_div(bool show)
     mod_t mod_2 = mod_wrap(2, p);
     mod_t mod_res = mod_div(mod_1, mod_2);
     assert(mod_immed(mod_res, 0));
+    if(test_partial_memory)
+    {
+        num_free(p);
+        assert(clu_mem_empty());
+        p = num_wrap(7);
+    }
 
     if(show) printf("\n%s\t%s 2", offset, __func__);
     mod_1 = mod_wrap(6, p);
     mod_2 = mod_wrap(2, p);
     mod_res = mod_div(mod_1, mod_2);
     assert(mod_immed(mod_res, 1, 3));
+    mod_free(mod_res);
+    if(test_partial_memory)
+    {
+        num_free(p);
+        assert(clu_mem_empty());
+        p = num_wrap(7);
+    }
 
     if(show) printf("\n%s\t%s 3", offset, __func__);
     mod_1 = mod_wrap(6, p);
     mod_2 = mod_wrap(4, p);
+
+    clu_set_log(true);
     mod_res = mod_div(mod_1, mod_2);
     assert(mod_immed(mod_res, 1, 5));
+    mod_free(mod_res);
+    if(test_partial_memory)
+    {
+        num_free(p);
+        
+        clu_mem_report_full("HERE");
+        for(int i=0; i<clu_mem_count(0); i++)
+        {  
+            num_p num = clu_mem_get_pointer(0, 0);
+            num_display_immed("leak", num);
+        }
+
+        assert(clu_mem_empty());
+        p = num_wrap(7);
+    }
 
     num_free(p);
 
