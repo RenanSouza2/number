@@ -49,35 +49,35 @@ void test_uint128(bool show)
     u <<= 1;
     assert(uint128_immed(u, 2, 0));
 
-    if(show) printf("\n\t\t%s  9", __func__);
+    if(show) printf("\n\t\t%s 10", __func__);
     u = U128_IMMED(1, 0);
     u >>= 1;
     assert(uint128_immed(u, 0, 0x8000000000000000));
 
-
-
-
-
-    if(show) printf("\n\t\t%s  9", __func__);
+    if(show) printf("\n\t\t%s 11", __func__);
     u = U128_IMMED(1, 0);
     u /= 1;
     assert(uint128_immed(u, 1, 0));
 
-    if(show) printf("\n\t\t%s 10", __func__);
+    if(show) printf("\n\t\t%s 12", __func__);
     u = U128_IMMED(1, 0);
     u /= 2;
     assert(uint128_immed(u, 0, 0x8000000000000000));
 
-    if(show) printf("\n\t\t%s 11", __func__);
+    if(show) printf("\n\t\t%s 13", __func__);
     u = U128_IMMED(UINT64_MAX, UINT64_MAX);
     u /= 1;
     assert(uint128_immed(u, UINT64_MAX, UINT64_MAX));
 
-    if(show) printf("\n\t\t%s 12", __func__);
+    if(show) printf("\n\t\t%s 14", __func__);
     u = U128_IMMED(UINT64_MAX / 2, UINT64_MAX);
     u /= 2;
-    printf("\nres: %lu %lu", HIGH(u), LOW(u));
     assert(uint128_immed(u, UINT64_MAX >> 2, UINT64_MAX));
+
+    if(show) printf("\n\t\t%s 15", __func__);
+    u = U128_IMMED(UINT64_MAX, UINT64_MAX - 1);
+    u /= 2;
+    assert(uint128_immed(u, UINT64_MAX >> 1, UINT64_MAX));
 
     assert(clu_mem_empty());
 }

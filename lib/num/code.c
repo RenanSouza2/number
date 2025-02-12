@@ -108,24 +108,6 @@ bool num_immed(num_p num, uint64_t n, ...)
 #endif
 
 
-// uint128_t uint128_div(uint128_t u1, uint128_t u2)
-// {
-//     assert(u2);
-
-//     if(u1 < u2)
-//         return 0;
-
-//     uint128_t b = 1;
-//     while(u1 > u2)
-//     {
-//         u2 <<= 1;
-//         b  <<= 1;
-//     }
-//     if(u1 == u2)
-//         return;
-// }
-
-
 
 void num_display_rec(num_p num)
 {
