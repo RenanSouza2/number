@@ -176,10 +176,10 @@ num_p num_copy(num_p num)
 
 
 
-uint64_t num_count(num_p num)
+uint64_t num_count(num_p num) // TODO test
 {
     uint64_t i;
-    for(i=0; num; num = num->next);
+    for(i=0; num; num = num->next, i++);
     return i;
 }
 
@@ -388,12 +388,15 @@ num_display_immed("num_2", num_2);
     {
         uint64_t cnt_1 = num_count(num_1);
         num_2 = num_consume(num_2);
+        cnt_2--;
 
 printf("\n----------");
 printf("\nnew loop");
 num_display_immed("num_1", num_1);
 num_display_immed("num_2", num_2);
 num_display_immed("num_q", num_q);
+printf("\ncnt_1: %lx", cnt_1);
+printf("\ncnt_2: %lx", cnt_2);
 
         if(cnt_1 < cnt_2)
         {
@@ -407,7 +410,13 @@ printf("\n\nval_2: %lu", val_2);
         uint64_t r;
         if(cnt_1 > cnt_2)
         {
+
+printf("\ncase long");
+
             uint128_t val_1 = num_get_last_2(num_1);
+
+printf("\n(128)val_1: %lu %lu", HIGH(val_1), LOW(val_1));
+
             r = val_1 / val_2;
         }
         else
