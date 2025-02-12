@@ -739,6 +739,15 @@ void test_num_div_mod(bool show)
     assert(num_immed(num_r, 1, 1));
     num_free(num_q);
     num_free(num_r);
+
+    if(show) printf("\n\t\t%s 11", __func__);
+    num_1 = num_create_immed(2, 0xc929d7d593, 0xb7090a859117cfa4);
+    num_2 = num_create_immed(2, 6, 0xea7db545decb57a4);
+    num_div_mod(&num_q, &num_r, num_1, num_2);
+    assert(num_immed(num_q, 1, 1));
+    assert(num_immed(num_r, 1, 1));
+    num_free(num_q);
+    num_free(num_r);
         
     assert(clu_mem_empty());
 }
