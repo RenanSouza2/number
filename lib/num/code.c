@@ -362,6 +362,9 @@ void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
 
     if(num_cmp(num_1, num_2) < 0)
     {
+
+printf("\nnum1 < num_2");
+
         *out_num_q = NULL;
         *out_num_r = num_1;
         num_free(num_2);
@@ -369,11 +372,16 @@ void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
     }
 
     uint64_t i;
-    for(i=1; num_cmp(num_1, num_2) > 0; num_2 = num_create(0, num_2), i++);
+    for(i=1; num_cmp(num_1, num_2) >= 0; num_2 = num_create(0, num_2), i++);
 
 
     uint64_t cnt_2 = num_count(num_2);
     uint64_t val_2 = num_get_last(num_2);
+
+printf("\nprepared");
+printf("\ni: %ld", i);
+num_display_immed("num_1", num_1);
+num_display_immed("num_2", num_2);
 
     num_p num_q = NULL;
     for(i--; i > 0; i--)
