@@ -362,9 +362,6 @@ void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
 
     if(num_cmp(num_1, num_2) < 0)
     {
-
-printf("\nnum1 < num_2");
-
         *out_num_q = NULL;
         *out_num_r = num_1;
         num_free(num_2);
@@ -378,11 +375,6 @@ printf("\nnum1 < num_2");
     uint64_t cnt_2 = num_count(num_2);
     uint64_t val_2 = num_get_last(num_2);
 
-printf("\nprepared");
-printf("\ni: %ld", i);
-num_display_immed("num_1", num_1);
-num_display_immed("num_2", num_2);
-
     num_p num_q = NULL;
     for(i--; i > 0; i--)
     {
@@ -390,59 +382,31 @@ num_display_immed("num_2", num_2);
         num_2 = num_consume(num_2);
         cnt_2--;
 
-printf("\n----------");
-printf("\nnew loop");
-num_display_immed("num_1", num_1);
-num_display_immed("num_2", num_2);
-num_display_immed("num_q", num_q);
-printf("\ncnt_1: %lx", cnt_1);
-printf("\ncnt_2: %lx", cnt_2);
-
         if(cnt_1 < cnt_2)
         {
-printf("\nskipping");
             num_q = num_create(0, num_q);
             continue;
         }
 
-printf("\n\nval_2: %lu", val_2);
-
         uint64_t r;
         if(cnt_1 > cnt_2)
         {
-
-printf("\ncase long");
-
             uint128_t val_1 = num_get_last_2(num_1);
-
-printf("\n(128)val_1: %lu %lu", HIGH(val_1), LOW(val_1));
-
             r = val_1 / val_2;
         }
         else
         {
             uint64_t val_1 = num_get_last(num_1);
-
-printf("\nval_1: %lu", val_1);
-
             r = val_1 / val_2;
         }
-
-printf("\nr: %lu", r);
 
         num_p num_aux = num_mul(num_wrap(r), num_copy(num_2));
         if(num_cmp(num_aux, num_1) > 0)
         {
-
-printf("\ntoo big");
-
             r--;
             num_aux = num_sub(num_aux, num_copy(num_2));
         }
         num_q = num_create(r, num_q);
-
-num_display_immed("new q", num_q);
-        
         num_1 = num_sub(num_1, num_aux);
     }
     *out_num_q = num_q;
