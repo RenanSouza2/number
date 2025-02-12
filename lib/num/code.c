@@ -434,25 +434,36 @@ printf("\nval_1: %lu", val_1);
             r_min = val_1 / (val_2 + 1);
         }
 
-    printf("\n\nr_max: %lu", r_max);
-    printf("\nr_min: %lu", r_min);
+printf("\nr_max: %lu\tr_min: %lu", r_max, r_min);
         
         num_p num_aux = num_mul(num_wrap(r_max), num_copy(num_2));
         if(num_cmp(num_aux, num_1) > 0)
-        while(r_max != r_min)
         {
-            uint64_t r_med = (U128(r_max) + r_min) >> 1;
+
+printf("\nneeds adjustments");
+
+            while(r_max - r_min > 1)
+            {
+                uint64_t r_med = (U128(r_max) + r_min) >> 1;
+
+printf("\nr_max: %lu\tr_min: %lu\tr_med: %lu", r_max, r_min, r_med);
+
+                num_free(num_aux);
+                num_aux = num_mul(num_wrap(r_med), num_copy(num_2));
+                if(num_cmp(num_aux, num_1) > 0)
+                    r_max = r_med;
+                else
+                    r_min = r_med;
+            }
+            r_max = r_min;
             num_free(num_aux);
-            num_aux = num_mul(num_wrap(r_med), num_copy(num_2));
-            if(num_cmp(num_aux, num_1) > 0)
-                r_max = r_med;
-            else
-                r_min = r_med;
+            num_aux = num_mul(num_wrap(r_max), num_copy(num_2));
         }
 
         num_q = num_create(r_max, num_q);
 
 num_display_immed("new q", num_q);
+
         
         num_1 = num_sub(num_1, num_aux);
     }
