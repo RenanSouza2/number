@@ -29,30 +29,40 @@ num_p num_create_immed(uint64_t n, ...)
 
 
 
-bool num_str(num_p num_1, num_p num_2)
+bool num_str_rec(num_p num_1, num_p num_2, uint64_t index)
 {
-    for(uint64_t i=0; num_1 && num_2; i++, num_1 = num_1->next, num_2 = num_2->next)
+    if(num_1 == NULL)
     {
-        if(num_1->value == num_2->value)
-            continue;
+        if(num_2 == NULL)
+            return true;
 
-        printf("\n\n\tNUMBER ASSET ERROR | DIFFERENCE IN VALUE " U64P " | " U64PX " " U64PX "", i, num_1->value, num_2->value);
+        printf("\n\n\tNUMBER ASSET ERROR | NUMBER SHORTER THAN EXPECTED");
         return false;
     }
 
-    if(num_1 != NULL)
+    if(num_2 == NULL)
     {
         printf("\n\n\tNUMBER ASSET ERROR | NUMBER LONGER THAN EXPECTED");
         return false;
     }
 
-    if(num_2 != NULL)
+    if(num_1->value != num_2->value)
     {
-        printf("\n\n\tNUMBER ASSET ERROR | NUMBER SHORTER THAN EXPECTED");
+        printf("\n\n\tNUMBER ASSET ERROR | DIFFERENCE IN VALUE " U64P " | " U64PX " " U64PX "", index, num_1->value, num_2->value);
         return false;
     }
 
-    return true;
+    return num_str_rec(num_1->next, num_2->next, index+1);
+}
+
+bool num_str(num_p num_1, num_p num_2)
+{
+    if(num_str_rec(num_1, num_2, 0))
+        return true;
+
+    num_display_immed("\tnum_1", num_1);
+    num_display_immed("\tnum_2", num_2);
+    return false;
 }
 
 bool num_immed(num_p num, uint64_t n, ...)
@@ -98,6 +108,7 @@ void num_display_immed(char *tag, num_p num)
 
 typedef __int128_t uint128_t;
 #define U128(V) ((uint128_t)(V))
+#define U128_IMMED(V1, V2) ((U128(V1) << 64) | (V2))
 #define MUL(V1, V2) U128(V1) * U128(V2)
 #define LOW(V) ((uint64_t)(V))
 #define HIGH(V) LOW((V) >> 64)
@@ -161,6 +172,36 @@ num_p num_copy(num_p num)
 
     num_p num_2 = num_copy(num->next);
     return num_create(num->value, num_2);
+}
+
+
+
+uint64_t num_count(num_p num)
+{
+    uint64_t i;
+    for(i=0; num; num = num->next);
+    return i;
+}
+
+uint64_t num_get_last(num_p num) // TODO test
+{
+    if(num == NULL)
+        return 0;
+
+    while(num->next)
+        num = num->next;
+
+    return num->value;
+}
+
+uint128_t num_get_last_2(num_p num) // TODO test
+{
+    assert(num && num->next);
+
+    while(num->next->next)
+        num = num->next;
+
+    return U128_IMMED(num->next->value, num->value);
 }
 
 
@@ -319,38 +360,69 @@ void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
 {
     assert(num_2);
 
-    if(num_1 == NULL)
+    if(num_cmp(num_1, num_2) < 0)
     {
+        *out_num_q = NULL;
+        *out_num_r = num_1;
         num_free(num_2);
-        *out_num_q = *out_num_r = NULL;
         return;
     }
-    
-    num_p num_base = num_create(1, NULL);
-    while(num_cmp(num_2, num_1) <= 0)
-    {
-        num_2 = num_shl(num_2);
-        num_base = num_shl(num_base);
-    }
-    
-    num_2 = num_shr(num_2);
-    num_base = num_shr(num_base);
+
+    uint64_t i;
+    for(i=1; num_cmp(num_1, num_2) > 0; num_2 = num_create(0, num_2), i++);
+
+
+    uint64_t cnt_2 = num_count(num_2);
+    uint64_t val_2 = num_get_last(num_2);
 
     num_p num_q = NULL;
-    while(num_base)
+    for(i--; i > 0; i--)
     {
-        if(num_cmp(num_1, num_2) >= 0)
+        uint64_t cnt_1 = num_count(num_1);
+        num_2 = num_consume(num_2);
+
+printf("\n----------");
+printf("\nnew loop");
+num_display_immed("num_1", num_1);
+num_display_immed("num_2", num_2);
+num_display_immed("num_q", num_q);
+
+        if(cnt_1 < cnt_2)
         {
-            num_q = num_add(num_q, num_copy(num_base));
-            num_1 = num_sub(num_1, num_copy(num_2));
+printf("\nskipping");
+            num_q = num_create(0, num_q);
+            continue;
         }
+
+printf("\n\nval_2: %lu", val_2);
+
+        uint64_t r;
+        if(cnt_1 > cnt_2)
+        {
+            uint128_t val_1 = num_get_last_2(num_1);
+            r = val_1 / val_2;
+        }
+        else
+        {
+            uint64_t val_1 = num_get_last(num_1);
+
+printf("\nval_1: %lu", val_1);
+
+            r = val_1 / val_2;
+        }
+        num_p num_aux = num_mul(num_wrap(r), num_copy(num_2));
+        if(num_cmp(num_1, num_2) > 0)
+        {
+            r--;
+            num_aux = num_sub(num_aux, num_copy(num_2));
+        }
+        num_q = num_create(r, num_q);
         
-        num_2 = num_shr(num_2);
-        num_base = num_shr(num_base);
+        num_1 = num_sub(num_1, num_aux);
     }
-    num_free(num_2);
     *out_num_q = num_q;
     *out_num_r = num_1;
+    num_free(num_2);
 }
 
 num_p num_div(num_p num_1, num_p num_2)
