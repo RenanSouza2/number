@@ -411,7 +411,7 @@ printf("\nskipping");
 
 printf("\n\nval_2: %lu", val_2);
 
-        uint64_t r;
+        uint64_t r_max, r_min;
         if(cnt_1 > cnt_2)
         {
 
@@ -421,7 +421,8 @@ printf("\ncase long");
 
 printf("\n(128)val_1: %lu %lu", HIGH(val_1), LOW(val_1));
 
-            r = val_1 / val_2;
+            r_max = val_1 / val_2;
+            r_min = val_1 / (val_2 + 1);
         }
         else
         {
@@ -429,26 +430,27 @@ printf("\n(128)val_1: %lu %lu", HIGH(val_1), LOW(val_1));
 
 printf("\nval_1: %lu", val_1);
 
-            r = val_1 / val_2;
+            r_max = val_1 / val_2;
+            r_min = val_1 / (val_2 + 1);
         }
 
-printf("\nr: %lu", r);
-
-        num_p num_aux = num_mul(num_wrap(r), num_copy(num_2));
+    printf("\n\nr_max: %lu", r_max);
+    printf("\nr_min: %lu", r_min);
         
-num_display_immed("  num_1", num_1);
-num_display_immed("num_aux", num_aux);
-
+        num_p num_aux = num_mul(num_wrap(r_max), num_copy(num_2));
         if(num_cmp(num_aux, num_1) > 0)
+        while(r_max != r_min)
         {
-
-printf("\ntoo big");
-
-            r--;
-            num_aux = num_sub(num_aux, num_copy(num_2));
-            num_display_immed("num_aux", num_aux);
+            uint64_t r_med = (U128(r_max) + r_min) >> 1;
+            num_free(num_aux);
+            num_aux = num_mul(num_wrap(r_med), num_copy(num_2));
+            if(num_cmp(num_aux, num_1) > 0)
+                r_max = r_med;
+            else
+                r_min = r_med;
         }
-        num_q = num_create(r, num_q);
+
+        num_q = num_create(r_max, num_q);
 
 num_display_immed("new q", num_q);
         
