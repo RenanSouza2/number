@@ -414,8 +414,11 @@ printf("\nval_1: %lu", val_1);
 printf("\nr: %lu", r);
 
         num_p num_aux = num_mul(num_wrap(r), num_copy(num_2));
-        if(num_cmp(num_1, num_aux) > 0)
+        if(num_cmp(num_aux, num_1) > 0)
         {
+
+printf("\ntoo big");
+
             r--;
             num_aux = num_sub(num_aux, num_copy(num_2));
         }
