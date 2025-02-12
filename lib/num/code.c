@@ -422,7 +422,12 @@ printf("\ncase long");
 printf("\n(128)val_1: %lu %lu", HIGH(val_1), LOW(val_1));
 
             r_max = val_1 / val_2;
-            r_min = val_1 / (val_2 + 1);
+
+printf("\nr_max: %lu", r_max);
+
+            r_min = val_1 / (U128(val_2) + 1);
+
+printf("\nr_min: %lu", r_min);
         }
         else
         {
@@ -431,7 +436,7 @@ printf("\n(128)val_1: %lu %lu", HIGH(val_1), LOW(val_1));
 printf("\nval_1: %lu", val_1);
 
             r_max = val_1 / val_2;
-            r_min = val_1 / (val_2 + 1);
+            r_min = val_1 / (U128(val_2) + 1);
         }
 
 printf("\nr_max: %lu\tr_min: %lu", r_max, r_min);
