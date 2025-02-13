@@ -176,7 +176,7 @@ num_p num_denormalize(num_p num)
     return num_create(0, NULL);
 }
 
-/* creates a num struct with value 0 if NUM is null */
+/* frees num if NUm->value is zero and NUM->next is NULL */
 num_p num_normalize(num_p num)
 {
     if(num == NULL || num->value != 0 || num->next != NULL)
