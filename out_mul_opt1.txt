@@ -1,0 +1,36 @@
+make clean --directory=src -s
+make clean --directory=lib -s
+cleaning lib
+cleaning lib/mod
+cleaning lib/num
+cleaning clu
+cleaning clu lib
+cleaning clu lib/list
+cleaning clu lib/list/body
+cleaning clu lib/list/head
+cleaning clu lib/mem
+cleaning clu lib/tag
+make build --directory=src -s
+building object lib/mod
+building object lib/num
+ linking object lib
+
+ 1:	               2	               0	                   0
+ 2:	               0	               0	                   0
+ 3:	               1	               0	                   0
+ 4:	               0	               1	                   0
+ 5:	               0	               0	                   6
+ 6:	               1	               1	                  25
+ 7:	               4	               3	                  44
+ 8:	              15	               7	                 148
+ 9:	              43	              21	                 346
+10:	             124	              56	                2429
+11:	             389	             176	                6123
+12:	            1121	             544	               26980
+13:	            3393	            1713	              430154
+14:	           10360	            5241	              966221
+15:	           31657	           15172	             2173726
+16:	           96176	           46472	            22145641
+17:	          296726	          144437	            42648801
+18:	          867207	          427373	           799959675
+19:	         2579038	         1306916

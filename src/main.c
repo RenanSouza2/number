@@ -35,7 +35,7 @@ int main(int argc, char** argv)
 
     num_free(num_wrap(1));
 
-    for(uint64_t i=21; i<22; i++)
+    for(uint64_t i=1; i<22; i++)
     {
         uint64_t begin = altutime();
         num_p num_1 = num_generate(i+1, 1);

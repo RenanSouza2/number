@@ -752,6 +752,22 @@ void test_num_mul(bool show)
     num_free(num_res);
     if(test_mem) assert(clu_mem_empty());
 
+    if(show) printf("\n\t\t%s 14", __func__);
+    num_1 = num_create_immed(3, 2, 3, 4);
+    num_2 = num_create_immed(3, 5, 6, 7);
+    num_res = num_mul(num_1, num_2);
+    assert(num_immed(num_res, 5, 10, 27, 52, 45, 28));
+    num_free(num_res);
+    if(test_mem) assert(clu_mem_empty());
+
+    if(show) printf("\n\t\t%s 14", __func__);
+    num_1 = num_create_immed(3, 2, 3, 4);
+    num_2 = num_create_immed(3, 5, 6, 7);
+    num_res = num_mul(num_1, num_2);
+    assert(num_immed(num_res, 5, 10, 27, 52, 45, 28));
+    num_free(num_res);
+    if(test_mem) assert(clu_mem_empty());
+
     assert(clu_mem_empty());
 }
 

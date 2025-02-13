@@ -119,8 +119,17 @@ void num_display_rec(num_p num)
     printf("" U64PX " ", num->value);
 }
 
-void num_display_rec_2(num_p num, uint64_t count)
+void num_display_short(num_p num)
 {
+    if(num == NULL)
+    {
+        printf("0 | 0");
+        return;
+    }
+
+    uint64_t count = num_count(num);
+    printf("" U64P " | ", count);
+
     bool bigger = count > 4;
     for(; count > 4; count--)
         num = num->next;
@@ -139,10 +148,15 @@ void num_display(num_p num)
 
     uint64_t count = num_count(num);
     printf("" U64P " | ", count);
-    num_display_rec_2(num, count);
+    num_display_rec(num);
 }
 
 void num_display_immed(char *tag, num_p num)
+{
+    printf("\n%s: ", tag);num_display_short(num);
+}
+
+void num_display_full(char *tag, num_p num)
 {
     printf("\n%s: ", tag);num_display(num);
 }
@@ -213,6 +227,12 @@ num_p num_split(num_p *out_num_res, num_p num, uint64_t cnt) // TODO test
     if(cnt == 0)
     {
         *out_num_res = num;
+        return NULL;
+    }
+
+    if(num == NULL)
+    {
+        *out_num_res = NULL;
         return NULL;
     }
 
@@ -393,13 +413,16 @@ num_p num_sub(num_p num_1, num_p num_2)
     return num_normalize(num_1);
 }
 
+// TODO add test odd number length
 num_p num_mul_rec(num_p num_1, num_p num_2, uint64_t cnt)
 {
 
+// uint64_t static tag = 1;
+// uint64_t private_tag = tag++;
 // printf("\n--------------------");
-// printf("\nentering | cnt:  %lu", cnt);
-// num_display_immed("num_1", num_1);
-// num_display_immed("num_2", num_2);
+// printf("\nentering | tag: %lu | cnt:  %lu", private_tag, cnt);
+// num_display_full("num_1", num_1);
+// num_display_full("num_2", num_2);
 
     if(num_1 == NULL)
     {
@@ -453,7 +476,7 @@ num_p num_mul_rec(num_p num_1, num_p num_2, uint64_t cnt)
     uint64_t half_h = cnt >> 1;
     uint64_t half_l = cnt - half_h;
     num_1 = num_split(&num_1_h, num_1, half_l);
-    num_2 = num_split(&num_2_h, num_2, half_h);
+    num_2 = num_split(&num_2_h, num_2, half_l);
 
 // printf("\n\nhalf_l: %lu", half_l);
 // printf("\nhalf_h: %lu", half_h);
@@ -479,9 +502,11 @@ num_p num_mul_rec(num_p num_1, num_p num_2, uint64_t cnt)
     uint64_t cnt_2 = num_count(num_2);
     uint64_t cnt_b = cnt_1 > cnt_2 ? cnt_1 : cnt_2;
 
-// printf("\n\ncalculating C");
+// printf("\n\ncalculating B");
 
     num_p num_b = num_mul_rec(num_1, num_2, cnt_b);
+// printf("\ntag: %lu | before sub", private_tag);
+// printf("\n");
     num_b = num_sub(num_b, num_copy(num_a));
     num_b = num_sub(num_b, num_copy(num_c));
 
@@ -493,6 +518,7 @@ num_p num_mul_rec(num_p num_1, num_p num_2, uint64_t cnt)
 
     num_a = num_add_offset(num_a, num_b, half_l);
 
+// printf("\ntag: %lu", private_tag);
 // num_display_immed("num_res", num_a);
 // printf("\n--------------------");
 
