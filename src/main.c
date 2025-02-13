@@ -35,25 +35,25 @@ int main(int argc, char** argv)
 
     num_free(num_wrap(1));
 
-    for(uint64_t i=20; i<22; i++)
+    for(uint64_t i=1; i<22; i++)
     {
         uint64_t begin = altutime();
         num_p num_1 = num_generate(i+1, 1);
         // num_display_immed("num_1", num_1);
         uint64_t end = altutime();
-        printf("\n%2llu:\t%16llu", i, end - begin);
+        printf("\n%2lu:\t%16lu", i, end - begin);
 
         begin = altutime();
         num_p num_2 = num_generate(i, 2);
         // num_display_immed("num_2", num_2);
         end = altutime();
-        printf("\t%16llu", end - begin);
+        printf("\t%16lu", end - begin);
 
         begin = altutime();
         num_1 = num_div(num_1, num_2);
         // num_display_immed("num_1", num_1);
         end = altutime();
-        printf("\t%20llu", end - begin);
+        printf("\t%20lu", end - begin);
 
         num_free(num_1);
     }
