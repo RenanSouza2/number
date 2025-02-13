@@ -846,7 +846,7 @@ void test_num()
 {
     printf("\n%s", __func__);
 
-    bool show = true;
+    bool show = false;
 
     test_uint128(show);
 
