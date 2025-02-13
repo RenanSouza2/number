@@ -377,7 +377,14 @@ num_p num_mul(num_p num_1, num_p num_2)
     return num_mul_rec(NULL, num_1, num_2);
 }
 
-void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
+num_p num_div_mod_rec(
+    num_p *out_num_q, 
+    num_p num_1,
+    uint64_t cnt_1,
+    num_p num_2, 
+    uint64_t cnt_2, 
+    uint64_t val_2
+)
 {
 // printf("\nentering");
 // num_display_immed("num_1", num_1);
@@ -398,35 +405,23 @@ void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
 
     assert(num_2);
 
+    if(cnt_1 <= cnt_2+1)
     if(num_cmp(num_1, num_2) < 0)
     {
 
 // printf("\nnum1 < num_2");
 
         *out_num_q = NULL;
-        *out_num_r = num_1;
-        num_free(num_2);
-        return;
+        return num_1;
     }
-
-    uint64_t i;
-    for(i=1; num_cmp(num_1, num_2) >= 0; num_2 = num_create(0, num_2), i++);
-
-
-    uint64_t cnt_2 = num_count(num_2);
-    uint64_t val_2 = num_get_last(num_2);
 
 // printf("\nprepared");
 // printf("\ni: %ld", i);
 // num_display_immed("num_1", num_1);
 // num_display_immed("num_2", num_2);
 
-    num_p num_q = NULL;
-    for(i--; i > 0; i--)
-    {
-        uint64_t cnt_1 = num_count(num_1);
-        num_2 = num_consume(num_2);
-        cnt_2--;
+    num_p num_q;
+    num_1->next = num_div_mod_rec(&num_q, num_1->next, cnt_1-1, num_2, cnt_2, val_2);
 
 // printf("\n----------");
 // printf("\nnew loop");
@@ -436,79 +431,89 @@ void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
 // printf("\ncnt_1: %lx", cnt_1);
 // printf("\ncnt_2: %lx", cnt_2);
 
-        if(cnt_1 < cnt_2)
-        {
+    cnt_1 = num_count(num_1);
+    if(cnt_1 < cnt_2)
+    {
 // printf("\nskipping");
-            num_q = num_create(0, num_q);
-            continue;
-        }
+        *out_num_q = num_create(0, num_q);
+        return num_1;
+    }
 
 // printf("\n\nval_2: %lu", val_2);
 
-        uint64_t r_max, r_min;
-        if(cnt_1 > cnt_2)
-        {
+    uint64_t r_max, r_min;
+    if(cnt_1 > cnt_2)
+    {
 
 // printf("\ncase long");
 
-            uint128_t val_1 = num_get_last_2(num_1);
+        uint128_t val_1 = num_get_last_2(num_1);
 
 // printf("\n(128)val_1: %lu %lu", HIGH(val_1), LOW(val_1));
 
-            r_max = val_1 / val_2;
+        r_max = val_1 / val_2;
 
 // printf("\nr_max: %lu", r_max);
 
-            r_min = val_1 / (U128(val_2) + 1);
+        r_min = val_1 / (U128(val_2) + 1);
 
 // printf("\nr_min: %lu", r_min);
-        }
-        else
-        {
-            uint64_t val_1 = num_get_last(num_1);
+    }
+    else
+    {
+        uint64_t val_1 = num_get_last(num_1);
 
 // printf("\nval_1: %lu", val_1);
 
-            r_max = val_1 / val_2;
-            r_min = val_1 / (U128(val_2) + 1);
-        }
+        r_max = val_1 / val_2;
+        r_min = val_1 / (U128(val_2) + 1);
+    }
 
 // printf("\nr_max: %lu\tr_min: %lu", r_max, r_min);
         
-        num_p num_aux = num_mul(num_wrap(r_max), num_copy(num_2));
-        if(num_cmp(num_aux, num_1) > 0)
-        {
+    num_p num_aux = num_mul(num_wrap(r_max), num_copy(num_2));
+    if(num_cmp(num_aux, num_1) > 0)
+    {
 
 // printf("\nneeds adjustments");
 
-            while(r_max - r_min > 1)
-            {
-                uint64_t r_med = (U128(r_max) + r_min) >> 1;
+        while(r_max - r_min > 1)
+        {
+            uint64_t r_med = (U128(r_max) + r_min) >> 1;
 
 // printf("\nr_max: %lu\tr_min: %lu\tr_med: %lu", r_max, r_min, r_med);
 
-                num_free(num_aux);
-                num_aux = num_mul(num_wrap(r_med), num_copy(num_2));
-                if(num_cmp(num_aux, num_1) > 0)
-                    r_max = r_med;
-                else
-                    r_min = r_med;
-            }
-            r_max = r_min;
             num_free(num_aux);
-            num_aux = num_mul(num_wrap(r_max), num_copy(num_2));
+            num_aux = num_mul(num_wrap(r_med), num_copy(num_2));
+            if(num_cmp(num_aux, num_1) > 0)
+                r_max = r_med;
+            else
+                r_min = r_med;
         }
-
-        num_q = num_create(r_max, num_q);
+        r_max = r_min;
+        num_free(num_aux);
+        num_aux = num_mul(num_wrap(r_max), num_copy(num_2));
+    }
 
 // num_display_immed("new q", num_q);
 
-        
-        num_1 = num_sub(num_1, num_aux);
-    }
-    *out_num_q = num_q;
-    *out_num_r = num_1;
+    *out_num_q = num_create(r_max, num_q);
+    return num_sub(num_1, num_aux);
+}
+
+void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
+{
+    uint64_t cnt_1 = num_count(num_1);
+
+    uint64_t cnt_2 = num_count(num_2);
+    uint64_t val_2 = num_get_last(num_2);
+    
+    num_p num_q;
+    num_p num_r = num_div_mod_rec(&num_q, num_1, cnt_1, num_2, cnt_2, val_2);
     num_free(num_2);
+    
+    *out_num_q = num_q;
+    *out_num_r = num_r;
 }
 
 num_p num_div(num_p num_1, num_p num_2)
