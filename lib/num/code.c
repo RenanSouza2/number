@@ -487,11 +487,11 @@ num_p num_mul_rec(num_p num_1, num_p num_2, uint64_t cnt)
 
 // printf("\nAQUI 1");
 
-    num_a = num_add_offset(num_a, num_b, half_l);
+    num_b = num_add_offset(num_b, num_c, half_l);
 
 // printf("\nAQUI 2");
 
-    num_a = num_add_offset(num_a, num_c, 2 * half_l);
+    num_a = num_add_offset(num_a, num_b, half_l);
 
 // num_display_immed("num_res", num_a);
 // printf("\n--------------------");
