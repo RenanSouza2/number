@@ -5,6 +5,85 @@
 
 
 
+void test_uint128(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s  1", __func__);
+    uint128_t u = 1;
+    assert(uint128_immed(u, 0, 1));
+
+    if(show) printf("\n\t\t%s  2", __func__);
+    u = UINT64_MAX;
+    assert(uint128_immed(u, 0, UINT64_MAX));
+
+    if(show) printf("\n\t\t%s  3", __func__);
+    u = U128_IMMED(1, 0);
+    assert(uint128_immed(u, 1, 0));
+
+    if(show) printf("\n\t\t%s  4", __func__);
+    u = U128_IMMED(1, 2);
+    assert(uint128_immed(u, 1, 2));
+
+    if(show) printf("\n\t\t%s  5", __func__);
+    u = U128_IMMED(UINT64_MAX, UINT64_MAX);
+    assert(uint128_immed(u, UINT64_MAX, UINT64_MAX));
+
+    if(show) printf("\n\t\t%s  6", __func__);
+    u = UINT64_MAX;
+    u += 1;
+    assert(uint128_immed(u, 1, 0));
+
+    if(show) printf("\n\t\t%s  7", __func__);
+    u = U128_IMMED(1, 0);
+    u -= 1;
+    assert(uint128_immed(u, 0, UINT64_MAX));
+
+    if(show) printf("\n\t\t%s  8", __func__);
+    u = UINT64_MAX;
+    u *= UINT64_MAX;
+    assert(uint128_immed(u, UINT64_MAX - 1, 1));
+
+    if(show) printf("\n\t\t%s  9", __func__);
+    u = U128_IMMED(1, 0);
+    u <<= 1;
+    assert(uint128_immed(u, 2, 0));
+
+    if(show) printf("\n\t\t%s 10", __func__);
+    u = U128_IMMED(1, 0);
+    u >>= 1;
+    assert(uint128_immed(u, 0, 0x8000000000000000));
+
+    if(show) printf("\n\t\t%s 11", __func__);
+    u = U128_IMMED(1, 0);
+    u /= 1;
+    assert(uint128_immed(u, 1, 0));
+
+    if(show) printf("\n\t\t%s 12", __func__);
+    u = U128_IMMED(1, 0);
+    u /= 2;
+    assert(uint128_immed(u, 0, 0x8000000000000000));
+
+    if(show) printf("\n\t\t%s 13", __func__);
+    u = U128_IMMED(UINT64_MAX, UINT64_MAX);
+    u /= 1;
+    assert(uint128_immed(u, UINT64_MAX, UINT64_MAX));
+
+    if(show) printf("\n\t\t%s 14", __func__);
+    u = U128_IMMED(UINT64_MAX / 2, UINT64_MAX);
+    u /= 2;
+    assert(uint128_immed(u, UINT64_MAX >> 2, UINT64_MAX));
+
+    if(show) printf("\n\t\t%s 15", __func__);
+    u = U128_IMMED(UINT64_MAX, UINT64_MAX - 1);
+    u /= 2;
+    assert(uint128_immed(u, UINT64_MAX >> 1, UINT64_MAX));
+
+    assert(clu_mem_empty());
+}
+
+
+
 void test_num_create(bool show)
 {
     printf("\n\t%s", __func__);
@@ -712,6 +791,51 @@ void test_num_div_mod(bool show)
     assert(num_immed(num_r, 1, 1));
     num_free(num_q);
     num_free(num_r);
+
+    if(show) printf("\n\t\t%s 8", __func__);
+    num_1 = num_create_immed(2, 4, UINT64_MAX);
+    num_2 = num_create_immed(2, 2, 0);
+    num_div_mod(&num_q, &num_r, num_1, num_2);
+    assert(num_immed(num_q, 1, 2));
+    assert(num_immed(num_r, 1, UINT64_MAX));
+    num_free(num_q);
+    num_free(num_r);
+
+    if(show) printf("\n\t\t%s 9", __func__);
+    num_1 = num_create_immed(2, 4, 0);
+    num_2 = num_create_immed(2, 2, UINT64_MAX);
+    num_div_mod(&num_q, &num_r, num_1, num_2);
+    assert(num_immed(num_q, 1, 1));
+    assert(num_immed(num_r, 2, 1, 1));
+    num_free(num_q);
+    num_free(num_r);
+
+    if(show) printf("\n\t\t%s 10", __func__);
+    num_1 = num_create_immed(2, 1, 0);
+    num_2 = num_create_immed(1, UINT64_MAX);
+    num_div_mod(&num_q, &num_r, num_1, num_2);
+    assert(num_immed(num_q, 1, 1));
+    assert(num_immed(num_r, 1, 1));
+    num_free(num_q);
+    num_free(num_r);
+
+    if(show) printf("\n\t\t%s 11", __func__);
+    num_1 = num_create_immed(2, UINT64_MAX, 0);
+    num_2 = num_create_immed(2, 1, UINT64_MAX);
+    num_div_mod(&num_q, &num_r, num_1, num_2);
+    assert(num_immed(num_q, 1, 0x7fffffffffffffff));
+    assert(num_immed(num_r, 2, 1, 0x7fffffffffffffff));
+    num_free(num_q);
+    num_free(num_r);
+
+    if(show) printf("\n\t\t%s 12", __func__);
+    num_1 = num_create_immed(2, 0xc929d7d593, 0xb7090a859117cfa4);
+    num_2 = num_create_immed(2, 6, 0xea7db545decb57a4);
+    num_div_mod(&num_q, &num_r, num_1, num_2);
+    assert(num_immed(num_q, 1, 0x0000001d1635b735));
+    assert(num_immed(num_r, 1, 0x88c80995d8646eb0));
+    num_free(num_q);
+    num_free(num_r);
         
     assert(clu_mem_empty());
 }
@@ -722,7 +846,9 @@ void test_num()
 {
     printf("\n%s", __func__);
 
-    bool show = true;
+    bool show = false;
+
+    test_uint128(show);
 
     test_num_create(show);
     test_num_wrap(show);

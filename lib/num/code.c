@@ -29,30 +29,70 @@ num_p num_create_immed(uint64_t n, ...)
 
 
 
-bool num_str(num_p num_1, num_p num_2)
+bool uint64(uint64_t u1, uint64_t u2)
 {
-    for(uint64_t i=0; num_1 && num_2; i++, num_1 = num_1->next, num_2 = num_2->next)
-    {
-        if(num_1->value == num_2->value)
-            continue;
+    if(u1 == u2)
+        return true;
 
-        printf("\n\n\tNUMBER ASSET ERROR | DIFFERENCE IN VALUE " U64P " | " U64PX " " U64PX "", i, num_1->value, num_2->value);
+    printf("\n\n\tUINT64 ASSERT ERROR\t| " U64PX " " U64PX "", u1, u2);
+    return false;
+}
+
+bool uint128_immed(uint128_t u1, uint64_t v2h, uint64_t v2l)
+{
+    if(!uint64(HIGH(u1), v2h))
+    {
+        printf("\n\tUINT128 ASSERT ERROR\t| HIGH");
         return false;
     }
 
-    if(num_1 != NULL)
+    if(!uint64(LOW(u1), v2l))
     {
-        printf("\n\n\tNUMBER ASSET ERROR | NUMBER LONGER THAN EXPECTED");
-        return false;
-    }
-
-    if(num_2 != NULL)
-    {
-        printf("\n\n\tNUMBER ASSET ERROR | NUMBER SHORTER THAN EXPECTED");
+        printf("\n\tUINT128 ASSERT ERROR\t| LOW");
         return false;
     }
 
     return true;
+}
+
+
+
+bool num_str_rec(num_p num_1, num_p num_2, uint64_t index)
+{
+    if(num_1 == NULL)
+    {
+        if(num_2)
+        {
+            printf("\n\n\tNUMBER ASSERT ERROR\t| NUMBER SHORTER THAN EXPECTED");
+            return false;
+        }
+
+        return true;
+    }
+
+    if(num_2 == NULL)
+    {
+        printf("\n\n\tNUMBER ASSERT ERROR\t| NUMBER LONGER THAN EXPECTED");
+        return false;
+    }
+
+    if(!uint64(num_1->value, num_2->value))
+    {
+        printf("\n\tNUMBER ASSERT ERROR\t| DIFFERENCE IN VALUE " U64P "", index);
+        return false;
+    }
+
+    return num_str_rec(num_1->next, num_2->next, index+1);
+}
+
+bool num_str(num_p num_1, num_p num_2)
+{
+    if(num_str_rec(num_1, num_2, 0))
+        return true;
+
+    num_display_immed("\n\tnum_1", num_1);
+    num_display_immed("\tnum_2", num_2);
+    return false;
 }
 
 bool num_immed(num_p num, uint64_t n, ...)
@@ -68,6 +108,7 @@ bool num_immed(num_p num, uint64_t n, ...)
 #endif
 
 
+uint64_t num_count(num_p num);
 
 void num_display_rec(num_p num)
 {
@@ -78,29 +119,33 @@ void num_display_rec(num_p num)
     printf("" U64PX " ", num->value);
 }
 
+void num_display_rec_2(num_p num, uint64_t count)
+{
+    bool bigger = count > 4;
+    for(; count > 4; count--)
+        num = num->next;
+
+    num_display_rec(num);
+    if(bigger) printf(" ...");
+}
+
 void num_display(num_p num)
 {
     if(num == NULL)
     {
-        printf("0");
+        printf("0 | 0");
         return;
     }
 
-    num_display_rec(num);
+    uint64_t count = num_count(num);
+    printf("" U64P " | ", count);
+    num_display_rec_2(num, count);
 }
 
 void num_display_immed(char *tag, num_p num)
 {
     printf("\n%s: ", tag);num_display(num);
 }
-
-
-
-typedef __int128_t uint128_t;
-#define U128(V) ((uint128_t)(V))
-#define MUL(V1, V2) U128(V1) * U128(V2)
-#define LOW(V) ((uint64_t)(V))
-#define HIGH(V) LOW((V) >> 64)
 
 
 
@@ -144,7 +189,7 @@ num_p num_denormalize(num_p num)
     return num_create(0, NULL);
 }
 
-/* creates a num struct with value 0 if NUM is null */
+/* frees num if NUm->value is zero and NUM->next is NULL */
 num_p num_normalize(num_p num)
 {
     if(num == NULL || num->value != 0 || num->next != NULL)
@@ -161,6 +206,36 @@ num_p num_copy(num_p num)
 
     num_p num_2 = num_copy(num->next);
     return num_create(num->value, num_2);
+}
+
+
+
+uint64_t num_count(num_p num) // TODO test
+{
+    uint64_t i;
+    for(i=0; num; num = num->next, i++);
+    return i;
+}
+
+uint64_t num_get_last(num_p num) // TODO test
+{
+    if(num == NULL)
+        return 0;
+
+    while(num->next)
+        num = num->next;
+
+    return num->value;
+}
+
+uint128_t num_get_last_2(num_p num) // TODO test
+{
+    assert(num && num->next);
+
+    while(num->next->next)
+        num = num->next;
+
+    return U128_IMMED(num->next->value, num->value);
 }
 
 
@@ -315,42 +390,74 @@ num_p num_mul(num_p num_1, num_p num_2)
     return num_mul_rec(NULL, num_1, num_2);
 }
 
+num_p num_div_mod_rec(
+    num_p *out_num_q, 
+    num_p num_1,
+    num_p num_2, 
+    uint64_t cnt_1,
+    uint64_t cnt_2, 
+    uint64_t val_2
+)
+{
+    if(cnt_1 <= cnt_2+1)
+    if(num_cmp(num_1, num_2) < 0)
+    {
+        *out_num_q = NULL;
+        return num_1;
+    }
+
+    num_p num_q;
+    num_1->next = num_div_mod_rec(&num_q, num_1->next, num_2, cnt_1-1, cnt_2, val_2);
+    num_1 = num_normalize(num_1);
+
+    uint64_t r =  0;
+    while(num_cmp(num_1, num_2) >= 0)
+    {
+        cnt_1 = num_count(num_1);
+        uint64_t r_max, r_min;
+        if(cnt_1 > cnt_2)
+        {
+            uint128_t val_1 = num_get_last_2(num_1);
+            r_max = val_1 / val_2;
+            r_min = val_1 / (U128(val_2) + 1);
+        }
+        else
+        {
+            uint64_t val_1 = num_get_last(num_1);
+            r_max = val_1 / val_2;
+            r_min = val_1 / (U128(val_2) + 1);
+        }
+
+        num_p num_aux = num_mul(num_wrap(r_max), num_copy(num_2));
+        if(num_cmp(num_aux, num_1) > 0)
+        {
+            num_free(num_aux);
+            num_aux = num_mul(num_wrap(r_min), num_copy(num_2));
+            r_max = r_min;
+        }
+        num_1 = num_sub(num_1, num_aux);
+        r += r_max;
+    }
+
+    *out_num_q = num_create(r, num_q);
+    return num_1;
+}
+
 void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
 {
     assert(num_2);
 
-    if(num_1 == NULL)
-    {
-        num_free(num_2);
-        *out_num_q = *out_num_r = NULL;
-        return;
-    }
-    
-    num_p num_base = num_create(1, NULL);
-    while(num_cmp(num_2, num_1) <= 0)
-    {
-        num_2 = num_shl(num_2);
-        num_base = num_shl(num_base);
-    }
-    
-    num_2 = num_shr(num_2);
-    num_base = num_shr(num_base);
+    uint64_t cnt_1 = num_count(num_1);
 
-    num_p num_q = NULL;
-    while(num_base)
-    {
-        if(num_cmp(num_1, num_2) >= 0)
-        {
-            num_q = num_add(num_q, num_copy(num_base));
-            num_1 = num_sub(num_1, num_copy(num_2));
-        }
-        
-        num_2 = num_shr(num_2);
-        num_base = num_shr(num_base);
-    }
+    uint64_t cnt_2 = num_count(num_2);
+    uint64_t val_2 = num_get_last(num_2);
+    
+    num_p num_q;
+    num_p num_r = num_div_mod_rec(&num_q, num_1, num_2, cnt_1, cnt_2, val_2);
     num_free(num_2);
+    
     *out_num_q = num_q;
-    *out_num_r = num_1;
+    *out_num_r = num_r;
 }
 
 num_p num_div(num_p num_1, num_p num_2)
