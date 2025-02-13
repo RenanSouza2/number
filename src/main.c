@@ -17,15 +17,15 @@ num_p num_generate(uint64_t max, uint64_t salt)
 
 uint64_t altutime() 
 {
-    #if !defined(_WIN32) && !defined(__APPLE__)
+    // #if !defined(_WIN32) && !defined(__APPLE__)
     struct timespec time;
     clock_gettime(CLOCK_MONOTONIC, &time);
     return time.tv_sec * 1e6 + time.tv_nsec / 1e3;
-    #else
-    struct timeval time;
-    gettimeofday(&time, NULL);
-    return time.tv_sec * 1000000 + time.tv_usec;
-    #endif
+    // #else
+    // struct timeval time;
+    // gettimeofday(&time, NULL);
+    // return time.tv_sec * 1000000 + time.tv_usec;
+    // #endif
 }
  
 
@@ -35,25 +35,25 @@ int main(int argc, char** argv)
 
     num_free(num_wrap(1));
 
-    for(uint64_t i=1; i<22; i++)
+    for(uint64_t i=20; i<22; i++)
     {
         uint64_t begin = altutime();
         num_p num_1 = num_generate(i+1, 1);
         // num_display_immed("num_1", num_1);
         uint64_t end = altutime();
-        printf("\n%2lu:\t%16lu", i, end - begin);
+        printf("\n%2llu:\t%16llu", i, end - begin);
 
         begin = altutime();
         num_p num_2 = num_generate(i, 2);
         // num_display_immed("num_2", num_2);
         end = altutime();
-        printf("\t%16lu", end - begin);
+        printf("\t%16llu", end - begin);
 
         begin = altutime();
         num_1 = num_div(num_1, num_2);
         // num_display_immed("num_1", num_1);
         end = altutime();
-        printf("\t%20lu", end - begin);
+        printf("\t%20llu", end - begin);
 
         num_free(num_1);
     }

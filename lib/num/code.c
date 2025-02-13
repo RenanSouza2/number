@@ -108,6 +108,7 @@ bool num_immed(num_p num, uint64_t n, ...)
 #endif
 
 
+uint64_t num_count(num_p num);
 
 void num_display_rec(num_p num)
 {
@@ -118,15 +119,27 @@ void num_display_rec(num_p num)
     printf("" U64PX " ", num->value);
 }
 
+void num_display_rec_2(num_p num, uint64_t count)
+{
+    bool bigger = count > 4;
+    for(; count > 4; count--)
+        num = num->next;
+
+    num_display_rec(num);
+    if(bigger) printf(" ...");
+}
+
 void num_display(num_p num)
 {
     if(num == NULL)
     {
-        printf("0");
+        printf("0 | 0");
         return;
     }
 
-    num_display_rec(num);
+    uint64_t count = num_count(num);
+    printf("" U64P " | ", count);
+    num_display_rec_2(num, count);
 }
 
 void num_display_immed(char *tag, num_p num)
@@ -386,11 +399,18 @@ num_p num_div_mod_rec(
     uint64_t val_2
 )
 {
+printf("\nentering");
+num_display_immed("num_1", num_1);
+num_display_immed("num_2", num_2);
+
     assert(num_2);
 
     if(cnt_1 <= cnt_2+1)
     if(num_cmp(num_1, num_2) < 0)
     {
+
+printf("\nnum1 < num_2");
+
         *out_num_q = NULL;
         return num_1;
     }
@@ -399,33 +419,65 @@ num_p num_div_mod_rec(
     num_1->next = num_div_mod_rec(&num_q, num_1->next, num_2, cnt_1-1, cnt_2, val_2);
     num_1 = num_normalize(num_1);
 
+printf("\n----------");
+printf("\nvalue");
+num_display_immed("num_1", num_1);
+num_display_immed("num_2", num_2);
+num_display_immed("num_q", num_q);
+printf("\ncnt_1: " U64PX "", cnt_1);
+printf("\ncnt_2: " U64PX "", cnt_2);
+
     cnt_1 = num_count(num_1);
     if(cnt_1 < cnt_2)
     {
+printf("\nskipping");
         *out_num_q = num_create(0, num_q);
         return num_1;
     }
-    
+
+printf("\n\nval_2: " U64P "", val_2);
+
     uint64_t r_max, r_min;
     if(cnt_1 > cnt_2)
     {
+
+printf("\ncase long");
+
         uint128_t val_1 = num_get_last_2(num_1);
+
+printf("\n(128)val_1: " U64P " " U64P "", HIGH(val_1), LOW(val_1));
+
         r_max = val_1 / val_2;
+
+printf("\nr_max: " U64P "", r_max);
+
         r_min = val_1 / (U128(val_2) + 1);
+
+printf("\nr_min: " U64P "", r_min);
     }
     else
     {
         uint64_t val_1 = num_get_last(num_1);
+
+printf("\nval_1: " U64P "", val_1);
+
         r_max = val_1 / val_2;
         r_min = val_1 / (U128(val_2) + 1);
     }
 
+printf("\nr_max: " U64P "\tr_min: " U64P "", r_max, r_min);
+        
     num_p num_aux = num_mul(num_wrap(r_max), num_copy(num_2));
     if(num_cmp(num_aux, num_1) > 0)
     {
+
+printf("\nneeds adjustments");
+
         while(r_max - r_min > 1)
         {
             uint64_t r_med = (U128(r_max) + r_min) >> 1;
+
+printf("\nr_max: " U64P "\tr_min: " U64P "\tr_med: " U64P "", r_max, r_min, r_med);
 
             num_free(num_aux);
             num_aux = num_mul(num_wrap(r_med), num_copy(num_2));
@@ -438,6 +490,8 @@ num_p num_div_mod_rec(
         num_free(num_aux);
         num_aux = num_mul(num_wrap(r_max), num_copy(num_2));
     }
+
+num_display_immed("new q", num_q);
 
     *out_num_q = num_create(r_max, num_q);
     return num_sub(num_1, num_aux);
