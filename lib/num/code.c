@@ -380,8 +380,8 @@ num_p num_mul(num_p num_1, num_p num_2)
 num_p num_div_mod_rec(
     num_p *out_num_q, 
     num_p num_1,
-    uint64_t cnt_1,
     num_p num_2, 
+    uint64_t cnt_1,
     uint64_t cnt_2, 
     uint64_t val_2
 )
@@ -396,7 +396,7 @@ num_p num_div_mod_rec(
     }
 
     num_p num_q;
-    num_1->next = num_div_mod_rec(&num_q, num_1->next, cnt_1-1, num_2, cnt_2, val_2);
+    num_1->next = num_div_mod_rec(&num_q, num_1->next, num_2, cnt_1-1, cnt_2, val_2);
     num_1 = num_normalize(num_1);
 
     cnt_1 = num_count(num_1);
@@ -451,7 +451,7 @@ void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
     uint64_t val_2 = num_get_last(num_2);
     
     num_p num_q;
-    num_p num_r = num_div_mod_rec(&num_q, num_1, cnt_1, num_2, cnt_2, val_2);
+    num_p num_r = num_div_mod_rec(&num_q, num_1, num_2, cnt_1, cnt_2, val_2);
     num_free(num_2);
     
     *out_num_q = num_q;
