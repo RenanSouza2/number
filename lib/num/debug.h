@@ -3,9 +3,9 @@
 
 #include "struct.h"
 
-#ifdef DEBUG
-
 typedef __uint128_t uint128_t;
+
+#ifdef DEBUG
 
 #include <stdarg.h>
 

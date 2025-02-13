@@ -823,8 +823,8 @@ void test_num_div_mod(bool show)
     num_1 = num_create_immed(2, UINT64_MAX, 0);
     num_2 = num_create_immed(2, 1, UINT64_MAX);
     num_div_mod(&num_q, &num_r, num_1, num_2);
-    assert(num_immed(num_q, 1, 1));
-    assert(num_immed(num_r, 1, 1));
+    assert(num_immed(num_q, 1, 0x7fffffffffffffff));
+    assert(num_immed(num_r, 2, 1, 0x7fffffffffffffff));
     num_free(num_q);
     num_free(num_r);
 
@@ -832,8 +832,8 @@ void test_num_div_mod(bool show)
     num_1 = num_create_immed(2, 0xc929d7d593, 0xb7090a859117cfa4);
     num_2 = num_create_immed(2, 6, 0xea7db545decb57a4);
     num_div_mod(&num_q, &num_r, num_1, num_2);
-    assert(num_immed(num_q, 1, 1));
-    assert(num_immed(num_r, 1, 1));
+    assert(num_immed(num_q, 1, 0x0000001d1635b735));
+    assert(num_immed(num_r, 1, 0x88c80995d8646eb0));
     num_free(num_q);
     num_free(num_r);
         
@@ -869,7 +869,7 @@ void test_num()
     test_num_add(show);
     test_num_sub(show);
     test_num_mul(show);
-    // test_num_div_mod(show);
+    test_num_div_mod(show);
 
     assert(clu_mem_empty());
 }
