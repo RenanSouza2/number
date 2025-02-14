@@ -289,7 +289,7 @@ num_p num_mul_uint(num_p num_res, num_p num, uint64_t value)
     if(value == 0)
         return num_res;
 
-    return num_mul_uint_rec(NULL, num, value);
+    return num_mul_uint_rec(num_res, num, value);
 }
 
 num_p num_shl_rec(num_p num, bool carry)
