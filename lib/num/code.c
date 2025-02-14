@@ -158,7 +158,8 @@ num_p num_create(uint64_t value, num_p next)
     return num;
 }
 
-num_p num_wrap(uint64_t value)
+/* returns NULL if value is 0, num(VALUE) else */
+num_p num_wrap(uint64_t value) // TODO test
 {
     return value ? num_create(value, NULL) : NULL;
 }
