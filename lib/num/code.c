@@ -119,17 +119,8 @@ void num_display_rec(num_p num)
     printf("" U64PX " ", num->value);
 }
 
-void num_display_short(num_p num)
+void num_display_rec_2(num_p num, uint64_t count)
 {
-    if(num == NULL)
-    {
-        printf("0 | 0");
-        return;
-    }
-
-    uint64_t count = num_count(num);
-    printf("" U64P " | ", count);
-
     bool bigger = count > 4;
     for(; count > 4; count--)
         num = num->next;
@@ -148,15 +139,10 @@ void num_display(num_p num)
 
     uint64_t count = num_count(num);
     printf("" U64P " | ", count);
-    num_display_rec(num);
+    num_display_rec_2(num, count);
 }
 
 void num_display_immed(char *tag, num_p num)
-{
-    printf("\n%s: ", tag);num_display_short(num);
-}
-
-void num_display_full(char *tag, num_p num)
 {
     printf("\n%s: ", tag);num_display(num);
 }
@@ -220,24 +206,6 @@ num_p num_copy(num_p num)
 
     num_p num_2 = num_copy(num->next);
     return num_create(num->value, num_2);
-}
-
-num_p num_split(num_p *out_num_res, num_p num, uint64_t cnt) // TODO test
-{
-    if(cnt == 0)
-    {
-        *out_num_res = num;
-        return NULL;
-    }
-
-    if(num == NULL)
-    {
-        *out_num_res = NULL;
-        return NULL;
-    }
-
-    num->next = num_split(out_num_res, num->next, cnt-1);
-    return num_normalize(num);
 }
 
 
@@ -370,24 +338,6 @@ int64_t num_cmp(num_p num_1, num_p num_2)
 
 
 
-num_p num_add_offset_rec(num_p num_1, num_p num_2, uint64_t offset)
-{
-    if(offset == 0)
-        return num_add(num_1, num_2);
-    
-    num_1 = num_denormalize(num_1);
-    num_1->next = num_add_offset_rec(num_1->next, num_2, offset-1);
-    return num_1;
-}
-
-num_p num_add_offset(num_p num_1, num_p num_2, uint64_t offset) // TODO test
-{
-    if(num_2 == NULL)
-        return num_1;
-
-    return num_add_offset_rec(num_1, num_2, offset);
-}
-
 num_p num_add(num_p num_1, num_p num_2)
 {
     if(num_1 == NULL) return num_2;
@@ -413,130 +363,31 @@ num_p num_sub(num_p num_1, num_p num_2)
     return num_normalize(num_1);
 }
 
-// TODO add test odd number length
-num_p num_mul_rec(num_p num_1, num_p num_2, uint64_t cnt)
+num_p num_mul_rec(num_p num_res, num_p num_1, num_p num_2)
 {
-
-// uint64_t static tag = 1;
-// uint64_t private_tag = tag++;
-// printf("\n--------------------");
-// printf("\nentering | tag: %lu | cnt:  %lu", private_tag, cnt);
-// num_display_full("num_1", num_1);
-// num_display_full("num_2", num_2);
-
-    if(num_1 == NULL)
-    {
-
-// printf("\nnum_1 is NULL");
-
-        num_free(num_2);
-        return NULL;
-    }
-
     if(num_2 == NULL)
     {
-
-// printf("\nnum_2 is NULL");
-        
         num_free(num_1);
-        return NULL;
-    }
-
-    if(cnt == 1)
-    {
-
-// printf("\ncnt is 1");
-
-        uint128_t res = U128(num_1->value) * num_2->value;
-        uint64_t val_h = HIGH(res);
-        uint64_t val_l = LOW(res);
-        free(num_1);
-        free(num_2);
-
-        if(val_h == 0)
-        {
-            num_p num_res = val_l ? num_create(val_l, NULL) : NULL;
-
-// num_display_immed("num_res", num_res);
-// printf("\n--------------------");
-
-            return num_res;
-        }
-
-        num_p num_res = num_create(val_h, NULL);
-        num_res =  num_create(val_l, num_res);
-
-// num_display_immed("num_res", num_res);
-// printf("\n--------------------");
-
         return num_res;
     }
 
-    num_p num_1_h, num_2_h;
-    uint64_t half_h = cnt >> 1;
-    uint64_t half_l = cnt - half_h;
-    num_1 = num_split(&num_1_h, num_1, half_l);
-    num_2 = num_split(&num_2_h, num_2, half_l);
+    num_res = num_mul_uint_rec(num_res, num_1, num_2->value);
 
-// printf("\n\nhalf_l: %lu", half_l);
-// printf("\nhalf_h: %lu", half_h);
-
-// printf("\n\nnum_1 split");
-// num_display_immed("num_1_h", num_1_h);
-// num_display_immed("num_1_l", num_1);
-// printf("\n\nnum_1 split");
-// num_display_immed("num_2_h", num_2_h);
-// num_display_immed("num_2_l", num_2);
-
-// printf("\n\ncalculating A");
-
-    num_p num_a = num_mul_rec(num_copy(num_1), num_copy(num_2), half_l);
-
-// printf("\n\ncalculating C");
-
-    num_p num_c = num_mul_rec(num_copy(num_1_h), num_copy(num_2_h), half_h);
-    
-    num_1 = num_add(num_1, num_1_h);
-    num_2 = num_add(num_2, num_2_h);
-    uint64_t cnt_1 = num_count(num_1);
-    uint64_t cnt_2 = num_count(num_2);
-    uint64_t cnt_b = cnt_1 > cnt_2 ? cnt_1 : cnt_2;
-
-// printf("\n\ncalculating B");
-
-    num_p num_b = num_mul_rec(num_1, num_2, cnt_b);
-// printf("\ntag: %lu | before sub", private_tag);
-// printf("\n");
-    num_b = num_sub(num_b, num_copy(num_a));
-    num_b = num_sub(num_b, num_copy(num_c));
-
-// printf("\nAQUI 1");
-
-    num_b = num_add_offset(num_b, num_c, half_l);
-
-// printf("\nAQUI 2");
-
-    num_a = num_add_offset(num_a, num_b, half_l);
-
-// printf("\ntag: %lu", private_tag);
-// num_display_immed("num_res", num_a);
-// printf("\n--------------------");
-
-    return num_a;
+    num_res = num_denormalize(num_res);
+    num_2 = num_consume(num_2);
+    num_res->next = num_mul_rec(num_res->next, num_1, num_2);
+    return num_res;
 }
 
 num_p num_mul(num_p num_1, num_p num_2)
 {
+    if(num_1 == NULL)
+    {
+        num_free(num_2);
+        return NULL;
+    }
 
-// printf("\n---------------------------------------");
-// printf("\nmultplying numbers");
-// num_display_immed("num_1", num_1);
-// num_display_immed("num_2", num_2);
-
-    uint64_t cnt_1 = num_count(num_1);
-    uint64_t cnt_2 = num_count(num_2);
-    uint64_t cnt = cnt_1 > cnt_2 ? cnt_1 : cnt_2;
-    return num_mul_rec(num_1, num_2, cnt);
+    return num_mul_rec(NULL, num_1, num_2);
 }
 
 num_p num_div_mod_rec(
@@ -577,11 +428,11 @@ num_p num_div_mod_rec(
             r_min = val_1 / (U128(val_2) + 1);
         }
 
-        num_p num_aux = num_mul(num_wrap(r_max), num_copy(num_2));
+        num_p num_aux = num_mul_uint(NULL, num_2, r_max);
         if(num_cmp(num_aux, num_1) > 0)
         {
             num_free(num_aux);
-            num_aux = num_mul(num_wrap(r_min), num_copy(num_2));
+            num_aux = num_mul_uint(NULL, num_2, r_min);
             r_max = r_min;
         }
         num_1 = num_sub(num_1, num_aux);
@@ -597,7 +448,6 @@ void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
     assert(num_2);
 
     uint64_t cnt_1 = num_count(num_1);
-
     uint64_t cnt_2 = num_count(num_2);
     uint64_t val_2 = num_get_last(num_2);
     
