@@ -91,16 +91,14 @@ mod_t mod_div_rec(mod_t mod_1, mod_t mod_2)
 {
     assert(mod_2.num);
 
-    num_p num_mod_res = num_mod(num_copy(mod_1.num), num_copy(mod_2.num));
-    if(num_mod_res == NULL)
-    {
-        num_p num = num_div(num_copy(mod_1.num), num_copy(mod_2.num));
-        return mod_create(num, mod_1.p);
-    }
-    num_free(num_mod_res);
+    num_p num_q, num_r;
+    num_div_mod(&num_q, &num_r, num_copy(mod_1.num), num_copy(mod_2.num));
+    if(num_r == NULL)
+        return mod_create(num_q, mod_1.p);
+        
+    num_free(num_q);
 
-    num_p num_1 = num_mod(num_copy(mod_1.num), num_copy(mod_2.num));
-    mod_t mod_1_next = mod_create(num_1, mod_2.num);
+    mod_t mod_1_next = mod_create(num_r, mod_2.num);
 
     num_p num_2 = num_mod(num_copy(mod_1.p), num_copy(mod_2.num));
     num_2 = num_sub(num_copy(mod_2.num), num_2);

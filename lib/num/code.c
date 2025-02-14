@@ -158,7 +158,8 @@ num_p num_create(uint64_t value, num_p next)
     return num;
 }
 
-num_p num_wrap(uint64_t value)
+/* returns NULL if value is 0, num(VALUE) else */
+num_p num_wrap(uint64_t value) // TODO test
 {
     return value ? num_create(value, NULL) : NULL;
 }
@@ -289,7 +290,7 @@ num_p num_mul_uint(num_p num_res, num_p num, uint64_t value)
     if(value == 0)
         return num_res;
 
-    return num_mul_uint_rec(NULL, num, value);
+    return num_mul_uint_rec(num_res, num, value);
 }
 
 num_p num_shl_rec(num_p num, bool carry)
@@ -371,7 +372,7 @@ num_p num_mul_rec(num_p num_res, num_p num_1, num_p num_2)
         return num_res;
     }
 
-    num_res = num_mul_uint_rec(num_res, num_1, num_2->value);
+    num_res = num_mul_uint(num_res, num_1, num_2->value);
 
     num_res = num_denormalize(num_res);
     num_2 = num_consume(num_2);
@@ -428,11 +429,11 @@ num_p num_div_mod_rec(
             r_min = val_1 / (U128(val_2) + 1);
         }
 
-        num_p num_aux = num_mul(num_wrap(r_max), num_copy(num_2));
+        num_p num_aux = num_mul_uint(NULL, num_2, r_max);
         if(num_cmp(num_aux, num_1) > 0)
         {
             num_free(num_aux);
-            num_aux = num_mul(num_wrap(r_min), num_copy(num_2));
+            num_aux = num_mul_uint(NULL, num_2, r_min);
             r_max = r_min;
         }
         num_1 = num_sub(num_1, num_aux);
@@ -448,7 +449,6 @@ void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
     assert(num_2);
 
     uint64_t cnt_1 = num_count(num_1);
-
     uint64_t cnt_2 = num_count(num_2);
     uint64_t val_2 = num_get_last(num_2);
     
