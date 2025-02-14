@@ -371,7 +371,7 @@ num_p num_mul_rec(num_p num_res, num_p num_1, num_p num_2)
         return num_res;
     }
 
-    num_res = num_mul_uint_rec(num_res, num_1, num_2->value);
+    num_res = num_mul_uint(num_res, num_1, num_2->value);
 
     num_res = num_denormalize(num_res);
     num_2 = num_consume(num_2);
