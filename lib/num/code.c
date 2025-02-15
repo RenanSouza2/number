@@ -408,16 +408,17 @@ void num_sub_uint(num_p num, uint64_t value)
     num_sub_uint_rec(num, num->head, value);
 }
 
-void num_mul_uint_rec(num_p num_res, node_p node_res, node_p node, uint64_t value)
+node_p num_mul_uint_rec(num_p num_res, node_p node_res, node_p node, uint64_t value)
 {
     if(node == NULL)
-        return;
+        return node_res;
 
     uint128_t u = MUL(node->value, value);
     node_res = num_add_uint_rec(num_res, node_res, LOW(u));
     node_res = num_denormalize(num_res, node_res);
     num_add_uint_rec(num_res, node_res->next, HIGH(u));
     num_mul_uint_rec(num_res, node_res->next, node->next, value);
+    return node_res;
 }
 
 /* NUM_RES can be NULL, preserves NUM */
@@ -515,32 +516,36 @@ num_p num_sub(num_p num_1, num_p num_2)
     return num_1;
 }
 
-// num_p num_mul_rec(num_p num_res, num_p num_1, num_p num_2)
-// {
-//     if(num_2 == NULL)
-//     {
-//         num_free(num_1);
-//         return num_res;
-//     }
-//
-//     num_res = num_mul_uint(num_res, num_1, num_2->value);
-//
-//     num_res = num_denormalize(num_res);
-//     num_2 = num_consume(num_2);
-//     num_res->next = num_mul_rec(num_res->next, num_1, num_2);
-//     return num_res;
-// }
+void num_mul_rec(num_p num_res, node_p node_res, node_p node_1, node_p node_2)
+{
+    if(node_2 == NULL)
+        return;
 
-// num_p num_mul(num_p num_1, num_p num_2)
-// {
-//     if(num_1 == NULL)
-//     {
-//         num_free(num_2);
-//         return NULL;
-//     }
-//
-//     return num_mul_rec(NULL, num_1, num_2);
-// }
+    node_res = num_mul_uint_rec(num_res, node_res, node_1, node_2->value);
+    node_res = num_denormalize(num_res, node_res);
+    node_2 = node_consume(node_2);
+    num_mul_rec(num_res, node_res->next, node_1, node_2);
+}
+
+num_p num_mul(num_p num_1, num_p num_2)
+{
+    assert(num_1);
+    assert(num_2);
+
+    if(num_1->count == 0)
+    {
+        num_free(num_1);
+        num_free(num_2);
+        return num_create(0, NULL, NULL);
+    }
+
+    num_p num_res = num_create(0, NULL, NULL);
+    num_mul_rec(num_res, num_res->head, num_1->head, num_2->head);
+
+    num_free(num_1);
+    free(num_2);
+    return num_res;
+}
 
 // num_p num_div_mod_rec(
 //     num_p *out_num_q, 
