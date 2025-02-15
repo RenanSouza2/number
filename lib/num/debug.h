@@ -34,8 +34,8 @@ node_p node_normalize(node_p node);
 
 num_p num_create(uint64_t count, node_p head, node_p tail);
 
-num_p num_add_uint(num_p n, uint64_t value);
-num_p num_sub_uint(num_p num, uint64_t value);
+void num_add_uint(num_p num, uint64_t value);
+void num_sub_uint(num_p num, uint64_t value);
 num_p num_mul_uint(num_p num_res, num_p num, uint64_t value);
 num_p num_shl(num_p num);
 num_p num_shr(num_p num);

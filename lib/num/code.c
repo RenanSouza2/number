@@ -268,9 +268,11 @@ node_p node_normalize(node_p node)
     if(node == NULL || node->value != 0 || node->next != NULL)
         return node;
     
-    if(node->prev) node->prev->next = NULL;
+    node_p node_prev = node->prev;
+    if(node_prev) node_prev->next = NULL;
+
     free(node);
-    return NULL;
+    return node_prev;
 }
 
 node2_t node_copy(node_p node)
@@ -305,7 +307,7 @@ void num_free(num_p num)
     free(num);
 }
 
-/* returns NULL if value is 0, num(VALUE) else */
+/* returns empty list if value is 0, list with one value otherwise */
 num_p num_wrap(uint64_t value)
 {
     if(value == 0)
@@ -313,6 +315,29 @@ num_p num_wrap(uint64_t value)
 
     node_p node = node_create(value, NULL, NULL);
     return num_create(1, node,  node);
+}
+
+void node_insert(num_p num, uint64_t value) // TODO test
+{
+    num->tail = node_create(value, NULL, num->tail);
+    num->count++;
+    if(num->count == 1)
+        num->head = num->tail;
+}
+
+void num_normalize(num_p num) // TODO test
+{
+    if(num->count == 0)
+        return;
+
+    node_p node_tail = num->tail;
+    num->tail = node_normalize(num->tail);
+    if(num->tail == node_tail)
+        return;
+
+    num->count--;
+    if(num->count == 0)
+        num->head = NULL;
 }
 
 num_p num_copy(num_p num) //  TODO test
@@ -327,10 +352,7 @@ void num_add_uint_rec(num_p num, node_p node, uint64_t value)
 {
     if(node == NULL)
     {
-        num->tail = node_create(value, NULL, num->tail);
-        num->count++;
-        if(num->count == 1)
-            num->head = num->tail;
+        node_insert(num, value);
         return;
     }
 
@@ -339,29 +361,29 @@ void num_add_uint_rec(num_p num, node_p node, uint64_t value)
         num_add_uint_rec(num, node->next, 1);
 }
 
-num_p num_add_uint(num_p num, uint64_t value)
+void num_add_uint(num_p num, uint64_t value)
 {
-    if(value == 0)
-        return num;
-
-    num_add_uint_rec(num, num->head, value);
-    return num;
+    if(value)
+        num_add_uint_rec(num, num->head, value);
 }
 
-// num_p num_sub_uint(num_p num, uint64_t value)
-// {
-//     if(value == 0)
-//         return num;
-//
-//     assert(num);
-//
-//     bool do_next = num->value < value;
-//     num->value -= value;
-//     if(do_next)
-//         num->next = num_sub_uint(num->next, 1);
-//
-//     return num_normalize(num);
-// }
+void num_sub_uint_rec(num_p num, node_p node, uint64_t value)
+{
+    assert(node);
+
+    bool do_next = node->value < value;
+    node->value -= value;
+    if(do_next)
+        num_sub_uint_rec(num, node->next, 1);
+
+    num_normalize(num);
+}
+
+void num_sub_uint(num_p num, uint64_t value)
+{
+    if(value)
+        num_sub_uint_rec(num, num->head, value);
+}
 
 // num_p num_mul_uint_rec(num_p num_res, num_p num, uint64_t value)
 // {
