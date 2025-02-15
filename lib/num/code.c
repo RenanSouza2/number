@@ -11,13 +11,19 @@
 
 num_p num_create_variadic(uint64_t n, va_list args)
 {
-    num_p num = NULL;
-    for(uint64_t i=0; i<n; i++)
+    if(n == 0)
+        return num_create(0, NULL, NULL);
+
+    uint64_t value = va_arg(args, uint64_t);
+    node_p tail = node_create(value, NULL, NULL);
+
+    node_p node = NULL;
+    for(uint64_t i=1; i<n; i++)
     {
         uint64_t value = va_arg(args, uint64_t);
-        num = num_create(value, num);
+        node = node_create(value, node, NULL);
     }
-    return num;
+    return num_create(n, node, tail);
 }
 
 num_p num_create_immed(uint64_t n, ...)
@@ -31,11 +37,13 @@ num_p num_create_immed(uint64_t n, ...)
 
 bool uint64(uint64_t u1, uint64_t u2)
 {
-    if(u1 == u2)
-        return true;
+    if(u1 != u2)
+    {
+        printf("\n\n\tUINT64 ASSERT ERROR\t| " U64PX " " U64PX "", u1, u2);
+        return false;
+    }
 
-    printf("\n\n\tUINT64 ASSERT ERROR\t| " U64PX " " U64PX "", u1, u2);
-    return false;
+    return true;
 }
 
 bool uint128_immed(uint128_t u1, uint64_t v2h, uint64_t v2l)
@@ -57,37 +65,108 @@ bool uint128_immed(uint128_t u1, uint64_t v2h, uint64_t v2l)
 
 
 
-bool num_str_rec(num_p num_1, num_p num_2, uint64_t index)
+bool node_rec(node_p node_1, node_p node_2, uint64_t index, node_p node_head)
 {
-    if(num_1 == NULL)
+    
+    if(index == 0)
     {
-        if(num_2)
+        if(node_1 != NULL)
         {
-            printf("\n\n\tNUMBER ASSERT ERROR\t| NUMBER SHORTER THAN EXPECTED");
+
+            printf("\n\tNODE VALIDITY ERROR\t| NUMBER LONGER THAN EXPECTED");
             return false;
         }
 
         return true;
     }
 
-    if(num_2 == NULL)
+    if(index > 1)
     {
-        printf("\n\n\tNUMBER ASSERT ERROR\t| NUMBER LONGER THAN EXPECTED");
-        return false;
+        if(node_1->prev == NULL)
+        {
+            printf("\n\n\tNODE VALIDITY ERROR\t| NUMBER SHORTER THAN EXPECTED");
+            return false;
+        }
+
+        if(node_1->prev->next != node_1)
+        {
+            printf("\n\n\tNODE VALIDITY ERROR\t| INVALID LINKAGE");
+            return false;
+        }
+    }
+    else
+    {
+        if(node_1 != node_head)
+        {
+            printf("\n\n\tNODE VALIDITY ERROR\t| INVALID HEAD");
+            return false;
+        }
     }
 
-    if(!uint64(num_1->value, num_2->value))
+    if(!uint64(node_1->value, node_2->value))
     {
         printf("\n\tNUMBER ASSERT ERROR\t| DIFFERENCE IN VALUE " U64P "", index);
         return false;
     }
 
-    return num_str_rec(num_1->next, num_2->next, index+1);
+    return node_rec(node_1->prev, node_2->prev, index - 1, node_head);
+}
+
+bool num_str_inner(num_p num_1, num_p num_2)
+{
+    if(!uint64(num_1->count, num_2->count))
+    {
+        printf("\n\tNUMBER ASSERT ERROR\t| DIFFERENCE IN LENGTH");
+        return false;
+    }
+
+    if(num_1->count == 0)
+    {
+        if(num_1->head != NULL)
+        {
+            printf("\n\tNUMBER VALIDITY ERROR\t| COUNT IS ZERO BUT IT HAS HEAD");
+            return false;
+        }
+        
+        if(num_1->tail != NULL)
+        {
+            printf("\n\tNUMBER VALIDITY ERROR\t| COUNT IS ZERO BUT IT HAS TAIL");
+            return false;
+        }
+
+        return true;
+    }
+
+    if(num_1->head == NULL)
+    {
+        printf("\n\tNUMBER VALIDITY ERROR\t| COUNT IS " U64P " BUT IT HAS NO HEAD", num_1->count);
+        return false;
+    }
+
+    if(num_1->head->prev != NULL)
+    {
+        printf("\n\tNUMBER VALIDITY ERROR\t| HEAD HAS PREV");
+        return false;
+    }
+
+    if(num_1->tail == NULL)
+    {
+        printf("\n\tNUMBER VALIDITY ERROR\t| COUNT IS " U64P " BUT IT HAS NO TAIL", num_1->count);
+        return false;
+    }
+
+    if(num_1->tail->next != NULL)
+    {
+        printf("\n\tNUMBER VALIDITY ERROR\t| TAIL HAS NEXT");
+        return false;
+    }
+
+    return node_rec(num_1->tail, num_2->tail, num_1->count, num_1->head);
 }
 
 bool num_str(num_p num_1, num_p num_2)
 {
-    if(num_str_rec(num_1, num_2, 0))
+    if(num_str_inner(num_1, num_2))
         return true;
 
     num_display_immed("\n\tnum_1", num_1);
@@ -108,7 +187,6 @@ bool num_immed(num_p num, uint64_t n, ...)
 #endif
 
 
-uint64_t num_count(num_p num);
 
 void num_display_rec(num_p num)
 {
@@ -149,12 +227,36 @@ void num_display_immed(char *tag, num_p num)
 
 
 
-num_p num_create(uint64_t value, num_p next)
+node_p node_create(uint64_t value, node_p next, node_p prev) // TODO test
+{
+    node_p node = malloc(sizeof(node_t));
+    assert(node);
+
+    if(next) next->prev = node;
+    if(prev) prev->next = node;
+    
+    *node = (node_t)
+    {
+        .value = value,
+        .next = next,
+        .prev = prev
+    };
+    return node;
+}
+
+
+
+num_p num_create(uint64_t count, node_p head, node_p tail)
 {
     num_p num = malloc(sizeof(num_t));
     assert(num);
-    
-    *num = (num_t){value, next};
+
+    *num = (num_t)
+    {
+        .count = count,
+        .head = head,
+        .tail = tail
+    };
     return num;
 }
 

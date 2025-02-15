@@ -13,8 +13,8 @@ STRUCT(node)
 
 STRUCT(num)
 {
-    uint64_t cnt;
+    uint64_t count;
     node_p head, tail;
-}
+};
 
 #endif

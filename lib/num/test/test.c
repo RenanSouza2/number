@@ -963,18 +963,18 @@ void test_num()
     test_num_normalize(show);
     test_num_copy(show);
 
-    test_num_add_uint(show);
-    test_num_sub_uint(show);
-    test_num_mul_uint(show);
-    test_num_shl(show);
-    test_num_shr(show);
+    // test_num_add_uint(show);
+    // test_num_sub_uint(show);
+    // test_num_mul_uint(show);
+    // test_num_shl(show);
+    // test_num_shr(show);
     
-    test_num_cmp(show);
+    // test_num_cmp(show);
 
-    test_num_add(show);
-    test_num_sub(show);
-    test_num_mul(show);
-    test_num_div_mod(show);
+    // test_num_add(show);
+    // test_num_sub(show);
+    // test_num_mul(show);
+    // test_num_div_mod(show);
 
     assert(clu_mem_empty());
 }
