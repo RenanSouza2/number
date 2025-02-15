@@ -414,20 +414,31 @@ num_p num_mul_uint(num_p num_res, num_p num, uint64_t value)
 
 
 
-// int64_t num_cmp(num_p num_1, num_p num_2)
-// {
-//     if(num_1 == NULL)
-//         return num_2 ? -1 : 0;
-//
-//     if(num_2 == NULL)
-//         return 1;
-//
-//     int64_t next = num_cmp(num_1->next, num_2->next);
-//     if(next != 0) return next;
-//
-//     if(num_1->value > num_2->value) return 1;
-//     return num_1->value < num_2->value ? -1 : 0;
-// }
+int64_t num_cmp(num_p num_1, num_p num_2)
+{
+    assert(num_1);
+    assert(num_2);
+    if(num_1->count > num_2->count)
+        return 1;
+
+    if(num_1->count < num_2->count)
+        return -1;
+
+    for(
+        node_p node_1 = num_1->tail, node_2 = num_2->tail;
+        node_1;
+        node_1 = node_1->prev, node_2 = node_2->prev
+    )
+    {
+        if(node_1->value > node_2->value)
+            return 1;
+
+        if(node_1->value < node_2->value)
+            return -1;
+    }
+
+    return 0;
+}
 
 
 
