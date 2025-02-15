@@ -257,9 +257,7 @@ void node_free(node_p node)
 /* creates a NODE struct with value 0 if NUM is null */
 node_p node_denormalize(node_p node)
 {
-    if(node) return node;
-
-    return node_create(0, NULL, NULL);
+    return node ? node : node_create(0, NULL, NULL);
 }
 
 /* frees NODE if NODE->value is 0 and NODE->next is NULL */
@@ -307,12 +305,22 @@ num_p num_wrap(uint64_t value)
     return num_create(1, node,  node);
 }
 
-void num_insert(num_p num, uint64_t value) // TODO test
+node_p num_insert(num_p num, uint64_t value) // TODO test
 {
     num->tail = node_create(value, NULL, num->tail);
     num->count++;
     if(num->count == 1)
         num->head = num->tail;
+
+    return num->tail;
+}
+
+node_p num_denormalize(num_p num, node_p node)
+{
+    if(node)
+        return node;
+
+    return num_insert(num, 0);
 }
 
 void num_normalize(num_p num) // TODO test
@@ -335,32 +343,34 @@ num_p num_copy(num_p num) //  TODO test
     num_p num_res = num_create(0, NULL, NULL);
     for(node_p node = num->head; node; node = node->next)
         num_insert(num_res, node->value);
+        
     return num_res;
 }
 
 
 
-void num_add_uint_rec(num_p num, node_p node, uint64_t value)
+node_p num_add_uint_rec(num_p num, node_p node, uint64_t value)
 {
     if(node == NULL)
-    {
-        num_insert(num, value);
-        return;
-    }
+        return value ? num_insert(num, value) : NULL;
 
     node->value += value;
     if(node->value < value)
         num_add_uint_rec(num, node->next, 1);
+
+    return node;
 }
 
 void num_add_uint(num_p num, uint64_t value)
 {
-    if(value)
-        num_add_uint_rec(num, num->head, value);
+    num_add_uint_rec(num, num->head, value);
 }
 
 void num_sub_uint_rec(num_p num, node_p node, uint64_t value)
 {
+    if(value == 0)
+        return;
+
     assert(node);
 
     bool do_next = node->value < value;
@@ -373,31 +383,32 @@ void num_sub_uint_rec(num_p num, node_p node, uint64_t value)
 
 void num_sub_uint(num_p num, uint64_t value)
 {
-    if(value)
-        num_sub_uint_rec(num, num->head, value);
+    num_sub_uint_rec(num, num->head, value);
 }
 
-// num_p num_mul_uint_rec(num_p num_res, num_p num, uint64_t value)
-// {
-//     if(num == NULL)
-//         return num_res;
-//
-//     uint128_t u = MUL(num->value, value);
-//     num_res = num_add_uint(num_res, LOW(u));
-//     num_res = num_denormalize(num_res);
-//     num_res->next = num_add_uint(num_res->next, HIGH(u));
-//     num_res->next = num_mul_uint_rec(num_res->next, num->next, value);
-//     return num_res;
-// }
+void num_mul_uint_rec(num_p num_res, node_p node_res, node_p node, uint64_t value)
+{
+    if(node == NULL)
+        return;
 
-// /* preserves NUM */
-// num_p num_mul_uint(num_p num_res, num_p num, uint64_t value)
-// {
-//     if(value == 0)
-//         return num_res;
-//
-//     return num_mul_uint_rec(num_res, num, value);
-// }
+    uint128_t u = MUL(node->value, value);
+    node_res = num_add_uint_rec(num_res, node_res, LOW(u));
+    node_res = num_denormalize(num_res, node_res);
+    num_add_uint_rec(num_res, node_res->next, HIGH(u));
+    num_mul_uint_rec(num_res, node_res->next, node->next, value);
+}
+
+/* NUM_RES can be NULL, preserves NUM */
+num_p num_mul_uint(num_p num_res, num_p num, uint64_t value)
+{
+    if(num_res == NULL)
+        num_res = num_create(0, NULL, NULL);
+
+    if(value)
+        num_mul_uint_rec(num_res, num_res->head, num->head, value);
+
+    return num_res;
+}
 
 // num_p num_shl_rec(num_p num, bool carry)
 // {
