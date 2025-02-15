@@ -388,6 +388,8 @@ void num_sub_uint(num_p num, uint64_t value)
 
 void num_mul_uint_rec(num_p num_res, node_p node_res, node_p node, uint64_t value)
 {
+    // printf("\nentering\t\t");
+
     if(node == NULL)
         return;
 
@@ -401,6 +403,8 @@ void num_mul_uint_rec(num_p num_res, node_p node_res, node_p node, uint64_t valu
 /* NUM_RES can be NULL, preserves NUM */
 num_p num_mul_uint(num_p num_res, num_p num, uint64_t value)
 {
+    assert(num);
+
     if(num_res == NULL)
         num_res = num_create(0, NULL, NULL);
 
