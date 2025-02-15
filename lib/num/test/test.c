@@ -227,21 +227,27 @@ void test_node_normalize(bool show)
 
 
 
-// void test_num_wrap(bool show)
-// {
-//     printf("\n\t%s", __func__);
-//
-//     if(show) printf("\n\t\t%s 1", __func__);
-//     num_p num = num_wrap(0);
-//     assert(num_immed(num, 0));
-//
-//     if(show) printf("\n\t\t%s 2", __func__);
-//     num = num_wrap(1);
-//     assert(num_immed(num, 1, 1));
-//     num_free(num);
-//
-//     assert(clu_mem_empty());
-// }
+void test_num_wrap(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s 1", __func__);
+    num_p num = num_wrap(0);
+    assert(num->count == 0);
+    assert(num->head == NULL);
+    assert(num->tail == NULL);
+    num_free(num);
+
+    if(show) printf("\n\t\t%s 2", __func__);
+    num = num_wrap(2);
+    assert(num->count == 1);
+    assert(num->head != NULL);
+    assert(num->head->value == 2);
+    assert(num->tail == num->head);
+    num_free(num);
+
+    assert(clu_mem_empty());
+}
 
 // void test_num_create_immed(bool show)
 // {
@@ -1010,7 +1016,7 @@ void test_num()
     test_node_denormalize(show);
     test_node_normalize(show);
 
-    // test_num_wrap(show);
+    test_num_wrap(show);
     // test_num_create_immed(show);
     // test_num_copy(show);
 
