@@ -275,16 +275,6 @@ node_p node_normalize(node_p node)
     return node_prev;
 }
 
-node2_t node_copy(node_p node)
-{
-    if(node == NULL)
-        return (node2_t){NULL, NULL};
-
-    node2_t n2 = node_copy(node->next);
-    node_p node_2 = node_create(node->value, n2.node_1, NULL);
-    return (node2_t){node_2, n2.node_2 ? n2.node_2 : node_2};
-}
-
 
 
 num_p num_create(uint64_t count, node_p head, node_p tail)
@@ -317,7 +307,7 @@ num_p num_wrap(uint64_t value)
     return num_create(1, node,  node);
 }
 
-void node_insert(num_p num, uint64_t value) // TODO test
+void num_insert(num_p num, uint64_t value) // TODO test
 {
     num->tail = node_create(value, NULL, num->tail);
     num->count++;
@@ -342,8 +332,10 @@ void num_normalize(num_p num) // TODO test
 
 num_p num_copy(num_p num) //  TODO test
 {
-    node2_t n2 = node_copy(num->head);
-    return num_create(num->count, n2.node_1, n2.node_2);
+    num_p num_res = num_create(0, NULL, NULL);
+    for(node_p node = num->head; node; node = node->next)
+        num_insert(num_res, node->value);
+    return num_res;
 }
 
 
@@ -352,7 +344,7 @@ void num_add_uint_rec(num_p num, node_p node, uint64_t value)
 {
     if(node == NULL)
     {
-        node_insert(num, value);
+        num_insert(num, value);
         return;
     }
 
