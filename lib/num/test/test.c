@@ -143,22 +143,43 @@ void test_node_consume(bool show)
     printf("\n\t%s", __func__);
 
     if(show) printf("\n\t\t%s 1", __func__);
-    node_p node_res = node_consume(NULL);
-    assert(node_res == NULL);
+    node_p node = node_consume(NULL);
+    assert(node == NULL);
 
     if(show) printf("\n\t\t%s 2", __func__);
-    node_p node = node_create(1, NULL, NULL);
-    node_res = node_consume(node);
-    assert(node_res == NULL);
+    node = node_create(1, NULL, NULL);
+    node = node_consume(node);
+    assert(node == NULL);
 
     if(show) printf("\n\t\t%s 2", __func__);
     node = node_create(1, NULL, NULL);
     node = node_create(2, node, NULL);
-    node_res = node_consume(node);
-    assert(node_res != NULL);
-    assert(node_res->value == 1);
-    assert(node_res->prev == NULL);
-    node_free(node_res);
+    node = node_consume(node);
+    assert(node != NULL);
+    assert(node->value == 1);
+    assert(node->prev == NULL);
+    node_free(node);
+
+    assert(clu_mem_empty());
+}
+
+void test_node_denormalize(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s 1", __func__);
+    node_p node = node_denormalize(NULL);
+    assert(node != NULL);
+    assert(node->value == 0);
+    assert(node->next == NULL);
+    assert(node->prev == NULL);
+    node_free(node);
+
+    if(show) printf("\n\t\t%s 2", __func__);
+    node = node_create(1, NULL, NULL);
+    node = node_denormalize(node);
+    assert(node->value == 1);
+    node_free(node);
 
     assert(clu_mem_empty());
 }
@@ -210,24 +231,6 @@ void test_node_consume(bool show)
 //     assert(num->next  != NULL);
 //     assert(num->next->value == 2);
 //     assert(num->next->next  == NULL);
-//     num_free(num);
-//
-//     assert(clu_mem_empty());
-// }
-
-// void test_num_denormalize(bool show)
-// {
-//     printf("\n\t%s", __func__);
-//
-//     if(show) printf("\n\t\t%s 1", __func__);
-//     num_p num = num_denormalize(NULL);
-//     assert(num_immed(num, 1, 0));
-//     num_free(num);
-//
-//     if(show) printf("\n\t\t%s 2", __func__);
-//     num = num_create(1, NULL);
-//     num = num_denormalize(num);
-//     assert(num_immed(num, 1, 1));
 //     num_free(num);
 //
 //     assert(clu_mem_empty());
@@ -991,10 +994,10 @@ void test_num()
 
     test_node_create(show);
     test_node_consume(show);
+    test_node_denormalize(show);
 
     // test_num_wrap(show);
     // test_num_create_immed(show);
-    // test_num_denormalize(show);
     // test_num_normalize(show);
     // test_num_copy(show);
 

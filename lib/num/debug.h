@@ -29,9 +29,9 @@ bool num_immed(num_p num, uint64_t n, ...);
 node_p node_create(uint64_t value, node_p next, node_p prev);
 node_p node_consume(node_p node);
 void node_free(node_p node);
+node_p node_denormalize(node_p node);
 
 num_p num_create(uint64_t count, node_p head, node_p tail);
-num_p num_denormalize(num_p num);
 num_p num_normalize(num_p num);
 
 // num_p num_add_uint(num_p n, uint64_t value);
