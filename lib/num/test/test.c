@@ -606,64 +606,68 @@ void test_num_cmp(bool show)
 
 
 
-// void test_num_add(bool show)
-// {
-//     printf("\n\t%s", __func__);
-//
-//     if(show) printf("\n\t\t%s 1", __func__);
-//     num_p num_res = num_add(NULL, NULL);
-//     assert(num_immed(num_res, 0));
-//     num_free(num_res);
-//
-//     if(show) printf("\n\t\t%s 2", __func__);
-//     num_p num_1 = num_create_immed(1, 1);
-//     num_res = num_add(num_1, NULL);
-//     assert(num_immed(num_res, 1, 1));
-//     num_free(num_res);
-//
-//     if(show) printf("\n\t\t%s 3", __func__);
-//     num_p num_2 = num_create_immed(1, 1);
-//     num_res = num_add(NULL, num_2);
-//     assert(num_immed(num_res, 1, 1));
-//     num_free(num_res);
-//
-//     if(show) printf("\n\t\t%s 4", __func__);
-//     num_1 = num_create_immed(1, 1);
-//     num_2 = num_create_immed(1, 2);
-//     num_res = num_add(num_1, num_2);
-//     assert(num_immed(num_res, 1, 3));
-//     num_free(num_res);
-//
-//     if(show) printf("\n\t\t%s 5", __func__);
-//     num_1 = num_create_immed(2, 2, 1);
-//     num_2 = num_create_immed(1, 2);
-//     num_res = num_add(num_1, num_2);
-//     assert(num_immed(num_res, 2, 2, 3));
-//     num_free(num_res);
-//
-//     if(show) printf("\n\t\t%s 6", __func__);
-//     num_1 = num_create_immed(1, 1);
-//     num_2 = num_create_immed(2, 2, 3);
-//     num_res = num_add(num_1, num_2);
-//     assert(num_immed(num_res, 2, 2, 4));
-//     num_free(num_res);
-//
-//     if(show) printf("\n\t\t%s 7", __func__);
-//     num_1 = num_create_immed(2, UINT64_MAX, UINT64_MAX);
-//     num_2 = num_create_immed(1, 1);
-//     num_res = num_add(num_1, num_2);
-//     assert(num_immed(num_res, 3, 1, 0, 0));
-//     num_free(num_res);
-//
-//     if(show) printf("\n\t\t%s 8", __func__);
-//     num_1 = num_create_immed(1, 1);
-//     num_2 = num_create_immed(2, UINT64_MAX, UINT64_MAX);
-//     num_res = num_add(num_1, num_2);
-//     assert(num_immed(num_res, 3, 1, 0, 0));
-//     num_free(num_res);
-//
-//     assert(clu_mem_empty());
-// }
+void test_num_add(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s 1", __func__);
+    num_p num_1 = num_create_immed(0);
+    num_p num_2 = num_create_immed(0);
+    num_p num_res = num_add(num_1, num_2);
+    assert(num_immed(num_res, 0));
+    num_free(num_res);
+
+    if(show) printf("\n\t\t%s 2", __func__);
+    num_1 = num_create_immed(1, 1);
+    num_2 = num_create_immed(0);
+    num_res = num_add(num_1, num_2);
+    assert(num_immed(num_res, 1, 1));
+    num_free(num_res);
+
+    if(show) printf("\n\t\t%s 3", __func__);
+    num_1 = num_create_immed(0);
+    num_2 = num_create_immed(1, 1);
+    num_res = num_add(num_1, num_2);
+    assert(num_immed(num_res, 1, 1));
+    num_free(num_res);
+
+    if(show) printf("\n\t\t%s 4", __func__);
+    num_1 = num_create_immed(1, 1);
+    num_2 = num_create_immed(1, 2);
+    num_res = num_add(num_1, num_2);
+    assert(num_immed(num_res, 1, 3));
+    num_free(num_res);
+
+    if(show) printf("\n\t\t%s 5", __func__);
+    num_1 = num_create_immed(2, 2, 1);
+    num_2 = num_create_immed(1, 2);
+    num_res = num_add(num_1, num_2);
+    assert(num_immed(num_res, 2, 2, 3));
+    num_free(num_res);
+
+    if(show) printf("\n\t\t%s 6", __func__);
+    num_1 = num_create_immed(1, 1);
+    num_2 = num_create_immed(2, 2, 3);
+    num_res = num_add(num_1, num_2);
+    assert(num_immed(num_res, 2, 2, 4));
+    num_free(num_res);
+
+    if(show) printf("\n\t\t%s 7", __func__);
+    num_1 = num_create_immed(2, UINT64_MAX, UINT64_MAX);
+    num_2 = num_create_immed(1, 1);
+    num_res = num_add(num_1, num_2);
+    assert(num_immed(num_res, 3, 1, 0, 0));
+    num_free(num_res);
+
+    if(show) printf("\n\t\t%s 8", __func__);
+    num_1 = num_create_immed(1, 1);
+    num_2 = num_create_immed(2, UINT64_MAX, UINT64_MAX);
+    num_res = num_add(num_1, num_2);
+    assert(num_immed(num_res, 3, 1, 0, 0));
+    num_free(num_res);
+
+    assert(clu_mem_empty());
+}
 
 // void test_num_sub(bool show)
 // {
@@ -978,7 +982,7 @@ void test_num()
 
     test_num_cmp(show);
 
-    // test_num_add(show);
+    test_num_add(show);
     // test_num_sub(show);
     // test_num_mul(show);
     // test_num_div_mod(show);

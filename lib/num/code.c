@@ -315,6 +315,28 @@ node_p num_insert(num_p num, uint64_t value) // TODO test
     return num->tail;
 }
 
+void num_insert_list(num_p num, node_p head, node_p tail, uint64_t cnt) // TODO test
+{
+    if(cnt == 0)
+        return;
+
+    if(num->count == 0)
+    {
+        *num = (num_t)
+        {
+            .count = cnt,
+            .head = head,
+            .tail = tail
+        };
+        return;
+    }
+
+    num->count += cnt;
+    num->tail->next = head;
+    head->prev = num->tail;
+    num->tail = tail;
+}
+
 node_p num_denormalize(num_p num, node_p node)
 {
     if(node)
@@ -441,18 +463,32 @@ int64_t num_cmp(num_p num_1, num_p num_2)
 }
 
 
+void num_add_rec(num_p num_1, node_p node_1, node_p node_2, node_p node_tail, uint64_t cnt)
+{
+    if(node_1 == NULL)
+    {
+        num_insert_list(num_1, node_2, node_tail, cnt);
+        return;
+    }
 
-// num_p num_add(num_p num_1, num_p num_2)
-// {
-//     if(num_1 == NULL) return num_2;
-//     if(num_2 == NULL) return num_1;
-//
-//     num_add_uint(num_1, num_2->value);
-//
-//     num_2 = num_consume(num_2);
-//     num_1->next = num_add(num_1->next, num_2);
-//     return num_1;
-// }
+    if(node_2 == 0)
+        return;
+    
+    num_add_uint_rec(num_1, node_1, node_2->value);
+
+    node_2 = node_consume(node_2);
+    num_add_rec(num_1, node_1->next, node_2, node_tail, cnt - 1);
+}
+
+num_p num_add(num_p num_1, num_p num_2)
+{
+   assert(num_1);
+   assert(num_2);
+
+   num_add_rec(num_1, num_1->head, num_2->head, num_2->tail, num_2->count);
+   free(num_2);
+   return num_1;
+}
 
 // num_p num_sub(num_p num_1, num_p num_2)
 // {
