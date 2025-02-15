@@ -241,6 +241,8 @@ node_p node_consume(node_p node)
 
     node_p node_next = node->next;
     free(node);
+
+    if(node_next) node_next->prev = NULL;
     return node_next;
 }
 

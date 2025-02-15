@@ -138,6 +138,33 @@ void test_node_create(bool show)
     assert(clu_mem_empty());
 }
 
+void test_node_consume(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s 1", __func__);
+    node_p node_res = node_consume(NULL);
+    assert(node_res == NULL);
+
+    if(show) printf("\n\t\t%s 2", __func__);
+    node_p node = node_create(1, NULL, NULL);
+    node_res = node_consume(node);
+    assert(node_res == NULL);
+
+    if(show) printf("\n\t\t%s 2", __func__);
+    node = node_create(1, NULL, NULL);
+    node = node_create(2, node, NULL);
+    node_res = node_consume(node);
+    assert(node_res != NULL);
+    assert(node_res->value == 1);
+    assert(node_res->prev == NULL);
+    node_free(node_res);
+
+    assert(clu_mem_empty());
+}
+
+
+
 // void test_num_wrap(bool show)
 // {
 //     printf("\n\t%s", __func__);
@@ -187,29 +214,7 @@ void test_node_create(bool show)
 //
 //     assert(clu_mem_empty());
 // }
-//
-// void test_num_consume(bool show)
-// {
-//     printf("\n\t%s", __func__);
-//
-//     if(show) printf("\n\t\t%s 1", __func__);
-//     num_p num_res = num_consume(NULL);
-//     assert(num_immed(num_res, 0));
-//
-//     if(show) printf("\n\t\t%s 2", __func__);
-//     num_p num = num_create_immed(1, 1);
-//     num_res = num_consume(num);
-//     assert(num_immed(num_res, 0));
-//
-//     if(show) printf("\n\t\t%s 2", __func__);
-//     num = num_create_immed(2, 1, 2);
-//     num_res = num_consume(num);
-//     assert(num_immed(num_res, 1, 1));
-//     num_free(num_res);
-//
-//     assert(clu_mem_empty());
-// }
-//
+
 // void test_num_denormalize(bool show)
 // {
 //     printf("\n\t%s", __func__);
@@ -227,7 +232,7 @@ void test_node_create(bool show)
 //
 //     assert(clu_mem_empty());
 // }
-//
+
 // void test_num_normalize(bool show)
 // {
 //     printf("\n\t%s", __func__);
@@ -463,7 +468,7 @@ void test_node_create(bool show)
 //
 //     assert(clu_mem_empty());
 // }
-//
+
 // void test_num_shl(bool show)
 // {
 //     printf("\n\t%s", __func__);
@@ -985,10 +990,10 @@ void test_num()
     test_uint128(show);
 
     test_node_create(show);
+    test_node_consume(show);
 
     // test_num_wrap(show);
     // test_num_create_immed(show);
-    // test_num_consume(show);
     // test_num_denormalize(show);
     // test_num_normalize(show);
     // test_num_copy(show);
