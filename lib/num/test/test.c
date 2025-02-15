@@ -523,94 +523,6 @@ void test_num_mul_uint(bool show)
     assert(clu_mem_empty());
 }
 
-// void test_num_shl(bool show)
-// {
-//     printf("\n\t%s", __func__);
-//
-//     if(show) printf("\n\t\t%s 1", __func__);
-//     num_p num_res = num_shl(NULL);
-//     assert(num_immed(num_res, 0));
-//
-//     if(show) printf("\n\t\t%s 2", __func__);
-//     num_p num = num_create_immed(1, 1);
-//     num_res = num_shl(num);
-//     assert(num_immed(num_res, 1, 2));
-//     num_free(num);
-//
-//     if(show) printf("\n\t\t%s 3", __func__);
-//     num = num_create_immed(1, 3);
-//     num_res = num_shl(num);
-//     assert(num_immed(num_res, 1, 6));
-//     num_free(num);
-//
-//     if(show) printf("\n\t\t%s 4", __func__);
-//     num = num_create_immed(1, UINT64_MAX);
-//     num_res = num_shl(num);
-//     assert(num_immed(num_res, 2, 1, UINT64_MAX - 1));
-//     num_free(num);
-//
-//     if(show) printf("\n\t\t%s 5", __func__);
-//     num = num_create_immed(2, 1, 2);
-//     num_res = num_shl(num);
-//     assert(num_immed(num_res, 2, 2, 4));
-//     num_free(num);
-//
-//     if(show) printf("\n\t\t%s 6", __func__);
-//     num = num_create_immed(2, 1, UINT64_MAX);
-//     num_res = num_shl(num);
-//     assert(num_immed(num_res, 2, 3, UINT64_MAX - 1));
-//     num_free(num);
-//
-//     assert(clu_mem_empty());
-// }
-
-// void test_num_shr(bool show)
-// {
-//     printf("\n\t%s", __func__);
-//
-//     if(show) printf("\n\t\t%s 1", __func__);
-//     num_p num_res = num_shr(NULL);
-//     assert(num_immed(num_res, 0));
-//
-//     if(show) printf("\n\t\t%s 2", __func__);
-//     num_p num = num_create_immed(1, 2);
-//     num_res = num_shr(num);
-//     assert(num_immed(num_res, 1, 1));
-//     num_free(num_res);
-//
-//     if(show) printf("\n\t\t%s 3", __func__);
-//     num = num_create_immed(1, 1);
-//     num_res = num_shr(num);
-//     assert(num_immed(num_res, 0));
-//     num_free(num_res);
-//
-//     if(show) printf("\n\t\t%s 4", __func__);
-//     num = num_create_immed(2, 1, 0);
-//     num_res = num_shr(num);
-//     assert(num_immed(num_res, 1, 0x8000000000000000));
-//     num_free(num_res);
-//
-//     if(show) printf("\n\t\t%s 5", __func__);
-//     num = num_create_immed(2, 2, 0);
-//     num_res = num_shr(num);
-//     assert(num_immed(num_res, 2, 1, 0));
-//     num_free(num_res);
-//
-//     if(show) printf("\n\t\t%s 6", __func__);
-//     num = num_create_immed(2, 1, 2);
-//     num_res = num_shr(num);
-//     assert(num_immed(num_res, 1, 0x8000000000000001));
-//     num_free(num_res);
-//
-//     if(show) printf("\n\t\t%s 7", __func__);
-//     num = num_create_immed(2, 2, 2);
-//     num_res = num_shr(num);
-//     assert(num_immed(num_res, 2, 1, 1));
-//     num_free(num_res);
-//
-//     assert(clu_mem_empty());
-// }
-
 
 
 // void test_num_cmp(bool show)
@@ -1055,8 +967,6 @@ void test_num()
     test_num_add_uint(show);
     test_num_sub_uint(show);
     test_num_mul_uint(show);
-    // test_num_shl(show);
-    // test_num_shr(show);
 
     // test_num_cmp(show);
 

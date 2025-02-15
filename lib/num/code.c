@@ -388,8 +388,6 @@ void num_sub_uint(num_p num, uint64_t value)
 
 void num_mul_uint_rec(num_p num_res, node_p node_res, node_p node, uint64_t value)
 {
-    // printf("\nentering\t\t");
-
     if(node == NULL)
         return;
 
@@ -413,33 +411,6 @@ num_p num_mul_uint(num_p num_res, num_p num, uint64_t value)
 
     return num_res;
 }
-
-// num_p num_shl_rec(num_p num, bool carry)
-// {
-//     if(num == NULL)
-//         return carry ? num_create(1, NULL) : NULL;
-//
-//     bool carry_next = num->value >> 63;
-//     num->value = num->value << 1 | carry;
-//     num->next = num_shl_rec(num->next, carry_next);
-//     return num;
-// }
-
-// num_p num_shl(num_p num)
-// {
-//     return num_shl_rec(num, false);
-// }
-
-// num_p num_shr(num_p num)
-// {
-//     if(num == NULL)
-//         return NULL;
-//
-//     uint64_t carry = num->next ? num->next->value & 1 : 0;
-//     num->value = num->value >> 1 | carry << 63;
-//     num->next = num_shr(num->next);
-//     return num_normalize(num);
-// }
 
 
 
