@@ -11,6 +11,11 @@ STRUCT(node)
     node_p next, prev;
 };
 
+STRUCT(node2)
+{
+    node_p node_1, node_2;
+};
+
 STRUCT(num)
 {
     uint64_t count;
