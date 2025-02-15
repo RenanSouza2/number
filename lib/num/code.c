@@ -306,7 +306,7 @@ void num_free(num_p num)
 }
 
 /* returns NULL if value is 0, num(VALUE) else */
-num_p num_wrap(uint64_t value) // TODO test
+num_p num_wrap(uint64_t value)
 {
     if(value == 0)
         return num_create(0, NULL, NULL);
@@ -323,20 +323,30 @@ num_p num_copy(num_p num) //  TODO test
 
 
 
-// num_p num_add_uint(num_p num, uint64_t value)
-// {
-//     if(value == 0)
-//         return num;
-//
-//     if(num == NULL)
-//         return num_create(value, NULL);
-//
-//     num->value += value;
-//     if(num->value < value)
-//         num->next = num_add_uint(num->next, 1);
-//
-//     return num;
-// }
+void num_add_uint_rec(num_p num, node_p node, uint64_t value)
+{
+    if(node == NULL)
+    {
+        num->tail = node_create(value, NULL, num->tail);
+        num->count++;
+        if(num->count == 1)
+            num->head = num->tail;
+        return;
+    }
+
+    node->value += value;
+    if(node->value < value)
+        num_add_uint_rec(num, node->next, 1);
+}
+
+num_p num_add_uint(num_p num, uint64_t value)
+{
+    if(value == 0)
+        return num;
+
+    num_add_uint_rec(num, num->head, value);
+    return num;
+}
 
 // num_p num_sub_uint(num_p num, uint64_t value)
 // {
