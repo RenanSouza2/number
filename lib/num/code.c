@@ -490,18 +490,30 @@ num_p num_add(num_p num_1, num_p num_2)
    return num_1;
 }
 
-// num_p num_sub(num_p num_1, num_p num_2)
-// {
-//     if(num_2 == NULL) return num_1;
-//     assert(num_1);
-//
-//     num_1 = num_sub_uint(num_1, num_2->value);
-//
-//     num_1 = num_denormalize(num_1);
-//     num_2 = num_consume(num_2);
-//     num_1->next = num_sub(num_1->next, num_2);
-//     return num_normalize(num_1);
-// }
+// TODO: num_2 keep
+void num_sub_rec(num_p num_1, node_p node_1, node_p node_2)
+{
+    if(node_2 == NULL)
+        return;
+
+    assert(node_1);
+
+    num_sub_uint_rec(num_1, node_1, node_2->value);
+
+    node_2 = node_consume(node_2);
+    num_sub_rec(num_1, node_1->next, node_2);
+    num_normalize(num_1);
+}
+
+num_p num_sub(num_p num_1, num_p num_2)
+{
+    assert(num_1);
+    assert(num_2);
+
+    num_sub_rec(num_1, num_1->head, num_2->head);
+    free(num_2);
+    return num_1;
+}
 
 // num_p num_mul_rec(num_p num_res, num_p num_1, num_p num_2)
 // {
