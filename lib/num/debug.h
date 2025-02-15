@@ -30,9 +30,9 @@ node_p node_create(uint64_t value, node_p next, node_p prev);
 node_p node_consume(node_p node);
 void node_free(node_p node);
 node_p node_denormalize(node_p node);
+node_p node_normalize(node_p node);
 
 num_p num_create(uint64_t count, node_p head, node_p tail);
-num_p num_normalize(num_p num);
 
 // num_p num_add_uint(num_p n, uint64_t value);
 // num_p num_sub_uint(num_p num, uint64_t value);

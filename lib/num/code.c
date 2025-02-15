@@ -266,7 +266,8 @@ node_p node_normalize(node_p node)
 {
     if(node == NULL || node->value != 0 || node->next != NULL)
         return node;
-        
+    
+    if(node->prev) node->prev->next = NULL;
     free(node);
     return NULL;
 }
