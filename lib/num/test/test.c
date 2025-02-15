@@ -243,45 +243,63 @@ void test_num_wrap(bool show)
     assert(num->count == 1);
     assert(num->head != NULL);
     assert(num->head->value == 2);
+    assert(num->head->next == NULL);
+    assert(num->head->prev == NULL);
     assert(num->tail == num->head);
     num_free(num);
 
     assert(clu_mem_empty());
 }
 
-// void test_num_create_immed(bool show)
-// {
-//     printf("\n\t%s", __func__);
-//
-//     if(show) printf("\n\t\t%s 1", __func__);
-//     num_p num = num_create_immed(0);
-//     assert(num == NULL);
-//     num_free(num);
-//
-//     if(show) printf("\n\t\t%s 2", __func__);
-//     num = num_create_immed(1, 1);
-//     assert(num->value == 1);
-//     assert(num->next  == NULL);
-//     num_free(num);
-//
-//     if(show) printf("\n\t\t%s 3", __func__);
-//     num = num_create_immed(2, 2, 1);
-//     assert(num->value == 1);
-//     assert(num->next  != NULL);
-//     assert(num->next->value == 2);
-//     assert(num->next->next  == NULL);
-//     num_free(num);
-//
-//     if(show) printf("\n\t\t%s 3", __func__);
-//     num = num_create_immed(2, 2, 0);
-//     assert(num->value == 0);
-//     assert(num->next  != NULL);
-//     assert(num->next->value == 2);
-//     assert(num->next->next  == NULL);
-//     num_free(num);
-//
-//     assert(clu_mem_empty());
-// }
+void test_num_create_immed(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s 1", __func__);
+    num_p num = num_create_immed(0);
+    assert(num->count == 0);
+    assert(num->head == NULL);
+    assert(num->tail == NULL);
+    num_free(num);
+
+    if(show) printf("\n\t\t%s 2", __func__);
+    num = num_create_immed(1, 2);
+    assert(num->count == 1);
+    assert(num->head != NULL);
+    assert(num->head->value == 2);
+    assert(num->head->next == NULL);
+    assert(num->head->prev == NULL);
+    assert(num->tail == num->head);
+    num_free(num);
+
+    if(show) printf("\n\t\t%s 3", __func__);
+    num = num_create_immed(2, 2, 1);
+    assert(num->count == 2);
+    assert(num->head != NULL)
+    assert(num->head->value == 1);
+    assert(num->head->next != NULL);
+    assert(num->head->prev == NULL);
+    assert(num->head->next->value == 2);
+    assert(num->head->next->next == NULL);
+    assert(num->head->next->prev == num->head);
+    assert(num->tail == num->head->next);
+    num_free(num);
+
+    if(show) printf("\n\t\t%s 4", __func__);
+    num = num_create_immed(2, 2, 0);
+    assert(num->count == 2);
+    assert(num->head != NULL)
+    assert(num->head->value == 0);
+    assert(num->head->next != NULL);
+    assert(num->head->prev == NULL);
+    assert(num->head->next->value == 2);
+    assert(num->head->next->next == NULL);
+    assert(num->head->next->prev == num->head);
+    assert(num->tail == num->head->next);
+    num_free(num);
+
+    assert(clu_mem_empty());
+}
 
 // void test_num_copy(bool show)
 // {
@@ -1017,7 +1035,7 @@ void test_num()
     test_node_normalize(show);
 
     test_num_wrap(show);
-    // test_num_create_immed(show);
+    test_num_create_immed(show);
     // test_num_copy(show);
 
     // test_num_add_uint(show);

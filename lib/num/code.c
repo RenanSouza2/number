@@ -17,7 +17,7 @@ num_p num_create_variadic(uint64_t n, va_list args)
     uint64_t value = va_arg(args, uint64_t);
     node_p tail = node_create(value, NULL, NULL);
 
-    node_p node = NULL;
+    node_p node = tail;
     for(uint64_t i=1; i<n; i++)
     {
         uint64_t value = va_arg(args, uint64_t);
@@ -240,6 +240,7 @@ node_p node_consume(node_p node)
         return NULL;
 
     node_p node_next = node->next;
+    assert(node->prev == NULL);
     free(node);
 
     if(node_next) node_next->prev = NULL;
