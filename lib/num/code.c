@@ -315,6 +315,16 @@ node_p num_insert(num_p num, uint64_t value) // TODO test
     return num->tail;
 }
 
+node_p num_insert_head(num_p num, uint64_t value) // TODO test
+{
+    num->head = node_create(value, num->head, NULL);
+    num->count++;
+    if(num->count == 1)
+        num->tail = num->head;
+
+    return num->head;
+}
+
 void num_insert_list(num_p num, node_p head, node_p tail, uint64_t cnt) // TODO test
 {
     if(cnt == 0)
@@ -345,19 +355,21 @@ node_p num_denormalize(num_p num, node_p node)
     return num_insert(num, 0);
 }
 
-void num_normalize(num_p num) // TODO test
+node_p num_normalize(num_p num) // TODO test
 {
     if(num->count == 0)
-        return;
+        return NULL;
 
     node_p node_tail = num->tail;
     num->tail = node_normalize(num->tail);
     if(num->tail == node_tail)
-        return;
+        return num->tail;
 
     num->count--;
     if(num->count == 0)
         num->head = NULL;
+
+    return NULL;
 }
 
 num_p num_copy(num_p num) //  TODO test
@@ -437,31 +449,43 @@ num_p num_mul_uint(num_p num_res, num_p num, uint64_t value)
 
 
 
+int64_t node_cmp(node_p node_1, node_p node_2, uint64_t cnt)
+{
+    for(uint64_t i=0; i<cnt; i++)
+    {
+        if(node_1 == NULL)
+            return node_2 ? -1 : 0;
+
+        if(node_2 == NULL)
+            return 1;
+
+        if(node_1->value > node_2->value)
+            return 1;
+
+        if(node_1->value < node_2->value)
+            return -1;
+
+        node_1 = node_1->prev;
+        node_2 = node_2->prev;
+    }
+
+    return 0;
+}
+
 int64_t num_cmp(num_p num_1, num_p num_2)
 {
     assert(num_1);
     assert(num_2);
+
     if(num_1->count > num_2->count)
         return 1;
 
     if(num_1->count < num_2->count)
         return -1;
 
-    for(
-        node_p node_1 = num_1->tail, node_2 = num_2->tail;
-        node_1;
-        node_1 = node_1->prev, node_2 = node_2->prev
-    )
-    {
-        if(node_1->value > node_2->value)
-            return 1;
-
-        if(node_1->value < node_2->value)
-            return -1;
-    }
-
-    return 0;
+    return node_cmp(num_1->tail, num_2->tail, num_1->count);
 }
+
 
 
 void num_add_rec(num_p num_1, node_p node_1, node_p node_2, node_p node_tail, uint64_t cnt)
@@ -492,10 +516,10 @@ num_p num_add(num_p num_1, num_p num_2)
 }
 
 // TODO: num_2 keep
-void num_sub_rec(num_p num_1, node_p node_1, node_p node_2)
+node_p num_sub_rec(num_p num_1, node_p node_1, node_p node_2)
 {
     if(node_2 == NULL)
-        return;
+        return node_1;
 
     assert(node_1);
 
@@ -503,7 +527,7 @@ void num_sub_rec(num_p num_1, node_p node_1, node_p node_2)
 
     node_2 = node_consume(node_2);
     num_sub_rec(num_1, node_1->next, node_2);
-    num_normalize(num_1);
+    return num_normalize(num_1);
 }
 
 num_p num_sub(num_p num_1, num_p num_2)
@@ -547,74 +571,84 @@ num_p num_mul(num_p num_1, num_p num_2)
     return num_res;
 }
 
-// num_p num_div_mod_rec(
-//     num_p *out_num_q, 
-//     num_p num_1,
-//     num_p num_2, 
-//     uint64_t cnt_1,
-//     uint64_t cnt_2, 
-//     uint64_t val_2
-// )
-// {
-//     if(cnt_1 <= cnt_2+1)
-//     if(num_cmp(num_1, num_2) < 0)
-//     {
-//         *out_num_q = NULL;
-//         return num_1;
-//     }
-//
-//     num_p num_q;
-//     num_1->next = num_div_mod_rec(&num_q, num_1->next, num_2, cnt_1-1, cnt_2, val_2);
-//     num_1 = num_normalize(num_1);
-//
-//     uint64_t r =  0;
-//     while(num_cmp(num_1, num_2) >= 0)
-//     {
-//         cnt_1 = num_count(num_1);
-//         uint64_t r_max, r_min;
-//         if(cnt_1 > cnt_2)
-//         {
-//             uint128_t val_1 = num_get_last_2(num_1);
-//             r_max = val_1 / val_2;
-//             r_min = val_1 / (U128(val_2) + 1);
-//         }
-//         else
-//         {
-//             uint64_t val_1 = num_get_last(num_1);
-//             r_max = val_1 / val_2;
-//             r_min = val_1 / (U128(val_2) + 1);
-//         }
-//
-//         num_p num_aux = num_mul_uint(NULL, num_2, r_max);
-//         if(num_cmp(num_aux, num_1) > 0)
-//         {
-//             num_free(num_aux);
-//             num_aux = num_mul_uint(NULL, num_2, r_min);
-//             r_max = r_min;
-//         }
-//         num_1 = num_sub(num_1, num_aux);
-//         r += r_max;
-//     }
-//
-//     *out_num_q = num_create(r, num_q);
-//     return num_1;
-// }
-//
-// void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
-// {
-//     assert(num_2);
-//
-//     uint64_t cnt_1 = num_count(num_1);
-//     uint64_t cnt_2 = num_count(num_2);
-//     uint64_t val_2 = num_get_last(num_2);
-//
-//     num_p num_q;
-//     num_p num_r = num_div_mod_rec(&num_q, num_1, num_2, cnt_1, cnt_2, val_2);
-//     num_free(num_2);
-//
-//     *out_num_q = num_q;
-//     *out_num_r = num_r;
-// }
+void num_div_mod_rec(
+    num_p num_q,
+    num_p num_r,
+    node_p node_r,
+    uint64_t cnt_r,
+    num_p num_2
+)
+{
+    if(cnt_r == UINT64_MAX)
+        return;
+
+    if(node_cmp(num_r->tail, num_2->tail, num_2->count) < 0)
+    {
+        num_insert_head(num_q, 0);
+        num_div_mod_rec(num_q, num_r, node_r->prev, cnt_r - 1, num_2);
+        return;
+    }
+    
+    uint64_t r =  0;
+    while(node_cmp(num_r->tail, num_2->tail, num_2->count) < 0)
+    {
+        uint64_t r_max, r_min;
+        if(num_r->count - cnt_r > num_2->count)
+        {
+            uint128_t val_1 = U128_IMMED(num_r->tail->value, num_r->tail->prev->value);
+            r_max = val_1 / num_2->tail->value;
+            r_min = val_1 / (U128(num_2->tail->value) + 1);
+        }
+        else
+        {
+            uint64_t val_1 = num_r->tail->value;
+            r_max = val_1 / num_2->tail->value;
+            r_min = val_1 / (U128(num_2->tail->value) + 1);
+        }
+
+        num_p num_aux = num_mul_uint(NULL, num_2, r_max);
+        if((
+            num_r->count - cnt_r > num_aux->count) ||
+            node_cmp(num_r->tail, num_aux->tail, num_aux->count) > 0
+        )
+        {
+            num_free(num_aux);
+            num_aux = num_mul_uint(NULL, num_2, r_min);
+            r_max = r_min;
+        }
+        node_r = num_sub_rec(num_r, node_r, num_aux->head);
+        free(num_aux);
+        r += r_max;
+    }
+
+    num_insert_head(num_q, r);
+    num_div_mod_rec(num_q, num_r, node_r ? node_r->prev : num_r->tail, cnt_r - 1, num_2);
+}
+
+void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
+{
+    assert(num_2);
+
+    num_p num_q = num_create(0, NULL, NULL);
+
+    if(num_cmp(num_1, num_2) < 0)
+    {
+        *out_num_q = num_q;
+        *out_num_r = num_1;
+        num_free(num_2);
+        return;
+    }
+
+    node_p node_r = num_1->tail;
+    for(uint64_t i=1; i<num_2->count; i++)
+        node_r = node_r->prev;
+
+    num_div_mod_rec(num_q, num_1, node_r, num_1->count - num_2->count, num_2);
+
+    *out_num_q = num_q;
+    *out_num_r = num_1;
+    num_free(num_2);
+}
 
 // num_p num_div(num_p num_1, num_p num_2)
 // {
