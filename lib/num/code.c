@@ -495,6 +495,20 @@ int64_t num_cmp(num_p num_1, num_p num_2)
     return node_cmp(num_1->tail, num_2->tail, num_1->count);
 }
 
+int64_t num_cmp_offset(num_p num_1, num_p num_2, uint64_t offset)
+{
+    assert(num_1);
+    assert(num_2);
+
+    if(num_1->count > num_2->count + offset)
+        return 1;
+
+    if(num_1->count < num_2->count + offset)
+        return -1;
+
+    return node_cmp(num_1->tail, num_2->tail, num_2->count);
+}
+
 
 
 void num_add_rec(num_p num_1, node_p node_1, node_p node_2, node_p node_tail, uint64_t cnt)
@@ -588,12 +602,25 @@ void num_div_mod_rec(
     num_p num_2
 )
 {
+
+printf("\n------------------");
+printf("\nentering");
+num_display("num_q", num_q);
+num_display("num_r", num_r);
+num_display("num_2", num_2);
+
     if(cnt_r == UINT64_MAX)
         return;
 
     uint64_t r =  0;
-    while(node_cmp(num_r->tail, num_2->tail, num_2->count) >= 0)
+    while(num_cmp_offset(num_r, num_2, cnt_r) >= 0)
     {
+
+printf("\n\nloop");
+printf("\nr: %lu", r);
+num_display("num_r", num_r);
+num_display("num_2", num_2);
+
         uint64_t r_max, r_min;
         if(num_r->count - cnt_r > num_2->count)
         {
@@ -608,20 +635,31 @@ void num_div_mod_rec(
             r_min = val_1 / (U128(num_2->tail->value) + 1);
         }
 
+printf("\nr_max: %lu", r_max);
+printf("\nr_min: %lu", r_min);
+
         num_p num_aux = num_mul_uint(NULL, num_2, r_max);
-        if((
-            num_r->count - cnt_r > num_aux->count) ||
-            node_cmp(num_r->tail, num_aux->tail, num_aux->count) < 0
-        )
+
+num_display("num_aux", num_aux);
+
+        if(num_cmp_offset(num_r, num_aux, cnt_r) < 0)
         {
+
+printf("\nadjusting");
+
             num_free(num_aux);
             num_aux = num_mul_uint(NULL, num_2, r_min);
             r_max = r_min;
         }
         node_r = num_sub_rec(num_r, node_r, num_aux->head);
+
+num_display("new r", num_r);
+
         free(num_aux);
         r += r_max;
     }
+
+printf("\nAAAAAA");
 
     num_insert_head(num_q, r);
     num_div_mod_rec(num_q, num_r, node_r ? node_r->prev : num_r->tail, cnt_r - 1, num_2);
@@ -631,6 +669,12 @@ void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
 {
     assert(num_1);
     assert(num_2);
+    assert(num_2->count);
+
+printf("\n------------------------------------");
+printf("\nDividing");
+num_display("num_1", num_1);
+num_display("num_2", num_2);
 
     num_p num_q = num_create(0, NULL, NULL);
 
