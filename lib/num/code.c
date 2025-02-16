@@ -591,15 +591,8 @@ void num_div_mod_rec(
     if(cnt_r == UINT64_MAX)
         return;
 
-    if(node_cmp(num_r->tail, num_2->tail, num_2->count) < 0)
-    {
-        num_insert_head(num_q, 0);
-        num_div_mod_rec(num_q, num_r, node_r->prev, cnt_r - 1, num_2);
-        return;
-    }
-    
     uint64_t r =  0;
-    while(node_cmp(num_r->tail, num_2->tail, num_2->count) > 0)
+    while(node_cmp(num_r->tail, num_2->tail, num_2->count) >= 0)
     {
         uint64_t r_max, r_min;
         if(num_r->count - cnt_r > num_2->count)
