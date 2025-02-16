@@ -611,7 +611,7 @@ void num_div_mod_rec(
         num_p num_aux = num_mul_uint(NULL, num_2, r_max);
         if((
             num_r->count - cnt_r > num_aux->count) ||
-            node_cmp(num_r->tail, num_aux->tail, num_aux->count) > 0
+            node_cmp(num_r->tail, num_aux->tail, num_aux->count) < 0
         )
         {
             num_free(num_aux);
