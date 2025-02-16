@@ -658,18 +658,18 @@ void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
     num_free(num_2);
 }
 
-// num_p num_div(num_p num_1, num_p num_2)
-// {
-//     num_p num_q, num_r;
-//     num_div_mod(&num_q, &num_r, num_1, num_2);
-//     num_free(num_r);
-//     return num_q;
-// }
+num_p num_div(num_p num_1, num_p num_2)
+{
+    num_p num_q, num_r;
+    num_div_mod(&num_q, &num_r, num_1, num_2);
+    num_free(num_r);
+    return num_q;
+}
 
-// num_p num_mod(num_p num_1, num_p num_2)
-// {
-//     num_p num_q, num_r;
-//     num_div_mod(&num_q, &num_r, num_1, num_2);
-//     num_free(num_q);
-//     return num_r;
-// }
+num_p num_mod(num_p num_1, num_p num_2)
+{
+    num_p num_q, num_r;
+    num_div_mod(&num_q, &num_r, num_1, num_2);
+    num_free(num_q);
+    return num_r;
+}
