@@ -169,8 +169,8 @@ bool num_str(num_p num_1, num_p num_2)
     if(num_str_inner(num_1, num_2))
         return true;
 
-    num_display("\n\tnum_1", num_1, false);
-    num_display("\tnum_2", num_2, false);
+    num_display("\n\tnum_1", num_1);
+    num_display("\tnum_2", num_2);
     return false;
 }
 
@@ -197,8 +197,7 @@ void node_display_rec(node_p node, uint64_t index)
     node_display_rec(node->prev, index - 1);
 }
 
-
-void num_display(char *tag, num_p num, bool full)
+void num_display_inner(char *tag, num_p num, uint64_t index)
 {
     printf("\n%s: ", tag);
     
@@ -210,8 +209,18 @@ void num_display(char *tag, num_p num, bool full)
 
     printf("" U64P " | ", num->count);
     
-    node_display_rec(num->tail, full ? num->count : 4);
-    if(!full && num->count > 4) printf(" ...");
+    node_display_rec(num->tail, index);
+}
+
+void num_display(char *tag, num_p num)
+{
+    num_display_inner(tag, num, 4);
+    if(num->count > 4) printf(" ...");
+}
+
+void num_display_full(char *tag, num_p num)
+{
+    num_display_inner(tag, num, num->count);
 }
 
 
@@ -590,7 +599,7 @@ void num_div_mod_rec(
     }
     
     uint64_t r =  0;
-    while(node_cmp(num_r->tail, num_2->tail, num_2->count) < 0)
+    while(node_cmp(num_r->tail, num_2->tail, num_2->count) > 0)
     {
         uint64_t r_max, r_min;
         if(num_r->count - cnt_r > num_2->count)
@@ -627,6 +636,7 @@ void num_div_mod_rec(
 
 void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
 {
+    assert(num_1);
     assert(num_2);
 
     num_p num_q = num_create(0, NULL, NULL);
