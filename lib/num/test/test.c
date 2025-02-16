@@ -520,6 +520,13 @@ void test_num_mul_uint(bool show)
     num_free(num);
     num_free(num_res);
 
+    if(show) printf("\n\t\t%s 17\t\t", __func__);
+    num = num_create_immed(2, 6, 0xea7db545decb57a4);
+    num_res = num_mul_uint(NULL, num, 123427205323);
+    assert(num_immed(num_res, 2, 0xc6bfba060d, 0xdf4c110fd2f33f0c));
+    num_free(num);
+    num_free(num_res);
+
     assert(clu_mem_empty());
 }
 
