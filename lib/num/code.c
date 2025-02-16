@@ -67,12 +67,10 @@ bool uint128_immed(uint128_t u1, uint64_t v2h, uint64_t v2l)
 
 bool node_rec(node_p node_1, node_p node_2, uint64_t index, node_p node_head)
 {
-    
     if(index == 0)
     {
         if(node_1 != NULL)
         {
-
             printf("\n\tNODE VALIDITY ERROR\t| NUMBER LONGER THAN EXPECTED");
             return false;
         }
@@ -200,7 +198,7 @@ void node_display_rec(node_p node, uint64_t index)
 void num_display_inner(char *tag, num_p num, uint64_t index)
 {
     printf("\n%s: ", tag);
-    
+
     if(num->count == 0)
     {
         printf("0 | 0");
@@ -208,7 +206,6 @@ void num_display_inner(char *tag, num_p num, uint64_t index)
     }
 
     printf("" U64P " | ", num->count);
-    
     node_display_rec(num->tail, index);
 }
 
@@ -232,7 +229,7 @@ node_p node_create(uint64_t value, node_p next, node_p prev)
 
     if(next) next->prev = node;
     if(prev) prev->next = node;
-    
+
     *node = (node_t)
     {
         .value = value,
@@ -245,8 +242,7 @@ node_p node_create(uint64_t value, node_p next, node_p prev)
 /* free NODE struct and return next */
 node_p node_consume(node_p node)
 {
-    if(node == NULL)
-        return NULL;
+    if(node == NULL) return NULL;
 
     node_p node_next = node->next;
     assert(node->prev == NULL);
@@ -259,8 +255,7 @@ node_p node_consume(node_p node)
 /* free NODE list */
 void node_free(node_p node)
 {
-    while(node)
-        node = node_consume(node);
+    while(node) node = node_consume(node);
 }
 
 /* creates a NODE struct with value 0 if NUM is null */
@@ -274,7 +269,7 @@ node_p node_normalize(node_p node)
 {
     if(node == NULL || node->value != 0 || node->next != NULL)
         return node;
-    
+
     node_p node_prev = node->prev;
     if(node_prev) node_prev->next = NULL;
 
@@ -336,8 +331,7 @@ node_p num_insert_head(num_p num, uint64_t value) // TODO test
 
 void num_insert_list(num_p num, node_p head, node_p tail, uint64_t cnt) // TODO test
 {
-    if(cnt == 0)
-        return;
+    if(cnt == 0) return;
 
     if(num->count == 0)
     {
@@ -358,10 +352,7 @@ void num_insert_list(num_p num, node_p head, node_p tail, uint64_t cnt) // TODO 
 
 node_p num_denormalize(num_p num, node_p node)
 {
-    if(node)
-        return node;
-
-    return num_insert(num, 0);
+    return node ? node : num_insert(num, 0);
 }
 
 bool num_normalize(num_p num) // TODO test
@@ -392,53 +383,51 @@ num_p num_copy(num_p num) //  TODO test
 
 
 
-node_p num_add_uint_rec(num_p num, node_p node, uint64_t value)
+node_p num_add_uint_offset(num_p num, node_p node, uint64_t value)
 {
     if(node == NULL)
         return value ? num_insert(num, value) : NULL;
 
     node->value += value;
     if(node->value < value)
-        num_add_uint_rec(num, node->next, 1);
+        num_add_uint_offset(num, node->next, 1);
 
     return node;
 }
 
 void num_add_uint(num_p num, uint64_t value)
 {
-    num_add_uint_rec(num, num->head, value);
+    num_add_uint_offset(num, num->head, value);
 }
 
-void num_sub_uint_rec(num_p num, node_p node, uint64_t value)
+void num_sub_uint_offset(num_p num, node_p node, uint64_t value)
 {
-    if(value == 0)
-        return;
-
+    if(value == 0) return;
     assert(node);
 
     bool do_next = node->value < value;
     node->value -= value;
     if(do_next)
-        num_sub_uint_rec(num, node->next, 1);
+        num_sub_uint_offset(num, node->next, 1);
 
     num_normalize(num);
 }
 
 void num_sub_uint(num_p num, uint64_t value)
 {
-    num_sub_uint_rec(num, num->head, value);
+    num_sub_uint_offset(num, num->head, value);
 }
 
-node_p num_mul_uint_rec(num_p num_res, node_p node_res, node_p node, uint64_t value)
+node_p num_mul_uint_offset(num_p num_res, node_p node_res, node_p node, uint64_t value)
 {
     if(node == NULL)
         return node_res;
 
     uint128_t u = MUL(node->value, value);
-    node_res = num_add_uint_rec(num_res, node_res, LOW(u));
+    node_res = num_add_uint_offset(num_res, node_res, LOW(u));
     node_res = num_denormalize(num_res, node_res);
-    num_add_uint_rec(num_res, node_res->next, HIGH(u));
-    num_mul_uint_rec(num_res, node_res->next, node->next, value);
+    num_add_uint_offset(num_res, node_res->next, HIGH(u));
+    num_mul_uint_offset(num_res, node_res->next, node->next, value);
     return node_res;
 }
 
@@ -451,7 +440,7 @@ num_p num_mul_uint(num_p num_res, num_p num, uint64_t value)
         num_res = num_create(0, NULL, NULL);
 
     if(value)
-        num_mul_uint_rec(num_res, num_res->head, num->head, value);
+        num_mul_uint_offset(num_res, num_res->head, num->head, value);
 
     return num_res;
 }
@@ -462,11 +451,8 @@ int64_t node_cmp(node_p node_1, node_p node_2, uint64_t cnt)
 {
     for(uint64_t i=0; i<cnt; i++)
     {
-        if(node_1 == NULL)
-            return node_2 ? -1 : 0;
-
-        if(node_2 == NULL)
-            return 1;
+        assert(node_1);
+        assert(node_2);
 
         if(node_1->value > node_2->value)
             return 1;
@@ -512,8 +498,8 @@ void num_add_rec(num_p num_1, node_p node_1, node_p node_2, node_p node_tail, ui
 
     if(node_2 == 0)
         return;
-    
-    num_add_uint_rec(num_1, node_1, node_2->value);
+
+    num_add_uint_offset(num_1, node_1, node_2->value);
 
     node_2 = node_consume(node_2);
     num_add_rec(num_1, node_1->next, node_2, node_tail, cnt - 1);
@@ -525,6 +511,7 @@ num_p num_add(num_p num_1, num_p num_2)
    assert(num_2);
 
    num_add_rec(num_1, num_1->head, num_2->head, num_2->tail, num_2->count);
+
    free(num_2);
    return num_1;
 }
@@ -532,12 +519,10 @@ num_p num_add(num_p num_1, num_p num_2)
 // TODO: num_2 keep
 node_p num_sub_rec(num_p num_1, node_p node_1, node_p node_2)
 {
-    if(node_2 == NULL)
-        return node_1;
-
+    if(node_2 == NULL) return node_1;
     assert(node_1);
 
-    num_sub_uint_rec(num_1, node_1, node_2->value);
+    num_sub_uint_offset(num_1, node_1, node_2->value);
 
     node_2 = node_consume(node_2);
     num_sub_rec(num_1, node_1->next, node_2);
@@ -550,16 +535,16 @@ num_p num_sub(num_p num_1, num_p num_2)
     assert(num_2);
 
     num_sub_rec(num_1, num_1->head, num_2->head);
+
     free(num_2);
     return num_1;
 }
 
 void num_mul_rec(num_p num_res, node_p node_res, node_p node_1, node_p node_2)
 {
-    if(node_2 == NULL)
-        return;
+    if(node_2 == NULL) return;
 
-    node_res = num_mul_uint_rec(num_res, node_res, node_1, node_2->value);
+    node_res = num_mul_uint_offset(num_res, node_res, node_1, node_2->value);
     node_res = num_denormalize(num_res, node_res);
     node_2 = node_consume(node_2);
     num_mul_rec(num_res, node_res->next, node_1, node_2);
@@ -593,14 +578,13 @@ void num_div_mod_rec(
     num_p num_2
 )
 {
-    if(cnt_r == UINT64_MAX)
-        return;
+    if(cnt_r == UINT64_MAX) return;
 
     uint64_t r =  0;
     while(num_cmp_offset(num_r, num_2, cnt_r) >= 0)
     {
         uint64_t r_max, r_min;
-        if(num_r->count - cnt_r > num_2->count)
+        if(num_r->count > num_2->count + cnt_r)
         {
             uint128_t val_1 = U128_IMMED(num_r->tail->value, num_r->tail->prev->value);
             r_max = val_1 / num_2->tail->value;
@@ -620,10 +604,10 @@ void num_div_mod_rec(
             num_aux = num_mul_uint(NULL, num_2, r_min);
             r_max = r_min;
         }
-        node_r = num_sub_rec(num_r, node_r, num_aux->head);
 
-        free(num_aux);
+        node_r = num_sub_rec(num_r, node_r, num_aux->head);
         r += r_max;
+        free(num_aux);
     }
 
     num_insert_head(num_q, r);
