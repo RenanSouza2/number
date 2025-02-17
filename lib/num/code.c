@@ -168,7 +168,7 @@ bool num_str(num_p num_1, num_p num_2)
         return true;
 
     num_display("\n\tnum_1", num_1);
-    num_display("\tnum_2", num_2);
+    num_display("\n\tnum_2", num_2);
     return false;
 }
 
@@ -205,14 +205,14 @@ void num_display_inner(char *tag, num_p num, uint64_t index)
         return;
     }
 
-    printf("" U64P " | ", num->count);
+    printf("" U64P "\t| ", num->count);
     node_display_rec(num->tail, index);
 }
 
 void num_display(char *tag, num_p num)
 {
     num_display_inner(tag, num, 4);
-    if(num->count > 4) printf(" ...");
+    if(num->count > 4) printf("...");
 }
 
 void num_display_full(char *tag, num_p num)
@@ -245,7 +245,6 @@ node_p node_consume(node_p node)
     if(node == NULL) return NULL;
 
     node_p node_next = node->next;
-    assert(node->prev == NULL);
     free(node);
 
     if(node_next) node_next->prev = NULL;
@@ -403,7 +402,6 @@ void num_add_uint(num_p num, uint64_t value)
 void num_sub_uint_offset(num_p num, node_p node, uint64_t value)
 {
     if(value == 0) return;
-    assert(node);
 
     bool do_next = node->value < value;
     node->value -= value;
@@ -434,8 +432,6 @@ node_p num_mul_uint_offset(num_p num_res, node_p node_res, node_p node, uint64_t
 /* NUM_RES can be NULL, preserves NUM */
 num_p num_mul_uint(num_p num_res, num_p num, uint64_t value)
 {
-    assert(num);
-
     if(num_res == NULL)
         num_res = num_create(0, NULL, NULL);
 
@@ -451,9 +447,6 @@ int64_t node_cmp(node_p node_1, node_p node_2, uint64_t cnt)
 {
     for(uint64_t i=0; i<cnt; i++)
     {
-        assert(node_1);
-        assert(node_2);
-
         if(node_1->value > node_2->value)
             return 1;
 
@@ -469,9 +462,6 @@ int64_t node_cmp(node_p node_1, node_p node_2, uint64_t cnt)
 
 int64_t num_cmp_offset(num_p num_1, num_p num_2, uint64_t offset)
 {
-    assert(num_1);
-    assert(num_2);
-
     if(num_1->count > num_2->count + offset)
         return 1;
 
@@ -488,7 +478,8 @@ int64_t num_cmp(num_p num_1, num_p num_2)
 
 
 
-void num_add_rec(num_p num_1, node_p node_1, node_p node_2, node_p node_tail, uint64_t cnt)
+void num_add_rec(num_p num_1, node_p node_1, node_p node_2, node_p node_tail, uint64_t 
+3)
 {
     if(node_1 == NULL)
     {
@@ -507,9 +498,6 @@ void num_add_rec(num_p num_1, node_p node_1, node_p node_2, node_p node_tail, ui
 
 num_p num_add(num_p num_1, num_p num_2)
 {
-   assert(num_1);
-   assert(num_2);
-
    num_add_rec(num_1, num_1->head, num_2->head, num_2->tail, num_2->count);
 
    free(num_2);
@@ -520,7 +508,6 @@ num_p num_add(num_p num_1, num_p num_2)
 node_p num_sub_rec(num_p num_1, node_p node_1, node_p node_2)
 {
     if(node_2 == NULL) return node_1;
-    assert(node_1);
 
     num_sub_uint_offset(num_1, node_1, node_2->value);
 
@@ -531,9 +518,6 @@ node_p num_sub_rec(num_p num_1, node_p node_1, node_p node_2)
 
 num_p num_sub(num_p num_1, num_p num_2)
 {
-    assert(num_1);
-    assert(num_2);
-
     num_sub_rec(num_1, num_1->head, num_2->head);
 
     free(num_2);
@@ -552,9 +536,6 @@ void num_mul_rec(num_p num_res, node_p node_res, node_p node_1, node_p node_2)
 
 num_p num_mul(num_p num_1, num_p num_2)
 {
-    assert(num_1);
-    assert(num_2);
-
     if(num_1->count == 0)
     {
         num_free(num_1);
@@ -616,10 +597,6 @@ void num_div_mod_rec(
 
 void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
 {
-    assert(num_1);
-    assert(num_2);
-    assert(num_2->count);
-
     num_p num_q = num_create(0, NULL, NULL);
 
     if(num_cmp(num_1, num_2) < 0)
