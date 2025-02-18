@@ -94,8 +94,11 @@ bool node_rec(node_p node_1, node_p node_2, uint64_t index, node_p node_tail)
     }
     else
     {
-        printf("\n\n\tNODE VALIDITY ERROR\t| INVALID TAIL");
-        return false;
+        if(node_1 != node_tail)
+        {
+            printf("\n\n\tNODE VALIDITY ERROR\t| INVALID TAIL");
+            return false;
+        }
     }
 
     if(!uint64(node_1->value, node_2->value))
@@ -149,12 +152,15 @@ bool num_str_inner(num_p num_1, num_p num_2)
 
 bool num_str(num_p num_1, num_p num_2)
 {
-    if(num_str_inner(num_1, num_2))
-        return true;
+    if(!num_str_inner(num_1, num_2))
+    {
+        printf("\n");
+        num_display_tag("\tnum_1", num_1);
+        num_display_tag("\tnum_2", num_2);
+        return false;
+    }
 
-    num_display_tag("\n\tnum_1", num_1);
-    num_display_tag("\n\tnum_2", num_2);
-    return false;
+    return true;
 }
 
 bool num_immed(num_p num, uint64_t n, ...)
@@ -453,7 +459,14 @@ int64_t node_cmp(node_p node_1, node_p node_2)
     if(node_2 == NULL)
         return 1;
 
-    return node_cmp(node_1->next, node_2->next);
+    uint64_t later = node_cmp(node_1->next, node_2->next);
+    if(later != 0)
+        return later;
+
+    if(node_1->value < node_2->value)
+        return -1;
+
+    return node_1->value > node_2->value ? 1 : 0;
 }
 
 
@@ -465,7 +478,7 @@ bool num_is_zero(num_p num) // TODO test
 
 int64_t num_cmp(num_p num_1, num_p num_2)
 {
-    return node_cmp(num_1->head, num_1->head);
+    return node_cmp(num_1->head, num_2->head);
 }
 
 

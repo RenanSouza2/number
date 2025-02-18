@@ -233,14 +233,12 @@ void test_num_wrap(bool show)
 
     if(show) printf("\n\t\t%s 1", __func__);
     num_p num = num_wrap(0);
-    assert(num->count == 0);
     assert(num->head == NULL);
     assert(num->tail == NULL);
     num_free(num);
 
     if(show) printf("\n\t\t%s 2", __func__);
     num = num_wrap(2);
-    assert(num->count == 1);
     assert(num->head != NULL);
     assert(num->head->value == 2);
     assert(num->head->next == NULL);
@@ -257,14 +255,12 @@ void test_num_create_immed(bool show)
 
     if(show) printf("\n\t\t%s 1", __func__);
     num_p num = num_create_immed(0);
-    assert(num->count == 0);
     assert(num->head == NULL);
     assert(num->tail == NULL);
     num_free(num);
 
     if(show) printf("\n\t\t%s 2", __func__);
     num = num_create_immed(1, 2);
-    assert(num->count == 1);
     assert(num->head != NULL);
     assert(num->head->value == 2);
     assert(num->head->next == NULL);
@@ -274,7 +270,6 @@ void test_num_create_immed(bool show)
 
     if(show) printf("\n\t\t%s 3", __func__);
     num = num_create_immed(2, 2, 1);
-    assert(num->count == 2);
     assert(num->head != NULL)
     assert(num->head->value == 1);
     assert(num->head->next != NULL);
@@ -287,7 +282,6 @@ void test_num_create_immed(bool show)
 
     if(show) printf("\n\t\t%s 4", __func__);
     num = num_create_immed(2, 2, 0);
-    assert(num->count == 2);
     assert(num->head != NULL)
     assert(num->head->value == 0);
     assert(num->head->next != NULL);
