@@ -206,6 +206,7 @@ void test_mod_div(bool show)
     mod_t mod_2 = mod_wrap(2, p);
     mod_t mod_res = mod_div(mod_1, mod_2);
     assert(mod_immed(mod_res, 0));
+    mod_free(mod_res);
 
     if(show) printf("\n%s\t%s 2", offset, __func__);
     mod_1 = mod_wrap(6, p);

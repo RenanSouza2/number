@@ -199,7 +199,7 @@ void num_display_count(num_p num, uint64_t index)
 {
     if(num->count == 0)
     {
-        printf("0 | 0");
+        printf("0\t| 0");
         return;
     }
 
