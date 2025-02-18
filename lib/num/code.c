@@ -78,7 +78,7 @@ bool node_rec(node_p node_1, node_p node_2, uint64_t index, node_p node_tail)
         return true;
     }
 
-    if(node_1 == NULL)
+    if(node_2 == NULL)
     {
         printf("\n\n\tNODE VALIDITY ERROR\t| NUMBER LONGER THAN EXPECTED");
         return false;
@@ -165,10 +165,14 @@ bool num_str(num_p num_1, num_p num_2)
 
 bool num_immed(num_p num, uint64_t n, ...)
 {
+
+
     va_list args;
     va_start(args, n);
     num_p num_2 = num_create_variadic(n, args);
+
     bool res = num_str(num, num_2);
+
     num_free(num_2);
     return res;
 }
@@ -407,16 +411,25 @@ void num_add_uint(num_p num, uint64_t value)
     num_add_uint_offset(num, num->head, value);
 }
 
-void num_sub_uint_offset(num_p num, node_p node, uint64_t value)
+void num_sub_uint_offset_rec(num_p num, node_p node, uint64_t value)
 {
-    if(value == 0) return;
+    if(value == 0)
+        return;
 
     bool do_next = node->value < value;
     node->value -= value;
     if(do_next)
-        num_sub_uint_offset(num, node->next, 1);
+        num_sub_uint_offset_rec(num, node->next, 1);
+}
 
-    num_normalize(num);
+/* returns TRUE if passed offset is TAIL and ELIMINATED */
+bool num_sub_uint_offset(num_p num, node_p node, uint64_t value)
+{
+    bool is_tail = node == num->tail;
+
+    num_sub_uint_offset_rec(num, node, value);
+
+    return num_normalize(num) && is_tail;
 }
 
 void num_sub_uint(num_p num, uint64_t value)
@@ -508,15 +521,20 @@ num_p num_add(num_p num_1, num_p num_2)
    return num_1;
 }
 
-// TODO: num_2 keep
 node_p num_sub_offset(num_p num_1, node_p node_1, node_p node_2)
 {
-    if(node_2 == NULL) return node_1;
+    if(node_2 == NULL)
+        return node_1;
 
-    num_sub_uint_offset(num_1, node_1, node_2->value);
+    if(num_sub_uint_offset(num_1, node_1, node_2->value))
+    {
+        free(node_2);
+        return NULL;
+    }
 
     node_2 = node_consume(node_2);
     num_sub_offset(num_1, node_1->next, node_2);
+
     return num_normalize(num_1) ? NULL : node_1;
 }
 
@@ -563,6 +581,7 @@ void num_div_mod_rec(num_p num_q, num_p num_r, node_p node_r, num_p num_2)
     uint64_t r =  0;
     while(node_cmp(node_r, num_2->head) >= 0)
     {
+
         uint64_t r_max, r_min;
         if(num_r->tail->value < num_2->tail->value)
         {
@@ -591,7 +610,8 @@ void num_div_mod_rec(num_p num_q, num_p num_r, node_p node_r, num_p num_2)
     }
 
     num_insert_head(num_q, r);
-    num_div_mod_rec(num_q, num_r, node_r ? node_r->prev : num_r->tail, num_2);
+    node_r = node_r ? node_r->prev : num_r->tail;
+    num_div_mod_rec(num_q, num_r, node_r, num_2);
 }
 
 void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
@@ -614,6 +634,7 @@ void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
 
     num_div_mod_rec(num_q, num_1, node_r, num_2);
     num_normalize(num_q);
+    while(num_normalize(num_1));
 
     *out_num_q = num_q;
     *out_num_r = num_1;
