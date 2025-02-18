@@ -93,7 +93,7 @@ mod_t mod_div_rec(mod_t mod_1, mod_t mod_2)
 
     num_p num_q, num_r;
     num_div_mod(&num_q, &num_r, num_copy(mod_1.num), num_copy(mod_2.num));
-    if(num_r->count == 0)
+    if(num_is_zero(num_r))
     {
         num_free(num_r);
         return mod_create(num_q, mod_1.p);

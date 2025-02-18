@@ -468,6 +468,13 @@ int64_t node_cmp(node_p node_1, node_p node_2, uint64_t cnt)
     return 0;
 }
 
+
+
+bool num_is_zero(num_p num) // TODO test
+{
+    return num->count == 0;
+}
+
 int64_t num_cmp_offset(num_p num_1, num_p num_2, uint64_t offset)
 {
     if(num_1->count > num_2->count + offset)

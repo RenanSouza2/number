@@ -16,6 +16,7 @@ void num_display(num_p num);
 void num_display_tag(char *tag, num_p num);
 void num_display_full(char *tag, num_p num);
 
+bool num_is_zero(num_p num);
 int64_t num_cmp(num_p num_1, num_p num_2);
 
 num_p num_add(num_p num_1, num_p num_2);
