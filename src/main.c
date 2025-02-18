@@ -33,19 +33,19 @@ void time_1()
 
         uint64_t begin = altutime();
         num_p num_1 = num_generate(i+1, 1);
-        num_display("num_1", num_1);
+        num_display_tag("num_1", num_1);
         uint64_t end = altutime();
         printf("\t%10lu", end - begin);
 
         begin = altutime();
         num_p num_2 = num_generate(i, 2);
-        num_display("num_2", num_2);
+        num_display_tag("num_2", num_2);
         end = altutime();
         printf("\t%10lu", end - begin);
 
         begin = altutime();
         num_1 = num_div(num_1, num_2);
-        num_display("num_q", num_1);
+        num_display_tag("num_q", num_1);
         end = altutime();
         printf("\t%10lu", end - begin);
 
@@ -60,7 +60,7 @@ void time_2(int argc, char** argv)
     printf("\nid: %lu", id);
 
     num_p num_1 = num_generate(20, 2);
-    num_display("num_1", num_1);
+    num_display_tag("num_1", num_1);
 
     num_p num_2 = num_wrap(0xe6503424c62eef89);
     for(uint64_t i=1; num_cmp(num_1, num_2) > 0; i++)

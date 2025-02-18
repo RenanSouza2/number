@@ -49,13 +49,12 @@ void mod_free(mod_t mod)
 
 
 
-void mod_display(mod_t mod)
+void mod_display(char tag[], mod_t mod)
 {
-    num_display(mod.num);printf(" / ");num_display(mod.p);
-}
-void mod_display_immed(char tag[], mod_t mod)
-{
-    printf("\n%s: ", tag);mod_display(mod);
+    printf("\n%s: ", tag);
+    num_display(mod.num);
+    printf(" / ");
+    num_display(mod.p);
 }
 
 

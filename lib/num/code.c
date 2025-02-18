@@ -167,8 +167,8 @@ bool num_str(num_p num_1, num_p num_2)
     if(num_str_inner(num_1, num_2))
         return true;
 
-    num_display("\n\tnum_1", num_1);
-    num_display("\n\tnum_2", num_2);
+    num_display_tag("\n\tnum_1", num_1);
+    num_display_tag("\n\tnum_2", num_2);
     return false;
 }
 
@@ -195,10 +195,8 @@ void node_display_rec(node_p node, uint64_t index)
     node_display_rec(node->prev, index - 1);
 }
 
-void num_display_inner(char *tag, num_p num, uint64_t index)
+void num_display_count(num_p num, uint64_t index)
 {
-    printf("\n%s: ", tag);
-
     if(num->count == 0)
     {
         printf("0 | 0");
@@ -209,15 +207,25 @@ void num_display_inner(char *tag, num_p num, uint64_t index)
     node_display_rec(num->tail, index);
 }
 
-void num_display(char *tag, num_p num)
+void num_display(num_p num)
 {
-    num_display_inner(tag, num, 4);
-    if(num->count > 4) printf("...");
+    num_display_count(num, 4);
+    if(num->count > 4)
+        printf("...");
+}
+
+void num_display_tag(char *tag, num_p num)
+{
+    printf("\n%s: ", tag);
+    num_display(num);
+    if(num->count > 4)
+        printf("...");
 }
 
 void num_display_full(char *tag, num_p num)
 {
-    num_display_inner(tag, num, num->count);
+    printf("\n%s: ", tag);
+    num_display_count(num, num->count);
 }
 
 
@@ -478,8 +486,7 @@ int64_t num_cmp(num_p num_1, num_p num_2)
 
 
 
-void num_add_rec(num_p num_1, node_p node_1, node_p node_2, node_p node_tail, uint64_t 
-3)
+void num_add_offset(num_p num_1, node_p node_1, node_p node_2, node_p node_tail, uint64_t cnt)
 {
     if(node_1 == NULL)
     {
@@ -493,32 +500,32 @@ void num_add_rec(num_p num_1, node_p node_1, node_p node_2, node_p node_tail, ui
     num_add_uint_offset(num_1, node_1, node_2->value);
 
     node_2 = node_consume(node_2);
-    num_add_rec(num_1, node_1->next, node_2, node_tail, cnt - 1);
+    num_add_offset(num_1, node_1->next, node_2, node_tail, cnt - 1);
 }
 
 num_p num_add(num_p num_1, num_p num_2)
 {
-   num_add_rec(num_1, num_1->head, num_2->head, num_2->tail, num_2->count);
+   num_add_offset(num_1, num_1->head, num_2->head, num_2->tail, num_2->count);
 
    free(num_2);
    return num_1;
 }
 
 // TODO: num_2 keep
-node_p num_sub_rec(num_p num_1, node_p node_1, node_p node_2)
+node_p num_sub_offset(num_p num_1, node_p node_1, node_p node_2)
 {
     if(node_2 == NULL) return node_1;
 
     num_sub_uint_offset(num_1, node_1, node_2->value);
 
     node_2 = node_consume(node_2);
-    num_sub_rec(num_1, node_1->next, node_2);
+    num_sub_offset(num_1, node_1->next, node_2);
     return num_normalize(num_1) ? NULL : node_1;
 }
 
 num_p num_sub(num_p num_1, num_p num_2)
 {
-    num_sub_rec(num_1, num_1->head, num_2->head);
+    num_sub_offset(num_1, num_1->head, num_2->head);
 
     free(num_2);
     return num_1;
@@ -586,7 +593,7 @@ void num_div_mod_rec(
             r_max = r_min;
         }
 
-        node_r = num_sub_rec(num_r, node_r, num_aux->head);
+        node_r = num_sub_offset(num_r, node_r, num_aux->head);
         r += r_max;
         free(num_aux);
     }
