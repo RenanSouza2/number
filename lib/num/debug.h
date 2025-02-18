@@ -32,7 +32,7 @@ void node_free(node_p node);
 node_p node_denormalize(node_p node);
 node_p node_normalize(node_p node);
 
-num_p num_create(uint64_t count, node_p head, node_p tail);
+num_p num_create(node_p head, node_p tail);
 
 void num_add_uint(num_p num, uint64_t value);
 void num_sub_uint(num_p num, uint64_t value);

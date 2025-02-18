@@ -12,7 +12,7 @@
 num_p num_create_variadic(uint64_t n, va_list args)
 {
     if(n == 0)
-        return num_create(0, NULL, NULL);
+        return num_create(NULL, NULL);
 
     uint64_t value = va_arg(args, uint64_t);
     node_p tail = node_create(value, NULL, NULL);
@@ -23,7 +23,7 @@ num_p num_create_variadic(uint64_t n, va_list args)
         uint64_t value = va_arg(args, uint64_t);
         node = node_create(value, node, NULL);
     }
-    return num_create(n, node, tail);
+    return num_create(node, tail);
 }
 
 num_p num_create_immed(uint64_t n, ...)
@@ -272,14 +272,13 @@ node_p node_normalize(node_p node)
 
 
 
-num_p num_create(uint64_t count, node_p head, node_p tail)
+num_p num_create(node_p head, node_p tail)
 {
     num_p num = malloc(sizeof(num_t));
     assert(num);
 
     *num = (num_t)
     {
-        .count = count,
         .head = head,
         .tail = tail
     };
@@ -296,10 +295,10 @@ void num_free(num_p num)
 num_p num_wrap(uint64_t value)
 {
     if(value == 0)
-        return num_create(0, NULL, NULL);
+        return num_create(NULL, NULL);
 
     node_p node = node_create(value, NULL, NULL);
-    return num_create(1, node,  node);
+    return num_create(node,  node);
 }
 
 node_p num_insert(num_p num, uint64_t value) // TODO test
