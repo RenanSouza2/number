@@ -983,6 +983,26 @@ void test_num_div_mod(bool show)
     num_free(num_r);
     if(test_mem)assert(clu_mem_empty());
 
+    if(show) printf("\n\t\t%s 13", __func__);
+    num_1 = num_create_immed(3, UINT64_MAX, 0, UINT64_MAX);
+    num_2 = num_create_immed(1, UINT64_MAX);
+    num_div_mod(&num_q, &num_r, num_1, num_2);
+    assert(num_immed(num_q, 3, 1, 0, 1));
+    assert(num_immed(num_r, 0));
+    num_free(num_q);
+    num_free(num_r);
+    if(test_mem)assert(clu_mem_empty());
+
+    if(show) printf("\n\t\t%s 14", __func__);
+    num_1 = num_create_immed(5, UINT64_MAX, 0, 0, 0, UINT64_MAX);
+    num_2 = num_create_immed(1, UINT64_MAX);
+    num_div_mod(&num_q, &num_r, num_1, num_2);
+    assert(num_immed(num_q, 5, 1, 0, 0, 0, 1));
+    assert(num_immed(num_r, 0));
+    num_free(num_q);
+    num_free(num_r);
+    if(test_mem)assert(clu_mem_empty());
+
     assert(clu_mem_empty());
 }
 
