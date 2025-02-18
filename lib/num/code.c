@@ -107,12 +107,12 @@ bool node_rec(node_p node_1, node_p node_2, uint64_t index, node_p node_tail)
         return false;
     }
 
-    return node_rec(node_1->prev, node_2->prev, index + 1, node_tail);
+    return node_rec(node_1->next, node_2->next, index + 1, node_tail);
 }
 
 bool num_str_inner(num_p num_1, num_p num_2)
 {
-    if(num_1->head == 0)
+    if(num_1->head == NULL)
     {
         if(num_1->tail != NULL)
         {
@@ -165,8 +165,6 @@ bool num_str(num_p num_1, num_p num_2)
 
 bool num_immed(num_p num, uint64_t n, ...)
 {
-
-
     va_list args;
     va_start(args, n);
     num_p num_2 = num_create_variadic(n, args);
@@ -175,6 +173,15 @@ bool num_immed(num_p num, uint64_t n, ...)
 
     num_free(num_2);
     return res;
+}
+
+
+
+node_p num_get_node(num_p num, uint64_t count)
+{
+    node_p node = num->head;
+    for(uint64_t i=0; i<count && node; i++, node = node->next);
+    return node;
 }
 
 #endif
@@ -575,6 +582,8 @@ num_p num_mul(num_p num_1, num_p num_2)
 
 void num_div_mod_rec(num_p num_q, num_p num_r, node_p node_r, num_p num_2)
 {
+    printf("\nentering");
+
     if(node_r == NULL)
         return;
 
@@ -589,6 +598,8 @@ void num_div_mod_rec(num_p num_q, num_p num_r, node_p node_r, num_p num_2)
     uint64_t r =  0;
     while(node_cmp(node_r, num_2->head) >= 0)
     {
+printf("\n\t%lu %lu", num_r->tail->value, num_2->tail->value);
+num_display_tag("num_r", num_r);
 
         uint64_t r_max, r_min;
         if(num_r->tail->value < num_2->tail->value)
@@ -603,14 +614,19 @@ void num_div_mod_rec(num_p num_q, num_p num_r, node_p node_r, num_p num_2)
             r_max = val_1 / num_2->tail->value;
             r_min = val_1 / (U128(num_2->tail->value) + 1);
         }
+printf("\nr_min: %lu\tr_max: %lu", r_min, r_max);
 
         num_p num_aux = num_mul_uint(NULL, num_2, r_max);
         if(node_cmp(node_r, num_aux->head) < 0)
         {
+printf("\nadjusting");
             num_free(num_aux);
             num_aux = num_mul_uint(NULL, num_2, r_min);
             r_max = r_min;
         }
+num_display_tag("num_aux", num_aux);
+
+// assert(node_r->prev->value == 0x39b4c936f7c040ed);
 
         node_r = num_sub_offset(num_r, node_r, num_aux->head);
         r += r_max;
