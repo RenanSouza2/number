@@ -12,8 +12,6 @@ typedef __uint128_t uint128_t;
 num_p num_create_immed(uint64_t n, ...);
 num_p num_create_variadic(uint64_t n, va_list args);
 
-void num_display_immed(char *tag, num_p num);
-
 bool uint64(uint64_t u1, uint64_t u2);
 bool uint128_immed(uint128_t u1, uint64_t v2h, uint64_t v2l);
 
@@ -28,13 +26,16 @@ bool num_immed(num_p num, uint64_t n, ...);
 #define LOW(V) ((uint64_t)(V))
 #define HIGH(V) LOW((V) >> 64)
 
-num_p num_create(uint64_t value, num_p next);
-num_p num_consume(num_p num);
-num_p num_denormalize(num_p num);
-num_p num_normalize(num_p num);
+node_p node_create(uint64_t value, node_p next, node_p prev);
+node_p node_consume(node_p node);
+void node_free(node_p node);
+node_p node_denormalize(node_p node);
+node_p node_normalize(node_p node);
 
-num_p num_add_uint(num_p n, uint64_t value);
-num_p num_sub_uint(num_p num, uint64_t value);
+num_p num_create(uint64_t count, node_p head, node_p tail);
+
+void num_add_uint(num_p num, uint64_t value);
+void num_sub_uint(num_p num, uint64_t value);
 num_p num_mul_uint(num_p num_res, num_p num, uint64_t value);
 num_p num_shl(num_p num);
 num_p num_shr(num_p num);

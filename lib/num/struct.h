@@ -5,10 +5,16 @@
 
 // NOTE: NULL num pointer represents zero
 
-STRUCT(num)
+STRUCT(node)
 {
     uint64_t value;
-    num_p next;
+    node_p next, prev;
+};
+
+STRUCT(num)
+{
+    uint64_t count;
+    node_p head, tail;
 };
 
 #endif

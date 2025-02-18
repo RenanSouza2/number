@@ -49,13 +49,13 @@ void mod_free(mod_t mod)
 
 
 
-void mod_display(mod_t mod)
+void mod_display(char tag[], mod_t mod)
 {
-    num_display(mod.num);printf(" / ");num_display(mod.p);
-}
-void mod_display_immed(char tag[], mod_t mod)
-{
-    printf("\n%s: ", tag);mod_display(mod);
+    printf("\n%s: (", tag);
+    num_display(mod.num);
+    printf(") / (");
+    num_display(mod.p);
+    printf(")");
 }
 
 
@@ -93,8 +93,11 @@ mod_t mod_div_rec(mod_t mod_1, mod_t mod_2)
 
     num_p num_q, num_r;
     num_div_mod(&num_q, &num_r, num_copy(mod_1.num), num_copy(mod_2.num));
-    if(num_r == NULL)
+    if(num_is_zero(num_r))
+    {
+        num_free(num_r);
         return mod_create(num_q, mod_1.p);
+    }
         
     num_free(num_q);
 
