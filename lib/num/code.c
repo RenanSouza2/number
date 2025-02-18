@@ -578,6 +578,14 @@ void num_div_mod_rec(num_p num_q, num_p num_r, node_p node_r, num_p num_2)
     if(node_r == NULL)
         return;
 
+
+    if(num_normalize(num_r))
+    {
+        num_insert_head(num_q, 0);
+        num_div_mod_rec(num_q, num_r, num_r->tail, num_2);
+        return;
+    }
+
     uint64_t r =  0;
     while(node_cmp(node_r, num_2->head) >= 0)
     {
@@ -634,7 +642,6 @@ void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
 
     num_div_mod_rec(num_q, num_1, node_r, num_2);
     num_normalize(num_q);
-    while(num_normalize(num_1));
 
     *out_num_q = num_q;
     *out_num_r = num_1;
