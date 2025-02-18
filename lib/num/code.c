@@ -65,28 +65,28 @@ bool uint128_immed(uint128_t u1, uint64_t v2h, uint64_t v2l)
 
 
 
-bool node_rec(node_p node_1, node_p node_2, uint64_t index, node_p node_head)
+bool node_rec(node_p node_1, node_p node_2, uint64_t index, node_p node_tail)
 {
-    if(index == 0)
+    if(node_1 == NULL)
     {
         if(node_1 != NULL)
         {
-            printf("\n\tNODE VALIDITY ERROR\t| NUMBER LONGER THAN EXPECTED");
+            printf("\n\n\tNODE VALIDITY ERROR\t| NUMBER SHORTER THAN EXPECTED");
             return false;
         }
 
         return true;
     }
 
-    if(index > 1)
+    if(node_1 == NULL)
     {
-        if(node_1->prev == NULL)
-        {
-            printf("\n\n\tNODE VALIDITY ERROR\t| NUMBER SHORTER THAN EXPECTED");
-            return false;
-        }
+        printf("\n\n\tNODE VALIDITY ERROR\t| NUMBER LONGER THAN EXPECTED");
+        return false;
+    }
 
-        if(node_1->prev->next != node_1)
+    if(node_1->next != NULL)
+    {
+        if(node_1->next->prev != node_1)
         {
             printf("\n\n\tNODE VALIDITY ERROR\t| INVALID LINKAGE");
             return false;
@@ -94,11 +94,8 @@ bool node_rec(node_p node_1, node_p node_2, uint64_t index, node_p node_head)
     }
     else
     {
-        if(node_1 != node_head)
-        {
-            printf("\n\n\tNODE VALIDITY ERROR\t| INVALID HEAD");
-            return false;
-        }
+        printf("\n\n\tNODE VALIDITY ERROR\t| INVALID TAIL");
+        return false;
     }
 
     if(!uint64(node_1->value, node_2->value))
@@ -107,38 +104,26 @@ bool node_rec(node_p node_1, node_p node_2, uint64_t index, node_p node_head)
         return false;
     }
 
-    return node_rec(node_1->prev, node_2->prev, index - 1, node_head);
+    return node_rec(node_1->prev, node_2->prev, index + 1, node_tail);
 }
 
 bool num_str_inner(num_p num_1, num_p num_2)
 {
-    if(!uint64(num_1->count, num_2->count))
+    if(num_1->head == 0)
     {
-        printf("\n\tNUMBER ASSERT ERROR\t| DIFFERENCE IN LENGTH");
-        return false;
-    }
-
-    if(num_1->count == 0)
-    {
-        if(num_1->head != NULL)
-        {
-            printf("\n\tNUMBER VALIDITY ERROR\t| COUNT IS ZERO BUT IT HAS HEAD");
-            return false;
-        }
-        
         if(num_1->tail != NULL)
         {
-            printf("\n\tNUMBER VALIDITY ERROR\t| COUNT IS ZERO BUT IT HAS TAIL");
+            printf("\n\tNUMBER VALIDITY ERROR\t| HEAD IS NULL BUT IT HAS TAIL");
+            return false;
+        }
+
+        if(num_2->head != NULL)
+        {
+            printf("\n\tNUMBER ASSERT ERROR\t| NUMBER SHORTER THAN EXPECTED");
             return false;
         }
 
         return true;
-    }
-
-    if(num_1->head == NULL)
-    {
-        printf("\n\tNUMBER VALIDITY ERROR\t| COUNT IS " U64P " BUT IT HAS NO HEAD", num_1->count);
-        return false;
     }
 
     if(num_1->head->prev != NULL)
@@ -149,7 +134,7 @@ bool num_str_inner(num_p num_1, num_p num_2)
 
     if(num_1->tail == NULL)
     {
-        printf("\n\tNUMBER VALIDITY ERROR\t| COUNT IS " U64P " BUT IT HAS NO TAIL", num_1->count);
+        printf("\n\tNUMBER VALIDITY ERROR\t| NUMBER HAS HEAD BUT NO TAIL");
         return false;
     }
 
@@ -159,7 +144,7 @@ bool num_str_inner(num_p num_1, num_p num_2)
         return false;
     }
 
-    return node_rec(num_1->tail, num_2->tail, num_1->count, num_1->head);
+    return node_rec(num_1->head, num_2->head, 0, num_1->tail);
 }
 
 bool num_str(num_p num_1, num_p num_2)

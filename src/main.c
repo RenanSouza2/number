@@ -10,7 +10,6 @@ num_p num_generate(uint64_t max, uint64_t salt)
     num_p num = num_wrap(2);
     for(uint64_t i=0; i<max; i++)
     {
-        // printf("\ni: %lu", i);
         num = num_add(num, num_wrap(salt));
         num = num_mul(num, num_copy(num));
     }
@@ -27,27 +26,27 @@ uint64_t altutime()
 void time_1()
 {
     
-    for(uint64_t i=6; i<21; i++)
+    for(uint64_t i=13; i<21; i++)
     {
         printf("\n%2lu:", i);
 
         uint64_t begin = altutime();
         num_p num_1 = num_generate(i+1, 1);
-        num_display_tag("num_1", num_1);
+        // num_display_tag("num_1", num_1);
         uint64_t end = altutime();
-        printf("\t%10lu", end - begin);
+        // printf("\t%10.3f", (end - begin) / 1e6);
 
         begin = altutime();
         num_p num_2 = num_generate(i, 2);
-        num_display_tag("num_2", num_2);
+        // num_display_tag("num_2", num_2);
         end = altutime();
-        printf("\t%10lu", end - begin);
+        // printf("\t%10.3f", (end - begin) / 1e6);
 
         begin = altutime();
         num_1 = num_div(num_1, num_2);
-        num_display_tag("num_q", num_1);
+        // num_display_tag("num_q", num_1);
         end = altutime();
-        printf("\t%10lu", end - begin);
+        printf("\t%10.3f", (end - begin) / 1e6);
 
         num_free(num_1);
     }
@@ -90,8 +89,8 @@ int main(int argc, char** argv)
 {
     setbuf(stdout, NULL);
 
-    // time_1();
-    time_2(argc, argv);
+    time_1();
+    // time_2(argc, argv);
 
     printf("\n");
     return 0;
