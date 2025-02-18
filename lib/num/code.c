@@ -171,6 +171,8 @@ bool num_immed(num_p num, uint64_t n, ...)
 
 
 
+uint64_t num_count(num_p num);
+
 void node_display_rec(node_p node, uint64_t index)
 {
     if(node == NULL || index == 0)
@@ -180,37 +182,36 @@ void node_display_rec(node_p node, uint64_t index)
     node_display_rec(node->prev, index - 1);
 }
 
-void num_display_count(num_p num, uint64_t index)
+uint64_t num_display_cap(num_p num, uint64_t index)
 {
-    if(num->count == 0)
+    if(num->head == NULL)
     {
         printf("0\t| 0");
-        return;
+        return 0;
     }
 
-    printf("" U64P "\t| ", num->count);
+    uint64_t cnt = num_count(num);
+    printf("" U64P "\t| ", cnt);
     node_display_rec(num->tail, index);
+    return cnt;
 }
 
 void num_display(num_p num)
 {
-    num_display_count(num, 4);
-    if(num->count > 4)
-        printf("...");
+    uint64_t cnt = num_display_cap(num, 4);
+    if(cnt > 4) printf("...");
 }
 
 void num_display_tag(char *tag, num_p num)
 {
     printf("\n%s: ", tag);
     num_display(num);
-    if(num->count > 4)
-        printf("...");
 }
 
 void num_display_full(char *tag, num_p num)
 {
     printf("\n%s: ", tag);
-    num_display_count(num, num->count);
+    num_display_cap(num, UINT64_MAX);
 }
 
 
