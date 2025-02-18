@@ -65,8 +65,6 @@ void time_2(int argc, char** argv)
     num_p num_2 = num_wrap(0xe6503424c62eef89);
     for(uint64_t i=1; num_cmp(num_1, num_2) > 0; i++)
     {
-        uint64_t begin = altutime();
-
         num_2 = num_add(num_2, num_wrap(2));
         num_2 = num_mul(num_2, num_wrap(0xe6503424c62eef89));
 
@@ -78,12 +76,9 @@ void time_2(int argc, char** argv)
         num_p num_aux_1 = num_copy(num_1);
         num_p num_aux_2 = num_copy(num_2);
 
-        uint64_t  end = altutime();
-        printf("\t%10.6lf", (end - begin) / 1e6);
-
-        begin = altutime();
+        uint64_t begin = altutime();
         num_aux_1 = num_div(num_aux_1, num_aux_2);
-        end = altutime();
+        uint64_t end = altutime();
         printf("\t%10.3lf", (end - begin) / 1e6);
 
         num_free(num_aux_1);
