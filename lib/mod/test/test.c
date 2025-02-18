@@ -62,6 +62,7 @@ void test_mod_add(bool show)
     mod_t mod_2 = mod_wrap(0, p);
     mod_t mod_res = mod_add(mod_1, mod_2);
     assert(mod_immed(mod_res, 0));
+    mod_free(mod_res);
 
     if(show) printf("\n%s\t%s 2", offset, __func__);
     mod_1 = mod_wrap(1, p);
@@ -101,6 +102,7 @@ void test_mod_sub(bool show)
     mod_t mod_2 = mod_wrap(0, p);
     mod_t mod_res = mod_sub(mod_1, mod_2);
     assert(mod_immed(mod_res, 0));
+    mod_free(mod_res);
 
     if(show) printf("\n%s\t%s 2", offset, __func__);
     mod_1 = mod_wrap(0, p);
@@ -147,6 +149,7 @@ void test_mod_mul(bool show)
     mod_t mod_2 = mod_wrap(0, p);
     mod_t mod_res = mod_mul(mod_1, mod_2);
     assert(mod_immed(mod_res, 0));
+    mod_free(mod_res);
 
     if(show) printf("\n%s\t%s 2", offset, __func__);
     mod_1 = mod_wrap(0, p);
@@ -176,6 +179,16 @@ void test_mod_mul(bool show)
     assert(mod_immed(mod_res, 1, 2));
     mod_free(mod_res);
 
+    num_free(p);
+    p = num_wrap(6);
+
+    if(show) printf("\n%s\t%s 5", offset, __func__);
+    mod_1 = mod_wrap(3, p);
+    mod_2 = mod_wrap(2, p);
+    mod_res = mod_mul(mod_1, mod_2);
+    assert(mod_immed(mod_res, 0));
+    mod_free(mod_res);
+    
     num_free(p);
 
     assert(clu_mem_empty());
