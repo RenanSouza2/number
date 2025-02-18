@@ -36,6 +36,7 @@ void test_mod_wrap(bool show)
     if(show) printf("\n%s\t%s 1", offset, __func__);
     mod_t mod = mod_wrap(0, p);
     assert(mod_immed(mod, 0));
+    mod_free(mod);
 
     if(show) printf("\n%s\t%s 2", offset, __func__);
     mod = mod_wrap(2, p);
