@@ -71,7 +71,7 @@ void time_2(int argc, char** argv)
         if(i % 6 != id)
             continue;
 
-        printf("\n%5lu:", i);
+        printf("\n%5lu", i);
 
         num_p num_aux_1 = num_copy(num_1);
         num_p num_aux_2 = num_copy(num_2);
