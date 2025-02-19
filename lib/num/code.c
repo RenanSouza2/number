@@ -4,10 +4,11 @@
 #include "debug.h"
 #include "../../utils/assert.h"
 #include "../../utils/U64.h"
+#include "../../utils/clu/bin/header.h"
+
+
 
 #ifdef DEBUG
-
-#include "../../utils/clu/bin/header.h"
 
 num_p num_create_variadic(uint64_t n, va_list args)
 {
@@ -458,6 +459,8 @@ void num_sub_uint_offset_rec(num_p num, node_p node, uint64_t value)
 
     if(value == 0)
         return;
+    
+    assert(node);
 
     bool do_next = node->value < value;
     node->value -= value;
@@ -523,8 +526,8 @@ int64_t node_cmp(node_p node_1, node_p node_2)
     DBG_CHECK_PTR(node_1);
     DBG_CHECK_PTR(node_2);
 
-    if(node_1 == NULL)
-        return node_2 ? -1 : 0;
+    if(node_1 == NULL){
+        return node_2 ? -1 : 0;}
 
     if(node_2 == NULL)
         return 1;
@@ -575,6 +578,7 @@ void num_add_offset(num_p num_1, node_p node_1, node_p node_2, node_p node_tail)
     num_add_uint_offset(num_1, node_1, node_2->value);
 
     node_2 = node_consume(node_2);
+    node_tail = node_2 ? node_tail : NULL;
     num_add_offset(num_1, node_1->next, node_2, node_tail);
 }
 
@@ -654,33 +658,34 @@ num_p num_mul(num_p num_1, num_p num_2)
     return num_res;
 }
 
-void num_div_mod_rec(num_p num_q, num_p num_r, node_p node_r, num_p num_2)
+void num_div_mod_rec(
+    num_p num_q,
+    num_p num_r,
+    node_p node_r,
+    num_p num_2,
+    uint64_t count_2
+)
 {
     DBG_CHECK_PTR(num_q);
     DBG_CHECK_PTR(num_r);
     DBG_CHECK_PTR(node_r);
     DBG_CHECK_PTR(num_2);
-    printf("\nentering");
 
     if(node_r == NULL)
         return;
 
-
     if(num_normalize(num_r))
     {
         num_insert_head(num_q, 0);
-        num_div_mod_rec(num_q, num_r, num_r->tail, num_2);
+        num_div_mod_rec(num_q, num_r, num_r->tail, num_2, count_2);
         return;
     }
 
     uint64_t r =  0;
     while(node_cmp(node_r, num_2->head) >= 0)
     {
-printf("\n\t%lu %lu", num_r->tail->value, num_2->tail->value);
-num_display_tag("num_r", num_r);
-
         uint64_t r_max, r_min;
-        if(num_r->tail->value < num_2->tail->value)
+        if(node_count(node_r) > count_2)
         {
             uint128_t val_1 = U128_IMMED(num_r->tail->value, num_r->tail->prev->value);
             r_max = val_1 / num_2->tail->value;
@@ -692,19 +697,14 @@ num_display_tag("num_r", num_r);
             r_max = val_1 / num_2->tail->value;
             r_min = val_1 / (U128(num_2->tail->value) + 1);
         }
-printf("\nr_min: %lu\tr_max: %lu", r_min, r_max);
 
         num_p num_aux = num_mul_uint(NULL, num_2, r_max);
         if(node_cmp(node_r, num_aux->head) < 0)
         {
-printf("\nadjusting");
             num_free(num_aux);
             num_aux = num_mul_uint(NULL, num_2, r_min);
             r_max = r_min;
         }
-num_display_tag("num_aux", num_aux);
-
-// assert(node_r->prev->value == 0x39b4c936f7c040ed);
 
         node_r = num_sub_offset(num_r, node_r, num_aux->head);
         r += r_max;
@@ -713,7 +713,7 @@ num_display_tag("num_aux", num_aux);
 
     num_insert_head(num_q, r);
     node_r = node_r ? node_r->prev : num_r->tail;
-    num_div_mod_rec(num_q, num_r, node_r, num_2);
+    num_div_mod_rec(num_q, num_r, node_r, num_2, count_2);
 }
 
 void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
@@ -737,7 +737,7 @@ void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
     for(uint64_t i=1; i<cnt_2; i++)
         node_r = node_r->prev;
 
-    num_div_mod_rec(num_q, num_1, node_r, num_2);
+    num_div_mod_rec(num_q, num_1, node_r, num_2, cnt_2);
     num_normalize(num_q);
 
     *out_num_q = num_q;

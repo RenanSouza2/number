@@ -1062,9 +1062,18 @@ void test_num_div_mod(bool show)
     num_1 = num_create_immed(6, 4, 0, 8, 4, 0, 0);
     num_2 = num_create_immed(4, 4, 0, 0, 4);
     num_div_mod(&num_q, &num_r, num_1, num_2);
-    num_display_tag("num_q", num_q);
     assert(num_immed(num_q, 3, 1, 0, 1));
-    // assert(num_immed(num_r, 4, 3, UINT64_MAX, UINT64_MAX, UINT64_MAX - 3));
+    assert(num_immed(num_r, 4, 3, UINT64_MAX, UINT64_MAX, UINT64_MAX - 3));
+    num_free(num_q);
+    num_free(num_r);
+    if(test_mem)assert(clu_mem_empty());
+
+    if(show) printf("\n\t\t%s 16", __func__);
+    num_1 = num_create_immed(3, 1, 1, 0);
+    num_2 = num_create_immed(2, 1, 2);
+    num_div_mod(&num_q, &num_r, num_1, num_2);
+    assert(num_immed(num_q, 1, UINT64_MAX));
+    assert(num_immed(num_r, 1, 2));
     num_free(num_q);
     num_free(num_r);
     if(test_mem)assert(clu_mem_empty());

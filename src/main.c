@@ -89,8 +89,8 @@ int main(int argc, char** argv)
 {
     setbuf(stdout, NULL);
 
-    // time_1();
-    time_2(argc, argv);
+    time_1();
+    // time_2(argc, argv);
 
     printf("\n");
     return 0;
