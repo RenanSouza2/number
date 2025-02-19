@@ -434,6 +434,14 @@ void test_num_sub_uint_offset(bool show)
     assert(eliminated == true);
     num_free(num);
 
+    if(show) printf("\n\t\t%s 6\t\t", __func__);
+    num = num_create_immed(3, 1, 0, 1);
+    node = num_get_node(num, 1);
+    eliminated = num_sub_uint_offset(num, node, 1);
+    assert(num_immed(num, 2, UINT64_MAX, 1));
+    assert(eliminated == false);
+    num_free(num);
+
     assert(clu_mem_empty());
 }
 
