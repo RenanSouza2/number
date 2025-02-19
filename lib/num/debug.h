@@ -18,6 +18,8 @@ bool uint128_immed(uint128_t u1, uint64_t v2h, uint64_t v2l);
 bool num_str(num_p num_1, num_p num_2);
 bool num_immed(num_p num, uint64_t n, ...);
 
+node_p num_get_node(num_p num, uint64_t count);
+
 #endif
 
 #define U128(V) ((uint128_t)(V))
@@ -36,6 +38,7 @@ num_p num_create(uint64_t count, node_p head, node_p tail);
 
 void num_add_uint(num_p num, uint64_t value);
 void num_sub_uint(num_p num, uint64_t value);
+bool num_sub_uint_offset(num_p num, node_p node, uint64_t value);
 num_p num_mul_uint(num_p num_res, num_p num, uint64_t value);
 num_p num_shl(num_p num);
 num_p num_shr(num_p num);

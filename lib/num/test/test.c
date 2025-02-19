@@ -361,36 +361,91 @@ void test_num_add_uint(bool show)
 
 void test_num_sub_uint(bool show)
 {
-    printf("\n\t%s", __func__);
+    printf("\n\t%s\t\t", __func__);
 
-    if(show) printf("\n\t\t%s 1", __func__);
+    if(show) printf("\n\t\t%s 1\t\t", __func__);
     num_p num = num_create_immed(0);
     num_sub_uint(num, 0);
     assert(num_immed(num, 0));
     num_free(num);
 
-    if(show) printf("\n\t\t%s 2", __func__);
+    if(show) printf("\n\t\t%s 2\t\t", __func__);
     num = num_create_immed(1, 1);
     num_sub_uint(num, 0);
     assert(num_immed(num, 1, 1));
     num_free(num);
 
-    if(show) printf("\n\t\t%s 3", __func__);
+    if(show) printf("\n\t\t%s 3\t\t", __func__);
     num = num_create_immed(1, 1);
     num_sub_uint(num, 1);
     assert(num_immed(num, 0));
     num_free(num);
 
-    if(show) printf("\n\t\t%s 4", __func__);
+    if(show) printf("\n\t\t%s 4\t\t", __func__);
     num = num_create_immed(1, 2);
     num_sub_uint(num, 1);
     assert(num_immed(num, 1, 1));
     num_free(num);
 
-    if(show) printf("\n\t\t%s 5", __func__);
+    if(show) printf("\n\t\t%s 5\t\t", __func__);
     num = num_create_immed(2, 1, 0);
     num_sub_uint(num, 1);
     assert(num_immed(num, 1, UINT64_MAX));
+    num_free(num);
+
+    assert(clu_mem_empty());
+}
+
+void test_num_sub_uint_offset(bool show)
+{
+    printf("\n\t%s\t\t", __func__);
+
+    if(show) printf("\n\t\t%s 1\t\t", __func__);
+    num_p num = num_create_immed(2, 2, 3);
+    node_p node = num_get_node(num, 0);
+    bool eliminated = num_sub_uint_offset(num, node, 1);
+    assert(num_immed(num, 2, 2, 2));
+    assert(eliminated == false);
+    num_free(num);
+
+    if(show) printf("\n\t\t%s 2\t\t", __func__);
+    num = num_create_immed(2, 2, 3);
+    node = num_get_node(num, 1);
+    eliminated = num_sub_uint_offset(num, node, 1);
+    assert(num_immed(num, 2, 1, 3));
+    assert(eliminated == false);
+    num_free(num);
+
+    if(show) printf("\n\t\t%s 3\t\t", __func__);
+    num = num_create_immed(2, 1, 3);
+    node = num_get_node(num, 1);
+    eliminated = num_sub_uint_offset(num, node, 1);
+    assert(num_immed(num, 1, 3));
+    assert(eliminated == true);
+    num_free(num);
+
+    if(show) printf("\n\t\t%s 4\t\t", __func__);
+    num = num_create_immed(2, 1, 0);
+    node = num_get_node(num, 1);
+    eliminated = num_sub_uint_offset(num, node, 1);
+    assert(num_immed(num, 1, 0));
+    assert(eliminated == true);
+    num_free(num);
+
+    if(show) printf("\n\t\t%s 5\t\t", __func__);
+    num = num_create_immed(3, 1, 0, 1);
+    node = num_get_node(num, 2);
+    eliminated = num_sub_uint_offset(num, node, 1);
+    assert(num_immed(num, 2, 0, 1));
+    assert(eliminated == true);
+    num_free(num);
+
+    if(show) printf("\n\t\t%s 6\t\t", __func__);
+    num = num_create_immed(3, 1, 0, 1);
+    node = num_get_node(num, 1);
+    eliminated = num_sub_uint_offset(num, node, 1);
+    assert(num_immed(num, 2, UINT64_MAX, 1));
+    assert(eliminated == false);
     num_free(num);
 
     assert(clu_mem_empty());
@@ -989,6 +1044,46 @@ void test_num_div_mod(bool show)
     num_free(num_r);
     if(test_mem)assert(clu_mem_empty());
 
+    if(show) printf("\n\t\t%s 13", __func__);
+    num_1 = num_create_immed(3, UINT64_MAX, 0, UINT64_MAX);
+    num_2 = num_create_immed(1, UINT64_MAX);
+    num_div_mod(&num_q, &num_r, num_1, num_2);
+    assert(num_immed(num_q, 3, 1, 0, 1));
+    assert(num_immed(num_r, 0));
+    num_free(num_q);
+    num_free(num_r);
+    if(test_mem)assert(clu_mem_empty());
+
+    if(show) printf("\n\t\t%s 14", __func__);
+    num_1 = num_create_immed(5, UINT64_MAX, 0, 0, 0, UINT64_MAX);
+    num_2 = num_create_immed(1, UINT64_MAX);
+    num_div_mod(&num_q, &num_r, num_1, num_2);
+    assert(num_immed(num_q, 5, 1, 0, 0, 0, 1));
+    assert(num_immed(num_r, 0));
+    num_free(num_q);
+    num_free(num_r);
+    if(test_mem)assert(clu_mem_empty());
+
+    if(show) printf("\n\t\t%s 15", __func__);
+    num_1 = num_create_immed(6, 4, 0, 8, 4, 0, 0);
+    num_2 = num_create_immed(4, 4, 0, 0, 4);
+    num_div_mod(&num_q, &num_r, num_1, num_2);
+    assert(num_immed(num_q, 3, 1, 0, 1));
+    assert(num_immed(num_r, 4, 3, UINT64_MAX, UINT64_MAX, UINT64_MAX - 3));
+    num_free(num_q);
+    num_free(num_r);
+    if(test_mem)assert(clu_mem_empty());
+
+    if(show) printf("\n\t\t%s 16", __func__);
+    num_1 = num_create_immed(3, 1, 1, 0);
+    num_2 = num_create_immed(2, 1, 2);
+    num_div_mod(&num_q, &num_r, num_1, num_2);
+    assert(num_immed(num_q, 1, UINT64_MAX));
+    assert(num_immed(num_r, 1, 2));
+    num_free(num_q);
+    num_free(num_r);
+    if(test_mem)assert(clu_mem_empty());
+
     assert(clu_mem_empty());
 }
 
@@ -1013,6 +1108,7 @@ void test_num()
 
     test_num_add_uint(show);
     test_num_sub_uint(show);
+    test_num_sub_uint_offset(show);
     test_num_mul_uint(show);
 
     test_num_cmp(show);

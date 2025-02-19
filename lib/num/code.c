@@ -4,10 +4,11 @@
 #include "debug.h"
 #include "../../utils/assert.h"
 #include "../../utils/U64.h"
+#include "../../utils/clu/bin/header.h"
+
+
 
 #ifdef DEBUG
-
-#include "../../utils/clu/bin/header.h"
 
 num_p num_create_variadic(uint64_t n, va_list args)
 {
@@ -103,7 +104,7 @@ bool node_rec(node_p node_1, node_p node_2, uint64_t index, node_p node_head)
 
     if(!uint64(node_1->value, node_2->value))
     {
-        printf("\n\tNUMBER ASSERT ERROR\t| DIFFERENCE IN VALUE " U64P "", index);
+        printf("\n\tNUMBER ASSERT ERROR\t| DIFFERENCE IN VALUE " U64P "", index - 1);
         return false;
     }
 
@@ -164,12 +165,15 @@ bool num_str_inner(num_p num_1, num_p num_2)
 
 bool num_str(num_p num_1, num_p num_2)
 {
-    if(num_str_inner(num_1, num_2))
-        return true;
+    if(!num_str_inner(num_1, num_2))
+    {
+        printf("\n");
+        num_display_tag("\tnum_1", num_1);
+        num_display_tag("\tnum_2", num_2);
+        return false;
+    }
 
-    num_display_tag("\n\tnum_1", num_1);
-    num_display_tag("\n\tnum_2", num_2);
-    return false;
+    return true;
 }
 
 bool num_immed(num_p num, uint64_t n, ...)
@@ -177,9 +181,20 @@ bool num_immed(num_p num, uint64_t n, ...)
     va_list args;
     va_start(args, n);
     num_p num_2 = num_create_variadic(n, args);
+
     bool res = num_str(num, num_2);
+
     num_free(num_2);
     return res;
+}
+
+
+
+node_p num_get_node(num_p num, uint64_t count)
+{
+    node_p node = num->head;
+    for(uint64_t i=0; i<count && node; i++, node = node->next);
+    return node;
 }
 
 #endif
@@ -188,6 +203,7 @@ bool num_immed(num_p num, uint64_t n, ...)
 
 void node_display_rec(node_p node, uint64_t index)
 {
+    DBG_CHECK_PTR(node);
     if(node == NULL || index == 0)
         return;
 
@@ -195,8 +211,9 @@ void node_display_rec(node_p node, uint64_t index)
     node_display_rec(node->prev, index - 1);
 }
 
-void num_display_count(num_p num, uint64_t index)
+void num_display_cap(num_p num, uint64_t index)
 {
+    DBG_CHECK_PTR(num);
     if(num->count == 0)
     {
         printf("0\t| 0");
@@ -209,29 +226,33 @@ void num_display_count(num_p num, uint64_t index)
 
 void num_display(num_p num)
 {
-    num_display_count(num, 4);
+    DBG_CHECK_PTR(num);
+    num_display_cap(num, 4);
     if(num->count > 4)
         printf("...");
 }
 
 void num_display_tag(char *tag, num_p num)
 {
+    DBG_CHECK_PTR(num);
     printf("\n%s: ", tag);
     num_display(num);
-    if(num->count > 4)
-        printf("...");
 }
 
 void num_display_full(char *tag, num_p num)
 {
+    DBG_CHECK_PTR(num);
     printf("\n%s: ", tag);
-    num_display_count(num, num->count);
+    num_display_cap(num, UINT64_MAX);
 }
 
 
 
 node_p node_create(uint64_t value, node_p next, node_p prev)
 {
+    DBG_CHECK_PTR(next);
+    DBG_CHECK_PTR(prev);
+
     node_p node = malloc(sizeof(node_t));
     assert(node);
 
@@ -250,6 +271,7 @@ node_p node_create(uint64_t value, node_p next, node_p prev)
 /* free NODE struct and return next */
 node_p node_consume(node_p node)
 {
+    DBG_CHECK_PTR(node);
     if(node == NULL) return NULL;
 
     node_p node_next = node->next;
@@ -262,18 +284,21 @@ node_p node_consume(node_p node)
 /* free NODE list */
 void node_free(node_p node)
 {
+    DBG_CHECK_PTR(node);
     while(node) node = node_consume(node);
 }
 
 /* creates a NODE struct with value 0 if NUM is null */
 node_p node_denormalize(node_p node)
 {
+    DBG_CHECK_PTR(node);
     return node ? node : node_create(0, NULL, NULL);
 }
 
-/* frees NODE if NODE->value is 0 and NODE->next is NULL */
+/* frees NODE if NODE->value is 0 and NODE->next is NULL, returns updated tail */
 node_p node_normalize(node_p node)
 {
+    DBG_CHECK_PTR(node);
     if(node == NULL || node->value != 0 || node->next != NULL)
         return node;
 
@@ -288,6 +313,9 @@ node_p node_normalize(node_p node)
 
 num_p num_create(uint64_t count, node_p head, node_p tail)
 {
+    DBG_CHECK_PTR(head);
+    DBG_CHECK_PTR(tail);
+
     num_p num = malloc(sizeof(num_t));
     assert(num);
 
@@ -302,6 +330,8 @@ num_p num_create(uint64_t count, node_p head, node_p tail)
 
 void num_free(num_p num)
 {
+    DBG_CHECK_PTR(num);
+
     node_free(num->head);
     free(num);
 }
@@ -318,6 +348,7 @@ num_p num_wrap(uint64_t value)
 
 node_p num_insert(num_p num, uint64_t value) // TODO test
 {
+    DBG_CHECK_PTR(num);
     num->tail = node_create(value, NULL, num->tail);
     num->count++;
     if(num->count == 1)
@@ -328,6 +359,7 @@ node_p num_insert(num_p num, uint64_t value) // TODO test
 
 node_p num_insert_head(num_p num, uint64_t value) // TODO test
 {
+    DBG_CHECK_PTR(num);
     num->head = node_create(value, num->head, NULL);
     num->count++;
     if(num->count == 1)
@@ -338,6 +370,10 @@ node_p num_insert_head(num_p num, uint64_t value) // TODO test
 
 void num_insert_list(num_p num, node_p head, node_p tail, uint64_t cnt) // TODO test
 {
+    DBG_CHECK_PTR(num);
+    DBG_CHECK_PTR(head);
+    DBG_CHECK_PTR(tail);
+
     if(cnt == 0) return;
 
     if(num->count == 0)
@@ -359,11 +395,15 @@ void num_insert_list(num_p num, node_p head, node_p tail, uint64_t cnt) // TODO 
 
 node_p num_denormalize(num_p num, node_p node)
 {
+    DBG_CHECK_PTR(num);
+    DBG_CHECK_PTR(node);
     return node ? node : num_insert(num, 0);
 }
 
+/* return TRUE if removed an element */
 bool num_normalize(num_p num) // TODO test
 {
+    DBG_CHECK_PTR(num);
     if(num->count == 0)
         return false;
 
@@ -381,6 +421,7 @@ bool num_normalize(num_p num) // TODO test
 
 num_p num_copy(num_p num) //  TODO test
 {
+    DBG_CHECK_PTR(num);
     num_p num_res = num_create(0, NULL, NULL);
     for(node_p node = num->head; node; node = node->next)
         num_insert(num_res, node->value);
@@ -392,6 +433,9 @@ num_p num_copy(num_p num) //  TODO test
 
 node_p num_add_uint_offset(num_p num, node_p node, uint64_t value)
 {
+    DBG_CHECK_PTR(num);
+    DBG_CHECK_PTR(node);
+
     if(node == NULL)
         return value ? num_insert(num, value) : NULL;
 
@@ -404,42 +448,68 @@ node_p num_add_uint_offset(num_p num, node_p node, uint64_t value)
 
 void num_add_uint(num_p num, uint64_t value)
 {
+    DBG_CHECK_PTR(num);
     num_add_uint_offset(num, num->head, value);
 }
 
-void num_sub_uint_offset(num_p num, node_p node, uint64_t value)
+void num_sub_uint_offset_rec(num_p num, node_p node, uint64_t value)
 {
-    if(value == 0) return;
+    DBG_CHECK_PTR(num);
+    DBG_CHECK_PTR(node);
+
+    if(value == 0)
+        return;
+    
+    assert(node);
 
     bool do_next = node->value < value;
     node->value -= value;
     if(do_next)
-        num_sub_uint_offset(num, node->next, 1);
+        num_sub_uint_offset_rec(num, node->next, 1);
+}
 
-    num_normalize(num);
+/* returns TRUE if passed offset is TAIL and ELIMINATED */
+bool num_sub_uint_offset(num_p num, node_p node, uint64_t value)
+{
+    DBG_CHECK_PTR(num);
+    DBG_CHECK_PTR(node);
+
+    bool is_tail = node == num->tail;
+
+    num_sub_uint_offset_rec(num, node, value);
+
+    return num_normalize(num) && is_tail;
 }
 
 void num_sub_uint(num_p num, uint64_t value)
 {
+    DBG_CHECK_PTR(num);
     num_sub_uint_offset(num, num->head, value);
 }
 
-node_p num_mul_uint_offset(num_p num_res, node_p node_res, node_p node, uint64_t value)
+node_p num_mul_uint_offset(num_p num_res, node_p node_res, node_p node_2, uint64_t value)
 {
-    if(node == NULL)
+    DBG_CHECK_PTR(num_res);
+    DBG_CHECK_PTR(node_res);
+    DBG_CHECK_PTR(node_2);
+
+    if(node_2 == NULL)
         return node_res;
 
-    uint128_t u = MUL(node->value, value);
+    uint128_t u = MUL(node_2->value, value);
     node_res = num_add_uint_offset(num_res, node_res, LOW(u));
     node_res = num_denormalize(num_res, node_res);
     num_add_uint_offset(num_res, node_res->next, HIGH(u));
-    num_mul_uint_offset(num_res, node_res->next, node->next, value);
+    num_mul_uint_offset(num_res, node_res->next, node_2->next, value);
     return node_res;
 }
 
 /* NUM_RES can be NULL, preserves NUM */
 num_p num_mul_uint(num_p num_res, num_p num, uint64_t value)
 {
+    DBG_CHECK_PTR(num_res);
+    DBG_CHECK_PTR(num);
+
     if(num_res == NULL)
         num_res = num_create(0, NULL, NULL);
 
@@ -451,9 +521,12 @@ num_p num_mul_uint(num_p num_res, num_p num, uint64_t value)
 
 
 
-int64_t node_cmp(node_p node_1, node_p node_2, uint64_t cnt)
+int64_t node_cmp(node_p node_1, node_p node_2, uint64_t count_2)
 {
-    for(uint64_t i=0; i<cnt; i++)
+    DBG_CHECK_PTR(node_1);
+    DBG_CHECK_PTR(node_2);
+
+    for(uint64_t i=0; i<count_2; i++)
     {
         if(node_1->value > node_2->value)
             return 1;
@@ -472,11 +545,15 @@ int64_t node_cmp(node_p node_1, node_p node_2, uint64_t cnt)
 
 bool num_is_zero(num_p num) // TODO test
 {
+    DBG_CHECK_PTR(num);
     return num->count == 0;
 }
 
 int64_t num_cmp_offset(num_p num_1, num_p num_2, uint64_t offset)
 {
+    DBG_CHECK_PTR(num_1);
+    DBG_CHECK_PTR(num_2);
+
     if(num_1->count > num_2->count + offset)
         return 1;
 
@@ -488,50 +565,77 @@ int64_t num_cmp_offset(num_p num_1, num_p num_2, uint64_t offset)
 
 int64_t num_cmp(num_p num_1, num_p num_2)
 {
+    DBG_CHECK_PTR(num_1);
+    DBG_CHECK_PTR(num_2);
     return num_cmp_offset(num_1, num_2, 0);
 }
 
 
 
-void num_add_offset(num_p num_1, node_p node_1, node_p node_2, node_p node_tail, uint64_t cnt)
+void num_add_offset(
+    num_p num_1,
+    node_p node_1,
+    node_p node_2,
+    node_p node_tail,
+    uint64_t count
+)
 {
+    DBG_CHECK_PTR(num_1);
+    DBG_CHECK_PTR(node_1);
+    DBG_CHECK_PTR(node_2);
+    DBG_CHECK_PTR(node_tail);
+
     if(node_1 == NULL)
     {
-        num_insert_list(num_1, node_2, node_tail, cnt);
+        num_insert_list(num_1, node_2, node_tail, count);
         return;
     }
 
-    if(node_2 == 0)
+    if(node_2 == NULL)
         return;
 
     num_add_uint_offset(num_1, node_1, node_2->value);
 
     node_2 = node_consume(node_2);
-    num_add_offset(num_1, node_1->next, node_2, node_tail, cnt - 1);
+    node_tail = node_2 ? node_tail : NULL;
+    num_add_offset(num_1, node_1->next, node_2, node_tail, count - 1);
 }
 
 num_p num_add(num_p num_1, num_p num_2)
 {
-   num_add_offset(num_1, num_1->head, num_2->head, num_2->tail, num_2->count);
+    DBG_CHECK_PTR(num_1);
+    DBG_CHECK_PTR(num_2)
+    num_add_offset(num_1, num_1->head, num_2->head, num_2->tail, num_2->count);
 
-   free(num_2);
-   return num_1;
+    free(num_2);
+    return num_1;
 }
 
-// TODO: num_2 keep
 node_p num_sub_offset(num_p num_1, node_p node_1, node_p node_2)
 {
-    if(node_2 == NULL) return node_1;
+    DBG_CHECK_PTR(num_1);
+    DBG_CHECK_PTR(node_1);
+    DBG_CHECK_PTR(node_2);
 
-    num_sub_uint_offset(num_1, node_1, node_2->value);
+    if(node_2 == NULL)
+        return node_1;
+
+    if(num_sub_uint_offset(num_1, node_1, node_2->value))
+    {
+        free(node_2);
+        return NULL;
+    }
 
     node_2 = node_consume(node_2);
     num_sub_offset(num_1, node_1->next, node_2);
+
     return num_normalize(num_1) ? NULL : node_1;
 }
 
 num_p num_sub(num_p num_1, num_p num_2)
 {
+    DBG_CHECK_PTR(num_1);
+    DBG_CHECK_PTR(num_2);
     num_sub_offset(num_1, num_1->head, num_2->head);
 
     free(num_2);
@@ -540,6 +644,11 @@ num_p num_sub(num_p num_1, num_p num_2)
 
 void num_mul_rec(num_p num_res, node_p node_res, node_p node_1, node_p node_2)
 {
+    DBG_CHECK_PTR(num_res);
+    DBG_CHECK_PTR(node_res);
+    DBG_CHECK_PTR(node_1);
+    DBG_CHECK_PTR(node_2);
+
     if(node_2 == NULL) return;
 
     node_res = num_mul_uint_offset(num_res, node_res, node_1, node_2->value);
@@ -550,6 +659,9 @@ void num_mul_rec(num_p num_res, node_p node_res, node_p node_1, node_p node_2)
 
 num_p num_mul(num_p num_1, num_p num_2)
 {
+    DBG_CHECK_PTR(num_1);
+    DBG_CHECK_PTR(num_2);
+
     if(num_1->count == 0)
     {
         num_free(num_1);
@@ -569,17 +681,30 @@ void num_div_mod_rec(
     num_p num_q,
     num_p num_r,
     node_p node_r,
-    uint64_t cnt_r,
+    uint64_t offset_r,
     num_p num_2
 )
 {
-    if(cnt_r == UINT64_MAX) return;
+    DBG_CHECK_PTR(num_q);
+    DBG_CHECK_PTR(num_r);
+    DBG_CHECK_PTR(node_r);
+    DBG_CHECK_PTR(num_2);
+
+    if(node_r == NULL)
+        return;
+
+    if(num_normalize(num_r))
+    {
+        num_insert_head(num_q, 0);
+        num_div_mod_rec(num_q, num_r, num_r->tail, offset_r - 1, num_2);
+        return;
+    }
 
     uint64_t r =  0;
-    while(num_cmp_offset(num_r, num_2, cnt_r) >= 0)
+    while(num_cmp_offset(num_r, num_2, offset_r) >= 0)
     {
         uint64_t r_max, r_min;
-        if(num_r->count > num_2->count + cnt_r)
+        if(num_r->count > num_2->count + offset_r)
         {
             uint128_t val_1 = U128_IMMED(num_r->tail->value, num_r->tail->prev->value);
             r_max = val_1 / num_2->tail->value;
@@ -593,7 +718,7 @@ void num_div_mod_rec(
         }
 
         num_p num_aux = num_mul_uint(NULL, num_2, r_max);
-        if(num_cmp_offset(num_r, num_aux, cnt_r) < 0)
+        if(num_cmp_offset(num_r, num_aux, offset_r) < 0)
         {
             num_free(num_aux);
             num_aux = num_mul_uint(NULL, num_2, r_min);
@@ -606,11 +731,15 @@ void num_div_mod_rec(
     }
 
     num_insert_head(num_q, r);
-    num_div_mod_rec(num_q, num_r, node_r ? node_r->prev : num_r->tail, cnt_r - 1, num_2);
+    node_r = node_r ? node_r->prev : num_r->tail;
+    num_div_mod_rec(num_q, num_r, node_r, offset_r - 1, num_2);
 }
 
 void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
 {
+    DBG_CHECK_PTR(num_1);
+    DBG_CHECK_PTR(num_2);
+
     num_p num_q = num_create(0, NULL, NULL);
 
     if(num_cmp(num_1, num_2) < 0)
@@ -635,6 +764,9 @@ void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
 
 num_p num_div(num_p num_1, num_p num_2)
 {
+    DBG_CHECK_PTR(num_1);
+    DBG_CHECK_PTR(num_2);
+
     num_p num_q, num_r;
     num_div_mod(&num_q, &num_r, num_1, num_2);
     num_free(num_r);
@@ -643,6 +775,9 @@ num_p num_div(num_p num_1, num_p num_2)
 
 num_p num_mod(num_p num_1, num_p num_2)
 {
+    DBG_CHECK_PTR(num_1);
+    DBG_CHECK_PTR(num_2);
+
     num_p num_q, num_r;
     num_div_mod(&num_q, &num_r, num_1, num_2);
     num_free(num_q);
