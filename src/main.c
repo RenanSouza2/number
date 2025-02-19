@@ -67,7 +67,7 @@ void time_2(int argc, char** argv)
         num_2 = num_add(num_2, num_wrap(2));
         num_2 = num_mul(num_2, num_wrap(0xe6503424c62eef89));
 
-        if(i % 6 != id)
+        if(i % 8 != id)
             continue;
 
         printf("\n%5lu", i);
@@ -89,8 +89,8 @@ int main(int argc, char** argv)
 {
     setbuf(stdout, NULL);
 
-    time_1();
-    // time_2(argc, argv);
+    // time_1();
+    time_2(argc, argv);
 
     printf("\n");
     return 0;
