@@ -16,6 +16,17 @@ num_p num_generate(uint64_t max, uint64_t salt)
     return num;
 }
 
+num_p num_generate_2(uint64_t index)
+{
+    num_p num = num_wrap(0xe6503424c62eef89);
+    for(uint64_t i=1; i<index; i++)
+    {
+        num = num_add(num, num_wrap(2));
+        num = num_mul(num, num_wrap(0xe6503424c62eef89));
+    }
+    return num;
+}
+
 uint64_t altutime() 
 {
     struct timespec time;
@@ -28,24 +39,17 @@ void time_1()
     
     for(uint64_t i=13; i<21; i++)
     {
-        printf("\n%2lu:", i);
+        printf("\n%2lu", i);
 
-        uint64_t begin = altutime();
         num_p num_1 = num_generate(i+1, 1);
         // num_display_tag("num_1", num_1);
-        uint64_t end = altutime();
-        // printf("\t%10.3f", (end - begin) / 1e6);
-
-        begin = altutime();
         num_p num_2 = num_generate(i, 2);
         // num_display_tag("num_2", num_2);
-        end = altutime();
-        // printf("\t%10.3f", (end - begin) / 1e6);
 
-        begin = altutime();
+        uint64_t begin = altutime();
         num_1 = num_div(num_1, num_2);
         // num_display_tag("num_q", num_1);
-        end = altutime();
+        uint64_t end = altutime();
         printf("\t%10.3f", (end - begin) / 1e6);
 
         num_free(num_1);
