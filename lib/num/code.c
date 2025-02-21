@@ -414,15 +414,6 @@ num_p num_copy(num_p num) //  TODO test
 
 
 
-uint128_t num_get_high_2(num_p num) // TODO test
-{
-    DBG_CHECK_PTR(num);
-    // assert(num->count > 1);
-    return U128_IMMED(num->tail->value, num->tail->prev->value);
-}
-
-
-
 node_p num_add_uint_offset(num_p num, node_p node, uint64_t value)
 {
     DBG_CHECK_PTR(num);
@@ -452,8 +443,6 @@ void num_sub_uint_offset_rec(num_p num, node_p node, uint64_t value)
     if(value == 0)
         return;
     
-    assert(node);
-
     bool do_next = node->value < value;
     node->value -= value;
     if(do_next)
@@ -743,19 +732,13 @@ void num_div_mod_rec(
     uint64_t r =  0;
     while(num_cmp_offset(num_r, num_2, offset_r) >= 0)
     {
-        uint64_t r_max, r_min;
-        if(num_r->count > num_2->count + offset_r)
-        {
-            uint128_t high_1 = num_get_high_2(num_r);
-            r_max = high_1 / num_2->tail->value;
-            r_min = high_1 / (U128(num_2->tail->value) + 1);
-        }
-        else
-        {
-            uint64_t val_1 = num_r->tail->value;
-            r_max = val_1 / num_2->tail->value;
-            r_min = val_1 / (U128(num_2->tail->value) + 1);
-        }
+        uint128_t val_1 = num_r->count > num_2->count + offset_r ?
+            U128_IMMED(num_r->tail->value, num_r->tail->prev->value) : 
+            num_r->tail->value;
+        uint128_t val_2 = num_2->tail->value;
+
+        uint64_t r_max = val_1 / val_2;
+        uint64_t r_min = val_1 / (val_2 + 1);
 
         num_p num_aux = num_mul_uint(NULL, num_2, r_max);
         if(num_cmp_offset(num_r, num_aux, offset_r) < 0)
