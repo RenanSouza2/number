@@ -34,6 +34,11 @@ uint64_t altutime()
     return time.tv_sec * 1e6 + time.tv_nsec / 1e3;
 }
 
+uint64_t rand_64()
+{
+    return ((uint64_t)rand()) << 32 | rand();
+}
+
 void time_1()
 {
     
@@ -92,9 +97,28 @@ void time_2(int argc, char** argv)
 int main(int argc, char** argv)
 {
     setbuf(stdout, NULL);
+    srand(time(NULL));
 
     // time_1();
-    time_2(argc, argv);
+    // time_2(argc, argv);
+
+    // num_p num_1 = num_generate(20, 2);
+    // num_display_full("num_1", num_1);
+
+    num_p num_a = num_wrap(1);
+    num_p num_b = num_wrap(1);
+    num_display_tag("num", num_a);
+    num_display_tag("num", num_b);
+    for(uint64_t i=0; ; i++)
+    {
+        num_p num_c = num_add(num_a, num_copy(num_b));
+
+        printf("\n%lu num: ", i);
+        num_display(num_c);
+
+        num_a = num_b;
+        num_b = num_c;
+    }
 
     printf("\n");
     return 0;

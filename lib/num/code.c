@@ -185,6 +185,7 @@ bool num_immed(num_p num, uint64_t n, ...)
     bool res = num_str(num, num_2);
 
     num_free(num_2);
+    num_free(num);
     return res;
 }
 
@@ -220,7 +221,7 @@ void num_display_cap(num_p num, uint64_t index)
         return;
     }
 
-    printf("" U64P "\t| ", num->count);
+    printf("(" U64P ")\t| ", num->count);
     node_display_rec(num->tail, index);
 }
 
@@ -286,27 +287,6 @@ void node_free(node_p node)
 {
     DBG_CHECK_PTR(node);
     while(node) node = node_consume(node);
-}
-
-/* creates a NODE struct with value 0 if NUM is null */
-node_p node_denormalize(node_p node)
-{
-    DBG_CHECK_PTR(node);
-    return node ? node : node_create(0, NULL, NULL);
-}
-
-/* frees NODE if NODE->value is 0 and NODE->next is NULL, returns updated tail */
-node_p node_normalize(node_p node)
-{
-    DBG_CHECK_PTR(node);
-    if(node == NULL || node->value != 0 || node->next != NULL)
-        return node;
-
-    node_p node_prev = node->prev;
-    if(node_prev) node_prev->next = NULL;
-
-    free(node);
-    return node_prev;
 }
 
 
@@ -400,7 +380,7 @@ node_p num_denormalize(num_p num, node_p node)
     return node ? node : num_insert(num, 0);
 }
 
-/* return TRUE if removed an element */
+/* removes last element if zero, returns TRU if so */
 bool num_normalize(num_p num) // TODO test
 {
     DBG_CHECK_PTR(num);
@@ -408,14 +388,17 @@ bool num_normalize(num_p num) // TODO test
         return false;
 
     node_p node_tail = num->tail;
-    num->tail = node_normalize(num->tail);
-    if(num->tail == node_tail)
+    if(node_tail->value != 0)
         return false;
 
+    num->tail = node_tail->prev;
     num->count--;
     if(num->count == 0)
         num->head = NULL;
+    else
+        num->tail->next = NULL;
 
+    free(node_tail);
     return true;
 }
 
@@ -720,7 +703,7 @@ void num_div_mod_rec(
             r_max = high_1 / num_2->tail->value;
             r_min = high_1 / (U128(num_2->tail->value) + 1);
         }
-        else if(high_2 > U128(UINT64_MAX))
+        else if(HIGH(high_2))
         {
             uint128_t val_1 = num_get_high_2(num_r);
             r_max = val_1 / high_2;
