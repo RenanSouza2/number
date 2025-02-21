@@ -2,7 +2,7 @@
 
 #ifdef __linux__
 
-#define U64P  "%lu"
+#define U64P(C) "%" #C "lu"
 #define U64PX "%016lx"
 
 #elif defined __APPLE__

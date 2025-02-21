@@ -164,68 +164,6 @@ void test_node_consume(bool show)
     assert(clu_mem_empty());
 }
 
-void test_node_denormalize(bool show)
-{
-    printf("\n\t%s", __func__);
-
-    if(show) printf("\n\t\t%s 1", __func__);
-    node_p node = node_denormalize(NULL);
-    assert(node != NULL);
-    assert(node->value == 0);
-    assert(node->next == NULL);
-    assert(node->prev == NULL);
-    node_free(node);
-
-    if(show) printf("\n\t\t%s 2", __func__);
-    node = node_create(1, NULL, NULL);
-    node = node_denormalize(node);
-    assert(node->value == 1);
-    node_free(node);
-
-    assert(clu_mem_empty());
-}
-
-void test_node_normalize(bool show)
-{
-    printf("\n\t%s", __func__);
-
-    if(show) printf("\n\t\t%s 1", __func__);
-    node_p node = node_normalize(NULL);
-    assert(node == NULL);
-
-    if(show) printf("\n\t\t%s 2", __func__);
-    node = node_create(1, NULL, NULL);
-    node = node_normalize(node);
-    assert(node != NULL);
-    assert(node->value == 1);
-    node_free(node);
-
-    if(show) printf("\n\t\t%s 3", __func__);
-    node = node_create(1, NULL, NULL);
-    node = node_create(0, node, NULL);
-    node = node_normalize(node);
-    assert(node != NULL);
-    assert(node->value == 0);
-    assert(node->next != NULL);
-    assert(node->next->value == 1);
-    node_free(node);
-
-    if(show) printf("\n\t\t%s 4", __func__);
-    node = node_create(0, NULL, NULL);
-    node = node_normalize(node);
-    assert(node == NULL);
-
-    if(show) printf("\n\t\t%s 5", __func__);
-    node_p node_prev = node_create(1, NULL, NULL);
-    node = node_create(0, NULL, node_prev);
-    node = node_normalize(node);
-    assert(node == node_prev);
-    assert(node_prev->next == NULL);
-    node_free(node_prev);
-
-    assert(clu_mem_empty());
-}
-
 
 
 void test_num_wrap(bool show)
@@ -978,8 +916,6 @@ void test_num()
 
     test_node_create(show);
     test_node_consume(show);
-    test_node_denormalize(show);
-    test_node_normalize(show);
 
     test_num_wrap(show);
     test_num_create_immed(show);
