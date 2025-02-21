@@ -67,7 +67,7 @@ void time_2(int argc, char** argv)
     uint64_t id = atoi(argv[1]);
     printf("\nid: %lu", id);
 
-    num_p num_1 = num_generate(20, 2);
+    num_p num_1 = num_generate(18, 2);
     num_display_tag("num_1", num_1);
 
     num_p num_2 = num_wrap(0xe6503424c62eef89);
@@ -88,10 +88,7 @@ void time_2(int argc, char** argv)
         num_aux_1 = num_div(num_aux_1, num_aux_2);
         uint64_t end = altutime();
         printf("\t%10.3lf", (end - begin) / 1e6);
-
-        num_free(num_aux_1);
     }
-
 }
 
 int main(int argc, char** argv)
@@ -100,25 +97,25 @@ int main(int argc, char** argv)
     srand(time(NULL));
 
     // time_1();
-    // time_2(argc, argv);
+    time_2(argc, argv);
 
     // num_p num_1 = num_generate(20, 2);
     // num_display_full("num_1", num_1);
 
-    num_p num_a = num_wrap(1);
-    num_p num_b = num_wrap(1);
-    num_display_tag("num", num_a);
-    num_display_tag("num", num_b);
-    for(uint64_t i=0; ; i++)
-    {
-        num_p num_c = num_add(num_a, num_copy(num_b));
+    // num_p num_a = num_wrap(1);
+    // num_p num_b = num_wrap(1);
+    // num_display_tag("num", num_a);
+    // num_display_tag("num", num_b);
+    // for(uint64_t i=0; ; i++)
+    // {
+    //     num_p num_c = num_add(num_a, num_copy(num_b));
 
-        printf("\n%lu num: ", i);
-        num_display(num_c);
+    //     printf("\n%lu num: ", i);
+    //     num_display(num_c);
 
-        num_a = num_b;
-        num_b = num_c;
-    }
+    //     num_a = num_b;
+    //     num_b = num_c;
+    // }
 
     printf("\n");
     return 0;
