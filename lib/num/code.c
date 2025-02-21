@@ -380,7 +380,7 @@ node_p num_denormalize(num_p num, node_p node)
     return node ? node : num_insert(num, 0);
 }
 
-/* removes last element if zero, returns TRU if so */
+/* removes last element if zero, returns TRUE if so */
 bool num_normalize(num_p num) // TODO test
 {
     DBG_CHECK_PTR(num);

@@ -100,7 +100,6 @@ void time_2(int argc, char** argv)
 
 void fibonacci()
 {
-
     num_p num_a = num_wrap(1);
     num_p num_b = num_wrap(1);
 
