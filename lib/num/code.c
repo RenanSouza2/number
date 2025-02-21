@@ -217,7 +217,7 @@ void num_display_cap(num_p num, uint64_t index)
     DBG_CHECK_PTR(num);
     if(num->count == 0)
     {
-        printf("0\t| 0");
+        printf("(0)\t| 0");
         return;
     }
 
@@ -511,6 +511,54 @@ num_p num_mul_uint(num_p num_res, num_p num, uint64_t value)
     return num_res;
 }
 
+void num_shl_uint_rec(num_p num, node_p node, uint64_t bits, uint64_t carry)
+{
+    DBG_CHECK_PTR(num);
+    DBG_CHECK_PTR(node);
+
+    if(node == NULL)
+    {
+        if(carry)
+            num_insert(num, carry);
+
+        return;
+    }
+
+    uint64_t value = node->value;
+    node->value = (value << bits) | carry;
+    num_shl_uint_rec(num, node->next, bits, value >> (64 - bits));
+}
+
+num_p num_shl_uint(num_p num, uint64_t bits) // TODO test
+{
+    DBG_CHECK_PTR(num);
+    
+    num_shl_uint_rec(num, num->head, bits, 0);
+    return num;
+}
+
+void num_shr_uint_rec(num_p num, node_p node, uint64_t bits, uint64_t carry)
+{
+    DBG_CHECK_PTR(num);
+    DBG_CHECK_PTR(node);
+
+    if(node == NULL)
+        return;
+
+    uint64_t value = node->value;
+    node->value = (value >> bits) | carry;
+    num_shr_uint_rec(num, node->prev, bits, value << (64 - bits));
+}
+
+num_p num_shr_uint(num_p num, uint64_t bits) // TODO test
+{
+    DBG_CHECK_PTR(num);
+    
+    num_shr_uint_rec(num, num->tail, bits, 0);
+    num_normalize(num);
+    return num;
+}
+
 
 
 int64_t node_cmp(node_p node_1, node_p node_2, uint64_t count_2)
@@ -749,18 +797,51 @@ void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
         return;
     }
 
+    if(num_2->count == 1)
+    {
+        num_div_mod_rec(
+            num_q,
+            num_1,
+            num_1->tail,
+            num_1->count - num_2->count,
+            num_2,
+            num_2->head->value
+        );
+        num_normalize(num_q);
+
+        *out_num_q = num_q;
+        *out_num_r = num_1;
+        num_free(num_2);
+        return;
+    }
+
+    uint64_t bits = 0;
+    for(uint64_t l = num_2->tail->value; l >> 63 == 0; l <<= 1)
+        bits++;
+
+    num_1 = num_shl_uint(num_1, bits);
+    num_2 = num_shl_uint(num_2, bits);
+
     node_p node_r = num_1->tail;
     for(uint64_t i=1; i<num_2->count; i++)
         node_r = node_r->prev;
 
-    uint128_t high_2 = (num_2->count == 1 || num_2->tail->value == UINT64_MAX) ?
-        num_2->tail->value : num_get_high_2(num_2);
-    num_div_mod_rec(num_q, num_1, node_r, num_1->count - num_2->count, num_2, high_2);
+    uint128_t high_2 = num_2->tail->value == UINT64_MAX
+        ? UINT64_MAX : num_get_high_2(num_2);
+    
+    num_div_mod_rec(
+        num_q,
+        num_1,
+        node_r,
+        num_1->count - num_2->count,
+        num_2,
+        high_2
+    );
     num_normalize(num_q);
-
-    *out_num_q = num_q;
-    *out_num_r = num_1;
     num_free(num_2);
+    
+    *out_num_q = num_q;
+    *out_num_r = num_shr_uint(num_1, bits);
 }
 
 num_p num_div(num_p num_1, num_p num_2)

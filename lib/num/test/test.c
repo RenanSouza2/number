@@ -937,11 +937,23 @@ void test_num()
 }
 
 
+void delete()
+{
+    num_p num_1 = num_create_immed(1, 0xa);
+    num_p num_2 = num_create_immed(1, 1);
+    num_2 = num_div(num_1, num_2);
+    num_free(num_2);
+
+    assert(clu_mem_empty());
+}
+
+
 
 int main() 
 {
     setbuf(stdout, NULL);
     test_num();
+    // delete();
     printf("\n\n\tTest successful\n\n");
     return 0;
 }

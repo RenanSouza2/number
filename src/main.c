@@ -66,13 +66,13 @@ void time_1()
     }
 }
 
-void time_2(int argc, char** argv)
+void time_2(int argc, char** argv, uint64_t max)
 {
     assert(argc > 1);
     uint64_t id = atoi(argv[1]);
     printf("\nid: " U64P() "", id);
 
-    num_p num_1 = num_generate(18, 2);
+    num_p num_1 = num_generate(max, 2);
     num_display_tag("num_1", num_1);
 
     num_p num_2 = num_wrap(0xe6503424c62eef89);
@@ -126,8 +126,8 @@ int main(int argc, char** argv)
     setbuf(stdout, NULL);
     srand(time(NULL));
 
-    // time_1();
-    time_2(argc, argv);
+    time_1();
+    // time_2(argc, argv, 18);
 
     printf("\n");
     return 0;
