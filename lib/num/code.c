@@ -104,7 +104,7 @@ bool node_rec(node_p node_1, node_p node_2, uint64_t index, node_p node_head)
 
     if(!uint64(node_1->value, node_2->value))
     {
-        printf("\n\tNUMBER ASSERT ERROR\t| DIFFERENCE IN VALUE " U64P "", index - 1);
+        printf("\n\tNUMBER ASSERT ERROR\t| DIFFERENCE IN VALUE " U64P() "", index - 1);
         return false;
     }
 
@@ -138,7 +138,7 @@ bool num_str_inner(num_p num_1, num_p num_2)
 
     if(num_1->head == NULL)
     {
-        printf("\n\tNUMBER VALIDITY ERROR\t| COUNT IS " U64P " BUT IT HAS NO HEAD", num_1->count);
+        printf("\n\tNUMBER VALIDITY ERROR\t| COUNT IS " U64P() " BUT IT HAS NO HEAD", num_1->count);
         return false;
     }
 
@@ -150,7 +150,7 @@ bool num_str_inner(num_p num_1, num_p num_2)
 
     if(num_1->tail == NULL)
     {
-        printf("\n\tNUMBER VALIDITY ERROR\t| COUNT IS " U64P " BUT IT HAS NO TAIL", num_1->count);
+        printf("\n\tNUMBER VALIDITY ERROR\t| COUNT IS " U64P() " BUT IT HAS NO TAIL", num_1->count);
         return false;
     }
 
@@ -185,6 +185,7 @@ bool num_immed(num_p num, uint64_t n, ...)
     bool res = num_str(num, num_2);
 
     num_free(num_2);
+    num_free(num);
     return res;
 }
 
@@ -220,7 +221,7 @@ void num_display_cap(num_p num, uint64_t index)
         return;
     }
 
-    printf("" U64P "\t| ", num->count);
+    printf("(" U64P() ")\t| ", num->count);
     node_display_rec(num->tail, index);
 }
 
@@ -286,27 +287,6 @@ void node_free(node_p node)
 {
     DBG_CHECK_PTR(node);
     while(node) node = node_consume(node);
-}
-
-/* creates a NODE struct with value 0 if NUM is null */
-node_p node_denormalize(node_p node)
-{
-    DBG_CHECK_PTR(node);
-    return node ? node : node_create(0, NULL, NULL);
-}
-
-/* frees NODE if NODE->value is 0 and NODE->next is NULL, returns updated tail */
-node_p node_normalize(node_p node)
-{
-    DBG_CHECK_PTR(node);
-    if(node == NULL || node->value != 0 || node->next != NULL)
-        return node;
-
-    node_p node_prev = node->prev;
-    if(node_prev) node_prev->next = NULL;
-
-    free(node);
-    return node_prev;
 }
 
 
@@ -400,7 +380,7 @@ node_p num_denormalize(num_p num, node_p node)
     return node ? node : num_insert(num, 0);
 }
 
-/* return TRUE if removed an element */
+/* removes last element if zero, returns TRUE if so */
 bool num_normalize(num_p num) // TODO test
 {
     DBG_CHECK_PTR(num);
@@ -408,14 +388,17 @@ bool num_normalize(num_p num) // TODO test
         return false;
 
     node_p node_tail = num->tail;
-    num->tail = node_normalize(num->tail);
-    if(num->tail == node_tail)
+    if(node_tail->value != 0)
         return false;
 
+    num->tail = node_tail->prev;
     num->count--;
     if(num->count == 0)
         num->head = NULL;
+    else
+        num->tail->next = NULL;
 
+    free(node_tail);
     return true;
 }
 
@@ -427,6 +410,15 @@ num_p num_copy(num_p num) //  TODO test
         num_insert(num_res, node->value);
         
     return num_res;
+}
+
+
+
+uint128_t num_get_high_2(num_p num) // TODO test
+{
+    DBG_CHECK_PTR(num);
+    // assert(num->count > 1);
+    return U128_IMMED(num->tail->value, num->tail->prev->value);
 }
 
 
@@ -682,7 +674,8 @@ void num_div_mod_rec(
     num_p num_r,
     node_p node_r,
     uint64_t offset_r,
-    num_p num_2
+    num_p num_2,
+    uint128_t high_2
 )
 {
     DBG_CHECK_PTR(num_q);
@@ -696,7 +689,7 @@ void num_div_mod_rec(
     if(num_normalize(num_r))
     {
         num_insert_head(num_q, 0);
-        num_div_mod_rec(num_q, num_r, num_r->tail, offset_r - 1, num_2);
+        num_div_mod_rec(num_q, num_r, num_r->tail, offset_r - 1, num_2, high_2);
         return;
     }
 
@@ -706,15 +699,21 @@ void num_div_mod_rec(
         uint64_t r_max, r_min;
         if(num_r->count > num_2->count + offset_r)
         {
-            uint128_t val_1 = U128_IMMED(num_r->tail->value, num_r->tail->prev->value);
-            r_max = val_1 / num_2->tail->value;
-            r_min = val_1 / (U128(num_2->tail->value) + 1);
+            uint128_t high_1 = num_get_high_2(num_r);
+            r_max = high_1 / num_2->tail->value;
+            r_min = high_1 / (U128(num_2->tail->value) + 1);
+        }
+        else if(HIGH(high_2))
+        {
+            uint128_t val_1 = num_get_high_2(num_r);
+            r_max = val_1 / high_2;
+            r_min = val_1 / (high_2 + 1);
         }
         else
         {
             uint64_t val_1 = num_r->tail->value;
-            r_max = val_1 / num_2->tail->value;
-            r_min = val_1 / (U128(num_2->tail->value) + 1);
+            r_max = val_1 / LOW(high_2);
+            r_min = val_1 / (high_2 + 1);
         }
 
         num_p num_aux = num_mul_uint(NULL, num_2, r_max);
@@ -732,7 +731,7 @@ void num_div_mod_rec(
 
     num_insert_head(num_q, r);
     node_r = node_r ? node_r->prev : num_r->tail;
-    num_div_mod_rec(num_q, num_r, node_r, offset_r - 1, num_2);
+    num_div_mod_rec(num_q, num_r, node_r, offset_r - 1, num_2, high_2);
 }
 
 void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
@@ -754,7 +753,9 @@ void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
     for(uint64_t i=1; i<num_2->count; i++)
         node_r = node_r->prev;
 
-    num_div_mod_rec(num_q, num_1, node_r, num_1->count - num_2->count, num_2);
+    uint128_t high_2 = (num_2->count == 1 || num_2->tail->value == UINT64_MAX) ?
+        num_2->tail->value : num_get_high_2(num_2);
+    num_div_mod_rec(num_q, num_1, node_r, num_1->count - num_2->count, num_2, high_2);
     num_normalize(num_q);
 
     *out_num_q = num_q;
