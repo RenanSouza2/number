@@ -764,7 +764,7 @@ void num_div_mod_rec(
     num_div_mod_rec(num_q, num_r, node_r, offset_r - 1, num_2);
 }
 
-void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
+uint64_t num_div_mod_inner(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
 {
     DBG_CHECK_PTR(num_1);
     DBG_CHECK_PTR(num_2);
@@ -776,7 +776,7 @@ void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
         *out_num_q = num_q;
         *out_num_r = num_1;
         num_free(num_2);
-        return;
+        return 0;
     }
 
     if(num_2->count == 1)
@@ -788,12 +788,11 @@ void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
             num_1->count - num_2->count,
             num_2
         );
-        num_normalize(num_q);
 
         *out_num_q = num_q;
         *out_num_r = num_1;
         num_free(num_2);
-        return;
+        return 0;
     }
 
     uint64_t bits = 0;
@@ -814,11 +813,18 @@ void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
         num_1->count - num_2->count,
         num_2
     );
-    num_normalize(num_q);
     num_free(num_2);
     
     *out_num_q = num_q;
-    *out_num_r = num_shr_uint(num_1, bits);
+    *out_num_r = num_1;
+    return bits;
+}
+
+void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
+{
+    uint64_t bits = num_div_mod_inner(out_num_q, out_num_r, num_1, num_2);
+    num_normalize(*out_num_q);
+    num_shr_uint(*out_num_r, bits);
 }
 
 num_p num_div(num_p num_1, num_p num_2)
@@ -827,7 +833,8 @@ num_p num_div(num_p num_1, num_p num_2)
     DBG_CHECK_PTR(num_2);
 
     num_p num_q, num_r;
-    num_div_mod(&num_q, &num_r, num_1, num_2);
+    num_div_mod_inner(&num_q, &num_r, num_1, num_2);
+    num_normalize(num_q);
     num_free(num_r);
     return num_q;
 }
@@ -838,7 +845,8 @@ num_p num_mod(num_p num_1, num_p num_2)
     DBG_CHECK_PTR(num_2);
 
     num_p num_q, num_r;
-    num_div_mod(&num_q, &num_r, num_1, num_2);
+    uint64_t bits = num_div_mod_inner(&num_q, &num_r, num_1, num_2);
+    num_shr_uint(num_r, bits);
     num_free(num_q);
     return num_r;
 }
