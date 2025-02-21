@@ -4,6 +4,9 @@
 
 #include "../lib/num/header.h"
 #include "../utils/assert.h"
+#include "../utils/U64.h"
+
+
 
 num_p num_generate(uint64_t max, uint64_t salt)
 {
@@ -39,12 +42,14 @@ uint64_t rand_64()
     return ((uint64_t)rand()) << 32 | rand();
 }
 
+
+
 void time_1()
 {
     
     for(uint64_t i=13; i<21; i++)
     {
-        printf("\n%2lu", i);
+        printf("\n" U64P() "", i);
 
         num_p num_1 = num_generate(i+1, 1);
         // num_display_tag("num_1", num_1);
@@ -65,7 +70,7 @@ void time_2(int argc, char** argv)
 {
     assert(argc > 1);
     uint64_t id = atoi(argv[1]);
-    printf("\nid: %lu", id);
+    printf("\nid: " U64P() "", id);
 
     num_p num_1 = num_generate(18, 2);
     num_display_tag("num_1", num_1);
@@ -79,7 +84,7 @@ void time_2(int argc, char** argv)
         if(i % 8 != id)
             continue;
 
-        printf("\n%5lu", i);
+        printf("\n" U64P(5) "", i);
 
         num_p num_aux_1 = num_copy(num_1);
         num_p num_aux_2 = num_copy(num_2);
@@ -91,6 +96,32 @@ void time_2(int argc, char** argv)
     }
 }
 
+
+
+void fibonacci()
+{
+
+    num_p num_a = num_wrap(1);
+    num_p num_b = num_wrap(1);
+
+    uint64_t space = 1e4;
+    for(uint64_t i=0; ; i++)
+    {
+        num_p num_c = num_add(num_a, num_copy(num_b));
+
+        if(i%space == 0)
+        {
+            printf("\n" U64P() " num: ", i);
+            num_display(num_c);
+        }
+
+        num_a = num_b;
+        num_b = num_c;
+    }
+}
+
+
+
 int main(int argc, char** argv)
 {
     setbuf(stdout, NULL);
@@ -98,24 +129,6 @@ int main(int argc, char** argv)
 
     // time_1();
     time_2(argc, argv);
-
-    // num_p num_1 = num_generate(20, 2);
-    // num_display_full("num_1", num_1);
-
-    // num_p num_a = num_wrap(1);
-    // num_p num_b = num_wrap(1);
-    // num_display_tag("num", num_a);
-    // num_display_tag("num", num_b);
-    // for(uint64_t i=0; ; i++)
-    // {
-    //     num_p num_c = num_add(num_a, num_copy(num_b));
-
-    //     printf("\n%lu num: ", i);
-    //     num_display(num_c);
-
-    //     num_a = num_b;
-    //     num_b = num_c;
-    // }
 
     printf("\n");
     return 0;

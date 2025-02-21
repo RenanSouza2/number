@@ -104,7 +104,7 @@ bool node_rec(node_p node_1, node_p node_2, uint64_t index, node_p node_head)
 
     if(!uint64(node_1->value, node_2->value))
     {
-        printf("\n\tNUMBER ASSERT ERROR\t| DIFFERENCE IN VALUE " U64P "", index - 1);
+        printf("\n\tNUMBER ASSERT ERROR\t| DIFFERENCE IN VALUE " U64P() "", index - 1);
         return false;
     }
 
@@ -138,7 +138,7 @@ bool num_str_inner(num_p num_1, num_p num_2)
 
     if(num_1->head == NULL)
     {
-        printf("\n\tNUMBER VALIDITY ERROR\t| COUNT IS " U64P " BUT IT HAS NO HEAD", num_1->count);
+        printf("\n\tNUMBER VALIDITY ERROR\t| COUNT IS " U64P() " BUT IT HAS NO HEAD", num_1->count);
         return false;
     }
 
@@ -150,7 +150,7 @@ bool num_str_inner(num_p num_1, num_p num_2)
 
     if(num_1->tail == NULL)
     {
-        printf("\n\tNUMBER VALIDITY ERROR\t| COUNT IS " U64P " BUT IT HAS NO TAIL", num_1->count);
+        printf("\n\tNUMBER VALIDITY ERROR\t| COUNT IS " U64P() " BUT IT HAS NO TAIL", num_1->count);
         return false;
     }
 
@@ -221,7 +221,7 @@ void num_display_cap(num_p num, uint64_t index)
         return;
     }
 
-    printf("(" U64P ")\t| ", num->count);
+    printf("(" U64P() ")\t| ", num->count);
     node_display_rec(num->tail, index);
 }
 
