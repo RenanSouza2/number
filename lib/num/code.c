@@ -732,10 +732,16 @@ void num_div_mod_rec(
     uint64_t r =  0;
     while(num_cmp_offset(num_r, num_2, offset_r) >= 0)
     {
-        uint128_t val_1 = num_r->count > num_2->count + offset_r ?
-            U128_IMMED(num_r->tail->value, num_r->tail->prev->value) : 
+        bool bool_1 = num_r->count > num_2->count + offset_r;
+        bool bool_2 = num_2->count == 1 || num_r->tail->value == UINT64_MAX;
+
+        uint128_t val_1 = bool_1 || !bool_2 ?
+            U128_IMMED(num_r->tail->value, num_r->tail->prev->value) :
             num_r->tail->value;
-        uint128_t val_2 = num_2->tail->value;
+
+        uint128_t val_2 = bool_1 || bool_2 ?
+            num_2->tail->value :
+            U128_IMMED(num_2->tail->value, num_2->tail->prev->value);
 
         uint64_t r_max = val_1 / val_2;
         uint64_t r_min = val_1 / (val_2 + 1);
