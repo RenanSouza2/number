@@ -498,7 +498,7 @@ void test_num_cmp(bool show)
 {
     printf("\n\t%s", __func__);
 
-    if(show) printf("\n\t\t%s 1\t\t", __func__);
+    if(show) printf("\n\t\t%s  1\t\t", __func__);
     num_p num_1 = num_create_immed(0);
     num_p num_2 = num_create_immed(0);
     int64_t cmp = num_cmp(num_1, num_2);
@@ -506,7 +506,7 @@ void test_num_cmp(bool show)
     num_free(num_1);
     num_free(num_2);
 
-    if(show) printf("\n\t\t%s 2\t\t", __func__);
+    if(show) printf("\n\t\t%s  2\t\t", __func__);
     num_1 = num_create_immed(1, 1);
     num_2 = num_create_immed(0);
     cmp = num_cmp(num_1, num_2);
@@ -514,7 +514,7 @@ void test_num_cmp(bool show)
     num_free(num_1);
     num_free(num_2);
 
-    if(show) printf("\n\t\t%s 3\t\t", __func__);
+    if(show) printf("\n\t\t%s  3\t\t", __func__);
     num_1 = num_create_immed(0);
     num_2 = num_create_immed(1, 1);
     cmp = num_cmp(num_1, num_2);
@@ -522,7 +522,7 @@ void test_num_cmp(bool show)
     num_free(num_1);
     num_free(num_2);
 
-    if(show) printf("\n\t\t%s 4\t\t", __func__);
+    if(show) printf("\n\t\t%s  4\t\t", __func__);
     num_1 = num_create_immed(1, 1);
     num_2 = num_create_immed(1, 2);
     cmp = num_cmp(num_1, num_2);
@@ -530,7 +530,7 @@ void test_num_cmp(bool show)
     num_free(num_1);
     num_free(num_2);
 
-    if(show) printf("\n\t\t%s 5\t\t", __func__);
+    if(show) printf("\n\t\t%s  5\t\t", __func__);
     num_1 = num_create_immed(1, 2);
     num_2 = num_create_immed(1, 2);
     cmp = num_cmp(num_1, num_2);
@@ -538,7 +538,7 @@ void test_num_cmp(bool show)
     num_free(num_1);
     num_free(num_2);
 
-    if(show) printf("\n\t\t%s 6\t\t", __func__);
+    if(show) printf("\n\t\t%s  6\t\t", __func__);
     num_1 = num_create_immed(1, 3);
     num_2 = num_create_immed(1, 2);
     cmp = num_cmp(num_1, num_2);
@@ -546,7 +546,7 @@ void test_num_cmp(bool show)
     num_free(num_1);
     num_free(num_2);
 
-    if(show) printf("\n\t\t%s 7\t\t", __func__);
+    if(show) printf("\n\t\t%s  7\t\t", __func__);
     num_1 = num_create_immed(2, 2, 0);
     num_2 = num_create_immed(2, 1, 0);
     cmp = num_cmp(num_1, num_2);
@@ -554,7 +554,7 @@ void test_num_cmp(bool show)
     num_free(num_1);
     num_free(num_2);
 
-    if(show) printf("\n\t\t%s 8\t\t", __func__);
+    if(show) printf("\n\t\t%s  8\t\t", __func__);
     num_1 = num_create_immed(2, 2, 0);
     num_2 = num_create_immed(2, 2, 0);
     cmp = num_cmp(num_1, num_2);
@@ -562,9 +562,25 @@ void test_num_cmp(bool show)
     num_free(num_1);
     num_free(num_2);
 
-    if(show) printf("\n\t\t%s 9\t\t", __func__);
+    if(show) printf("\n\t\t%s  9\t\t", __func__);
     num_1 = num_create_immed(2, 2, 0);
     num_2 = num_create_immed(2, 3, 0);
+    cmp = num_cmp(num_1, num_2);
+    assert(cmp < 0);
+    num_free(num_1);
+    num_free(num_2);
+
+    if(show) printf("\n\t\t%s 10\t\t", __func__);
+    num_1 = num_create_immed(2, 0x8000000000000000, 0);
+    num_2 = num_create_immed(2, 0x8000000000000000, 0x7fffffffffffffff);
+    cmp = num_cmp(num_1, num_2);
+    assert(cmp < 0);
+    num_free(num_1);
+    num_free(num_2);
+
+    if(show) printf("\n\t\t%s 11\t\t", __func__);
+    num_1 = num_create_immed(3, 0x8000000000000000, 0, 0);
+    num_2 = num_create_immed(3, 0x8000000000000000, 0x7fffffffffffffff, 0x8000000000000000);
     cmp = num_cmp(num_1, num_2);
     assert(cmp < 0);
     num_free(num_1);
@@ -901,6 +917,34 @@ void test_num_div_mod(bool show)
     assert(num_immed(num_q, 2, 1, 0));
     assert(num_immed(num_r, 1, UINT64_MAX));
 
+    if(show) printf("\n\t\t%s 18\t\t", __func__);
+    num_1 = num_create_immed(3, 1, 0, 0);
+    num_2 = num_create_immed(2, 1, UINT64_MAX);
+    num_div_mod(&num_q, &num_r, num_1, num_2);
+    assert(num_immed(num_q, 1, 0x8000000000000000));
+    assert(num_immed(num_r, 1, 0x8000000000000000));
+
+    if(show) printf("\n\t\t%s 19\t\t", __func__);
+    num_1 = num_create_immed(4, 1, 0, 0, 0);
+    num_2 = num_create_immed(3, 1, 0, UINT64_MAX);
+    num_div_mod(&num_q, &num_r, num_1, num_2);
+    assert(num_immed(num_q, 1, UINT64_MAX));
+    assert(num_immed(num_r, 2, 1, UINT64_MAX));
+
+    if(show) printf("\n\t\t%s 20\t\t", __func__);
+    num_1 = num_create_immed(3, 1, UINT64_MAX - 1, 0);
+    num_2 = num_create_immed(2, 1, UINT64_MAX);
+    num_div_mod(&num_q, &num_r, num_1, num_2);
+    assert(num_immed(num_q, 1, UINT64_MAX));
+    assert(num_immed(num_r, 1, UINT64_MAX));
+
+    if(show) printf("\n\t\t%s 21\t\t", __func__);
+    num_1 = num_create_immed(4, 1, UINT64_MAX, UINT64_MAX - 1, 0);
+    num_2 = num_create_immed(3, 1, UINT64_MAX, UINT64_MAX);
+    num_div_mod(&num_q, &num_r, num_1, num_2);
+    assert(num_immed(num_q, 1, UINT64_MAX));
+    assert(num_immed(num_r, 3, 1, UINT64_MAX - 1, UINT64_MAX));
+
     assert(clu_mem_empty());
 }
 
@@ -937,23 +981,11 @@ void test_num()
 }
 
 
-void delete()
-{
-    num_p num_1 = num_create_immed(1, 0xa);
-    num_p num_2 = num_create_immed(1, 1);
-    num_2 = num_div(num_1, num_2);
-    num_free(num_2);
-
-    assert(clu_mem_empty());
-}
-
-
 
 int main() 
 {
     setbuf(stdout, NULL);
     test_num();
-    // delete();
     printf("\n\n\tTest successful\n\n");
     return 0;
 }
