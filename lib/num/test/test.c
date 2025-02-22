@@ -798,63 +798,63 @@ void test_num_div_mod(bool show)
 
     num_p num_q, num_r;
 
-    if(show) printf("\n\t\t%s 1\t\t", __func__);
+    if(show) printf("\n\t\t%s  1\t\t", __func__);
     num_p num_1 = num_create_immed(0);
     num_p num_2 = num_create_immed(1, 1);
     num_div_mod(&num_q, &num_r, num_1, num_2);
     assert(num_immed(num_q, 0));
     assert(num_immed(num_r, 0));
 
-    if(show) printf("\n\t\t%s 2\t\t", __func__);
+    if(show) printf("\n\t\t%s  2\t\t", __func__);
     num_1 = num_create_immed(1, 4);
     num_2 = num_create_immed(1, 2);
     num_div_mod(&num_q, &num_r, num_1, num_2);
     assert(num_immed(num_q, 1, 2));
     assert(num_immed(num_r, 0));
 
-    if(show) printf("\n\t\t%s 3\t\t", __func__);
+    if(show) printf("\n\t\t%s  3\t\t", __func__);
     num_1 = num_create_immed(1, 5);
     num_2 = num_create_immed(1, 2);
     num_div_mod(&num_q, &num_r, num_1, num_2);
     assert(num_immed(num_q, 1, 2));
     assert(num_immed(num_r, 1, 1));
 
-    if(show) printf("\n\t\t%s 4\t\t", __func__);
+    if(show) printf("\n\t\t%s  4\t\t", __func__);
     num_1 = num_create_immed(1, 5);
     num_2 = num_create_immed(1, 5);
     num_div_mod(&num_q, &num_r, num_1, num_2);
     assert(num_immed(num_q, 1, 1));
     assert(num_immed(num_r, 0));
 
-    if(show) printf("\n\t\t%s 5\t\t", __func__);
+    if(show) printf("\n\t\t%s  5\t\t", __func__);
     num_1 = num_create_immed(1, 9);
     num_2 = num_create_immed(1, 3);
     num_div_mod(&num_q, &num_r, num_1, num_2);
     assert(num_immed(num_q, 1, 3));
     assert(num_immed(num_r, 0));
 
-    if(show) printf("\n\t\t%s 6\t\t", __func__);
+    if(show) printf("\n\t\t%s  6\t\t", __func__);
     num_1 = num_create_immed(3, 1, 0, 0);
     num_2 = num_create_immed(2, 1, 0);
     num_div_mod(&num_q, &num_r, num_1, num_2);
     assert(num_immed(num_q, 2, 1, 0));
     assert(num_immed(num_r, 0));
 
-    if(show) printf("\n\t\t%s 7\t\t", __func__);
+    if(show) printf("\n\t\t%s  7\t\t", __func__);
     num_1 = num_create_immed(1, 1);
     num_2 = num_create_immed(2, 1, 0);
     num_div_mod(&num_q, &num_r, num_1, num_2);
     assert(num_immed(num_q, 0));
     assert(num_immed(num_r, 1, 1));
 
-    if(show) printf("\n\t\t%s 8\t\t", __func__);
+    if(show) printf("\n\t\t%s  8\t\t", __func__);
     num_1 = num_create_immed(2, 4, UINT64_MAX);
     num_2 = num_create_immed(2, 2, 0);
     num_div_mod(&num_q, &num_r, num_1, num_2);
     assert(num_immed(num_q, 1, 2));
     assert(num_immed(num_r, 1, UINT64_MAX));
 
-    if(show) printf("\n\t\t%s 9\t\t", __func__);
+    if(show) printf("\n\t\t%s  9\t\t", __func__);
     num_1 = num_create_immed(2, 4, 0);
     num_2 = num_create_immed(2, 2, UINT64_MAX);
     num_div_mod(&num_q, &num_r, num_1, num_2);

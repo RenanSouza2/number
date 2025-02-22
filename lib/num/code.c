@@ -442,6 +442,8 @@ void num_sub_uint_offset_rec(num_p num, node_p node, uint64_t value)
 
     if(value == 0)
         return;
+
+    assert(node);
     
     bool do_next = node->value < value;
     node->value -= value;
@@ -769,6 +771,8 @@ uint64_t num_div_mod_inner(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_
 {
     DBG_CHECK_PTR(num_1);
     DBG_CHECK_PTR(num_2);
+
+    assert(num_2->count);
 
     num_p num_q = num_create(0, NULL, NULL);
 
