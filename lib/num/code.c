@@ -66,51 +66,6 @@ bool uint128_immed(uint128_t u1, uint64_t v2h, uint64_t v2l)
 
 
 
-bool node_rec(node_p node_1, node_p node_2, uint64_t index, node_p node_head)
-{
-    if(index == 0)
-    {
-        if(node_1 != NULL)
-        {
-            printf("\n\tNODE VALIDITY ERROR\t| NUMBER LONGER THAN EXPECTED");
-            return false;
-        }
-
-        return true;
-    }
-
-    if(index > 1)
-    {
-        if(node_1->prev == NULL)
-        {
-            printf("\n\n\tNODE VALIDITY ERROR\t| NUMBER SHORTER THAN EXPECTED");
-            return false;
-        }
-
-        if(node_1->prev->next != node_1)
-        {
-            printf("\n\n\tNODE VALIDITY ERROR\t| INVALID LINKAGE");
-            return false;
-        }
-    }
-    else
-    {
-        if(node_1 != node_head)
-        {
-            printf("\n\n\tNODE VALIDITY ERROR\t| INVALID HEAD");
-            return false;
-        }
-    }
-
-    if(!uint64(node_1->value, node_2->value))
-    {
-        printf("\n\tNUMBER ASSERT ERROR\t| DIFFERENCE IN VALUE " U64P() "", index - 1);
-        return false;
-    }
-
-    return node_rec(node_1->prev, node_2->prev, index - 1, node_head);
-}
-
 bool num_str_inner(num_p num_1, num_p num_2)
 {
     if(!uint64(num_1->count, num_2->count))
@@ -160,7 +115,50 @@ bool num_str_inner(num_p num_1, num_p num_2)
         return false;
     }
 
-    return node_rec(num_1->tail, num_2->tail, num_1->count, num_1->head);
+    node_p node_1 = num_1->tail;
+    node_p node_2 = num_2->tail;
+    for(uint64_t count = num_1->count; count > 0; count--)
+    {
+        if(count > 1)
+        {
+            if(node_1->prev == NULL)
+            {
+                printf("\n\n\tNODE VALIDITY ERROR\t| NUMBER SHORTER THAN EXPECTED");
+                return false;
+            }
+
+            if(node_1->prev->next != node_1)
+            {
+                printf("\n\n\tNODE VALIDITY ERROR\t| INVALID LINKAGE");
+                return false;
+            }
+        }
+        else
+        {
+            if(node_1 != num_1->head)
+            {
+                printf("\n\n\tNODE VALIDITY ERROR\t| INVALID HEAD");
+                return false;
+            }
+        }
+
+        if(!uint64(node_1->value, node_2->value))
+        {
+            printf("\n\tNUMBER ASSERT ERROR\t| DIFFERENCE IN VALUE " U64P() "", count - 1);
+            return false;
+        }
+
+        node_1 = node_1->prev;
+        node_2 = node_2->prev;
+    }
+
+    if(node_1 != NULL)
+    {
+        printf("\n\tNODE VALIDITY ERROR\t| NUMBER LONGER THAN EXPECTED");
+        return false;
+    }
+
+    return true;
 }
 
 bool num_str(num_p num_1, num_p num_2)
