@@ -44,10 +44,9 @@ uint64_t rand_64()
 
 
 
-void time_1()
+void time_1(uint64_t begin, uint64_t end)
 {
-    
-    for(uint64_t i=13; i<21; i++)
+    for(uint64_t i=begin; i<end; i++)
     {
         printf("\n" U64P() "", i);
 
@@ -126,8 +125,8 @@ int main(int argc, char** argv)
     setbuf(stdout, NULL);
     srand(time(NULL));
 
-    time_1();
-    // time_2(argc, argv, 18);
+    time_1(21, 22);
+    // time_2(argc, argv, 19);
 
     printf("\n");
     return 0;

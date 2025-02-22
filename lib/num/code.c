@@ -126,7 +126,7 @@ bool num_str_inner(num_p num_1, num_p num_2)
             printf("\n\tNUMBER VALIDITY ERROR\t| COUNT IS ZERO BUT IT HAS HEAD");
             return false;
         }
-        
+
         if(num_1->tail != NULL)
         {
             printf("\n\tNUMBER VALIDITY ERROR\t| COUNT IS ZERO BUT IT HAS TAIL");
@@ -408,7 +408,7 @@ num_p num_copy(num_p num) //  TODO test
     num_p num_res = num_create(0, NULL, NULL);
     for(node_p node = num->head; node; node = node->next)
         num_insert(num_res, node->value);
-        
+
     return num_res;
 }
 
@@ -444,7 +444,7 @@ void num_sub_uint_offset_rec(num_p num, node_p node, uint64_t value)
         return;
 
     assert(node);
-    
+
     bool do_next = node->value < value;
     node->value -= value;
     if(do_next)
@@ -523,7 +523,7 @@ void num_shl_uint_rec(num_p num, node_p node, uint64_t bits, uint64_t carry)
 num_p num_shl_uint(num_p num, uint64_t bits) // TODO test
 {
     DBG_CHECK_PTR(num);
-    
+
     num_shl_uint_rec(num, num->head, bits, 0);
     return num;
 }
@@ -544,7 +544,7 @@ void num_shr_uint_rec(num_p num, node_p node, uint64_t bits, uint64_t carry)
 num_p num_shr_uint(num_p num, uint64_t bits) // TODO test
 {
     DBG_CHECK_PTR(num);
-    
+
     num_shr_uint_rec(num, num->tail, bits, 0);
     num_normalize(num);
     return num;
@@ -819,7 +819,7 @@ uint64_t num_div_mod_inner(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_
         num_2
     );
     num_free(num_2);
-    
+
     *out_num_q = num_q;
     *out_num_r = num_1;
     return bits;
