@@ -743,7 +743,8 @@ void num_div_mod_rec(
             num_2->tail->value :
             U128_IMMED(num_2->tail->value, num_2->tail->prev->value);
 
-        uint64_t r_max = val_1 / val_2;
+        uint128_t aux = val_1 / val_2;
+        uint64_t r_max = aux > UINT64_MAX ? UINT64_MAX : aux;
         uint64_t r_min = val_1 / (val_2 + 1);
 
         num_p num_aux = num_mul_uint(NULL, num_2, r_max);
