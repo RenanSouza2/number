@@ -1,0 +1,25 @@
+/Library/Developer/CommandLineTools/usr/bin/make clean --directory=src -s
+/Library/Developer/CommandLineTools/usr/bin/make clean --directory=lib -s
+cleaning lib
+cleaning lib/mod
+cleaning lib/num
+cleaning clu
+cleaning clu lib
+cleaning clu lib/list
+cleaning clu lib/list/body
+cleaning clu lib/list/head
+cleaning clu lib/mem
+cleaning clu lib/tag
+/Library/Developer/CommandLineTools/usr/bin/make build --directory=src -s
+building object lib/mod
+building object lib/num
+ linking object lib
+
+13	     0.264
+14	     0.970
+15	     3.993
+16	    16.708
+17	    68.712
+18	   571.509
+19	  1091.202
+20	  7947.452

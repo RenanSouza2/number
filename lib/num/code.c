@@ -126,7 +126,7 @@ bool num_str_inner(num_p num_1, num_p num_2)
             printf("\n\tNUMBER VALIDITY ERROR\t| COUNT IS ZERO BUT IT HAS HEAD");
             return false;
         }
-        
+
         if(num_1->tail != NULL)
         {
             printf("\n\tNUMBER VALIDITY ERROR\t| COUNT IS ZERO BUT IT HAS TAIL");
@@ -217,7 +217,7 @@ void num_display_cap(num_p num, uint64_t index)
     DBG_CHECK_PTR(num);
     if(num->count == 0)
     {
-        printf("0\t| 0");
+        printf("(0)\t| 0");
         return;
     }
 
@@ -408,17 +408,8 @@ num_p num_copy(num_p num) //  TODO test
     num_p num_res = num_create(0, NULL, NULL);
     for(node_p node = num->head; node; node = node->next)
         num_insert(num_res, node->value);
-        
+
     return num_res;
-}
-
-
-
-uint128_t num_get_high_2(num_p num) // TODO test
-{
-    DBG_CHECK_PTR(num);
-    // assert(num->count > 1);
-    return U128_IMMED(num->tail->value, num->tail->prev->value);
 }
 
 
@@ -451,7 +442,7 @@ void num_sub_uint_offset_rec(num_p num, node_p node, uint64_t value)
 
     if(value == 0)
         return;
-    
+
     assert(node);
 
     bool do_next = node->value < value;
@@ -509,6 +500,54 @@ num_p num_mul_uint(num_p num_res, num_p num, uint64_t value)
         num_mul_uint_offset(num_res, num_res->head, num->head, value);
 
     return num_res;
+}
+
+void num_shl_uint_rec(num_p num, node_p node, uint64_t bits, uint64_t carry)
+{
+    DBG_CHECK_PTR(num);
+    DBG_CHECK_PTR(node);
+
+    if(node == NULL)
+    {
+        if(carry)
+            num_insert(num, carry);
+
+        return;
+    }
+
+    uint64_t value = node->value;
+    node->value = (value << bits) | carry;
+    num_shl_uint_rec(num, node->next, bits, value >> (64 - bits));
+}
+
+num_p num_shl_uint(num_p num, uint64_t bits) // TODO test
+{
+    DBG_CHECK_PTR(num);
+
+    num_shl_uint_rec(num, num->head, bits, 0);
+    return num;
+}
+
+void num_shr_uint_rec(num_p num, node_p node, uint64_t bits, uint64_t carry)
+{
+    DBG_CHECK_PTR(num);
+    DBG_CHECK_PTR(node);
+
+    if(node == NULL)
+        return;
+
+    uint64_t value = node->value;
+    node->value = (value >> bits) | carry;
+    num_shr_uint_rec(num, node->prev, bits, value << (64 - bits));
+}
+
+num_p num_shr_uint(num_p num, uint64_t bits) // TODO test
+{
+    DBG_CHECK_PTR(num);
+
+    num_shr_uint_rec(num, num->tail, bits, 0);
+    num_normalize(num);
+    return num;
 }
 
 
@@ -674,8 +713,7 @@ void num_div_mod_rec(
     num_p num_r,
     node_p node_r,
     uint64_t offset_r,
-    num_p num_2,
-    uint128_t high_2
+    num_p num_2
 )
 {
     DBG_CHECK_PTR(num_q);
@@ -689,32 +727,27 @@ void num_div_mod_rec(
     if(num_normalize(num_r))
     {
         num_insert_head(num_q, 0);
-        num_div_mod_rec(num_q, num_r, num_r->tail, offset_r - 1, num_2, high_2);
+        num_div_mod_rec(num_q, num_r, num_r->tail, offset_r - 1, num_2);
         return;
     }
 
     uint64_t r =  0;
     while(num_cmp_offset(num_r, num_2, offset_r) >= 0)
     {
-        uint64_t r_max, r_min;
-        if(num_r->count > num_2->count + offset_r)
-        {
-            uint128_t high_1 = num_get_high_2(num_r);
-            r_max = high_1 / num_2->tail->value;
-            r_min = high_1 / (U128(num_2->tail->value) + 1);
-        }
-        else if(HIGH(high_2))
-        {
-            uint128_t val_1 = num_get_high_2(num_r);
-            r_max = val_1 / high_2;
-            r_min = val_1 / (high_2 + 1);
-        }
-        else
-        {
-            uint64_t val_1 = num_r->tail->value;
-            r_max = val_1 / LOW(high_2);
-            r_min = val_1 / (high_2 + 1);
-        }
+        bool bool_1 = num_r->count > num_2->count + offset_r;
+        bool bool_2 = num_2->count == 1 || num_r->tail->value == UINT64_MAX;
+
+        uint128_t val_1 = bool_1 || !bool_2 ?
+            U128_IMMED(num_r->tail->value, num_r->tail->prev->value) :
+            num_r->tail->value;
+
+        uint128_t val_2 = bool_1 || bool_2 ?
+            num_2->tail->value :
+            U128_IMMED(num_2->tail->value, num_2->tail->prev->value);
+
+        uint128_t aux = val_1 / val_2;
+        uint64_t r_max = aux > UINT64_MAX ? UINT64_MAX : aux;
+        uint64_t r_min = val_1 / (val_2 + 1);
 
         num_p num_aux = num_mul_uint(NULL, num_2, r_max);
         if(num_cmp_offset(num_r, num_aux, offset_r) < 0)
@@ -731,13 +764,15 @@ void num_div_mod_rec(
 
     num_insert_head(num_q, r);
     node_r = node_r ? node_r->prev : num_r->tail;
-    num_div_mod_rec(num_q, num_r, node_r, offset_r - 1, num_2, high_2);
+    num_div_mod_rec(num_q, num_r, node_r, offset_r - 1, num_2);
 }
 
-void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
+uint64_t num_div_mod_inner(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
 {
     DBG_CHECK_PTR(num_1);
     DBG_CHECK_PTR(num_2);
+
+    assert(num_2->count);
 
     num_p num_q = num_create(0, NULL, NULL);
 
@@ -746,21 +781,55 @@ void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
         *out_num_q = num_q;
         *out_num_r = num_1;
         num_free(num_2);
-        return;
+        return 0;
     }
+
+    if(num_2->count == 1)
+    {
+        num_div_mod_rec(
+            num_q,
+            num_1,
+            num_1->tail,
+            num_1->count - num_2->count,
+            num_2
+        );
+
+        *out_num_q = num_q;
+        *out_num_r = num_1;
+        num_free(num_2);
+        return 0;
+    }
+
+    uint64_t bits = 0;
+    for(uint64_t l = num_2->tail->value; l >> 63 == 0; l <<= 1)
+        bits++;
+
+    num_1 = num_shl_uint(num_1, bits);
+    num_2 = num_shl_uint(num_2, bits);
 
     node_p node_r = num_1->tail;
     for(uint64_t i=1; i<num_2->count; i++)
         node_r = node_r->prev;
 
-    uint128_t high_2 = (num_2->count == 1 || num_2->tail->value == UINT64_MAX) ?
-        num_2->tail->value : num_get_high_2(num_2);
-    num_div_mod_rec(num_q, num_1, node_r, num_1->count - num_2->count, num_2, high_2);
-    num_normalize(num_q);
+    num_div_mod_rec(
+        num_q,
+        num_1,
+        node_r,
+        num_1->count - num_2->count,
+        num_2
+    );
+    num_free(num_2);
 
     *out_num_q = num_q;
     *out_num_r = num_1;
-    num_free(num_2);
+    return bits;
+}
+
+void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
+{
+    uint64_t bits = num_div_mod_inner(out_num_q, out_num_r, num_1, num_2);
+    num_normalize(*out_num_q);
+    num_shr_uint(*out_num_r, bits);
 }
 
 num_p num_div(num_p num_1, num_p num_2)
@@ -769,7 +838,8 @@ num_p num_div(num_p num_1, num_p num_2)
     DBG_CHECK_PTR(num_2);
 
     num_p num_q, num_r;
-    num_div_mod(&num_q, &num_r, num_1, num_2);
+    num_div_mod_inner(&num_q, &num_r, num_1, num_2);
+    num_normalize(num_q);
     num_free(num_r);
     return num_q;
 }
@@ -780,7 +850,8 @@ num_p num_mod(num_p num_1, num_p num_2)
     DBG_CHECK_PTR(num_2);
 
     num_p num_q, num_r;
-    num_div_mod(&num_q, &num_r, num_1, num_2);
+    uint64_t bits = num_div_mod_inner(&num_q, &num_r, num_1, num_2);
+    num_shr_uint(num_r, bits);
     num_free(num_q);
     return num_r;
 }
