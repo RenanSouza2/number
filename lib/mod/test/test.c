@@ -8,7 +8,7 @@ void test_mod_create(bool show)
 {
     char offset[] = "\t";
     printf("\n%s%s", offset, __func__);
-    
+
     num_p p = num_wrap(7);
 
     if(show) printf("\n%s\t%s 1", offset, __func__);
@@ -30,7 +30,7 @@ void test_mod_wrap(bool show)
 {
     char offset[] = "\t";
     printf("\n%s%s", offset, __func__);
-    
+
     num_p p = num_wrap(7);
 
     if(show) printf("\n%s\t%s 1", offset, __func__);
@@ -54,7 +54,7 @@ void test_mod_add(bool show)
 {
     char offset[] = "\t";
     printf("\n%s%s", offset, __func__);
-    
+
     num_p p = num_wrap(7);
 
     if(show) printf("\n%s\t%s 1", offset, __func__);
@@ -94,7 +94,7 @@ void test_mod_sub(bool show)
 {
     char offset[] = "\t";
     printf("\n%s%s", offset, __func__);
-    
+
     num_p p = num_wrap(7);
 
     if(show) printf("\n%s\t%s 1", offset, __func__);
@@ -141,7 +141,7 @@ void test_mod_mul(bool show)
 {
     char offset[] = "\t";
     printf("\n%s%s", offset, __func__);
-    
+
     num_p p = num_wrap(7);
 
     if(show) printf("\n%s\t%s 1", offset, __func__);
@@ -188,7 +188,7 @@ void test_mod_mul(bool show)
     mod_res = mod_mul(mod_1, mod_2);
     assert(mod_immed(mod_res, 0));
     mod_free(mod_res);
-    
+
     num_free(p);
 
     assert(clu_mem_empty());
@@ -251,7 +251,7 @@ void test_mod()
 
 
 
-int main() 
+int main()
 {
     setbuf(stdout, NULL);
     test_mod();

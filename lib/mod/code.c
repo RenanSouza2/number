@@ -74,7 +74,7 @@ mod_t mod_sub(mod_t mod_1, mod_t mod_2)
         num_p num = num_sub(mod_1.num, mod_2.num);
         return mod_create(num, mod_1.p);
     }
-    
+
     num_p num = num_add(mod_1.num, num_copy(mod_1.p));
     num = num_sub(num, mod_2.num);
     return mod_create(num, mod_1.p);
@@ -98,7 +98,6 @@ mod_t mod_div_rec(mod_t mod_1, mod_t mod_2)
         num_free(num_r);
         return mod_create(num_q, mod_1.p);
     }
-        
     num_free(num_q);
 
     mod_t mod_1_next = mod_create(num_r, mod_2.num);

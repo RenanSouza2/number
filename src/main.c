@@ -8,13 +8,31 @@
 
 
 
+uint64_t altutime()
+{
+    struct timespec time;
+    clock_gettime(CLOCK_MONOTONIC, &time);
+    return time.tv_sec * 1e6 + time.tv_nsec / 1e3;
+}
+
+
+
 num_p num_generate(uint64_t max, uint64_t salt)
 {
+    // uint64_t begin = altutime();
+
     num_p num = num_wrap(2);
     for(uint64_t i=0; i<max; i++)
     {
+        // printf("\ni: %lu", i);
+
         num = num_add(num, num_wrap(salt));
         num = num_mul(num, num_copy(num));
+
+        // uint64_t end = altutime();
+
+        // num_display_full("num", num);
+        // printf("\n%lu: %10.3f", i, (end - begin) / 1e6);
     }
     return num;
 }
@@ -30,13 +48,6 @@ num_p num_generate_2(uint64_t index)
     return num;
 }
 
-uint64_t altutime() 
-{
-    struct timespec time;
-    clock_gettime(CLOCK_MONOTONIC, &time);
-    return time.tv_sec * 1e6 + time.tv_nsec / 1e3;
-}
-
 uint64_t rand_64()
 {
     return ((uint64_t)rand()) << 32 | rand();
@@ -46,22 +57,28 @@ uint64_t rand_64()
 
 void time_1(uint64_t begin, uint64_t end)
 {
+    assert(begin);
+    num_p num_1 = num_generate(begin, 1);
+    num_p num_2 = num_generate(begin - 1, 2);
     for(uint64_t i=begin; i<end; i++)
     {
         printf("\n" U64P() "", i);
 
-        num_p num_1 = num_generate(i+1, 1);
-        // num_display_tag("num_1", num_1);
-        num_p num_2 = num_generate(i, 2);
-        // num_display_tag("num_2", num_2);
+        num_1 = num_add(num_1, num_wrap(1));
+        num_1 = num_mul(num_1, num_copy(num_1));
+
+        num_2 = num_add(num_2, num_wrap(2));
+        num_2 = num_mul(num_2, num_copy(num_2));
+
+        num_p num_1_copy = num_copy(num_1);
+        num_p num_2_copy = num_copy(num_2);
 
         uint64_t begin = altutime();
-        num_1 = num_div(num_1, num_2);
-        // num_display_tag("num_q", num_1);
+        num_p num = num_div(num_1_copy, num_2_copy);
         uint64_t end = altutime();
         printf("\t%10.3f", (end - begin) / 1e6);
 
-        num_free(num_1);
+        num_free(num);
     }
 }
 
@@ -125,8 +142,9 @@ int main(int argc, char** argv)
     setbuf(stdout, NULL);
     srand(time(NULL));
 
-    time_1(21, 22);
+    time_1(13, 21);
     // time_2(argc, argv, 19);
+    // num_generate(30, 2);
 
     printf("\n");
     return 0;
