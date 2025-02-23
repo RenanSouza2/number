@@ -553,6 +553,7 @@ num_p num_shr_uint(num_p num, uint64_t bits) // TODO test
 
 
 
+
 bool num_is_zero(num_p num) // TODO test
 {
     DBG_CHECK_PTR(num);
@@ -681,8 +682,12 @@ num_p num_mul(num_p num_1, num_p num_2)
     num_p num_res = num_create(0, NULL, NULL);
     node_p node_1 = num_1->head;
     node_p node_2 = num_2->head;
-    for(node_p node_res = NULL; node_2; node_res = node_res->next)
+
+    uint64_t i=0;
+    for(node_p node_res = NULL; node_2; node_res = node_res->next, i++)
     {
+        // if(i%1000 == 0) printf("\t(%lu / %lu)", i/1000, num_2->count/1000);
+
         node_res = num_mul_uint_offset(num_res, node_res, node_1, node_2->value);
         node_res = num_denormalize(num_res, node_res);
 
@@ -692,6 +697,39 @@ num_p num_mul(num_p num_1, num_p num_2)
     num_free(num_1);
     free(num_2);
     return num_res;
+}
+
+num_p choose_name(num_p num_a, num_p num_b, uint64_t r, uint64_t offset)
+{
+    num_p num_aux = num_create(0, NULL, NULL);
+
+    // printf("\n---------");
+    // printf("\n\nEntering choose_name");
+    // num_display_tag("num_a", num_a);
+    // num_display_tag("num_b", num_b);
+    // printf("\nr: %lu", r);
+    // printf("\noffset: %lu", offset);
+
+    node_p node = num_b->tail;
+    for(offset += num_b->count-1; node; node = node->prev, offset--)
+    {
+        // printf("\n\nnew loop");
+        // printf("\nnode->value: %lu", node->value);
+
+        uint128_t u = MUL(node->value, r);
+        num_add_uint(num_aux, HIGH(u));
+        num_insert_head(num_aux, LOW(u));
+
+        // num_display_tag("num_aux", num_aux);
+
+        if(num_cmp_offset(num_a, num_aux, offset) < 0)
+        {
+            num_free(num_aux);
+            return NULL;
+        }
+    }
+
+    return num_aux;
 }
 
 void num_div_mod_loop(
@@ -735,10 +773,9 @@ void num_div_mod_loop(
             uint64_t r_max = aux > UINT64_MAX ? UINT64_MAX : aux;
             uint64_t r_min = val_1 / (val_2 + 1);
 
-            num_p num_aux = num_mul_uint(NULL, num_2, r_max);
-            if(num_cmp_offset(num_r, num_aux, offset_r) < 0)
+            num_p num_aux = choose_name(num_r, num_2, r_max, offset_r);
+            if(num_aux == NULL)
             {
-                num_free(num_aux);
                 num_aux = num_mul_uint(NULL, num_2, r_min);
                 r_max = r_min;
             }

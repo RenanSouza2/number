@@ -30,7 +30,6 @@ num_p num_generate(uint64_t max, uint64_t salt)
         num = num_mul(num, num_copy(num));
 
         // uint64_t end = altutime();
-
         // num_display_full("num", num);
         // printf("\n%lu: %10.3f", i, (end - begin) / 1e6);
     }
