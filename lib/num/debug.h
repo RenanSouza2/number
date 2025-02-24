@@ -40,7 +40,5 @@ void num_add_uint(num_p num, uint64_t value);
 void num_sub_uint(num_p num, uint64_t value);
 bool num_sub_uint_offset(num_p num, node_p node, uint64_t value);
 num_p num_mul_uint(num_p num_res, num_p num, uint64_t value);
-num_p num_shl(num_p num);
-num_p num_shr(num_p num);
 
 #endif

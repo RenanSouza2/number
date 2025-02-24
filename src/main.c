@@ -19,19 +19,19 @@ uint64_t altutime()
 
 num_p num_generate(uint64_t max, uint64_t salt)
 {
-    // uint64_t begin = altutime();
+    uint64_t begin = altutime();
 
     num_p num = num_wrap(2);
     for(uint64_t i=0; i<max; i++)
     {
-        // printf("\ni: %lu", i);
+        printf("\ni: %lu", i);
 
         num = num_add(num, num_wrap(salt));
         num = num_mul(num, num_copy(num));
 
-        // uint64_t end = altutime();
-        // num_display_full("num", num);
-        // printf("\n%lu: %10.3f", i, (end - begin) / 1e6);
+        uint64_t end = altutime();
+        num_display_full("num", num);
+        printf("\n%lu: %10.3f", i, (end - begin) / 1e6);
     }
     return num;
 }
@@ -50,6 +50,18 @@ num_p num_generate_2(uint64_t index)
 uint64_t rand_64()
 {
     return ((uint64_t)rand()) << 32 | rand();
+}
+
+num_p num_rand(uint64_t count)
+{
+    num_p num = num_wrap(0);
+    for(uint64_t i=0; i<count; i++)
+    {
+        uint64_t value = rand_64();
+        num = num_shl(num, 64);
+        num = num_add(num, num_wrap(value));
+    }
+    return num;
 }
 
 
@@ -141,9 +153,9 @@ int main(int argc, char** argv)
     setbuf(stdout, NULL);
     srand(time(NULL));
 
-    time_1(13, 21);
-    // time_2(argc, argv, 19);
-    // num_generate(30, 2);
+    // time_1(13, 30);
+    // time_2(argc, argv, 18);
+    num_generate(30, 2);
 
     printf("\n");
     return 0;

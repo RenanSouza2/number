@@ -350,6 +350,24 @@ node_p num_insert_head(num_p num, uint64_t value) // TODO test
     return num->head;
 }
 
+void num_remove_head(num_p num) // TODO test
+{
+    DBG_CHECK_PTR(num);
+
+    if(num->count == 0)
+        return;
+
+    node_p node_head = num->head;
+    num->head = node_head->prev;
+    free(node_head);
+
+    num->count--;
+    if(num->count == 0)
+        num->tail = NULL;
+    else
+        num->head->prev = NULL;
+}
+
 void num_insert_list(num_p num, node_p head, node_p tail, uint64_t cnt) // TODO test
 {
     DBG_CHECK_PTR(num);
@@ -398,6 +416,7 @@ bool num_normalize(num_p num) // TODO test
         return false;
 
     num->tail = node_tail->prev;
+    free(node_tail);
 
     num->count--;
     if(num->count == 0)
@@ -405,7 +424,6 @@ bool num_normalize(num_p num) // TODO test
     else
         num->tail->next = NULL;
 
-    free(node_tail);
     return true;
 }
 
@@ -574,7 +592,7 @@ int64_t num_cmp_offset(num_p num_1, num_p num_2, uint64_t offset)
 
     node_p node_1 = num_1->tail;
     node_p node_2 = num_2->tail;
-    for(uint64_t i=0; i<num_2->count; i++)
+    while(node_2)
     {
         if(node_1->value > node_2->value)
             return 1;
@@ -683,10 +701,11 @@ num_p num_mul(num_p num_1, num_p num_2)
     node_p node_1 = num_1->head;
     node_p node_2 = num_2->head;
 
+    printf(" | count: %lu |", num_2->count/1000);
     uint64_t i=0;
     for(node_p node_res = NULL; node_2; node_res = node_res->next, i++)
     {
-        // if(i%1000 == 0) printf("\t(%lu / %lu)", i/1000, num_2->count/1000);
+        if(i%1000 == 0) printf("\t%lu", i/1000);
 
         node_res = num_mul_uint_offset(num_res, node_res, node_1, node_2->value);
         node_res = num_denormalize(num_res, node_res);
@@ -699,28 +718,19 @@ num_p num_mul(num_p num_1, num_p num_2)
     return num_res;
 }
 
-num_p choose_name(num_p num_a, num_p num_b, uint64_t r, uint64_t offset)
+/*
+* returns NUM_B * R if less then num_a, returns NULL otherwise
+*  keeps NUM_a ans NUM_B
+*/
+num_p num_cmp_mul_uint(num_p num_a, num_p num_b, uint64_t r, uint64_t offset)
 {
     num_p num_aux = num_create(0, NULL, NULL);
-
-    // printf("\n---------");
-    // printf("\n\nEntering choose_name");
-    // num_display_tag("num_a", num_a);
-    // num_display_tag("num_b", num_b);
-    // printf("\nr: %lu", r);
-    // printf("\noffset: %lu", offset);
-
     node_p node = num_b->tail;
     for(offset += num_b->count-1; node; node = node->prev, offset--)
     {
-        // printf("\n\nnew loop");
-        // printf("\nnode->value: %lu", node->value);
-
         uint128_t u = MUL(node->value, r);
         num_add_uint(num_aux, HIGH(u));
         num_insert_head(num_aux, LOW(u));
-
-        // num_display_tag("num_aux", num_aux);
 
         if(num_cmp_offset(num_a, num_aux, offset) < 0)
         {
@@ -773,7 +783,7 @@ void num_div_mod_loop(
             uint64_t r_max = aux > UINT64_MAX ? UINT64_MAX : aux;
             uint64_t r_min = val_1 / (val_2 + 1);
 
-            num_p num_aux = choose_name(num_r, num_2, r_max, offset_r);
+            num_p num_aux = num_cmp_mul_uint(num_r, num_2, r_max, offset_r);
             if(num_aux == NULL)
             {
                 num_aux = num_mul_uint(NULL, num_2, r_min);
@@ -879,4 +889,26 @@ num_p num_mod(num_p num_1, num_p num_2)
     num_shr_uint(num_r, bits);
     num_free(num_q);
     return num_r;
+}
+
+num_p num_shl(num_p num, uint64_t bits) // TODO test
+{
+    for(; bits > 63; bits -= 64)
+        num_insert_head(num, 0);
+
+    if(bits)
+        num_shl_uint(num, bits);
+
+    return num;
+}
+
+num_p num_shr(num_p num, uint64_t bits) // TODO test
+{
+    for(; bits > 63 && num->count; bits -= 64)
+        num_remove_head(num);
+
+    if(bits && num->count)
+        num_shr_uint(num, bits);
+
+    return num;
 }
