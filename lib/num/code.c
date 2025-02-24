@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "debug.h"
 #include "../../utils/assert.h"
@@ -204,6 +205,20 @@ node_p num_get_node(num_p num, uint64_t count)
 
 
 
+uint64_t char_to_uint(char c) // TODO test
+{
+    if('0' <= c && c <= '9')
+        return c - '0';
+    if('a' <= c && c <= 'f')
+        return c + 10 - 'a';
+    if('A' <= c && c <= 'F')
+        return c + 10 - 'A';
+
+    assert(false);
+}
+
+
+
 void num_display_cap(num_p num, uint64_t index)
 {
     DBG_CHECK_PTR(num);
@@ -265,7 +280,6 @@ node_p node_create(uint64_t value, node_p next, node_p prev)
     return node;
 }
 
-/* free NODE struct and return next */
 node_p node_consume(node_p node)
 {
     DBG_CHECK_PTR(node);
@@ -306,24 +320,6 @@ num_p num_create(uint64_t count, node_p head, node_p tail)
         .tail = tail
     };
     return num;
-}
-
-void num_free(num_p num)
-{
-    DBG_CHECK_PTR(num);
-
-    node_free(num->head);
-    free(num);
-}
-
-/* returns empty list if value is 0, list with one value otherwise */
-num_p num_wrap(uint64_t value)
-{
-    if(value == 0)
-        return num_create(0, NULL, NULL);
-
-    node_p node = node_create(value, NULL, NULL);
-    return num_create(1, node,  node);
 }
 
 node_p num_insert(num_p num, uint64_t value) // TODO test
@@ -395,7 +391,7 @@ void num_insert_list(num_p num, node_p head, node_p tail, uint64_t cnt) // TODO 
     num->tail = tail;
 }
 
-node_p num_denormalize(num_p num, node_p node)
+node_p num_denormalize(num_p num, node_p node) // TODO test
 {
     DBG_CHECK_PTR(num);
     DBG_CHECK_PTR(node);
@@ -427,7 +423,60 @@ bool num_normalize(num_p num) // TODO test
     return true;
 }
 
-num_p num_copy(num_p num) //  TODO test
+
+
+/* returns empty list if value is 0, list with one value otherwise */
+num_p num_wrap(uint64_t value)
+{
+    if(value == 0)
+        return num_create(0, NULL, NULL);
+
+    node_p node = node_create(value, NULL, NULL);
+    return num_create(1, node,  node);
+}
+
+num_p num_wrap_dec(char str[])
+{
+    uint64_t len = strlen(str);
+    num_p num = num_create(0, NULL, NULL);
+    for(uint64_t i=0; i<len; i++)
+    {
+        uint64_t d = char_to_uint(str[i]);
+        assert(d < 10);
+
+        num_p num_aux = num_mul_uint(num_wrap(d), num, 10);
+
+        num_free(num);
+        num = num_aux;
+    }
+    return num;
+}
+
+num_p num_wrap_hex(char str[])
+{
+    assert(str[0] == '0');
+    assert(str[1] == 'x');
+
+    uint64_t len = strlen(str);
+    num_p num = num_create(0, NULL, NULL);
+    for(uint64_t i=2; i<len; i++)
+    {
+        uint64_t d = char_to_uint(str[i]);
+        num_p num_aux = num_mul_uint(num_wrap(d), num, 16);
+
+        num_free(num);
+        num = num_aux;
+    }
+    return num;
+}
+
+num_p num_wrap_str(char str[])
+{
+    return str[0] == '0' && str[1] == 'x' ?
+        num_wrap_hex(str) : num_wrap_dec(str);
+}
+
+num_p num_copy(num_p num)
 {
     DBG_CHECK_PTR(num);
 
@@ -436,6 +485,14 @@ num_p num_copy(num_p num) //  TODO test
         num_insert(num_res, node->value);
 
     return num_res;
+}
+
+void num_free(num_p num)
+{
+    DBG_CHECK_PTR(num);
+
+    node_free(num->head);
+    free(num);
 }
 
 
@@ -493,7 +550,6 @@ void num_sub_uint(num_p num, uint64_t value)
 
     num_sub_uint_offset(num, num->head, value);
 }
-
 
 /* num_res CANNOT be NULL */
 node_p num_mul_uint_offset(num_p num_res, node_p node_res, node_p node_2, uint64_t value)
@@ -568,7 +624,6 @@ num_p num_shr_uint(num_p num, uint64_t bits) // TODO test
 
     return num;
 }
-
 
 
 

@@ -166,30 +166,6 @@ void test_node_consume(bool show)
 
 
 
-void test_num_wrap(bool show)
-{
-    printf("\n\t%s", __func__);
-
-    if(show) printf("\n\t\t%s 1", __func__);
-    num_p num = num_wrap(0);
-    assert(num->count == 0);
-    assert(num->head == NULL);
-    assert(num->tail == NULL);
-    num_free(num);
-
-    if(show) printf("\n\t\t%s 2", __func__);
-    num = num_wrap(2);
-    assert(num->count == 1);
-    assert(num->head != NULL);
-    assert(num->head->value == 2);
-    assert(num->head->next == NULL);
-    assert(num->head->prev == NULL);
-    assert(num->tail == num->head);
-    num_free(num);
-
-    assert(clu_mem_empty());
-}
-
 void test_num_create_immed(bool show)
 {
     printf("\n\t%s", __func__);
@@ -240,30 +216,212 @@ void test_num_create_immed(bool show)
     assert(clu_mem_empty());
 }
 
-// void test_num_copy(bool show)
-// {
-//     printf("\n\t%s", __func__);
-//
-//     if(show) printf("\n\t\t%s 1", __func__);
-//     num_p num_res = num_copy(NULL);
-//     assert(num_immed(num_res, 0));
-//
-//     if(show) printf("\n\t\t%s 2", __func__);
-//     num_p num = num_create_immed(1, 1);
-//     num_res = num_copy(num);
-//     assert(num_immed(num_res, 1, 1));
-//     num_free(num);
-//     num_free(num_res);
-//
-//     if(show) printf("\n\t\t%s 3", __func__);
-//     num = num_create_immed(2, 1, 2);
-//     num_res = num_copy(num);
-//     assert(num_immed(num_res, 2, 1, 2));
-//     num_free(num);
-//     num_free(num_res);
-//
-//     assert(clu_mem_empty());
-// }
+
+
+void test_num_wrap(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s 1", __func__);
+    num_p num = num_wrap(0);
+    assert(num_immed(num, 0));
+
+    if(show) printf("\n\t\t%s 2", __func__);
+    num = num_wrap(2);
+    assert(num_immed(num, 1, 2));
+
+    assert(clu_mem_empty());
+}
+
+void test_num_wrap_dec(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s 1", __func__);
+    num_p num = num_wrap_dec("0");
+    assert(num_immed(num, 0));
+
+    if(show) printf("\n\t\t%s 2", __func__);
+    num = num_wrap_dec("1");
+    assert(num_immed(num, 1, 1));
+
+    if(show) printf("\n\t\t%s 3", __func__);
+    num = num_wrap_dec("9");
+    assert(num_immed(num, 1, 9));
+
+    if(show) printf("\n\t\t%s 4", __func__);
+    num = num_wrap_dec("10");
+    assert(num_immed(num, 1, 10));
+
+    if(show) printf("\n\t\t%s 5", __func__);
+    num = num_wrap_dec("18446744073709551615");
+    assert(num_immed(num, 1, UINT64_MAX));
+
+    if(show) printf("\n\t\t%s 6", __func__);
+    num = num_wrap_dec("18446744073709551616");
+    assert(num_immed(num, 2, 1, 0));
+
+    if(show) printf("\n\t\t%s 7", __func__);
+    num = num_wrap_dec("0000");
+    assert(num_immed(num, 0));
+
+    if(show) printf("\n\t\t%s 8", __func__);
+    num = num_wrap_dec("00001");
+    assert(num_immed(num, 1, 1));
+
+    assert(clu_mem_empty());
+}
+
+void test_num_wrap_hex(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s  1", __func__);
+    num_p num = num_wrap_hex("0x0");
+    assert(num_immed(num, 0));
+
+    if(show) printf("\n\t\t%s  2", __func__);
+    num = num_wrap_hex("0x1");
+    assert(num_immed(num, 1, 1));
+
+    if(show) printf("\n\t\t%s  3", __func__);
+    num = num_wrap_hex("0x9");
+    assert(num_immed(num, 1, 9));
+
+    if(show) printf("\n\t\t%s  4", __func__);
+    num = num_wrap_hex("0xa");
+    assert(num_immed(num, 1, 10));
+
+    if(show) printf("\n\t\t%s  5", __func__);
+    num = num_wrap_hex("0xA");
+    assert(num_immed(num, 1, 10));
+
+    if(show) printf("\n\t\t%s  6", __func__);
+    num = num_wrap_hex("0x10");
+    assert(num_immed(num, 1, 16));
+
+    if(show) printf("\n\t\t%s  7", __func__);
+    num = num_wrap_hex("0xffffffffffffffff");
+    assert(num_immed(num, 1, UINT64_MAX));
+
+    if(show) printf("\n\t\t%s  8", __func__);
+    num = num_wrap_hex("0x10000000000000000");
+    assert(num_immed(num, 2, 1, 0));
+
+    if(show) printf("\n\t\t%s  9", __func__);
+    num = num_wrap_hex("0x0000");
+    assert(num_immed(num, 0));
+
+    if(show) printf("\n\t\t%s 10", __func__);
+    num = num_wrap_hex("0x00001");
+    assert(num_immed(num, 1, 1));
+
+    assert(clu_mem_empty());
+}
+
+void test_num_wrap_str(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s  1", __func__);
+    num_p num = num_wrap_str("0");
+    assert(num_immed(num, 0));
+
+    if(show) printf("\n\t\t%s  2", __func__);
+    num = num_wrap_str("1");
+    assert(num_immed(num, 1, 1));
+
+    if(show) printf("\n\t\t%s  3", __func__);
+    num = num_wrap_str("9");
+    assert(num_immed(num, 1, 9));
+
+    if(show) printf("\n\t\t%s  4", __func__);
+    num = num_wrap_str("10");
+    assert(num_immed(num, 1, 10));
+
+    if(show) printf("\n\t\t%s  5", __func__);
+    num = num_wrap_str("18446744073709551615");
+    assert(num_immed(num, 1, UINT64_MAX));
+
+    if(show) printf("\n\t\t%s  6", __func__);
+    num = num_wrap_str("18446744073709551616");
+    assert(num_immed(num, 2, 1, 0));
+
+    if(show) printf("\n\t\t%s  7", __func__);
+    num = num_wrap_str("0000");
+    assert(num_immed(num, 0));
+
+    if(show) printf("\n\t\t%s  8", __func__);
+    num = num_wrap_str("00001");
+    assert(num_immed(num, 1, 1));
+
+    if(show) printf("\n\t\t%s  9", __func__);
+    num = num_wrap_str("0x0");
+    assert(num_immed(num, 0));
+
+    if(show) printf("\n\t\t%s 10", __func__);
+    num = num_wrap_str("0x1");
+    assert(num_immed(num, 1, 1));
+
+    if(show) printf("\n\t\t%s 11", __func__);
+    num = num_wrap_str("0x9");
+    assert(num_immed(num, 1, 9));
+
+    if(show) printf("\n\t\t%s 12", __func__);
+    num = num_wrap_str("0xa");
+    assert(num_immed(num, 1, 10));
+
+    if(show) printf("\n\t\t%s 13", __func__);
+    num = num_wrap_str("0xA");
+    assert(num_immed(num, 1, 10));
+
+    if(show) printf("\n\t\t%s 14", __func__);
+    num = num_wrap_str("0x10");
+    assert(num_immed(num, 1, 16));
+
+    if(show) printf("\n\t\t%s 15", __func__);
+    num = num_wrap_str("0xffffffffffffffff");
+    assert(num_immed(num, 1, UINT64_MAX));
+
+    if(show) printf("\n\t\t%s 16", __func__);
+    num = num_wrap_str("0x10000000000000000");
+    assert(num_immed(num, 2, 1, 0));
+
+    if(show) printf("\n\t\t%s 17", __func__);
+    num = num_wrap_str("0x0000");
+    assert(num_immed(num, 0));
+
+    if(show) printf("\n\t\t%s 18", __func__);
+    num = num_wrap_str("0x00001");
+    assert(num_immed(num, 1, 1));
+
+    assert(clu_mem_empty());
+}
+
+void test_num_copy(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s 1", __func__);
+    num_p num = num_wrap(0);
+    num_p num_res = num_copy(num);
+    assert(num_immed(num_res, 0));
+    num_free(num);
+
+    if(show) printf("\n\t\t%s 2", __func__);
+    num = num_create_immed(1, 1);
+    num_res = num_copy(num);
+    assert(num_immed(num_res, 1, 1));
+    num_free(num);
+
+    if(show) printf("\n\t\t%s 3", __func__);
+    num = num_create_immed(2, 1, 2);
+    num_res = num_copy(num);
+    assert(num_immed(num_res, 2, 1, 2));
+    num_free(num);
+
+    assert(clu_mem_empty());
+}
 
 
 
@@ -968,9 +1126,13 @@ void test_num()
     test_node_create(show);
     test_node_consume(show);
 
-    test_num_wrap(show);
     test_num_create_immed(show);
-    // test_num_copy(show);
+
+    test_num_wrap(show);
+    test_num_wrap_dec(show);
+    test_num_wrap_hex(show);
+    test_num_wrap_str(show);
+    test_num_copy(show);
 
     test_num_add_uint(show);
     test_num_sub_uint(show);
