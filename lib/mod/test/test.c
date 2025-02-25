@@ -223,8 +223,6 @@ void test_mod_div(bool show)
     assert(mod_immed(mod_res, 1, 5));
     mod_free(mod_res);
 
-    // TODO test better
-
     num_free(p);
 
     assert(clu_mem_empty());

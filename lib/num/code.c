@@ -205,7 +205,7 @@ node_p num_get_node(num_p num, uint64_t count)
 
 
 
-uint64_t char_to_uint(char c) // TODO test
+uint64_t uint_from_char(char c)
 {
     if('0' <= c && c <= '9')
         return c - '0';
@@ -322,7 +322,7 @@ num_p num_create(uint64_t count, node_p head, node_p tail)
     return num;
 }
 
-node_p num_insert(num_p num, uint64_t value) // TODO test
+node_p num_insert(num_p num, uint64_t value)
 {
     DBG_CHECK_PTR(num);
 
@@ -334,7 +334,7 @@ node_p num_insert(num_p num, uint64_t value) // TODO test
     return num->tail;
 }
 
-node_p num_insert_head(num_p num, uint64_t value) // TODO test
+node_p num_insert_head(num_p num, uint64_t value)
 {
     DBG_CHECK_PTR(num);
 
@@ -346,7 +346,7 @@ node_p num_insert_head(num_p num, uint64_t value) // TODO test
     return num->head;
 }
 
-void num_remove_head(num_p num) // TODO test
+void num_remove_head(num_p num)
 {
     DBG_CHECK_PTR(num);
 
@@ -354,7 +354,7 @@ void num_remove_head(num_p num) // TODO test
         return;
 
     node_p node_head = num->head;
-    num->head = node_head->prev;
+    num->head = node_head->next;
     free(node_head);
 
     num->count--;
@@ -364,7 +364,7 @@ void num_remove_head(num_p num) // TODO test
         num->head->prev = NULL;
 }
 
-void num_insert_list(num_p num, node_p head, node_p tail, uint64_t cnt) // TODO test
+void num_insert_list(num_p num, node_p head, node_p tail, uint64_t cnt)
 {
     DBG_CHECK_PTR(num);
     DBG_CHECK_PTR(head);
@@ -391,7 +391,7 @@ void num_insert_list(num_p num, node_p head, node_p tail, uint64_t cnt) // TODO 
     num->tail = tail;
 }
 
-node_p num_denormalize(num_p num, node_p node) // TODO test
+node_p num_denormalize(num_p num, node_p node)
 {
     DBG_CHECK_PTR(num);
     DBG_CHECK_PTR(node);
@@ -400,7 +400,7 @@ node_p num_denormalize(num_p num, node_p node) // TODO test
 }
 
 /* removes last element if zero, returns TRUE if so */
-bool num_normalize(num_p num) // TODO test
+bool num_normalize(num_p num)
 {
     DBG_CHECK_PTR(num);
 
@@ -441,7 +441,7 @@ num_p num_wrap_dec(char str[])
     num_p num = num_create(0, NULL, NULL);
     for(uint64_t i=0; i<len; i++)
     {
-        uint64_t d = char_to_uint(str[i]);
+        uint64_t d = uint_from_char(str[i]);
         assert(d < 10);
 
         num_p num_aux = num_mul_uint(num_wrap(d), num, 10);
@@ -461,7 +461,7 @@ num_p num_wrap_hex(char str[])
     num_p num = num_create(0, NULL, NULL);
     for(uint64_t i=2; i<len; i++)
     {
-        uint64_t d = char_to_uint(str[i]);
+        uint64_t d = uint_from_char(str[i]);
         num_p num_aux = num_mul_uint(num_wrap(d), num, 16);
 
         num_free(num);
