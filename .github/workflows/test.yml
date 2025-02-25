@@ -10,7 +10,7 @@ jobs:
     - run: git submodule init
     - run: git submodule update
     - run: make test
-  
+
   build:
     runs-on: ubuntu-latest
     steps:
