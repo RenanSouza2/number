@@ -146,7 +146,53 @@ void fibonacci()
     }
 }
 
+void fibonacci_2()
+{
+    num_p num_a = num_wrap(1);
+    num_p num_b = num_wrap(0);
+    num_p num_c = num_wrap(1);
 
+    uint64_t space = 1;
+    for(uint64_t i=0; ; i++)
+    {
+        num_display_full("num_b", num_b);
+
+        if(i%space == 0)
+        {
+            printf("\n" U64P() " num: ", i);
+            num_display(num_c);
+        }
+
+        num_p num_b_2 = num_mul(num_copy(num_b), num_copy(num_b));
+        num_p num_a_2 = num_mul(num_copy(num_a), num_copy(num_a));
+        num_p num_a_new = num_add(num_a_2, num_copy(num_b_2));
+
+        num_p num_b_new = num_add(num_a, num_copy(num_c));
+        num_b_new = num_mul(num_b_new, num_copy(num_c));
+
+        num_p num_c_2 = num_mul(num_c, num_copy(num_c));
+        num_p num_c_new = num_add(num_b_2, num_c_2);
+
+        num_a = num_a_new;
+        num_b = num_b_new;
+        num_c = num_c_new;
+    }
+}
+
+void factorial()
+{
+    num_p num = num_wrap(1);
+    for(uint64_t i=1; ; i++)
+    {
+        num = num_mul(num, num_wrap(i));
+
+        if(i%1000 == 0)
+        {
+            num_display_full("num", num);
+            printf("\ni: %lu\t", i);
+        }
+    }
+}
 
 int main(int argc, char** argv)
 {
@@ -155,7 +201,26 @@ int main(int argc, char** argv)
 
     // time_1(13, 30);
     // time_2(argc, argv, 18);
-    num_generate(30, 2);
+    // num_generate(30, 2);
+
+    // fibonacci();
+    // fibonacci_2();
+    // factorial();
+
+    
+
+    num_p num_1 = num_wrap_str("10384593717069655257060992658440192");
+    num_p num_2 = num_wrap_str("5192296858534827628530496329220096");
+    num_p num_3 = num_wrap_str("15576890575604482885591488987660288000000000000000000");
+    num_p num_4 = num_wrap_str("3000000000000000000");
+
+    num_display_tag("num_1", num_1);
+    num_display_tag("num_2", num_2);
+    num_display_tag("num_3", num_3);
+    num_display_tag("num_4", num_4);
+
+    num_p num_5 = num_shl(num_wrap(1), 112);
+    num_display_tag("num_5", num_5);
 
     printf("\n");
     return 0;

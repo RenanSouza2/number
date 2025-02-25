@@ -756,11 +756,11 @@ num_p num_mul(num_p num_1, num_p num_2)
     node_p node_1 = num_1->head;
     node_p node_2 = num_2->head;
 
-    printf(" | count: %lu |", num_2->count/1000);
+    // printf(" | count: %lu |", num_2->count/1000);
     uint64_t i=0;
     for(node_p node_res = NULL; node_2; node_res = node_res->next, i++)
     {
-        if(i%1000 == 0) printf("\t%lu", i/1000);
+        // if(i%1000 == 0) printf("\t%lu", i/1000);
 
         node_res = num_mul_uint_offset(num_res, node_res, node_1, node_2->value);
         node_res = num_denormalize(num_res, node_res);
