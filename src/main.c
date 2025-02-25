@@ -3,6 +3,7 @@
 #include <time.h>
 
 #include "../lib/num/header.h"
+#include "../lib/mod/header.h"
 #include "../utils/assert.h"
 #include "../utils/U64.h"
 
@@ -194,6 +195,8 @@ void factorial()
     }
 }
 
+
+
 int main(int argc, char** argv)
 {
     setbuf(stdout, NULL);
@@ -207,17 +210,9 @@ int main(int argc, char** argv)
     // fibonacci_2();
     // factorial();
 
+    num_p num = num_wrap(10);
     
-
-    num_p num_1 = num_wrap_str("10384593717069655257060992658440192");
-    num_p num_2 = num_wrap_str("5192296858534827628530496329220096");
-    num_p num_3 = num_wrap_str("15576890575604482885591488987660288000000000000000000");
-    num_p num_4 = num_wrap_str("3000000000000000000");
-
-    num_display_tag("num_1", num_1);
-    num_display_tag("num_2", num_2);
-    num_display_tag("num_3", num_3);
-    num_display_tag("num_4", num_4);
+    mod_p mod_1 = mod_wrap()
 
     num_p num_5 = num_shl(num_wrap(1), 112);
     num_display_tag("num_5", num_5);
