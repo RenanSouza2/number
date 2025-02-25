@@ -3,4 +3,12 @@
 
 #include "header.h"
 
+#include "../num/header.h"
+
+STRUCT(sig)
+{
+    num_p num;
+    uint64_t signal;
+};
+
 #endif
