@@ -215,7 +215,7 @@ void test_mod()
 {
     printf("\n%s", __func__);
 
-    bool show = true;
+    bool show = false;
 
     test_mod_create(show);
     test_mod_wrap(show);
