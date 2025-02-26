@@ -197,6 +197,14 @@ void factorial()
 
 
 
+void mod_fib(mod_p *mod_a, mod_p *mod_b)
+{
+    mod_p mod_c = mod_add(*mod_a, mod_copy(*mod_b));
+
+    *mod_a = *mod_b;
+    *mod_b = mod_c;
+}
+
 int main(int argc, char** argv)
 {
     setbuf(stdout, NULL);
@@ -210,12 +218,33 @@ int main(int argc, char** argv)
     // fibonacci_2();
     // factorial();
 
-    num_p num = num_wrap(10);
+    for(num_p num = num_wrap(10); ; num = num_mul(num, num_wrap(10)))
+    {
+        mod_p mod_a = mod_wrap(1, num);
+        mod_p mod_b = mod_wrap(1, num);
     
-    mod_p mod_1 = mod_wrap()
+        mod_p mod_e = mod_wrap(1, num);
+        mod_p mod_f = mod_wrap(2, num);
+        uint64_t i;
+        for(i=0; !mod_cmp(mod_a, mod_e) || !mod_cmp(mod_b, mod_f); i++)
+        {
+            mod_fib(&mod_a, &mod_b);
+            
+            mod_fib(&mod_e, &mod_f);
+            mod_fib(&mod_e, &mod_f);
+        }
+        
+        printf("\n\n");
+        num_display_tag("base", num);
+        printf("\ni: %lu", i);
+        mod_display("mod_e", mod_e);
+        mod_display("mod_f", mod_f);
 
-    num_p num_5 = num_shl(num_wrap(1), 112);
-    num_display_tag("num_5", num_5);
+        mod_free(mod_a);
+        mod_free(mod_b);
+        mod_free(mod_e);
+        mod_free(mod_f);
+    }
 
     printf("\n");
     return 0;

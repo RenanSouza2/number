@@ -3,10 +3,9 @@
 
 #include "debug.h"
 #include "../../utils/assert.h"
+#include "../../utils/clu/bin/header.h"
 
 #ifdef DEBUG
-
-#include "../../utils/clu/bin/header.h"
 
 #include "../num/debug.h"
 
@@ -52,6 +51,22 @@ mod_p mod_create(num_p num, num_p p)
     return mod;
 }
 
+
+
+mod_p mod_wrap(uint64_t value, num_p p)
+{
+    DBG_CHECK_PTR(p);
+
+    num_p num = num_wrap(value);
+    return mod_create(num, p);
+}
+
+mod_p mod_copy(mod_p mod) // TODO test
+{
+    num_p num = num_copy(mod->num);
+    return mod_create(num, mod->p);
+}
+
 void mod_free(mod_p mod)
 {
     DBG_CHECK_PTR(mod);
@@ -62,12 +77,9 @@ void mod_free(mod_p mod)
 
 
 
-mod_p mod_wrap(uint64_t value, num_p p)
+bool mod_cmp(mod_p mod_a, mod_p mod_b) // TODO test
 {
-    DBG_CHECK_PTR(p);
-
-    num_p num = num_wrap(value);
-    return mod_create(num, p);
+    return num_cmp(mod_a->num, mod_b->num) == 0;
 }
 
 
