@@ -70,7 +70,7 @@ bool sig_immed(sig_p sig, uint64_t signal, uint64_t count, ...)
 
 
 
-sig_p sig_create(uint64_t signal, num_p num) // TODO test
+sig_p sig_create(uint64_t signal, num_p num)
 {
     sig_p sig = malloc(sizeof(sig_t));
     assert(sig);
