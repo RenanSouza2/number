@@ -9,17 +9,17 @@
 
 #include "../num/debug.h"
 
-sig_p sig_create_variadic(uint64_t signal, uint64_t count, va_list args)
+sig_p sig_create_variadic(uint64_t signal, uint64_t n, va_list args)
 {
-    num_p num = num_create_variadic(count, args);
+    num_p num = num_create_variadic(n, args);
     return sig_create(signal, num);
 }
 
-sig_p sig_create_immed(uint64_t signal, uint64_t count, ...)
+sig_p sig_create_immed(uint64_t signal, uint64_t n, ...)
 {
     va_list args;
-    va_start(args, count);
-    return sig_create_variadic(signal, count, args);
+    va_start(args, n);
+    return sig_create_variadic(signal, n, args);
 }
 
 

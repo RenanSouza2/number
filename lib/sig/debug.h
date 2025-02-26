@@ -5,7 +5,9 @@
 
 #ifdef DEBUG
 
-bool sig_immed(sig_p sig, uint64_t signal, uint64_t count, ...);
+sig_p sig_create_immed(uint64_t signal, uint64_t n, ...);
+
+bool sig_immed(sig_p sig, uint64_t signal, uint64_t n, ...);
 
 #endif
 
