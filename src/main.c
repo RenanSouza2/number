@@ -139,7 +139,7 @@ void fibonacci()
         if(i%space == 0)
         {
             printf("\n" U64P() " num: ", i);
-            num_display(num_c);
+            num_display_len(num_c);
         }
 
         num_a = num_b;
@@ -161,7 +161,7 @@ void fibonacci_2()
         if(i%space == 0)
         {
             printf("\n" U64P() " num: ", i);
-            num_display(num_c);
+            num_display_len(num_c);
         }
 
         num_p num_b_2 = num_mul(num_copy(num_b), num_copy(num_b));

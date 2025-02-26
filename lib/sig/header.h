@@ -5,6 +5,9 @@
 
 PLACEHOLDER(sig);
 
+void sig_display(sig_p sig);
+void sig_display_tag(char tag[], sig_p sig);
+
 sig_p sig_opposite(sig_p sig);
 
 sig_p sig_add(sig_p sig_1, sig_p sig_2);

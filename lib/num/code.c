@@ -219,7 +219,22 @@ uint64_t uint_from_char(char c)
 
 
 
-void num_display_cap(num_p num, uint64_t index)
+void num_display_inner(num_p num, uint64_t index)
+{
+    DBG_CHECK_PTR(num);
+
+    if(num->count == 0)
+    {
+        printf("0");
+        return;
+    }
+
+    node_p node = num->tail;
+    for(uint64_t i=0; i<index && node != NULL; i++, node = node->prev)
+        printf("" U64PX " ", node->value);
+}
+
+void num_display_len(num_p num, uint64_t index)
 {
     DBG_CHECK_PTR(num);
 
@@ -230,32 +245,30 @@ void num_display_cap(num_p num, uint64_t index)
     }
 
     printf("(" U64P() ")\t| ", num->count);
-    node_p node = num->tail;
-    for(uint64_t i=0; i<index && node != NULL; i++, node = node->prev)
-        printf("" U64PX " ", node->value);
+    num_display_inner(num, index);
+    if(num->count > index)
+        printf("...");
 }
 
 void num_display(num_p num)
 {
-    DBG_CHECK_PTR(num);
-
-    num_display_cap(num, 4);
-    if(num->count > 4)
-        printf("...");
+    num_display_inner(num, UINT64_MAX);
 }
 
 void num_display_tag(char *tag, num_p num)
 {
     DBG_CHECK_PTR(num);
+
     printf("\n%s: ", tag);
-    num_display(num);
+    num_display_len(num, 4);
 }
 
 void num_display_full(char *tag, num_p num)
 {
     DBG_CHECK_PTR(num);
+
     printf("\n%s: ", tag);
-    num_display_cap(num, UINT64_MAX);
+    num_display_len(num, UINT64_MAX);
 }
 
 
