@@ -218,41 +218,44 @@ uint64_t uint_from_char(char c)
 }
 
 
+// tag
+// full
+// length
 
-void num_display_inner(num_p num, uint64_t index)
+void num_display_opts(num_p num, bool length, bool full)
 {
     DBG_CHECK_PTR(num);
 
+    if(length)
+    {
+        if(num->count == 0)
+        {
+            printf("(0)\t");
+        }
+        else
+        {
+            printf("(" U64P() ")\t| ", num->count);
+        }
+    }
+    
     if(num->count == 0)
     {
         printf("0");
         return;
     }
 
+    uint64_t max = full ? UINT64_MAX : 4;
     node_p node = num->tail;
-    for(uint64_t i=0; i<index && node != NULL; i++, node = node->prev)
+    for(uint64_t i=0; i<max && node != NULL; i++, node = node->prev)
         printf("" U64PX " ", node->value);
-}
 
-void num_display_len(num_p num, uint64_t index)
-{
-    DBG_CHECK_PTR(num);
-
-    if(num->count == 0)
-    {
-        printf("(0)\t| 0");
-        return;
-    }
-
-    printf("(" U64P() ")\t| ", num->count);
-    num_display_inner(num, index);
-    if(num->count > index)
+    if(!full && num->count > 4)
         printf("...");
 }
 
 void num_display(num_p num)
 {
-    num_display_inner(num, UINT64_MAX);
+    num_display_opts(num, true, false);
 }
 
 void num_display_tag(char *tag, num_p num)
@@ -260,7 +263,7 @@ void num_display_tag(char *tag, num_p num)
     DBG_CHECK_PTR(num);
 
     printf("\n%s: ", tag);
-    num_display_len(num, 4);
+    num_display(num);
 }
 
 void num_display_full(char *tag, num_p num)
@@ -268,7 +271,7 @@ void num_display_full(char *tag, num_p num)
     DBG_CHECK_PTR(num);
 
     printf("\n%s: ", tag);
-    num_display_len(num, UINT64_MAX);
+    num_display_opts(num, true, true);
 }
 
 

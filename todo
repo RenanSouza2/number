@@ -1,9 +1,4 @@
-input text
-    dec
-    hex
-
-sig
-
 fp
 
-rework displays
+sig
+    input text
