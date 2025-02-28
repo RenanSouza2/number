@@ -7,6 +7,7 @@
 #include "../utils/assert.h"
 #include "../utils/U64.h"
 
+#include "../utils/clu/header.h"
 
 
 uint64_t altutime()
@@ -20,19 +21,19 @@ uint64_t altutime()
 
 num_p num_generate(uint64_t max, uint64_t salt)
 {
-    uint64_t begin = altutime();
+    // uint64_t begin = altutime();
 
     num_p num = num_wrap(2);
     for(uint64_t i=0; i<max; i++)
     {
-        printf("\ni: %lu", i);
+        // printf("\ni: %lu", i);
 
         num = num_add(num, num_wrap(salt));
         num = num_mul(num, num_copy(num));
 
-        uint64_t end = altutime();
-        num_display_full("num", num);
-        printf("\n%lu: %10.3f", i, (end - begin) / 1e6);
+        // uint64_t end = altutime();
+        // num_display_full("num", num);
+        // printf("\n%lu: %10.3f", i, (end - begin) / 1e6);
     }
     return num;
 }
@@ -210,7 +211,7 @@ int main(int argc, char** argv)
     setbuf(stdout, NULL);
     srand(time(NULL));
 
-    // time_1(13, 30);
+    time_1(13, 19);
     // time_2(argc, argv, 18);
     // num_generate(30, 2);
 
@@ -246,8 +247,10 @@ int main(int argc, char** argv)
     //     mod_free(mod_f);
     // }
 
-    num_p num = num_wrap_dec("1000000000000000000");
-    num_display_tag("num", num);
+    // num_p num = num_wrap_dec("1000000000000000000");
+    // num_display_tag("num", num);
+
+    // clu_mem_report("AAAA");
 
     printf("\n");
     return 0;

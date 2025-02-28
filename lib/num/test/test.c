@@ -1,7 +1,7 @@
 #include "../debug.h"
 #include "../../../utils/U64.h"
 #include "../../../utils/assert.h"
-#include "../../../utils/clu/bin/header.h"
+#include "../../../utils/clu/header.h"
 
 void test_uint_from_char(bool show)
 {
