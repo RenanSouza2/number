@@ -42,6 +42,9 @@ void num_insert_list(num_p num, node_p head, node_p tail, uint64_t cnt);
 node_p num_denormalize(num_p num, node_p node);
 bool num_normalize(num_p num);
 
+num_p num_wrap_dec(char str[]);
+num_p num_wrap_hex(char str[]);
+
 void num_add_uint(num_p num, uint64_t value);
 void num_sub_uint(num_p num, uint64_t value);
 bool num_sub_uint_offset(num_p num, node_p node, uint64_t value);

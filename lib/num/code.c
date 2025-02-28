@@ -207,20 +207,17 @@ node_p num_get_node(num_p num, uint64_t count)
 
 uint64_t uint_from_char(char c)
 {
-    if('0' <= c && c <= '9')
-        return c - '0';
-    if('a' <= c && c <= 'f')
-        return c + 10 - 'a';
-    if('A' <= c && c <= 'F')
-        return c + 10 - 'A';
+    switch (c)
+    {
+        case '0' ... '9': return c - '0';
+        case 'a' ... 'f': return c - 'a' + 10;
+        case 'A' ... 'F': return c - 'A' + 10;
+    }
 
     assert(false);
 }
 
 
-// tag
-// full
-// length
 
 void num_display_opts(num_p num, bool length, bool full)
 {

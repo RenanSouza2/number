@@ -14,8 +14,6 @@ void num_display_tag(char *tag, num_p num);
 void num_display_full(char *tag, num_p num);
 
 num_p num_wrap(uint64_t value);
-num_p num_wrap_dec(char str[]);
-num_p num_wrap_hex(char str[]);
 num_p num_wrap_str(char str[]);
 num_p num_copy(num_p num);
 void num_free(num_p num);

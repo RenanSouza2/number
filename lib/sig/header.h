@@ -1,12 +1,19 @@
 #ifndef __SIG_H__
 #define __SIG_H__
 
+#include <stdint.h>
+
 #include "../../utils/struct.h"
 
 PLACEHOLDER(sig);
 
 void sig_display(sig_p sig);
 void sig_display_tag(char tag[], sig_p sig);
+
+sig_p sig_wrap(int64_t value);
+sig_p sig_wrap_str(char str[]);
+sig_p sig_copy(sig_p sig);
+void sig_free(sig_p sig);
 
 sig_p sig_opposite(sig_p sig);
 

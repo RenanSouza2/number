@@ -503,6 +503,10 @@ void test_num_wrap_dec(bool show)
     num = num_wrap_dec("00001");
     assert(num_immed(num, 1, 1));
 
+    if(show) printf("\n\t\t%s 9", __func__);
+    num = num_wrap_dec("");
+    assert(num_immed(num, 0));
+
     assert(clu_mem_empty());
 }
 
@@ -549,6 +553,10 @@ void test_num_wrap_hex(bool show)
     if(show) printf("\n\t\t%s 10", __func__);
     num = num_wrap_hex("0x00001");
     assert(num_immed(num, 1, 1));
+
+    if(show) printf("\n\t\t%s 11", __func__);
+    num = num_wrap_hex("0x");
+    assert(num_immed(num, 0));
 
     assert(clu_mem_empty());
 }

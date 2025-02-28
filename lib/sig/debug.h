@@ -17,6 +17,4 @@ bool sig_immed(sig_p sig, uint64_t signal, uint64_t n, ...);
 
 sig_p sig_create(uint64_t signal, num_p num);
 
-void sig_free(sig_p sig);
-
 #endif

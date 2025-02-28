@@ -117,7 +117,7 @@ sig_p sig_create(uint64_t signal, num_p num)
 
 
 
-sig_p sig_wrap(int64_t value) // TODO test
+sig_p sig_wrap(int64_t value)
 {
     if(value == 0)
     {
@@ -137,9 +137,26 @@ sig_p sig_wrap(int64_t value) // TODO test
 
 sig_p sig_wrap_str(char str[]) // TODO test
 {
-    uint64_t signal = str[0] == '-';
-    num_p num = num_wrap_str(&str[1]);
-    return sig_create(signal, num);
+    switch (str[0])
+    {
+        case '-': 
+        {
+            num_p num = num_wrap_str(&str[1]);
+            return sig_create(NEGATIVE, num); 
+        }
+
+        case '+':
+        {
+            num_p num = num_wrap_str(&str[1]);
+            return sig_create(POSITIVE, num);
+        }
+
+        default:
+        {
+            num_p num = num_wrap_str(str);
+            return sig_create(POSITIVE, num);
+        }
+    }
 }
 
 sig_p sig_copy(sig_p sig) // TODO test

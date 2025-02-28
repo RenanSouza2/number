@@ -1,8 +1,6 @@
 #ifndef __MOD_H__
 #define __MOD_H__
 
-#include <stdint.h>
-
 #include "../num/header.h"
 #include "../../utils/struct.h"
 
