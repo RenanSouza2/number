@@ -7,8 +7,8 @@
 
 STRUCT(sig)
 {
-    num_p num;
     uint64_t signal;
+    num_p num;
 };
 
 #endif

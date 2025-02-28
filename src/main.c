@@ -219,34 +219,6 @@ int main(int argc, char** argv)
     // fibonacci_2();
     // factorial();
 
-    // for(num_p num = num_wrap(10); ; num = num_mul(num, num_wrap(10)))
-    // {
-    //     mod_p mod_a = mod_wrap(1, num);
-    //     mod_p mod_b = mod_wrap(1, num);
-    
-    //     mod_p mod_e = mod_wrap(1, num);
-    //     mod_p mod_f = mod_wrap(2, num);
-    //     uint64_t i;
-    //     for(i=0; !mod_cmp(mod_a, mod_e) || !mod_cmp(mod_b, mod_f); i++)
-    //     {
-    //         mod_fib(&mod_a, &mod_b);
-            
-    //         mod_fib(&mod_e, &mod_f);
-    //         mod_fib(&mod_e, &mod_f);
-    //     }
-        
-    //     printf("\n\n");
-    //     num_display_tag("base", num);
-    //     printf("\ni: %lu", i);
-    //     mod_display("mod_e", mod_e);
-    //     mod_display("mod_f", mod_f);
-
-    //     mod_free(mod_a);
-    //     mod_free(mod_b);
-    //     mod_free(mod_e);
-    //     mod_free(mod_f);
-    // }
-
     // num_p num = num_wrap_dec("1000000000000000000");
     // num_display_tag("num", num);
 

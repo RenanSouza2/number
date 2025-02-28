@@ -117,6 +117,37 @@ sig_p sig_create(uint64_t signal, num_p num)
 
 
 
+sig_p sig_wrap(int64_t value) // TODO test
+{
+    if(value == 0)
+    {
+        num_p num = num_wrap(0);
+        return sig_create(ZERO, num);
+    }
+
+    if(value < 0)
+    {
+        num_p num = num_wrap(-value);
+        return sig_create(NEGATIVE, num);
+    }
+
+    num_p num = num_wrap(value);
+    return sig_create(POSITIVE, num);
+}
+
+sig_p sig_wrap_str(char str[]) // TODO test
+{
+    uint64_t signal = str[0] == '-';
+    num_p num = num_wrap_str(&str[1]);
+    return sig_create(signal, num);
+}
+
+sig_p sig_copy(sig_p sig) // TODO test
+{
+    num_p num = num_copy(sig->num);
+    return sig_create(sig->signal, num);
+}
+
 void sig_free(sig_p sig)
 {
     DBG_CHECK_PTR(sig);
@@ -127,7 +158,24 @@ void sig_free(sig_p sig)
 
 
 
-sig_p sig_opposite(sig_p sig) // TODO test
+sig_p sig_shl(sig_p sig, uint64_t bits) // TODO test
+{
+    num_shl(sig->num, bits);
+    return sig;
+}
+
+sig_p sig_shr(sig_p sig, uint64_t bits) // TODO test
+{
+    num_shr(sig->num, bits);
+    if(num_is_zero(sig->num))
+        sig->signal = ZERO;
+
+    return sig;
+}
+
+
+
+sig_p sig_opposite(sig_p sig)
 {
     DBG_CHECK_PTR(sig);
 
@@ -135,7 +183,7 @@ sig_p sig_opposite(sig_p sig) // TODO test
     return sig;
 }
 
-sig_p sig_add(sig_p sig_1, sig_p sig_2) // TODO test
+sig_p sig_add(sig_p sig_1, sig_p sig_2)
 {
     DBG_CHECK_PTR(sig_1);
     DBG_CHECK_PTR(sig_2);
@@ -165,13 +213,13 @@ sig_p sig_add(sig_p sig_1, sig_p sig_2) // TODO test
     return sig_create(signal_res, num_res);
 }
 
-sig_p sig_sub(sig_p sig_1, sig_p sig_2) // TODO test
+sig_p sig_sub(sig_p sig_1, sig_p sig_2)
 {
     sig_2 = sig_opposite(sig_2);
     return sig_add(sig_1, sig_2);
 }
 
-sig_p sig_mul(sig_p sig_1, sig_p sig_2) // TODO test
+sig_p sig_mul(sig_p sig_1, sig_p sig_2)
 {
     uint64_t signal_res = sig_1->signal & sig_2->signal ?
         POSITIVE : NEGATIVE;
@@ -182,7 +230,7 @@ sig_p sig_mul(sig_p sig_1, sig_p sig_2) // TODO test
     return sig_create(signal_res, num_res);
 }
 
-sig_p sig_div(sig_p sig_1, sig_p sig_2) // TODO test
+sig_p sig_div(sig_p sig_1, sig_p sig_2)
 {
     uint64_t signal_res = sig_1->signal & sig_2->signal ?
         POSITIVE : NEGATIVE;
