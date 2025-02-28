@@ -3,36 +3,28 @@
 #include "../../../utils/assert.h"
 #include "../../../utils/clu/header.h"
 
+
+
 void test_uint_from_char(bool show)
 {
     printf("\n\t%s", __func__);
 
-    if(show) printf("\n\t\t%s  1", __func__);
-    assert(uint64(uint_from_char('0'), 0));
+    #define TEST_UINT_FROM_CHAR(NUM, CHAR, UINT)                \
+        {                                                       \
+            if(show) printf("\n\t\t%s " #NUM "\t\t", __func__); \
+            uint64_t res = uint_from_char(CHAR);                \
+            assert(uint64(res, UINT));                          \
+        }
 
-    if(show) printf("\n\t\t%s  2", __func__);
-    assert(uint64(uint_from_char('1'), 1));
-
-    if(show) printf("\n\t\t%s  3", __func__);
-    assert(uint64(uint_from_char('9'), 9));
-
-    if(show) printf("\n\t\t%s  4", __func__);
-    assert(uint64(uint_from_char('a'), 10));
-
-    if(show) printf("\n\t\t%s  5", __func__);
-    assert(uint64(uint_from_char('b'), 11));
-
-    if(show) printf("\n\t\t%s  6", __func__);
-    assert(uint64(uint_from_char('f'), 15));
-
-    if(show) printf("\n\t\t%s  4", __func__);
-    assert(uint64(uint_from_char('A'), 10));
-
-    if(show) printf("\n\t\t%s  5", __func__);
-    assert(uint64(uint_from_char('B'), 11));
-
-    if(show) printf("\n\t\t%s  6", __func__);
-    assert(uint64(uint_from_char('F'), 15));
+    TEST_UINT_FROM_CHAR(1, '0',  0);
+    TEST_UINT_FROM_CHAR(2, '1',  1);
+    TEST_UINT_FROM_CHAR(3, '9',  9);
+    TEST_UINT_FROM_CHAR(4, 'a', 10);
+    TEST_UINT_FROM_CHAR(5, 'b', 11);
+    TEST_UINT_FROM_CHAR(6, 'f', 15);
+    TEST_UINT_FROM_CHAR(7, 'A', 10);
+    TEST_UINT_FROM_CHAR(8, 'B', 11);
+    TEST_UINT_FROM_CHAR(9, 'F', 15);
 
     assert(clu_mem_empty());
 }
@@ -463,6 +455,10 @@ void test_num_wrap(bool show)
     if(show) printf("\n\t\t%s 2", __func__);
     num = num_wrap(2);
     assert(num_immed(num, 1, 2));
+
+    if(show) printf("\n\t\t%s 3", __func__);
+    num = num_wrap(UINT64_MAX);
+    assert(num_immed(num, 1, UINT64_MAX));
 
     assert(clu_mem_empty());
 }

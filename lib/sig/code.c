@@ -159,6 +159,24 @@ void sig_free(sig_p sig)
 
 
 
+int sig_cmp(sig_p sig_1, sig_p sig_2) // TODO test
+{
+    if(sig_1->signal & POSITIVE)
+    {
+        if(sig_2->signal & POSITIVE)
+            return num_cmp(sig_1->num, sig_2->num);
+
+        return 1;
+    }
+
+    if(sig_2->signal & POSITIVE)
+        return -1;
+    
+    return -num_cmp(sig_1->num, sig_2->num);
+}
+
+
+
 sig_p sig_shl(sig_p sig, uint64_t bits) // TODO test
 {
     num_shl(sig->num, bits);

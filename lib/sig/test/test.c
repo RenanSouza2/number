@@ -116,102 +116,38 @@ void test_sig_wrap(bool show)
 void test_sig_wrap_str(bool show)
 {
     printf("\n\t%s\t\t", __func__);
-    
-    if(show) printf("\n\t\t%s  1\t\t", __func__);
-    sig_p sig = sig_wrap_str("");
-    assert(sig_immed(sig, ZERO, 0));
-    
-    if(show) printf("\n\t\t%s  2\t\t", __func__);
-    sig = sig_wrap_str("0");
-    assert(sig_immed(sig, ZERO, 0));
-    
-    if(show) printf("\n\t\t%s  3\t\t", __func__);
-    sig = sig_wrap_str("1");
-    assert(sig_immed(sig, POSITIVE, 1, 1));
-    
-    if(show) printf("\n\t\t%s  4\t\t", __func__);
-    sig = sig_wrap_str("10");
-    assert(sig_immed(sig, POSITIVE, 1, 10));
-    
-    if(show) printf("\n\t\t%s  5\t\t", __func__);
-    sig = sig_wrap_str("+");
-    assert(sig_immed(sig, ZERO, 0));
-    
-    if(show) printf("\n\t\t%s  6\t\t", __func__);
-    sig = sig_wrap_str("+0");
-    assert(sig_immed(sig, ZERO, 0));
-    
-    if(show) printf("\n\t\t%s  7\t\t", __func__);
-    sig = sig_wrap_str("+1");
-    assert(sig_immed(sig, POSITIVE, 1, 1));
-    
-    if(show) printf("\n\t\t%s  8\t\t", __func__);
-    sig = sig_wrap_str("+10");
-    assert(sig_immed(sig, POSITIVE, 1, 10));
-    
-    if(show) printf("\n\t\t%s  9\t\t", __func__);
-    sig = sig_wrap_str("-");
-    assert(sig_immed(sig, ZERO, 0));
-    
-    if(show) printf("\n\t\t%s 10\t\t", __func__);
-    sig = sig_wrap_str("-0");
-    assert(sig_immed(sig, ZERO, 0));
-    
-    if(show) printf("\n\t\t%s 11\t\t", __func__);
-    sig = sig_wrap_str("-1");
-    assert(sig_immed(sig, NEGATIVE, 1, 1));
-    
-    if(show) printf("\n\t\t%s 12\t\t", __func__);
-    sig = sig_wrap_str("-10");
-    assert(sig_immed(sig, NEGATIVE, 1, 10));
-    
-    if(show) printf("\n\t\t%s 13\t\t", __func__);
-    sig = sig_wrap_str("0x");
-    assert(sig_immed(sig, ZERO, 0));
-    
-    if(show) printf("\n\t\t%s 14\t\t", __func__);
-    sig = sig_wrap_str("0x0");
-    assert(sig_immed(sig, ZERO, 0));
-    
-    if(show) printf("\n\t\t%s 15\t\t", __func__);
-    sig = sig_wrap_str("0x1");
-    assert(sig_immed(sig, POSITIVE, 1, 1));
-    
-    if(show) printf("\n\t\t%s 16\t\t", __func__);
-    sig = sig_wrap_str("0x10");
-    assert(sig_immed(sig, POSITIVE, 1, 16));
-    
-    if(show) printf("\n\t\t%s 17\t\t", __func__);
-    sig = sig_wrap_str("+0x");
-    assert(sig_immed(sig, ZERO, 0));
-    
-    if(show) printf("\n\t\t%s 18\t\t", __func__);
-    sig = sig_wrap_str("+0x0");
-    assert(sig_immed(sig, ZERO, 0));
-    
-    if(show) printf("\n\t\t%s 19\t\t", __func__);
-    sig = sig_wrap_str("+0x1");
-    assert(sig_immed(sig, POSITIVE, 1, 1));
-    
-    if(show) printf("\n\t\t%s 20\t\t", __func__);
-    sig = sig_wrap_str("+0x10");
-    assert(sig_immed(sig, POSITIVE, 1, 16));
-    
-    if(show) printf("\n\t\t%s 21\t\t", __func__);
-    sig = sig_wrap_str("-0x");
-    assert(sig_immed(sig, ZERO, 0));
-    
-    if(show) printf("\n\t\t%s 22\t\t", __func__);
-    sig = sig_wrap_str("-0x0");
-    assert(sig_immed(sig, ZERO, 0));
-    
-    if(show) printf("\n\t\t%s 23\t\t", __func__);
-    sig = sig_wrap_str("-0x1");
-    assert(sig_immed(sig, NEGATIVE, 1, 1));
-    
-    if(show) printf("\n\t\t%s 24\t\t", __func__);
-    sig = sig_wrap_str("-0x10");
-    assert(sig_immed(sig, NEGATIVE, 1, 16));
+
+    #define TEST_SIG_WRAP_STR(NUM, STR, ...)                        \
+        {                                                           \
+            if(show) printf("\n\t\t%s %2d \t\t", __func__, NUM);    \
+            sig_p sig = sig_wrap_str(STR);                          \
+            assert(sig_immed(sig, __VA_ARGS__));                    \
+        }
+
+    TEST_SIG_WRAP_STR( 1, "", ZERO, 0);
+    TEST_SIG_WRAP_STR( 2, "0", ZERO, 0);
+    TEST_SIG_WRAP_STR( 3, "1", POSITIVE, 1, 1);
+    TEST_SIG_WRAP_STR( 4, "10", POSITIVE, 1, 10);
+    TEST_SIG_WRAP_STR( 5, "+", ZERO, 0);
+    TEST_SIG_WRAP_STR( 6, "+0", ZERO, 0);
+    TEST_SIG_WRAP_STR( 7, "+1", POSITIVE, 1, 1);
+    TEST_SIG_WRAP_STR( 8, "+10", POSITIVE, 1, 10);
+    TEST_SIG_WRAP_STR( 9, "-", ZERO, 0);
+    TEST_SIG_WRAP_STR(10, "-0", ZERO, 0);
+    TEST_SIG_WRAP_STR(11, "-1", NEGATIVE, 1, 1);
+    TEST_SIG_WRAP_STR(12, "-10", NEGATIVE, 1, 10);
+    TEST_SIG_WRAP_STR(13, "0x", ZERO, 0);
+    TEST_SIG_WRAP_STR(14, "0x0", ZERO, 0);
+    TEST_SIG_WRAP_STR(15, "0x1", POSITIVE, 1, 1);
+    TEST_SIG_WRAP_STR(16, "0x10", POSITIVE, 1, 16);
+    TEST_SIG_WRAP_STR(17, "+0x", ZERO, 0);
+    TEST_SIG_WRAP_STR(18, "+0x0", ZERO, 0);
+    TEST_SIG_WRAP_STR(19, "+0x1", POSITIVE, 1, 1);
+    TEST_SIG_WRAP_STR(20, "+0x10", POSITIVE, 1, 16);
+    TEST_SIG_WRAP_STR(21, "-0x", ZERO, 0);
+    TEST_SIG_WRAP_STR(22, "-0x0", ZERO, 0);
+    TEST_SIG_WRAP_STR(23, "-0x1", NEGATIVE, 1, 1);
+    TEST_SIG_WRAP_STR(24, "-0x10", NEGATIVE, 1, 16);
 
     assert(clu_mem_empty());
 }
@@ -230,8 +166,10 @@ void test_sig_copy(bool show)
         }
 
     TEST_SIG_COPY(1, POSITIVE, 0);
+
     TEST_SIG_COPY(2, POSITIVE, 1, 1);
     TEST_SIG_COPY(3, POSITIVE, 2, 1, 2);
+
     TEST_SIG_COPY(4, NEGATIVE, 1, 1);
     TEST_SIG_COPY(5, NEGATIVE, 2, 1, 2);
 
@@ -244,21 +182,18 @@ void test_sig_copy(bool show)
 void test_sig_opposite(bool show)
 {
     printf("\n\t%s\t\t", __func__);
-    
-    if(show) printf("\n\t\t%s 1\t\t", __func__);
-    sig_p sig = sig_create_immed(POSITIVE, 1, 1);
-    sig = sig_opposite(sig);
-    assert(sig_immed(sig, NEGATIVE, 1, 1));
-    
-    if(show) printf("\n\t\t%s 2\t\t", __func__);
-    sig = sig_create_immed(ZERO, 0);
-    sig = sig_opposite(sig);
-    assert(sig_immed(sig, ZERO, 0));
-    
-    if(show) printf("\n\t\t%s 3\t\t", __func__);
-    sig = sig_create_immed(NEGATIVE, 1, 1);
-    sig = sig_opposite(sig);
-    assert(sig_immed(sig, POSITIVE, 1, 1));
+
+    #define TEST_SIG_OPPOSITE(NUM, SIGNAL_IN, SIGNAL_OUT, ...)      \
+        {                                                           \
+            if(show) printf("\n\t\t%s %d\t\t", __func__, NUM);      \
+            sig_p sig = sig_create_immed(SIGNAL_IN, __VA_ARGS__);   \
+            sig = sig_opposite(sig);                                \
+            assert(sig_immed(sig, SIGNAL_OUT, __VA_ARGS__));        \
+        }
+
+    TEST_SIG_OPPOSITE(1, ZERO, ZERO, 0);
+    TEST_SIG_OPPOSITE(2, POSITIVE, NEGATIVE, 1, 1);
+    TEST_SIG_OPPOSITE(2, NEGATIVE, POSITIVE, 1, 1);
 
     assert(clu_mem_empty());
 }
