@@ -8,6 +8,7 @@
 
 PLACEHOLDER(num);
 
+void num_display_opts(num_p num, bool length, bool full);
 void num_display(num_p num);
 void num_display_tag(char *tag, num_p num);
 void num_display_full(char *tag, num_p num);

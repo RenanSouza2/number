@@ -1,12 +1,12 @@
 #include "../debug.h"
 #include "../../../utils/assert.h"
-#include "../../../utils/clu/bin/header.h"
+#include "../../../utils/clu/header.h"
 
 
 
 void test_example()
 {
-    printf("\n%s", __func__);
+    printf("\n%s\t\t", __func__);
 
     assert(clu_mem_empty());
 }

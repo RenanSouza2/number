@@ -28,13 +28,19 @@ node_p num_get_node(num_p num, uint64_t count);
 #define LOW(V) ((uint64_t)(V))
 #define HIGH(V) LOW((V) >> 64)
 
+uint64_t uint_from_char(char c);
+
 node_p node_create(uint64_t value, node_p next, node_p prev);
 node_p node_consume(node_p node);
 void node_free(node_p node);
-node_p node_denormalize(node_p node);
-node_p node_normalize(node_p node);
 
 num_p num_create(uint64_t count, node_p head, node_p tail);
+node_p num_insert(num_p num, uint64_t value);
+node_p num_insert_head(num_p num, uint64_t value);
+void num_remove_head(num_p num);
+void num_insert_list(num_p num, node_p head, node_p tail, uint64_t cnt);
+node_p num_denormalize(num_p num, node_p node);
+bool num_normalize(num_p num);
 
 void num_add_uint(num_p num, uint64_t value);
 void num_sub_uint(num_p num, uint64_t value);

@@ -1,7 +1,4 @@
-input text
-    dec
-    hex
+fp
 
 sig
-
-fp
+    input text

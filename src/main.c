@@ -3,9 +3,11 @@
 #include <time.h>
 
 #include "../lib/num/header.h"
+#include "../lib/mod/header.h"
 #include "../utils/assert.h"
 #include "../utils/U64.h"
 
+#include "../utils/clu/header.h"
 
 
 uint64_t altutime()
@@ -19,19 +21,19 @@ uint64_t altutime()
 
 num_p num_generate(uint64_t max, uint64_t salt)
 {
-    uint64_t begin = altutime();
+    // uint64_t begin = altutime();
 
     num_p num = num_wrap(2);
     for(uint64_t i=0; i<max; i++)
     {
-        printf("\ni: %lu", i);
+        // printf("\ni: %lu", i);
 
         num = num_add(num, num_wrap(salt));
         num = num_mul(num, num_copy(num));
 
-        uint64_t end = altutime();
-        num_display_full("num", num);
-        printf("\n%lu: %10.3f", i, (end - begin) / 1e6);
+        // uint64_t end = altutime();
+        // num_display_full("num", num);
+        // printf("\n%lu: %10.3f", i, (end - begin) / 1e6);
     }
     return num;
 }
@@ -194,12 +196,22 @@ void factorial()
     }
 }
 
+
+
+void mod_fib(mod_p *mod_a, mod_p *mod_b)
+{
+    mod_p mod_c = mod_add(*mod_a, mod_copy(*mod_b));
+
+    *mod_a = *mod_b;
+    *mod_b = mod_c;
+}
+
 int main(int argc, char** argv)
 {
     setbuf(stdout, NULL);
     srand(time(NULL));
 
-    // time_1(13, 30);
+    time_1(13, 19);
     // time_2(argc, argv, 18);
     // num_generate(30, 2);
 
@@ -207,20 +219,38 @@ int main(int argc, char** argv)
     // fibonacci_2();
     // factorial();
 
+    // for(num_p num = num_wrap(10); ; num = num_mul(num, num_wrap(10)))
+    // {
+    //     mod_p mod_a = mod_wrap(1, num);
+    //     mod_p mod_b = mod_wrap(1, num);
     
+    //     mod_p mod_e = mod_wrap(1, num);
+    //     mod_p mod_f = mod_wrap(2, num);
+    //     uint64_t i;
+    //     for(i=0; !mod_cmp(mod_a, mod_e) || !mod_cmp(mod_b, mod_f); i++)
+    //     {
+    //         mod_fib(&mod_a, &mod_b);
+            
+    //         mod_fib(&mod_e, &mod_f);
+    //         mod_fib(&mod_e, &mod_f);
+    //     }
+        
+    //     printf("\n\n");
+    //     num_display_tag("base", num);
+    //     printf("\ni: %lu", i);
+    //     mod_display("mod_e", mod_e);
+    //     mod_display("mod_f", mod_f);
 
-    num_p num_1 = num_wrap_str("10384593717069655257060992658440192");
-    num_p num_2 = num_wrap_str("5192296858534827628530496329220096");
-    num_p num_3 = num_wrap_str("15576890575604482885591488987660288000000000000000000");
-    num_p num_4 = num_wrap_str("3000000000000000000");
+    //     mod_free(mod_a);
+    //     mod_free(mod_b);
+    //     mod_free(mod_e);
+    //     mod_free(mod_f);
+    // }
 
-    num_display_tag("num_1", num_1);
-    num_display_tag("num_2", num_2);
-    num_display_tag("num_3", num_3);
-    num_display_tag("num_4", num_4);
+    // num_p num = num_wrap_dec("1000000000000000000");
+    // num_display_tag("num", num);
 
-    num_p num_5 = num_shl(num_wrap(1), 112);
-    num_display_tag("num_5", num_5);
+    // clu_mem_report("AAAA");
 
     printf("\n");
     return 0;

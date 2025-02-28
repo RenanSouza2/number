@@ -45,7 +45,7 @@ _clean:
 
 .PHONY: test
 test t:
-	$(MAKE) debug.o
+	$(MAKE) debug.o -s
 	$(MAKE) _test -s
 
 _test:
