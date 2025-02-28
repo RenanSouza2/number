@@ -135,31 +135,15 @@ sig_p sig_wrap(int64_t value)
     return sig_create(POSITIVE, num);
 }
 
-sig_p sig_wrap_str(char str[]) // TODO test
+sig_p sig_wrap_str(char str[])
 {
-    switch (str[0])
-    {
-        case '-': 
-        {
-            num_p num = num_wrap_str(&str[1]);
-            return sig_create(NEGATIVE, num); 
-        }
-
-        case '+':
-        {
-            num_p num = num_wrap_str(&str[1]);
-            return sig_create(POSITIVE, num);
-        }
-
-        default:
-        {
-            num_p num = num_wrap_str(str);
-            return sig_create(POSITIVE, num);
-        }
-    }
+    uint64_t signal = str[0] == '-' ? NEGATIVE : POSITIVE;
+    uint64_t offset = str[0] == '-' || str[0] == '+' ? 1 : 0;
+    num_p num = num_wrap_str(&str[offset]);
+    return sig_create(signal, num);
 }
 
-sig_p sig_copy(sig_p sig) // TODO test
+sig_p sig_copy(sig_p sig)
 {
     num_p num = num_copy(sig->num);
     return sig_create(sig->signal, num);

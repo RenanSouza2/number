@@ -216,6 +216,28 @@ void test_sig_wrap_str(bool show)
     assert(clu_mem_empty());
 }
 
+void test_sig_copy(bool show)
+{
+    printf("\n\t%s\t\t", __func__);
+
+    #define TEST_SIG_COPY(NUM, ...)                                 \
+        {                                                           \
+            if(show) printf("\n\t\t%s  " #NUM "\t\t", __func__);    \
+            sig_p sig = sig_create_immed(__VA_ARGS__);              \
+            sig_p sig_res = sig_copy(sig);                          \
+            assert(sig_immed(sig_res, __VA_ARGS__))                 \
+            sig_free(sig);                                          \
+        }
+
+    TEST_SIG_COPY(1, POSITIVE, 0);
+    TEST_SIG_COPY(2, POSITIVE, 1, 1);
+    TEST_SIG_COPY(3, POSITIVE, 2, 1, 2);
+    TEST_SIG_COPY(4, NEGATIVE, 1, 1);
+    TEST_SIG_COPY(5, NEGATIVE, 2, 1, 2);
+
+    assert(clu_mem_empty());
+}
+
 
 
 
@@ -432,6 +454,7 @@ void test_sig()
 
     test_sig_wrap(show);
     test_sig_wrap_str(show);
+    test_sig_copy(show);
 
     test_sig_opposite(show);
     test_sig_add(show);
