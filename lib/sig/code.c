@@ -158,8 +158,12 @@ void sig_free(sig_p sig)
 }
 
 
+bool sig_is_zero(sig_p sig)
+{
+    return sig->signal == ZERO;
+}
 
-int sig_cmp(sig_p sig_1, sig_p sig_2) // TODO test
+int64_t sig_cmp(sig_p sig_1, sig_p sig_2)
 {
     if(sig_1->signal & POSITIVE)
     {

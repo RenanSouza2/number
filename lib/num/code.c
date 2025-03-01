@@ -37,6 +37,17 @@ num_p num_create_immed(uint64_t n, ...)
 
 
 
+bool int64(int64_t u1, int64_t u2)
+{
+    if(u1 != u2)
+    {
+        printf("\n\n\tINT64 ASSERT ERROR\t| (" U64PX ") (" U64PX ")", u1, u2);
+        return false;
+    }
+
+    return true;
+}
+
 bool uint64(uint64_t u1, uint64_t u2)
 {
     if(u1 != u2)
