@@ -9,9 +9,9 @@ void test_uint_from_char(bool show)
 {
     printf("\n\t%s", __func__);
 
-    #define TEST_UINT_FROM_CHAR(NUM, CHAR, UINT)                \
+    #define TEST_UINT_FROM_CHAR(TAG, CHAR, UINT)                \
         {                                                       \
-            if(show) printf("\n\t\t%s " #NUM "\t\t", __func__); \
+            if(show) printf("\n\t\t%s " #TAG "\t\t", __func__); \
             uint64_t res = uint_from_char(CHAR);                \
             assert(uint64(res, UINT));                          \
         }
@@ -25,6 +25,8 @@ void test_uint_from_char(bool show)
     TEST_UINT_FROM_CHAR(7, 'A', 10);
     TEST_UINT_FROM_CHAR(8, 'B', 11);
     TEST_UINT_FROM_CHAR(9, 'F', 15);
+
+    #undef TEST_UINT_FROM_CHAR
 
     assert(clu_mem_empty());
 }

@@ -117,9 +117,9 @@ void test_sig_wrap_str(bool show)
 {
     printf("\n\t%s\t\t", __func__);
 
-    #define TEST_SIG_WRAP_STR(NUM, STR, ...)                        \
+    #define TEST_SIG_WRAP_STR(TAG, STR, ...)                        \
         {                                                           \
-            if(show) printf("\n\t\t%s %2d \t\t", __func__, NUM);    \
+            if(show) printf("\n\t\t%s %2d \t\t", __func__, TAG);    \
             sig_p sig = sig_wrap_str(STR);                          \
             assert(sig_immed(sig, __VA_ARGS__));                    \
         }
@@ -158,9 +158,9 @@ void test_sig_copy(bool show)
 {
     printf("\n\t%s\t\t", __func__);
 
-    #define TEST_SIG_COPY(NUM, ...)                                 \
+    #define TEST_SIG_COPY(TAG, ...)                                 \
         {                                                           \
-            if(show) printf("\n\t\t%s  " #NUM "\t\t", __func__);    \
+            if(show) printf("\n\t\t%s  " #TAG "\t\t", __func__);    \
             sig_p sig = sig_create_immed(__VA_ARGS__);              \
             sig_p sig_res = sig_copy(sig);                          \
             assert(sig_immed(sig_res, __VA_ARGS__))                 \
@@ -186,38 +186,20 @@ void test_sig_is_zero(bool show)
 {
     printf("\n\t%s\t\t", __func__);
 
-    #define TEST_SIG_CMP(NUM, NUM_1, NUM_2, RES)                    \
-        {                                                           \
-            if(show) printf("\n\t\t%s %2d\t\t", __func__, NUM);     \
-            sig_p sig_1 = sig_wrap(NUM_1);                          \
-            sig_p sig_2 = sig_wrap(NUM_2);                          \
-            int64_t res = sig_cmp(sig_1, sig_2);                    \
-            assert(int64(res, RES));                                \
-            sig_free(sig_1);                                        \
-            sig_free(sig_2);                                        \
+    #define TEST_SIG_IS_ZERO(TAG, NUM, RES)                     \
+        {                                                       \
+            if(show) printf("\n\t\t%s %d\t\t", __func__, TAG); \
+            sig_p sig = sig_wrap(NUM);                          \
+            int64_t res = sig_is_zero(sig);                     \
+            assert(uint64(res, RES));                           \
+            sig_free(sig);                                      \
         }
 
-    TEST_SIG_CMP(1,  2,  3, -1);
-    TEST_SIG_CMP(2,  2,  2,  0);
-    TEST_SIG_CMP(3,  2,  1,  1);
-    TEST_SIG_CMP(4,  2,  0,  1);
-    TEST_SIG_CMP(5,  2, -1,  1);
-    TEST_SIG_CMP(6,  2, -2,  1);
-    TEST_SIG_CMP(7,  2, -3,  1);
-    
-    TEST_SIG_CMP(3,  0,  1, -1);
-    TEST_SIG_CMP(4,  0,  0,  0);
-    TEST_SIG_CMP(5,  0, -1,  1);
+    TEST_SIG_IS_ZERO(1,  1, false);
+    TEST_SIG_IS_ZERO(2,  0, true);
+    TEST_SIG_IS_ZERO(3, -1, false);
 
-    TEST_SIG_CMP(2, -2,  2, -1);
-    TEST_SIG_CMP(1, -2,  3, -1);
-    TEST_SIG_CMP(3, -2,  1, -1);
-    TEST_SIG_CMP(4, -2,  0, -1);
-    TEST_SIG_CMP(5, -2, -1, -1);
-    TEST_SIG_CMP(6, -2, -2,  0);
-    TEST_SIG_CMP(7, -2, -3,  1);
-
-    #undef TEST_SIG_CMP
+    #undef TEST_SIG_IS_ZERO
 
     assert(clu_mem_empty());
 }
@@ -226,9 +208,9 @@ void test_sig_cmp(bool show)
 {
     printf("\n\t%s\t\t", __func__);
 
-    #define TEST_SIG_CMP(NUM, NUM_1, NUM_2, RES)                    \
+    #define TEST_SIG_CMP(TAG, NUM_1, NUM_2, RES)                    \
         {                                                           \
-            if(show) printf("\n\t\t%s %2d\t\t", __func__, NUM);     \
+            if(show) printf("\n\t\t%s %2d\t\t", __func__, TAG);     \
             sig_p sig_1 = sig_wrap(NUM_1);                          \
             sig_p sig_2 = sig_wrap(NUM_2);                          \
             int64_t res = sig_cmp(sig_1, sig_2);                    \
@@ -237,25 +219,25 @@ void test_sig_cmp(bool show)
             sig_free(sig_2);                                        \
         }
 
-    TEST_SIG_CMP(1,  2,  3, -1);
-    TEST_SIG_CMP(2,  2,  2,  0);
-    TEST_SIG_CMP(3,  2,  1,  1);
-    TEST_SIG_CMP(4,  2,  0,  1);
-    TEST_SIG_CMP(5,  2, -1,  1);
-    TEST_SIG_CMP(6,  2, -2,  1);
-    TEST_SIG_CMP(7,  2, -3,  1);
+    TEST_SIG_CMP( 1,  2,  3, -1);
+    TEST_SIG_CMP( 2,  2,  2,  0);
+    TEST_SIG_CMP( 3,  2,  1,  1);
+    TEST_SIG_CMP( 4,  2,  0,  1);
+    TEST_SIG_CMP( 5,  2, -1,  1);
+    TEST_SIG_CMP( 6,  2, -2,  1);
+    TEST_SIG_CMP( 7,  2, -3,  1);
     
-    TEST_SIG_CMP(3,  0,  1, -1);
-    TEST_SIG_CMP(4,  0,  0,  0);
-    TEST_SIG_CMP(5,  0, -1,  1);
+    TEST_SIG_CMP( 8,  0,  1, -1);
+    TEST_SIG_CMP( 9,  0,  0,  0);
+    TEST_SIG_CMP(10,  0, -1,  1);
 
-    TEST_SIG_CMP(2, -2,  2, -1);
-    TEST_SIG_CMP(1, -2,  3, -1);
-    TEST_SIG_CMP(3, -2,  1, -1);
-    TEST_SIG_CMP(4, -2,  0, -1);
-    TEST_SIG_CMP(5, -2, -1, -1);
-    TEST_SIG_CMP(6, -2, -2,  0);
-    TEST_SIG_CMP(7, -2, -3,  1);
+    TEST_SIG_CMP(11, -2,  2, -1);
+    TEST_SIG_CMP(12, -2,  3, -1);
+    TEST_SIG_CMP(13, -2,  1, -1);
+    TEST_SIG_CMP(14, -2,  0, -1);
+    TEST_SIG_CMP(15, -2, -1, -1);
+    TEST_SIG_CMP(16, -2, -2,  0);
+    TEST_SIG_CMP(17, -2, -3,  1);
 
     #undef TEST_SIG_CMP
 
@@ -268,9 +250,9 @@ void test_sig_opposite(bool show)
 {
     printf("\n\t%s\t\t", __func__);
 
-    #define TEST_SIG_OPPOSITE(NUM, SIGNAL_IN, SIGNAL_OUT, ...)      \
+    #define TEST_SIG_OPPOSITE(TAG, SIGNAL_IN, SIGNAL_OUT, ...)      \
         {                                                           \
-            if(show) printf("\n\t\t%s %d\t\t", __func__, NUM);      \
+            if(show) printf("\n\t\t%s %d\t\t", __func__, TAG);      \
             sig_p sig = sig_create_immed(SIGNAL_IN, __VA_ARGS__);   \
             sig = sig_opposite(sig);                                \
             assert(sig_immed(sig, SIGNAL_OUT, __VA_ARGS__));        \
@@ -278,7 +260,7 @@ void test_sig_opposite(bool show)
 
     TEST_SIG_OPPOSITE(1, ZERO, ZERO, 0);
     TEST_SIG_OPPOSITE(2, POSITIVE, NEGATIVE, 1, 1);
-    TEST_SIG_OPPOSITE(2, NEGATIVE, POSITIVE, 1, 1);
+    TEST_SIG_OPPOSITE(3, NEGATIVE, POSITIVE, 1, 1);
 
     assert(clu_mem_empty());
 }
@@ -476,6 +458,7 @@ void test_sig()
     test_sig_wrap_str(show);
     test_sig_copy(show);
 
+    test_sig_is_zero(show);
     test_sig_cmp(show);
 
     test_sig_opposite(show);
