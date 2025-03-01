@@ -654,13 +654,6 @@ num_p num_mul_uint(num_p num_res, num_p num, uint64_t value)
 
 
 
-bool num_is_zero(num_p num)
-{
-    DBG_CHECK_PTR(num);
-
-    return num->count == 0;
-}
-
 int64_t num_cmp_offset(num_p num_1, num_p num_2, uint64_t offset)
 {
     DBG_CHECK_PTR(num_1);
@@ -687,62 +680,6 @@ int64_t num_cmp_offset(num_p num_1, num_p num_2, uint64_t offset)
     }
 
     return 0;
-}
-
-int64_t num_cmp(num_p num_1, num_p num_2)
-{
-    DBG_CHECK_PTR(num_1);
-    DBG_CHECK_PTR(num_2);
-
-    return num_cmp_offset(num_1, num_2, 0);
-}
-
-
-
-num_p num_shl(num_p num, uint64_t bits)
-{
-    for(; bits > 63; bits -= 64)
-        num_insert_head(num, 0);
-
-    num_shl_uint(num, bits);
-
-    return num;
-}
-
-num_p num_shr(num_p num, uint64_t bits)
-{
-    for(; bits > 63 && num->count; bits -= 64)
-        num_remove_head(num);
-
-    if(bits && num->count)
-        num_shr_uint(num, bits);
-
-    return num;
-}
-
-
-
-num_p num_add(num_p num_1, num_p num_2)
-{
-    DBG_CHECK_PTR(num_1);
-    DBG_CHECK_PTR(num_2)
-
-    node_p node_1 = num_1->head;
-    node_p node_2 = num_2->head;
-    uint64_t count = num_2->count;
-    for(; node_1 && node_2; count--)
-    {
-        num_add_uint_offset(num_1, node_1, node_2->value);
-
-        node_1 = node_1->next;
-        node_2 = node_consume(node_2);
-    }
-
-    if(node_1 == NULL && node_2)
-        num_insert_list(num_1, node_2, num_2->tail, count);
-
-    free(num_2);
-    return num_1;
 }
 
 /* may leave num denormalized */
@@ -779,55 +716,11 @@ node_p num_sub_offset(num_p num_1, node_p node_1, node_p node_2) // TODO test
     return node_0;
 }
 
-num_p num_sub(num_p num_1, num_p num_2)
-{
-    DBG_CHECK_PTR(num_1);
-    DBG_CHECK_PTR(num_2);
-
-    num_sub_offset(num_1, num_1->head, num_2->head);
-
-    free(num_2);
-    return num_1;
-}
-
-num_p num_mul(num_p num_1, num_p num_2)
-{
-    DBG_CHECK_PTR(num_1);
-    DBG_CHECK_PTR(num_2);
-
-    if(num_1->count == 0)
-    {
-        num_free(num_1);
-        num_free(num_2);
-        return num_create(0, NULL, NULL);
-    }
-
-    num_p num_res = num_create(0, NULL, NULL);
-    node_p node_1 = num_1->head;
-    node_p node_2 = num_2->head;
-
-    // printf(" | count: %lu |", num_2->count/1000);
-    uint64_t i=0;
-    for(node_p node_res = NULL; node_2; node_res = node_res->next, i++)
-    {
-        // if(i%1000 == 0) printf("\t%lu", i/1000);
-
-        node_res = num_mul_uint_offset(num_res, node_res, node_1, node_2->value);
-        node_res = num_denormalize(num_res, node_res);
-
-        node_2 = node_consume(node_2);
-    }
-
-    num_free(num_1);
-    free(num_2);
-    return num_res;
-}
-
 /*
 * returns NUM_B * R if less then NUM_A, returns NULL otherwise
 *  keeps NUM_A and NUM_B
 */
-num_p num_cmp_mul_uint(num_p num_a, num_p num_b, uint64_t r, uint64_t offset)
+num_p num_cmp_mul_uint(num_p num_a, num_p num_b, uint64_t r, uint64_t offset) // TODO test
 {
     num_p num_aux = num_create(0, NULL, NULL);
     node_p node = num_b->tail;
@@ -847,7 +740,7 @@ num_p num_cmp_mul_uint(num_p num_a, num_p num_b, uint64_t r, uint64_t offset)
     return num_aux;
 }
 
-void num_div_mod_loop(
+void num_div_mod_offset(
     num_p num_q,
     num_p num_r,
     node_p node_r,
@@ -907,6 +800,116 @@ void num_div_mod_loop(
     }
 }
 
+
+
+
+bool num_is_zero(num_p num)
+{
+    DBG_CHECK_PTR(num);
+
+    return num->count == 0;
+}
+
+int64_t num_cmp(num_p num_1, num_p num_2)
+{
+    DBG_CHECK_PTR(num_1);
+    DBG_CHECK_PTR(num_2);
+
+    return num_cmp_offset(num_1, num_2, 0);
+}
+
+
+
+num_p num_shl(num_p num, uint64_t bits)
+{
+    for(; bits > 63; bits -= 64)
+        num_insert_head(num, 0);
+
+    num_shl_uint(num, bits);
+
+    return num;
+}
+
+num_p num_shr(num_p num, uint64_t bits)
+{
+    for(; bits > 63 && num->count; bits -= 64)
+        num_remove_head(num);
+
+    if(bits && num->count)
+        num_shr_uint(num, bits);
+
+    return num;
+}
+
+
+
+num_p num_add(num_p num_1, num_p num_2)
+{
+    DBG_CHECK_PTR(num_1);
+    DBG_CHECK_PTR(num_2)
+
+    node_p node_1 = num_1->head;
+    node_p node_2 = num_2->head;
+    uint64_t count = num_2->count;
+    for(; node_1 && node_2; count--)
+    {
+        num_add_uint_offset(num_1, node_1, node_2->value);
+
+        node_1 = node_1->next;
+        node_2 = node_consume(node_2);
+    }
+
+    if(node_1 == NULL && node_2)
+        num_insert_list(num_1, node_2, num_2->tail, count);
+
+    free(num_2);
+    return num_1;
+}
+
+num_p num_sub(num_p num_1, num_p num_2)
+{
+    DBG_CHECK_PTR(num_1);
+    DBG_CHECK_PTR(num_2);
+
+    num_sub_offset(num_1, num_1->head, num_2->head);
+
+    free(num_2);
+    return num_1;
+}
+
+num_p num_mul(num_p num_1, num_p num_2)
+{
+    DBG_CHECK_PTR(num_1);
+    DBG_CHECK_PTR(num_2);
+
+    if(num_1->count == 0)
+    {
+        num_free(num_1);
+        num_free(num_2);
+        return num_create(0, NULL, NULL);
+    }
+
+    num_p num_res = num_create(0, NULL, NULL);
+    node_p node_1 = num_1->head;
+    node_p node_2 = num_2->head;
+
+    // printf(" | count: %lu |", num_2->count/1000);
+    uint64_t i=0;
+    for(node_p node_res = NULL; node_2; node_res = node_res->next, i++)
+    {
+        // if(i%1000 == 0) printf("\t%lu", i/1000);
+
+        node_res = num_mul_uint_offset(num_res, node_res, node_1, node_2->value);
+        node_res = num_denormalize(num_res, node_res);
+
+        node_2 = node_consume(node_2);
+    }
+
+    num_free(num_1);
+    free(num_2);
+    return num_res;
+}
+
 uint64_t num_div_mod_inner(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
 {
     DBG_CHECK_PTR(num_1);
@@ -926,7 +929,7 @@ uint64_t num_div_mod_inner(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_
 
     if(num_2->count == 1)
     {
-        num_div_mod_loop(
+        num_div_mod_offset(
             num_q,
             num_1,
             num_1->tail,
@@ -951,7 +954,7 @@ uint64_t num_div_mod_inner(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_
     for(uint64_t i=1; i<num_2->count; i++)
         node_r = node_r->prev;
 
-    num_div_mod_loop(
+    num_div_mod_offset(
         num_q,
         num_1,
         node_r,
