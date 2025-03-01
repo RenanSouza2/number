@@ -539,15 +539,6 @@ node_p num_add_uint_offset(num_p num, node_p node, uint64_t value)
     return node_0 ? node_0 : value ? num->tail : NULL;
 }
 
-void num_add_uint(num_p num, uint64_t value)
-{
-    DBG_CHECK_PTR(num);
-
-    num_add_uint_offset(num, num->head, value);
-}
-
-
-
 /* returns TRUE if passed offset is TAIL and ELIMINATED */
 bool num_sub_uint_offset(num_p num, node_p node, uint64_t value)
 {
@@ -566,13 +557,6 @@ bool num_sub_uint_offset(num_p num, node_p node, uint64_t value)
     }
 
     return num_normalize(num) && is_tail;
-}
-
-void num_sub_uint(num_p num, uint64_t value)
-{
-    DBG_CHECK_PTR(num);
-
-    num_sub_uint_offset(num, num->head, value);
 }
 
 /* num_res CANNOT be NULL */
@@ -600,24 +584,14 @@ node_p num_mul_uint_offset(num_p num_res, node_p node_res, node_p node_2, uint64
     return node_0;
 }
 
-/* NUM_RES can be NULL, preserves NUM */
-num_p num_mul_uint(num_p num_res, num_p num, uint64_t value)
-{
-    DBG_CHECK_PTR(num_res);
-    DBG_CHECK_PTR(num);
 
-    if(num_res == NULL)
-        num_res = num_create(0, NULL, NULL);
 
-    if(value)
-        num_mul_uint_offset(num_res, num_res->head, num->head, value);
-
-    return num_res;
-}
-
-num_p num_shl_uint(num_p num, uint64_t bits) // TODO test
+num_p num_shl_uint(num_p num, uint64_t bits)
 {
     DBG_CHECK_PTR(num);
+
+    if(bits == 0)
+        return num;
 
     uint64_t carry = 0;
     for(node_p node = num->head; node; node = node->next)
@@ -633,7 +607,7 @@ num_p num_shl_uint(num_p num, uint64_t bits) // TODO test
     return num;
 }
 
-num_p num_shr_uint(num_p num, uint64_t bits) // TODO test
+num_p num_shr_uint(num_p num, uint64_t bits)
 {
     DBG_CHECK_PTR(num);
 
@@ -649,9 +623,38 @@ num_p num_shr_uint(num_p num, uint64_t bits) // TODO test
     return num;
 }
 
+void num_add_uint(num_p num, uint64_t value)
+{
+    DBG_CHECK_PTR(num);
+
+    num_add_uint_offset(num, num->head, value);
+}
+
+void num_sub_uint(num_p num, uint64_t value)
+{
+    DBG_CHECK_PTR(num);
+
+    num_sub_uint_offset(num, num->head, value);
+}
+
+/* NUM_RES can be NULL, preserves NUM */
+num_p num_mul_uint(num_p num_res, num_p num, uint64_t value)
+{
+    DBG_CHECK_PTR(num_res);
+    DBG_CHECK_PTR(num);
+
+    if(num_res == NULL)
+        num_res = num_create(0, NULL, NULL);
+
+    if(value)
+        num_mul_uint_offset(num_res, num_res->head, num->head, value);
+
+    return num_res;
+}
 
 
-bool num_is_zero(num_p num) // TODO test
+
+bool num_is_zero(num_p num)
 {
     DBG_CHECK_PTR(num);
 
@@ -692,6 +695,29 @@ int64_t num_cmp(num_p num_1, num_p num_2)
     DBG_CHECK_PTR(num_2);
 
     return num_cmp_offset(num_1, num_2, 0);
+}
+
+
+
+num_p num_shl(num_p num, uint64_t bits)
+{
+    for(; bits > 63; bits -= 64)
+        num_insert_head(num, 0);
+
+    num_shl_uint(num, bits);
+
+    return num;
+}
+
+num_p num_shr(num_p num, uint64_t bits)
+{
+    for(; bits > 63 && num->count; bits -= 64)
+        num_remove_head(num);
+
+    if(bits && num->count)
+        num_shr_uint(num, bits);
+
+    return num;
 }
 
 
@@ -798,8 +824,8 @@ num_p num_mul(num_p num_1, num_p num_2)
 }
 
 /*
-* returns NUM_B * R if less then num_a, returns NULL otherwise
-*  keeps NUM_a ans NUM_B
+* returns NUM_B * R if less then NUM_A, returns NULL otherwise
+*  keeps NUM_A and NUM_B
 */
 num_p num_cmp_mul_uint(num_p num_a, num_p num_b, uint64_t r, uint64_t offset)
 {
@@ -968,26 +994,4 @@ num_p num_mod(num_p num_1, num_p num_2)
     num_shr_uint(num_r, bits);
     num_free(num_q);
     return num_r;
-}
-
-num_p num_shl(num_p num, uint64_t bits) // TODO test
-{
-    for(; bits > 63; bits -= 64)
-        num_insert_head(num, 0);
-
-    if(bits)
-        num_shl_uint(num, bits);
-
-    return num;
-}
-
-num_p num_shr(num_p num, uint64_t bits) // TODO test
-{
-    for(; bits > 63 && num->count; bits -= 64)
-        num_remove_head(num);
-
-    if(bits && num->count)
-        num_shr_uint(num, bits);
-
-    return num;
 }
