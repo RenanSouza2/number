@@ -5,9 +5,9 @@
 
 #include "../num/header.h"
 
-STRUCT(sig)
+STRUCT(snum)
 {
-    uint64_t signal;
+    uint64_t snumnal;
     num_p num;
 };
 
