@@ -8,7 +8,7 @@
 STRUCT(mod)
 {
     num_p num;
-    num_p p;
+    num_p max;
 };
 
 #endif
