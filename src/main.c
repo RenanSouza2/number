@@ -16,7 +16,7 @@ uint64_t altutime()
 {
     struct timespec time;
     clock_gettime(CLOCK_MONOTONIC, &time);
-    return time.tv_sec * 1e6 + time.tv_nsec / 1e3;
+    return time.tv_sec * 1e3 + time.tv_nsec / 1e6;
 }
 
 
@@ -28,7 +28,7 @@ num_p num_generate(uint64_t max, uint64_t salt)
     num_p num = num_wrap(2);
     for(uint64_t i=0; i<max; i++)
     {
-        printf("\ni: " U64P() "", i);
+        printf("\ni: " U64P(2) "", i);
 
         num = num_add(num, num_wrap(salt));
         num = num_mul(num, num_copy(num));
@@ -217,8 +217,13 @@ int main(int argc, char** argv)
 
     printf("\n");
     num_p num = num_generate(20, 2);
-    printf("\ngenerated");
-    num_display_opts(num, false, true);
+    printf("\ngenerated\n");
+    printf("\n");
+    uint64_t begin = altutime();
+    num_display_dec(num);
+    uint64_t end = altutime();
+    printf("\n");
+    printf("\ntime: %.3f", (end - begin) / 1e3);
 
     printf("\n");
     return 0;

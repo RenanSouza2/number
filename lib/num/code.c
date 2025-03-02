@@ -233,25 +233,20 @@ uint64_t uint_from_char(char c)
 void num_display_dec(num_p num)
 {
     num = num_copy(num);
-    num_p num_base = num_wrap(1);
+    num_p num_base = num_exp(num_wrap(1000000000000000000), 19 * num->count / 18);
+    while(num_cmp(num, num_base) >= 0)
+        num_base = num_mul(num_base, num_wrap(1000000000000000000));
 
-    for(uint64_t i=0; num_cmp(num, num_base) >= 0; i++)
-    {
-        if(i%1000 == 0) printf("\n%llu %llu %lld", num->count, num_base->count, num_cmp(num, num_base));
-
-        num_base = num_mul(num_base, num_wrap(10));
-    }
-
-    num_base = num_div(num_base, num_wrap(10));
+    num_base = num_div(num_base, num_wrap(1000000000000000000));
 
     while(!num_is_zero(num_base))
     {
         num_p num_q, num_r;
         num_div_mod(&num_q, &num_r, num, num_copy(num_base));
-        printf("" U64P() "", num_unwrap(num_q));
+        printf("" U64P(018) "", num_unwrap(num_q));
 
         num = num_r;
-        num_base = num_div(num_base, num_wrap(10));
+        num_base = num_div(num_base, num_wrap(1000000000000000000));
     }
 }
 
@@ -871,6 +866,25 @@ num_p num_shr(num_p num, uint64_t bits)
         num_shr_uint(num, bits);
 
     return num;
+}
+
+num_p num_exp(num_p num, uint64_t value) // TODO test
+{
+    if(num->count == 0)
+    {
+        assert(value);
+        return num;
+    }
+
+    num_p num_res = num_wrap(1);
+    for(uint64_t mask = (uint64_t)1 << 63; mask; mask >>= 1)
+    {
+        num_res = num_mul(num_res, num_copy(num_res));
+        if(value & mask)
+            num_res = num_mul(num_res, num_copy(num));
+    }
+    free(num);
+    return num_res;
 }
 
 
