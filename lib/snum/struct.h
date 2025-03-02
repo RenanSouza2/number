@@ -7,7 +7,7 @@
 
 STRUCT(snum)
 {
-    uint64_t snumnal;
+    uint64_t signal;
     num_p num;
 };
 

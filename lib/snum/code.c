@@ -11,24 +11,24 @@
 
 #include "../num/debug.h"
 
-snum_p snum_create_variadic(uint64_t snumnal, uint64_t n, va_list args)
+snum_p snum_create_variadic(uint64_t signal, uint64_t n, va_list args)
 {
     num_p num = num_create_variadic(n, args);
-    return snum_create(snumnal, num);
+    return snum_create(signal, num);
 }
 
-snum_p snum_create_immed(uint64_t snumnal, uint64_t n, ...)
+snum_p snum_create_immed(uint64_t signal, uint64_t n, ...)
 {
     va_list args;
     va_start(args, n);
-    return snum_create_variadic(snumnal, n, args);
+    return snum_create_variadic(signal, n, args);
 }
 
 
 
 bool snum_inner(snum_p snum_1, snum_p snum_2)
 {
-    if(!uint64(snum_1->snumnal, snum_2->snumnal))
+    if(!uint64(snum_1->signal, snum_2->signal))
     {
         printf("\n\tSIG ASSERT ERROR\t| DIFFERENT SIGNAL");
         return false;
@@ -56,11 +56,11 @@ bool snum_str(snum_p snum_1, snum_p snum_2)
     return true;
 }
 
-bool snum_immed(snum_p snum, uint64_t snumnal, uint64_t count, ...)
+bool snum_immed(snum_p snum, uint64_t signal, uint64_t count, ...)
 {
     va_list args;
     va_start(args, count);
-    snum_p snum_2 = snum_create_variadic(snumnal, count, args);
+    snum_p snum_2 = snum_create_variadic(signal, count, args);
 
     bool res = snum_str(snum, snum_2);
 
@@ -75,13 +75,13 @@ bool snum_immed(snum_p snum, uint64_t snumnal, uint64_t count, ...)
 
 void snum_display(snum_p snum)
 {
-    if(snum->snumnal == ZERO)
+    if(snum->signal == ZERO)
     {
         printf("  0");
         return;
     }
 
-    if(snum->snumnal & POSITIVE)
+    if(snum->signal & POSITIVE)
         printf("+ ");
     else
         printf("- ");
@@ -97,20 +97,20 @@ void snum_display_tag(char tag[], snum_p snum)
 
 
 
-snum_p snum_create(uint64_t snumnal, num_p num)
+snum_p snum_create(uint64_t signal, num_p num)
 {
     snum_p snum = malloc(sizeof(snum_t));
     assert(snum);
 
     if(num_is_zero(num))
-        snumnal = ZERO;
+        signal = ZERO;
     else
-        assert(snumnal != ZERO)
+        assert(signal != ZERO)
 
     *snum = (snum_t)
     {
         .num = num,
-        .snumnal = snumnal
+        .signal = signal
     };
     return snum;
 }
@@ -137,16 +137,16 @@ snum_p snum_wrap(int64_t value)
 
 snum_p snum_wrap_str(char str[])
 {
-    uint64_t snumnal = str[0] == '-' ? NEGATIVE : POSITIVE;
+    uint64_t signal = str[0] == '-' ? NEGATIVE : POSITIVE;
     uint64_t offset = str[0] == '-' || str[0] == '+' ? 1 : 0;
     num_p num = num_wrap_str(&str[offset]);
-    return snum_create(snumnal, num);
+    return snum_create(signal, num);
 }
 
 snum_p snum_copy(snum_p snum)
 {
     num_p num = num_copy(snum->num);
-    return snum_create(snum->snumnal, num);
+    return snum_create(snum->signal, num);
 }
 
 void snum_free(snum_p snum)
@@ -160,20 +160,20 @@ void snum_free(snum_p snum)
 
 bool snum_is_zero(snum_p snum)
 {
-    return snum->snumnal == ZERO;
+    return snum->signal == ZERO;
 }
 
 int64_t snum_cmp(snum_p snum_1, snum_p snum_2)
 {
-    if(snum_1->snumnal & POSITIVE)
+    if(snum_1->signal & POSITIVE)
     {
-        if(snum_2->snumnal & POSITIVE)
+        if(snum_2->signal & POSITIVE)
             return num_cmp(snum_1->num, snum_2->num);
 
         return 1;
     }
 
-    if(snum_2->snumnal & POSITIVE)
+    if(snum_2->signal & POSITIVE)
         return -1;
 
     return -num_cmp(snum_1->num, snum_2->num);
@@ -181,17 +181,17 @@ int64_t snum_cmp(snum_p snum_1, snum_p snum_2)
 
 
 
-snum_p snum_shl(snum_p snum, uint64_t bits) // TODO test
+snum_p snum_shl(snum_p snum, uint64_t bits)
 {
     num_shl(snum->num, bits);
     return snum;
 }
 
-snum_p snum_shr(snum_p snum, uint64_t bits) // TODO test
+snum_p snum_shr(snum_p snum, uint64_t bits)
 {
     num_shr(snum->num, bits);
     if(num_is_zero(snum->num))
-        snum->snumnal = ZERO;
+        snum->signal = ZERO;
 
     return snum;
 }
@@ -202,7 +202,7 @@ snum_p snum_opposite(snum_p snum)
 {
     DBG_CHECK_PTR(snum);
 
-    snum->snumnal = snum->snumnal >> 1 | (snum->snumnal & POSITIVE) << 1;
+    snum->signal = snum->signal >> 1 | (snum->signal & POSITIVE) << 1;
     return snum;
 }
 
@@ -211,29 +211,29 @@ snum_p snum_add(snum_p snum_1, snum_p snum_2)
     DBG_CHECK_PTR(snum_1);
     DBG_CHECK_PTR(snum_2);
 
-    uint64_t snumnal_res = snum_1->snumnal & snum_2->snumnal;
-    if(snumnal_res)
+    uint64_t signal_res = snum_1->signal & snum_2->signal;
+    if(signal_res)
     {
         num_p num_res = num_add(snum_1->num, snum_2->num);
         free(snum_1);
         free(snum_2);
-        return snum_create(snumnal_res, num_res);
+        return snum_create(signal_res, num_res);
     }
 
     if(num_cmp(snum_1->num, snum_2->num) > 0)
     {
         num_p num_res = num_sub(snum_1->num, snum_2->num);
-        snumnal_res = snum_1->snumnal;
+        signal_res = snum_1->signal;
         free(snum_1);
         free(snum_2);
-        return snum_create(snumnal_res, num_res);
+        return snum_create(signal_res, num_res);
     }
 
     num_p num_res = num_sub(snum_2->num, snum_1->num);
-    snumnal_res = snum_2->snumnal;
+    signal_res = snum_2->signal;
     free(snum_1);
     free(snum_2);
-    return snum_create(snumnal_res, num_res);
+    return snum_create(signal_res, num_res);
 }
 
 snum_p snum_sub(snum_p snum_1, snum_p snum_2)
@@ -244,22 +244,22 @@ snum_p snum_sub(snum_p snum_1, snum_p snum_2)
 
 snum_p snum_mul(snum_p snum_1, snum_p snum_2)
 {
-    uint64_t snumnal_res = snum_1->snumnal & snum_2->snumnal ?
+    uint64_t signal_res = snum_1->signal & snum_2->signal ?
         POSITIVE : NEGATIVE;
 
     num_p num_res = num_mul(snum_1->num, snum_2->num);
     free(snum_1);
     free(snum_2);
-    return snum_create(snumnal_res, num_res);
+    return snum_create(signal_res, num_res);
 }
 
 snum_p snum_div(snum_p snum_1, snum_p snum_2)
 {
-    uint64_t snumnal_res = snum_1->snumnal & snum_2->snumnal ?
+    uint64_t signal_res = snum_1->signal & snum_2->signal ?
         POSITIVE : NEGATIVE;
 
     num_p num_res = num_div(snum_1->num, snum_2->num);
     free(snum_1);
     free(snum_2);
-    return snum_create(snumnal_res, num_res);
+    return snum_create(signal_res, num_res);
 }
