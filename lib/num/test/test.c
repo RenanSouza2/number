@@ -1538,7 +1538,7 @@ void test_num()
     test_num_wrap_hex(show);
     test_num_wrap_str(show);
     test_num_copy(show);
-    
+
     test_num_sub_uint_offset(show);
 
     test_num_shl_uint(show);

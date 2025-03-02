@@ -8,35 +8,35 @@
 void test_snum_create(bool show)
 {
     printf("\n\t%s\t\t", __func__);
-    
+
     if(show) printf("\n\t\t%s 1\t\t", __func__);
     num_p num = num_create_immed(1, 1);
     snum_p snum = snum_create(POSITIVE, num);
     assert(snum->snumnal == POSITIVE);
     assert(snum->num == num);
     snum_free(snum);
-    
+
     if(show) printf("\n\t\t%s 2\t\t", __func__);
     num = num_create_immed(1, 1);
     snum = snum_create(NEGATIVE, num);
     assert(snum->snumnal == NEGATIVE);
     assert(snum->num == num);
     snum_free(snum);
-    
+
     if(show) printf("\n\t\t%s 3\t\t", __func__);
     num = num_create_immed(0);
     snum = snum_create(POSITIVE, num);
     assert(snum->snumnal == ZERO);
     assert(snum->num == num);
     snum_free(snum);
-    
+
     if(show) printf("\n\t\t%s 4\t\t", __func__);
     num = num_create_immed(0);
     snum = snum_create(ZERO, num);
     assert(snum->snumnal == ZERO);
     assert(snum->num == num);
     snum_free(snum);
-    
+
     if(show) printf("\n\t\t%s 5\t\t", __func__);
     num = num_create_immed(0);
     snum = snum_create(NEGATIVE, num);
@@ -50,7 +50,7 @@ void test_snum_create(bool show)
 void test_snum_create_immed(bool show)
 {
     printf("\n\t%s\t\t", __func__);
-    
+
     if(show) printf("\n\t\t%s 1\t\t", __func__);
     snum_p snum = snum_create_immed(POSITIVE, 1, 1);
     assert(snum->snumnal == POSITIVE);
@@ -89,23 +89,23 @@ void test_snum_create_immed(bool show)
 void test_snum_wrap(bool show)
 {
     printf("\n\t%s\t\t", __func__);
-    
+
     if(show) printf("\n\t\t%s 1\t\t", __func__);
     snum_p snum = snum_wrap(0);
     assert(snum_immed(snum, ZERO, 0));
-    
+
     if(show) printf("\n\t\t%s 2\t\t", __func__);
     snum = snum_wrap(1);
     assert(snum_immed(snum, POSITIVE, 1, 1));
-    
+
     if(show) printf("\n\t\t%s 3\t\t", __func__);
     snum = snum_wrap(-1);
     assert(snum_immed(snum, NEGATIVE, 1, 1));
-    
+
     if(show) printf("\n\t\t%s 4\t\t", __func__);
     snum = snum_wrap(INT64_MAX);
     assert(snum_immed(snum, POSITIVE, 1, INT64_MAX));
-    
+
     if(show) printf("\n\t\t%s 5\t\t", __func__);
     snum = snum_wrap(INT64_MIN);
     assert(snum_immed(snum, NEGATIVE, 1, (uint64_t)INT64_MIN));
@@ -226,7 +226,7 @@ void test_snum_cmp(bool show)
     TEST_SIG_CMP( 5,  2, -1,  1);
     TEST_SIG_CMP( 6,  2, -2,  1);
     TEST_SIG_CMP( 7,  2, -3,  1);
-    
+
     TEST_SIG_CMP( 8,  0,  1, -1);
     TEST_SIG_CMP( 9,  0,  0,  0);
     TEST_SIG_CMP(10,  0, -1,  1);
@@ -312,61 +312,61 @@ void test_snum_opposite(bool show)
 void test_snum_add(bool show)
 {
     printf("\n\t%s\t\t", __func__);
-    
+
     if(show) printf("\n\t\t%s  1\t\t", __func__);
     snum_p snum_1 = snum_create_immed(POSITIVE, 1, 2);
     snum_p snum_2 = snum_create_immed(POSITIVE, 1, 1);
     snum_p snum_res = snum_add(snum_1, snum_2);
     assert(snum_immed(snum_res, POSITIVE, 1, 3));
-    
+
     if(show) printf("\n\t\t%s  2\t\t", __func__);
     snum_1 = snum_create_immed(POSITIVE, 1, 2);
     snum_2 = snum_create_immed(ZERO, 0);
     snum_res = snum_add(snum_1, snum_2);
     assert(snum_immed(snum_res, POSITIVE, 1, 2));
-    
+
     if(show) printf("\n\t\t%s  3\t\t", __func__);
     snum_1 = snum_create_immed(POSITIVE, 1, 2);
     snum_2 = snum_create_immed(NEGATIVE, 1, 1);
     snum_res = snum_add(snum_1, snum_2);
     assert(snum_immed(snum_res, POSITIVE, 1, 1));
-    
+
     if(show) printf("\n\t\t%s  4\t\t", __func__);
     snum_1 = snum_create_immed(POSITIVE, 1, 2);
     snum_2 = snum_create_immed(NEGATIVE, 1, 2);
     snum_res = snum_add(snum_1, snum_2);
     assert(snum_immed(snum_res, ZERO, 0));
-    
+
     if(show) printf("\n\t\t%s  5\t\t", __func__);
     snum_1 = snum_create_immed(POSITIVE, 1, 2);
     snum_2 = snum_create_immed(NEGATIVE, 1, 3);
     snum_res = snum_add(snum_1, snum_2);
     assert(snum_immed(snum_res, NEGATIVE, 1, 1));
-    
+
     if(show) printf("\n\t\t%s  6\t\t", __func__);
     snum_1 = snum_create_immed(POSITIVE, 1, 1);
     snum_2 = snum_create_immed(POSITIVE, 1, 2);
     snum_res = snum_add(snum_1, snum_2);
     assert(snum_immed(snum_res, POSITIVE, 1, 3));
-    
+
     if(show) printf("\n\t\t%s  7\t\t", __func__);
     snum_1 = snum_create_immed(ZERO, 0);
     snum_2 = snum_create_immed(POSITIVE, 1, 2);
     snum_res = snum_add(snum_1, snum_2);
     assert(snum_immed(snum_res, POSITIVE, 1, 2));
-    
+
     if(show) printf("\n\t\t%s  8\t\t", __func__);
     snum_1 = snum_create_immed(NEGATIVE, 1, 1);
     snum_2 = snum_create_immed(POSITIVE, 1, 2);
     snum_res = snum_add(snum_1, snum_2);
     assert(snum_immed(snum_res, POSITIVE, 1, 1));
-    
+
     if(show) printf("\n\t\t%s  9\t\t", __func__);
     snum_1 = snum_create_immed(NEGATIVE, 1, 2);
     snum_2 = snum_create_immed(POSITIVE, 1, 2);
     snum_res = snum_add(snum_1, snum_2);
     assert(snum_immed(snum_res, ZERO, 0));
-    
+
     if(show) printf("\n\t\t%s 10\t\t", __func__);
     snum_1 = snum_create_immed(NEGATIVE, 1, 3);
     snum_2 = snum_create_immed(POSITIVE, 1, 2);
@@ -379,25 +379,25 @@ void test_snum_add(bool show)
 void test_snum_sub(bool show)
 {
     printf("\n\t%s\t\t", __func__);
-    
+
     if(show) printf("\n\t\t%s 1\t\t", __func__);
     snum_p snum_1 = snum_create_immed(POSITIVE, 1, 2);
     snum_p snum_2 = snum_create_immed(POSITIVE, 1, 1);
     snum_p snum_res = snum_sub(snum_1, snum_2);
     assert(snum_immed(snum_res, POSITIVE, 1, 1));
-    
+
     if(show) printf("\n\t\t%s 2\t\t", __func__);
     snum_1 = snum_create_immed(POSITIVE, 1, 2);
     snum_2 = snum_create_immed(POSITIVE, 1, 2);
     snum_res = snum_sub(snum_1, snum_2);
     assert(snum_immed(snum_res, ZERO, 0));
-    
+
     if(show) printf("\n\t\t%s 3\t\t", __func__);
     snum_1 = snum_create_immed(POSITIVE, 1, 2);
     snum_2 = snum_create_immed(POSITIVE, 1, 3);
     snum_res = snum_sub(snum_1, snum_2);
     assert(snum_immed(snum_res, NEGATIVE, 1, 1));
-    
+
     if(show) printf("\n\t\t%s 4\t\t", __func__);
     snum_1 = snum_create_immed(POSITIVE, 1, 2);
     snum_2 = snum_create_immed(NEGATIVE, 1, 1);
@@ -410,37 +410,37 @@ void test_snum_sub(bool show)
 void test_snum_mul(bool show)
 {
     printf("\n\t%s\t\t", __func__);
-    
+
     if(show) printf("\n\t\t%s 1\t\t", __func__);
     snum_p snum_1 = snum_create_immed(POSITIVE, 1, 2);
     snum_p snum_2 = snum_create_immed(POSITIVE, 1, 3);
     snum_p snum_res = snum_mul(snum_1, snum_2);
     assert(snum_immed(snum_res, POSITIVE, 1, 6));
-    
+
     if(show) printf("\n\t\t%s 2\t\t", __func__);
     snum_1 = snum_create_immed(POSITIVE, 1, 2);
     snum_2 = snum_create_immed(ZERO, 0);
     snum_res = snum_mul(snum_1, snum_2);
     assert(snum_immed(snum_res, ZERO, 0));
-    
+
     if(show) printf("\n\t\t%s 3\t\t", __func__);
     snum_1 = snum_create_immed(POSITIVE, 1, 2);
     snum_2 = snum_create_immed(NEGATIVE, 1, 3);
     snum_res = snum_mul(snum_1, snum_2);
     assert(snum_immed(snum_res, NEGATIVE, 1, 6));
-    
+
     if(show) printf("\n\t\t%s 4\t\t", __func__);
     snum_1 = snum_create_immed(POSITIVE, 1, 3);
     snum_2 = snum_create_immed(POSITIVE, 1, 2);
     snum_res = snum_mul(snum_1, snum_2);
     assert(snum_immed(snum_res, POSITIVE, 1, 6));
-    
+
     if(show) printf("\n\t\t%s 5\t\t", __func__);
     snum_1 = snum_create_immed(ZERO, 0);
     snum_2 = snum_create_immed(POSITIVE, 1, 2);
     snum_res = snum_mul(snum_1, snum_2);
     assert(snum_immed(snum_res, ZERO, 0));
-    
+
     if(show) printf("\n\t\t%s 6\t\t", __func__);
     snum_1 = snum_create_immed(NEGATIVE, 1, 3);
     snum_2 = snum_create_immed(POSITIVE, 1, 2);
@@ -453,31 +453,31 @@ void test_snum_mul(bool show)
 void test_snum_div(bool show)
 {
     printf("\n\t%s\t\t", __func__);
-    
+
     if(show) printf("\n\t\t%s 1\t\t", __func__);
     snum_p snum_1 = snum_create_immed(POSITIVE, 1, 2);
     snum_p snum_2 = snum_create_immed(POSITIVE, 1, 3);
     snum_p snum_res = snum_div(snum_1, snum_2);
     assert(snum_immed(snum_res, ZERO, 0));
-    
+
     if(show) printf("\n\t\t%s 2\t\t", __func__);
     snum_1 = snum_create_immed(POSITIVE, 1, 2);
     snum_2 = snum_create_immed(NEGATIVE, 1, 3);
     snum_res = snum_div(snum_1, snum_2);
     assert(snum_immed(snum_res, ZERO, 0));
-    
+
     if(show) printf("\n\t\t%s 3\t\t", __func__);
     snum_1 = snum_create_immed(POSITIVE, 1, 3);
     snum_2 = snum_create_immed(POSITIVE, 1, 2);
     snum_res = snum_div(snum_1, snum_2);
     assert(snum_immed(snum_res, POSITIVE, 1, 1));
-    
+
     if(show) printf("\n\t\t%s 4\t\t", __func__);
     snum_1 = snum_create_immed(ZERO, 0);
     snum_2 = snum_create_immed(POSITIVE, 1, 2);
     snum_res = snum_div(snum_1, snum_2);
     assert(snum_immed(snum_res, ZERO, 0));
-    
+
     if(show) printf("\n\t\t%s 5\t\t", __func__);
     snum_1 = snum_create_immed(NEGATIVE, 1, 3);
     snum_2 = snum_create_immed(POSITIVE, 1, 2);

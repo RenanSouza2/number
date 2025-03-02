@@ -100,7 +100,7 @@ mod_p mod_sub(mod_p mod_1, mod_p mod_2)
 {
     DBG_CHECK_PTR(mod_1);
     DBG_CHECK_PTR(mod_2);
-    
+
     if(num_cmp(mod_1->num, mod_2->num) >= 0)
     {
         mod_1->num = num_sub(mod_1->num, mod_2->num);

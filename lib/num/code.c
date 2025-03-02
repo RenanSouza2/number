@@ -245,7 +245,7 @@ void num_display_opts(num_p num, bool length, bool full)
             printf("(" U64P() ")\t| ", num->count);
         }
     }
-    
+
     if(num->count == 0)
     {
         printf("0");

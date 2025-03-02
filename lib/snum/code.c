@@ -175,7 +175,7 @@ int64_t snum_cmp(snum_p snum_1, snum_p snum_2)
 
     if(snum_2->snumnal & POSITIVE)
         return -1;
-    
+
     return -num_cmp(snum_1->num, snum_2->num);
 }
 
