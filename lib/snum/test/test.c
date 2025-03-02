@@ -246,6 +246,50 @@ void test_snum_cmp(bool show)
 
 
 
+void test_snum_shl(bool show)
+{
+    printf("\n\t%s\t\t", __func__);
+
+    if(show) printf("\n\t\t%s 1\t\t", __func__);
+    snum_p snum = snum_create_immed(ZERO, 0);
+    snum = snum_shl(snum, 1);
+    assert(snum_immed(snum, ZERO, 0));
+
+    if(show) printf("\n\t\t%s 2\t\t", __func__);
+    snum = snum_create_immed(POSITIVE, 1, 1);
+    snum = snum_shl(snum, 1);
+    assert(snum_immed(snum, POSITIVE, 1, 2));
+
+    if(show) printf("\n\t\t%s 3\t\t", __func__);
+    snum = snum_create_immed(POSITIVE, 1, 1);
+    snum = snum_shl(snum, 64);
+    assert(snum_immed(snum, POSITIVE, 2, 1, 0));
+
+    if(show) printf("\n\t\t%s 4\t\t", __func__);
+    snum = snum_create_immed(POSITIVE, 1, 1);
+    snum = snum_shl(snum, 65);
+    assert(snum_immed(snum, POSITIVE, 2, 2, 0));
+
+    if(show) printf("\n\t\t%s 5\t\t", __func__);
+    snum = snum_create_immed(NEGATIVE, 1, 1);
+    snum = snum_shl(snum, 1);
+    assert(snum_immed(snum, NEGATIVE, 1, 2));
+
+    if(show) printf("\n\t\t%s 6\t\t", __func__);
+    snum = snum_create_immed(NEGATIVE, 1, 1);
+    snum = snum_shl(snum, 64);
+    assert(snum_immed(snum, NEGATIVE, 2, 1, 0));
+
+    if(show) printf("\n\t\t%s 7\t\t", __func__);
+    snum = snum_create_immed(NEGATIVE, 1, 1);
+    snum = snum_shl(snum, 65);
+    assert(snum_immed(snum, NEGATIVE, 2, 2, 0));
+
+    assert(clu_mem_empty());
+}
+
+
+
 void test_snum_opposite(bool show)
 {
     printf("\n\t%s\t\t", __func__);
@@ -460,6 +504,8 @@ void test_snum()
 
     test_snum_is_zero(show);
     test_snum_cmp(show);
+
+    test_snum_shl(show);
 
     test_snum_opposite(show);
     test_snum_add(show);

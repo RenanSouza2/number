@@ -423,7 +423,7 @@ node_p num_denormalize(num_p num, node_p node)
     return COALESCE(node, num_insert(num, 0));
 }
 
-/* removes last element if zero, returns TRUE if so */
+/* returns TRUE if so */
 bool num_normalize(num_p num)
 {
     DBG_CHECK_PTR(num);
@@ -449,7 +449,6 @@ bool num_normalize(num_p num)
 
 
 
-/* returns empty list if value is 0, list with one value otherwise */
 num_p num_wrap(uint64_t value)
 {
     if(value == 0)
@@ -570,7 +569,7 @@ node_p num_mul_uint_offset(num_p num_res, node_p node_res, node_p node_2, uint64
         return node_res;
 
     node_p node_0 = node_res = num_denormalize(num_res, node_res);
-    for(; node_2; )
+    while(node_2)
     {
         uint128_t u = MUL(node_2->value, value);
         node_res = num_add_uint_offset(num_res, node_res, LOW(u));
@@ -753,6 +752,10 @@ void num_div_mod_offset(
     DBG_CHECK_PTR(node_r);
     DBG_CHECK_PTR(num_2);
 
+    bool bool_2 = num_2->count == 1;
+    uint128_t val_2_1 = num_2->tail->value;
+    uint128_t val_2_2 = bool_2 ? val_2_1 : U128_IMMED(val_2_1, num_2->tail->prev->value);
+
     for(; node_r;)
     {
         if(num_normalize(num_r))
@@ -767,30 +770,25 @@ void num_div_mod_offset(
         while(num_cmp_offset(num_r, num_2, offset_r) >= 0)
         {
             bool bool_1 = num_r->count > num_2->count + offset_r;
-            bool bool_2 = num_2->count == 1 || num_r->tail->value == UINT64_MAX;
 
+            uint128_t val_2 = bool_1 ||  bool_2 ? val_2_1 : val_2_2;
             uint128_t val_1 = bool_1 || !bool_2 ?
                 U128_IMMED(num_r->tail->value, num_r->tail->prev->value) :
                 num_r->tail->value;
 
-            uint128_t val_2 = bool_1 || bool_2 ?
-                num_2->tail->value :
-                U128_IMMED(num_2->tail->value, num_2->tail->prev->value);
 
-            uint128_t aux = val_1 / val_2;
-            uint64_t r_max = aux > UINT64_MAX ? UINT64_MAX : aux;
-            uint64_t r_min = val_1 / (val_2 + 1);
+            uint128_t tmp = val_1 / val_2;
+            uint64_t r_aux = tmp > UINT64_MAX ? UINT64_MAX : tmp;
 
-            num_p num_aux = num_cmp_mul_uint(num_r, num_2, r_max, offset_r);
+            num_p num_aux = num_cmp_mul_uint(num_r, num_2, r_aux, offset_r);
             if(num_aux == NULL)
             {
-                num_aux = num_mul_uint(NULL, num_2, r_min);
-                r_max = r_min;
+                r_aux = val_1 / (val_2 + 1);
+                num_aux = num_mul_uint(NULL, num_2, r_aux);
             }
-
+            r += r_aux;
             node_r = num_sub_offset(num_r, node_r, num_aux->head);
 
-            r += r_max;
             free(num_aux);
         }
 

@@ -191,7 +191,7 @@ void factorial()
         if(i%1000 == 0)
         {
             num_display_full("num", num);
-            printf("\ni: %lu\t", i);
+            printf("\ni: " U64P() "\t", i);
         }
     }
 }
@@ -206,12 +206,14 @@ void mod_fib(mod_p *mod_a, mod_p *mod_b)
     *mod_b = mod_c;
 }
 
+
+
 int main(int argc, char** argv)
 {
     setbuf(stdout, NULL);
     srand(time(NULL));
 
-    time_1(13, 19);
+    time_1(13, 21);
     // time_2(argc, argv, 18);
     // num_generate(30, 2);
 
