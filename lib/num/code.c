@@ -230,6 +230,31 @@ uint64_t uint_from_char(char c)
 
 
 
+void num_display_dec(num_p num)
+{
+    num = num_copy(num);
+    num_p num_base = num_wrap(1);
+
+    for(uint64_t i=0; num_cmp(num, num_base) >= 0; i++)
+    {
+        if(i%1000 == 0) printf("\n%llu %llu %lld", num->count, num_base->count, num_cmp(num, num_base));
+
+        num_base = num_mul(num_base, num_wrap(10));
+    }
+
+    num_base = num_div(num_base, num_wrap(10));
+
+    while(!num_is_zero(num_base))
+    {
+        num_p num_q, num_r;
+        num_div_mod(&num_q, &num_r, num, num_copy(num_base));
+        printf("" U64P() "", num_unwrap(num_q));
+
+        num = num_r;
+        num_base = num_div(num_base, num_wrap(10));
+    }
+}
+
 void num_display_opts(num_p num, bool length, bool full)
 {
     DBG_CHECK_PTR(num);
@@ -497,6 +522,16 @@ num_p num_wrap_str(char str[])
 {
     return str[0] == '0' && str[1] == 'x' ?
         num_wrap_hex(str) : num_wrap_dec(str);
+}
+
+uint64_t num_unwrap(num_p num) // TODO test
+{
+    assert(num->count < 2);
+
+    uint64_t value = num->count ? num->head->value : 0;
+    num_free(num);
+
+    return value;
 }
 
 num_p num_copy(num_p num)

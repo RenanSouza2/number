@@ -2,10 +2,12 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "../lib/num/header.h"
-#include "../lib/mod/header.h"
 #include "../utils/assert.h"
 #include "../utils/U64.h"
+
+#include "../lib/num/header.h"
+#include "../lib/mod/header.h"
+#include "../lib/fix/header.h"
 
 #include "../utils/clu/header.h"
 
@@ -26,7 +28,7 @@ num_p num_generate(uint64_t max, uint64_t salt)
     num_p num = num_wrap(2);
     for(uint64_t i=0; i<max; i++)
     {
-        // printf("\ni: %lu", i);
+        printf("\ni: " U64P() "", i);
 
         num = num_add(num, num_wrap(salt));
         num = num_mul(num, num_copy(num));
@@ -213,18 +215,10 @@ int main(int argc, char** argv)
     setbuf(stdout, NULL);
     srand(time(NULL));
 
-    time_1(13, 21);
-    // time_2(argc, argv, 18);
-    // num_generate(30, 2);
-
-    // fibonacci();
-    // fibonacci_2();
-    // factorial();
-
-    // num_p num = num_wrap_dec("1000000000000000000");
-    // num_display_tag("num", num);
-
-    // clu_mem_report("AAAA");
+    printf("\n");
+    num_p num = num_generate(20, 2);
+    printf("\ngenerated");
+    num_display_opts(num, false, true);
 
     printf("\n");
     return 0;

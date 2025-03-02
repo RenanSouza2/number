@@ -3,11 +3,47 @@
 
 #include "debug.h"
 
+#include "../../utils/assert.h"
+
 #ifdef DEBUG
 
 #include "../../utils/clu/header.h"
 
 #endif
+
+
+
+void fix_display(fix_p fix)
+{
+    snum_display(fix->snum);
+}
+
+void fix_display_tag(char tag[], fix_p fix)
+{
+    snum_display_tag(tag, fix->snum);
+}
+
+
+
+fix_p fix_create(uint64_t size, snum_p snum)
+{
+    fix_p fix = malloc(sizeof(fix_t));
+    assert(fix);
+
+    *fix = (fix_t)
+    {
+        .size = size,
+        .snum = snum
+    };
+    return fix;
+}
+
+fix_p fix_wrap(uint64_t size, int64_t value)
+{
+    snum_p snum = snum_wrap(value);
+    snum = snum_shl(snum, 64 * value);
+    return fix_create(size, snum);
+}
 
 
 

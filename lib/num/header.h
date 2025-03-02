@@ -8,6 +8,7 @@
 
 PLACEHOLDER(num);
 
+void num_display_dec(num_p num);
 void num_display_opts(num_p num, bool length, bool full);
 void num_display(num_p num);
 void num_display_tag(char *tag, num_p num);
@@ -15,6 +16,7 @@ void num_display_full(char *tag, num_p num);
 
 num_p num_wrap(uint64_t value);
 num_p num_wrap_str(char str[]);
+uint64_t num_unwrap(num_p num);
 num_p num_copy(num_p num);
 void num_free(num_p num);
 
