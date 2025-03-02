@@ -1,10 +1,35 @@
 #include "../debug.h"
 #include "../../../utils/U64.h"
 #include "../../../utils/assert.h"
-#include "../../../utils/clu/bin/header.h"
+#include "../../../utils/clu/header.h"
 
 
 
+void test_uint_from_char(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    #define TEST_UINT_FROM_CHAR(TAG, CHAR, UINT)                \
+        {                                                       \
+            if(show) printf("\n\t\t%s " #TAG "\t\t", __func__); \
+            uint64_t res = uint_from_char(CHAR);                \
+            assert(uint64(res, UINT));                          \
+        }
+
+    TEST_UINT_FROM_CHAR(1, '0',  0);
+    TEST_UINT_FROM_CHAR(2, '1',  1);
+    TEST_UINT_FROM_CHAR(3, '9',  9);
+    TEST_UINT_FROM_CHAR(4, 'a', 10);
+    TEST_UINT_FROM_CHAR(5, 'b', 11);
+    TEST_UINT_FROM_CHAR(6, 'f', 15);
+    TEST_UINT_FROM_CHAR(7, 'A', 10);
+    TEST_UINT_FROM_CHAR(8, 'B', 11);
+    TEST_UINT_FROM_CHAR(9, 'F', 15);
+
+    #undef TEST_UINT_FROM_CHAR
+
+    assert(clu_mem_empty());
+}
 
 void test_uint128(bool show)
 {
@@ -216,6 +241,209 @@ void test_num_create_immed(bool show)
     assert(clu_mem_empty());
 }
 
+void test_num_insert(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s 1", __func__);
+    num_p num = num_create_immed(0);
+    node_p node = num_insert(num, 0);
+    assert(uint64(node->value, 0));
+    assert(num->head == node);
+    assert(num->tail == node);
+    assert(num_immed(num, 1, 0));
+
+    if(show) printf("\n\t\t%s 2", __func__);
+    num = num_create_immed(0);
+    node = num_insert(num, 1);
+    assert(uint64(node->value, 1));
+    assert(num->head == node);
+    assert(num->tail == node);
+    assert(num_immed(num, 1, 1));
+
+    if(show) printf("\n\t\t%s 3", __func__);
+    num = num_create_immed(1, 2);
+    node = num_insert(num, 0);
+    assert(uint64(node->value, 0));
+    assert(num->head != node);
+    assert(num->tail == node);
+    assert(num_immed(num, 2, 0, 2));
+
+    if(show) printf("\n\t\t%s 4", __func__);
+    num = num_create_immed(1, 2);
+    node = num_insert(num, 1);
+    assert(uint64(node->value, 1));
+    assert(num->head != node);
+    assert(num->tail == node);
+    assert(num_immed(num, 2, 1, 2));
+
+    assert(clu_mem_empty());
+}
+
+void test_num_insert_head(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s 1", __func__);
+    num_p num = num_create_immed(0);
+    node_p node = num_insert_head(num, 0);
+    assert(uint64(node->value, 0));
+    assert(num->head == node);
+    assert(num->tail == node);
+    assert(num_immed(num, 1, 0));
+
+    if(show) printf("\n\t\t%s 2", __func__);
+    num = num_create_immed(0);
+    node = num_insert_head(num, 1);
+    assert(uint64(node->value, 1));
+    assert(num->head == node);
+    assert(num->tail == node);
+    assert(num_immed(num, 1, 1));
+
+    if(show) printf("\n\t\t%s 3", __func__);
+    num = num_create_immed(1, 2);
+    node = num_insert_head(num, 0);
+    assert(uint64(node->value, 0));
+    assert(num->head == node);
+    assert(num->tail != node);
+    assert(num_immed(num, 2, 2, 0));
+
+    if(show) printf("\n\t\t%s 4", __func__);
+    num = num_create_immed(1, 2);
+    node = num_insert_head(num, 1);
+    assert(uint64(node->value, 1));
+    assert(num->head == node);
+    assert(num->tail != node);
+    assert(num_immed(num, 2, 2, 1));
+
+    assert(clu_mem_empty());
+}
+
+void test_num_remove_head(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s 1\t\t", __func__);
+    num_p num = num_create_immed(0);
+    num_remove_head(num);
+    assert(num_immed(num, 0));
+
+    if(show) printf("\n\t\t%s 2\t\t", __func__);
+    num = num_create_immed(1, 1);
+    num_remove_head(num);
+    assert(num_immed(num, 0));
+
+    if(show) printf("\n\t\t%s 3\t\t", __func__);
+    num = num_create_immed(2, 1, 2);\
+    num_remove_head(num);
+    assert(num_immed(num, 1, 1));
+
+    assert(clu_mem_empty());
+}
+
+void test_num_insert_list(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s 1\t\t", __func__);
+    num_p num_1 = num_create_immed(0);
+    num_p num_2 = num_create_immed(0);
+    num_insert_list(num_1, num_2->head, num_2->tail, num_2->count);
+    assert(num_immed(num_1, 0));
+    free(num_2);
+
+    if(show) printf("\n\t\t%s 2\t\t", __func__);
+    num_1 = num_create_immed(0);
+    num_2 = num_create_immed(1, 2);
+    num_insert_list(num_1, num_2->head, num_2->tail, num_2->count);
+    assert(num_immed(num_1, 1, 2));
+    free(num_2);
+
+    if(show) printf("\n\t\t%s 3\t\t", __func__);
+    num_1 = num_create_immed(1, 1);
+    num_2 = num_create_immed(0);
+    num_insert_list(num_1, num_2->head, num_2->tail, num_2->count);
+    assert(num_immed(num_1, 1, 1));
+    free(num_2);
+
+    if(show) printf("\n\t\t%s 4\t\t", __func__);
+    num_1 = num_create_immed(1, 1);
+    num_2 = num_create_immed(1, 2);
+    num_insert_list(num_1, num_2->head, num_2->tail, num_2->count);
+    assert(num_immed(num_1, 2, 2, 1));
+    free(num_2);
+
+    if(show) printf("\n\t\t%s 5\t\t", __func__);
+    num_1 = num_create_immed(2, 1, 2);
+    num_2 = num_create_immed(2, 3, 4);
+    num_insert_list(num_1, num_2->head, num_2->tail, num_2->count);
+    assert(num_immed(num_1, 4, 3, 4, 1, 2));
+    free(num_2);
+
+    assert(clu_mem_empty());
+}
+
+void test_num_num_denormalize(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s 1\t\t", __func__);
+    num_p num = num_create_immed(0);
+    node_p node = num_denormalize(num, NULL);
+    assert(num->tail == node);
+    assert(num_immed(num, 1, 0));
+
+    if(show) printf("\n\t\t%s 2\t\t", __func__);
+    num = num_create_immed(1, 1);
+    node = num_denormalize(num, NULL);
+    assert(num->tail == node);
+    assert(num_immed(num, 2, 0, 1));
+
+    if(show) printf("\n\t\t%s 3\t\t", __func__);
+    num = num_create_immed(1, 1);
+    node = num_denormalize(num, num->head);
+    assert(num_immed(num, 1, 1));
+
+    assert(clu_mem_empty());
+}
+
+void test_num_num_normalize(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s 1\t\t", __func__);
+    num_p num = num_create_immed(0);
+    bool res = num_normalize(num);
+    assert(res == false);
+    assert(num_immed(num, 0));
+
+    if(show) printf("\n\t\t%s 2\t\t", __func__);
+    num = num_create_immed(1, 1);
+    res = num_normalize(num);
+    assert(res == false);
+    assert(num_immed(num, 1, 1));
+
+    if(show) printf("\n\t\t%s 3\t\t", __func__);
+    num = num_create_immed(1, 0);
+    res = num_normalize(num);
+    assert(res == true);
+    assert(num_immed(num, 0));
+
+    if(show) printf("\n\t\t%s 4\t\t", __func__);
+    num = num_create_immed(2, 0, 1);
+    res = num_normalize(num);
+    assert(res == true);
+    assert(num_immed(num, 1, 1));
+
+    if(show) printf("\n\t\t%s 4\t\t", __func__);
+    num = num_create_immed(2, 0, 0);
+    res = num_normalize(num);
+    assert(res == true);
+    assert(num_immed(num, 1, 0));
+
+    assert(clu_mem_empty());
+}
+
 
 
 void test_num_wrap(bool show)
@@ -229,6 +457,10 @@ void test_num_wrap(bool show)
     if(show) printf("\n\t\t%s 2", __func__);
     num = num_wrap(2);
     assert(num_immed(num, 1, 2));
+
+    if(show) printf("\n\t\t%s 3", __func__);
+    num = num_wrap(UINT64_MAX);
+    assert(num_immed(num, 1, UINT64_MAX));
 
     assert(clu_mem_empty());
 }
@@ -268,6 +500,10 @@ void test_num_wrap_dec(bool show)
     if(show) printf("\n\t\t%s 8", __func__);
     num = num_wrap_dec("00001");
     assert(num_immed(num, 1, 1));
+
+    if(show) printf("\n\t\t%s 9", __func__);
+    num = num_wrap_dec("");
+    assert(num_immed(num, 0));
 
     assert(clu_mem_empty());
 }
@@ -315,6 +551,10 @@ void test_num_wrap_hex(bool show)
     if(show) printf("\n\t\t%s 10", __func__);
     num = num_wrap_hex("0x00001");
     assert(num_immed(num, 1, 1));
+
+    if(show) printf("\n\t\t%s 11", __func__);
+    num = num_wrap_hex("0x");
+    assert(num_immed(num, 0));
 
     assert(clu_mem_empty());
 }
@@ -425,6 +665,144 @@ void test_num_copy(bool show)
 
 
 
+void test_num_sub_uint_offset(bool show)
+{
+    printf("\n\t%s\t\t", __func__);
+
+    if(show) printf("\n\t\t%s 1\t\t", __func__);
+    num_p num = num_create_immed(2, 2, 3);
+    node_p node = num_get_node(num, 0);
+    bool eliminated = num_sub_uint_offset(num, node, 1);
+    assert(num_immed(num, 2, 2, 2));
+    assert(eliminated == false);
+
+    if(show) printf("\n\t\t%s 2\t\t", __func__);
+    num = num_create_immed(2, 2, 3);
+    node = num_get_node(num, 1);
+    eliminated = num_sub_uint_offset(num, node, 1);
+    assert(num_immed(num, 2, 1, 3));
+    assert(eliminated == false);
+
+    if(show) printf("\n\t\t%s 3\t\t", __func__);
+    num = num_create_immed(2, 1, 3);
+    node = num_get_node(num, 1);
+    eliminated = num_sub_uint_offset(num, node, 1);
+    assert(num_immed(num, 1, 3));
+    assert(eliminated == true);
+
+    if(show) printf("\n\t\t%s 4\t\t", __func__);
+    num = num_create_immed(2, 1, 0);
+    node = num_get_node(num, 1);
+    eliminated = num_sub_uint_offset(num, node, 1);
+    assert(num_immed(num, 1, 0));
+    assert(eliminated == true);
+
+    if(show) printf("\n\t\t%s 5\t\t", __func__);
+    num = num_create_immed(3, 1, 0, 1);
+    node = num_get_node(num, 2);
+    eliminated = num_sub_uint_offset(num, node, 1);
+    assert(num_immed(num, 2, 0, 1));
+    assert(eliminated == true);
+
+    if(show) printf("\n\t\t%s 6\t\t", __func__);
+    num = num_create_immed(3, 1, 0, 1);
+    node = num_get_node(num, 1);
+    eliminated = num_sub_uint_offset(num, node, 1);
+    assert(num_immed(num, 2, UINT64_MAX, 1));
+    assert(eliminated == false);
+
+    if(show) printf("\n\t\t%s 6\t\t", __func__);
+    num = num_create_immed(2, 1, 0);
+    node = num_get_node(num, 1);
+    eliminated = num_sub_uint_offset(num, node, 1);
+    assert(num_immed(num, 1, 0));
+    assert(eliminated == true);
+
+    assert(clu_mem_empty());
+}
+
+
+
+void test_num_shl_uint(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s 1", __func__);
+    num_p num = num_create_immed(0);
+    num_shl_uint(num, 0);
+    assert(num_immed(num, 0));
+
+    if(show) printf("\n\t\t%s 2", __func__);
+    num = num_create_immed(0);
+    num_shl_uint(num, 63);
+    assert(num_immed(num, 0));
+
+    if(show) printf("\n\t\t%s 3", __func__);
+    num = num_create_immed(1, 1);
+    num_shl_uint(num, 1);
+    assert(num_immed(num, 1, 2));
+
+    if(show) printf("\n\t\t%s 4", __func__);
+    num = num_create_immed(1, 1);
+    num_shl_uint(num, 1);
+    assert(num_immed(num, 1, 2));
+
+    if(show) printf("\n\t\t%s 5", __func__);
+    num = num_create_immed(1, 1);
+    num_shl_uint(num, 63);
+    assert(num_immed(num, 1, 0x8000000000000000));
+
+    if(show) printf("\n\t\t%s 6", __func__);
+    num = num_create_immed(1, 2);
+    num_shl_uint(num, 63);
+    assert(num_immed(num, 2, 1, 0));
+
+    if(show) printf("\n\t\t%s 7", __func__);
+    num = num_create_immed(2, 1, 2);
+    num_shl_uint(num, 63);
+    assert(num_immed(num, 2, 0x8000000000000001, 0));
+
+    assert(clu_mem_empty());
+}
+
+void test_num_shr_uint(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s 1", __func__);
+    num_p num = num_create_immed(0);
+    num_shr(num, 1);
+    assert(num_immed(num, 0));
+
+    if(show) printf("\n\t\t%s 2", __func__);
+    num = num_create_immed(1, 1);
+    num_shr(num, 0);
+    assert(num_immed(num, 1, 1));
+
+    if(show) printf("\n\t\t%s 3", __func__);
+    num = num_create_immed(1, 1);
+    num_shr(num, 1);
+    assert(num_immed(num, 0));
+
+    if(show) printf("\n\t\t%s 4", __func__);
+    num = num_create_immed(1, 2);
+    num_shr(num, 1);
+    assert(num_immed(num, 1, 1));
+
+    if(show) printf("\n\t\t%s 5", __func__);
+    num = num_create_immed(1, UINT64_MAX);
+    num_shr(num, 63);
+    assert(num_immed(num, 1, 1));
+
+    if(show) printf("\n\t\t%s 6", __func__);
+    num = num_create_immed(2, 1, 0x8000000000000000);
+    num_shr(num, 63);
+    assert(num_immed(num, 1, 3));
+
+
+    assert(clu_mem_empty());
+}
+
 void test_num_add_uint(bool show)
 {
     printf("\n\t%s", __func__);
@@ -480,62 +858,6 @@ void test_num_sub_uint(bool show)
     num = num_create_immed(2, 1, 0);
     num_sub_uint(num, 1);
     assert(num_immed(num, 1, UINT64_MAX));
-
-    assert(clu_mem_empty());
-}
-
-void test_num_sub_uint_offset(bool show)
-{
-    printf("\n\t%s\t\t", __func__);
-
-    if(show) printf("\n\t\t%s 1\t\t", __func__);
-    num_p num = num_create_immed(2, 2, 3);
-    node_p node = num_get_node(num, 0);
-    bool eliminated = num_sub_uint_offset(num, node, 1);
-    assert(num_immed(num, 2, 2, 2));
-    assert(eliminated == false);
-
-    if(show) printf("\n\t\t%s 2\t\t", __func__);
-    num = num_create_immed(2, 2, 3);
-    node = num_get_node(num, 1);
-    eliminated = num_sub_uint_offset(num, node, 1);
-    assert(num_immed(num, 2, 1, 3));
-    assert(eliminated == false);
-
-    if(show) printf("\n\t\t%s 3\t\t", __func__);
-    num = num_create_immed(2, 1, 3);
-    node = num_get_node(num, 1);
-    eliminated = num_sub_uint_offset(num, node, 1);
-    assert(num_immed(num, 1, 3));
-    assert(eliminated == true);
-
-    if(show) printf("\n\t\t%s 4\t\t", __func__);
-    num = num_create_immed(2, 1, 0);
-    node = num_get_node(num, 1);
-    eliminated = num_sub_uint_offset(num, node, 1);
-    assert(num_immed(num, 1, 0));
-    assert(eliminated == true);
-
-    if(show) printf("\n\t\t%s 5\t\t", __func__);
-    num = num_create_immed(3, 1, 0, 1);
-    node = num_get_node(num, 2);
-    eliminated = num_sub_uint_offset(num, node, 1);
-    assert(num_immed(num, 2, 0, 1));
-    assert(eliminated == true);
-
-    if(show) printf("\n\t\t%s 6\t\t", __func__);
-    num = num_create_immed(3, 1, 0, 1);
-    node = num_get_node(num, 1);
-    eliminated = num_sub_uint_offset(num, node, 1);
-    assert(num_immed(num, 2, UINT64_MAX, 1));
-    assert(eliminated == false);
-
-    if(show) printf("\n\t\t%s 6\t\t", __func__);
-    num = num_create_immed(2, 1, 0);
-    node = num_get_node(num, 1);
-    eliminated = num_sub_uint_offset(num, node, 1);
-    assert(num_immed(num, 1, 0));
-    assert(eliminated == true);
 
     assert(clu_mem_empty());
 }
@@ -659,6 +981,25 @@ void test_num_mul_uint(bool show)
 
 
 
+void test_num_is_zero(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s 1\t\t", __func__);
+    num_p num = num_create_immed(0);
+    bool res = num_is_zero(num);
+    assert(res == true);
+    num_free(num);
+
+    if(show) printf("\n\t\t%s 2\t\t", __func__);
+    num = num_create_immed(1, 1);
+    res = num_is_zero(num);
+    assert(res == false);
+    num_free(num);
+
+    assert(clu_mem_empty());
+}
+
 void test_num_cmp(bool show)
 {
     printf("\n\t%s", __func__);
@@ -753,6 +1094,63 @@ void test_num_cmp(bool show)
 
     assert(clu_mem_empty());
 }
+
+
+
+void test_num_shl(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s 1", __func__);
+    num_p num = num_create_immed(0);
+    num_shl(num, 1);
+    assert(num_immed(num, 0));
+
+    if(show) printf("\n\t\t%s 2", __func__);
+    num = num_create_immed(1, 1);
+    num_shl(num, 1);
+    assert(num_immed(num, 1, 2));
+
+    if(show) printf("\n\t\t%s 3", __func__);
+    num = num_create_immed(1, 1);
+    num_shl(num, 64);
+    assert(num_immed(num, 2, 1, 0));
+
+    if(show) printf("\n\t\t%s 4", __func__);
+    num = num_create_immed(1, 1);
+    num_shl(num, 65);
+    assert(num_immed(num, 2, 2, 0));
+
+    assert(clu_mem_empty());
+}
+
+void test_num_shr(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s 1", __func__);
+    num_p num = num_create_immed(0);
+    num_shr(num, 1);
+    assert(num_immed(num, 0));
+
+    if(show) printf("\n\t\t%s 2", __func__);
+    num = num_create_immed(1, 1);
+    num_shr(num, 1);
+    assert(num_immed(num, 0));
+
+    if(show) printf("\n\t\t%s 3", __func__);
+    num = num_create_immed(1, 2);
+    num_shr(num, 1);
+    assert(num_immed(num, 1, 1));
+
+    if(show) printf("\n\t\t%s 4", __func__);
+    num = num_create_immed(2, 1, 0);
+    num_shr(num, 64);
+    assert(num_immed(num, 1, 1));
+
+    assert(clu_mem_empty());
+}
+
 
 
 
@@ -1119,14 +1517,21 @@ void test_num()
 {
     printf("\n%s", __func__);
 
-    bool show = true;
+    bool show = false;
 
+    test_uint_from_char(show);
     test_uint128(show);
 
     test_node_create(show);
     test_node_consume(show);
 
     test_num_create_immed(show);
+    test_num_insert(show);
+    test_num_insert_head(show);
+    test_num_remove_head(show);
+    test_num_insert_list(show);
+    test_num_num_denormalize(show);
+    test_num_num_normalize(show);
 
     test_num_wrap(show);
     test_num_wrap_dec(show);
@@ -1134,12 +1539,19 @@ void test_num()
     test_num_wrap_str(show);
     test_num_copy(show);
 
+    test_num_sub_uint_offset(show);
+
+    test_num_shl_uint(show);
+    test_num_shr_uint(show);
     test_num_add_uint(show);
     test_num_sub_uint(show);
-    test_num_sub_uint_offset(show);
     test_num_mul_uint(show);
 
+    test_num_is_zero(show);
     test_num_cmp(show);
+
+    test_num_shl(show);
+    test_num_shr(show);
 
     test_num_add(show);
     test_num_sub(show);

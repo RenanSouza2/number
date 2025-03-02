@@ -3,9 +3,11 @@
 #include <time.h>
 
 #include "../lib/num/header.h"
+#include "../lib/mod/header.h"
 #include "../utils/assert.h"
 #include "../utils/U64.h"
 
+#include "../utils/clu/header.h"
 
 
 uint64_t altutime()
@@ -19,19 +21,19 @@ uint64_t altutime()
 
 num_p num_generate(uint64_t max, uint64_t salt)
 {
-    uint64_t begin = altutime();
+    // uint64_t begin = altutime();
 
     num_p num = num_wrap(2);
     for(uint64_t i=0; i<max; i++)
     {
-        printf("\ni: %lu", i);
+        // printf("\ni: %lu", i);
 
         num = num_add(num, num_wrap(salt));
         num = num_mul(num, num_copy(num));
 
-        uint64_t end = altutime();
-        num_display_full("num", num);
-        printf("\n%lu: %10.3f", i, (end - begin) / 1e6);
+        // uint64_t end = altutime();
+        // num_display_full("num", num);
+        // printf("\n%lu: %10.3f", i, (end - begin) / 1e6);
     }
     return num;
 }
@@ -189,17 +191,29 @@ void factorial()
         if(i%1000 == 0)
         {
             num_display_full("num", num);
-            printf("\ni: %lu\t", i);
+            printf("\ni: " U64P() "\t", i);
         }
     }
 }
+
+
+
+void mod_fib(mod_p *mod_a, mod_p *mod_b)
+{
+    mod_p mod_c = mod_add(*mod_a, mod_copy(*mod_b));
+
+    *mod_a = *mod_b;
+    *mod_b = mod_c;
+}
+
+
 
 int main(int argc, char** argv)
 {
     setbuf(stdout, NULL);
     srand(time(NULL));
 
-    // time_1(13, 30);
+    time_1(13, 21);
     // time_2(argc, argv, 18);
     // num_generate(30, 2);
 
@@ -207,20 +221,10 @@ int main(int argc, char** argv)
     // fibonacci_2();
     // factorial();
 
-    
+    // num_p num = num_wrap_dec("1000000000000000000");
+    // num_display_tag("num", num);
 
-    num_p num_1 = num_wrap_str("10384593717069655257060992658440192");
-    num_p num_2 = num_wrap_str("5192296858534827628530496329220096");
-    num_p num_3 = num_wrap_str("15576890575604482885591488987660288000000000000000000");
-    num_p num_4 = num_wrap_str("3000000000000000000");
-
-    num_display_tag("num_1", num_1);
-    num_display_tag("num_2", num_2);
-    num_display_tag("num_3", num_3);
-    num_display_tag("num_4", num_4);
-
-    num_p num_5 = num_shl(num_wrap(1), 112);
-    num_display_tag("num_5", num_5);
+    // clu_mem_report("AAAA");
 
     printf("\n");
     return 0;
