@@ -338,7 +338,6 @@ node_p node_consume(node_p node)
     return node_next;
 }
 
-/* free NODE list */
 void node_free(node_p node)
 {
     DBG_CHECK_PTR(node);
@@ -443,7 +442,6 @@ node_p num_denormalize(num_p num, node_p node)
     return COALESCE(node, num_insert(num, 0));
 }
 
-/* returns TRUE if so */
 bool num_normalize(num_p num)
 {
     DBG_CHECK_PTR(num);
