@@ -681,7 +681,6 @@ int64_t num_cmp_offset(num_p num_1, num_p num_2, uint64_t offset)
     return 0;
 }
 
-/* may leave num denormalized */
 node_p num_sub_offset(num_p num_1, node_p node_1, node_p node_2) // TODO test
 {
     DBG_CHECK_PTR(num_1);
@@ -694,7 +693,7 @@ node_p num_sub_offset(num_p num_1, node_p node_1, node_p node_2) // TODO test
     node_p node_0 = node_1;
     node_p prev_0 = node_0->prev;
 
-    for(; node_2; )
+    while(node_2)
     {
         if(num_sub_uint_offset(num_1, node_1, node_2->value))
         {

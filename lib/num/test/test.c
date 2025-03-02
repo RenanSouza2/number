@@ -1517,7 +1517,7 @@ void test_num()
 {
     printf("\n%s", __func__);
 
-    bool show = true;
+    bool show = false;
 
     test_uint_from_char(show);
     test_uint128(show);
