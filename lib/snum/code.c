@@ -90,7 +90,7 @@ void snum_display(snum_p snum)
 
 void snum_display_tag(char tag[], snum_p snum)
 {
-    printf("\n%s: ", tag);
+    printf("\n%s:\t", tag);
     snum_display(snum);
 }
 

@@ -23,19 +23,11 @@ uint64_t altutime()
 
 num_p num_generate(uint64_t max, uint64_t salt)
 {
-    // uint64_t begin = altutime();
-
     num_p num = num_wrap(2);
     for(uint64_t i=0; i<max; i++)
     {
-        printf("\ni: " U64P(2) "", i);
-
         num = num_add(num, num_wrap(salt));
         num = num_mul(num, num_copy(num));
-
-        // uint64_t end = altutime();
-        // num_display_full("num", num);
-        // printf("\n%lu: %10.3f", i, (end - begin) / 1e6);
     }
     return num;
 }
@@ -228,15 +220,19 @@ int main(int argc, char** argv)
     setbuf(stdout, NULL);
     srand(time(NULL));
 
-    fix_p fix_1 = fix_wrap(1, 5);
-    fix_p fix_2 = fix_wrap(1085, 5);
-    fix_display_tag("fix_1", fix_1);
-    fix_display_tag("fix_2", fix_2);
-    fix_1 = fix_div(fix_1, fix_2);
-    fix_display_tag("res", fix_1);
-    fix_2 = fix_wrap(1085, 5);
-    fix_1 = fix_mul(fix_1, fix_2);
-    fix_display_tag("res", fix_1);
+    // fix_p fix_1 = fix_wrap(1, 5);
+    // fix_p fix_2 = fix_wrap(1085, 5);
+    // fix_display_tag("fix_1", fix_1);
+    // fix_display_tag("fix_2", fix_2);
+    // fix_1 = fix_div(fix_1, fix_2);
+    // fix_display_tag("res", fix_1);
+    // fix_2 = fix_wrap(1085, 5);
+    // fix_1 = fix_mul(fix_1, fix_2);
+    // fix_display_tag("res", fix_1);
+
+    num_p num = num_generate(15, 2);
+    printf("\n\n");
+    num_display_dec(num);
 
     printf("\n");
     return 0;

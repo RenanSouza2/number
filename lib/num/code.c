@@ -232,22 +232,32 @@ uint64_t uint_from_char(char c)
 
 void num_display_dec(num_p num)
 {
-    num = num_copy(num);
-    num_p num_base = num_exp(num_wrap(10), 19 * num->count + num->count / 5);
-    while(num_cmp(num, num_base) >= 0)
-        num_base = num_mul(num_base, num_wrap(10));
-
-    num_base = num_div(num_base, num_wrap(10));
-
-    while(!num_is_zero(num_base))
+    if(num->count == 0)
     {
-        num_p num_q, num_r;
-        num_div_mod(&num_q, &num_r, num, num_copy(num_base));
-        printf("" U64P() "", num_unwrap(num_q));
-
-        num = num_r;
-        num_base = num_div(num_base, num_wrap(10));
+        printf("0");
+        return;
     }
+
+    num_p num_dec = num_create(0, NULL, NULL);
+    num = num_copy(num);
+    for(uint64_t i=0; num->count; i++)
+    {
+        if(i%1000 == 0) fprintf(stderr, "\n%llu", num->count);
+
+        num_p num_q, num_r;
+        num_div_mod(&num_q, &num_r, num, num_wrap(10));
+        uint64_t value = num_unwrap(num_r);
+        num_insert(num_dec, value);
+        num = num_q;
+    }
+    
+
+
+    for(chunk_p chunk = num_dec->tail; chunk; chunk = chunk->prev)
+        printf("%llu", chunk->value);
+
+    num_free(num_dec);
+    num_free(num);
 }
 
 void num_display_opts(num_p num, bool length, bool full)
@@ -258,11 +268,11 @@ void num_display_opts(num_p num, bool length, bool full)
     {
         if(num->count == 0)
         {
-            printf("(0)\t");
+            printf("(    0)\t");
         }
         else
         {
-            printf("(" U64P() ")\t| ", num->count);
+            printf("(" U64P(5) ") | ", num->count);
         }
     }
 
