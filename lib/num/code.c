@@ -17,15 +17,15 @@ num_p num_create_variadic(uint64_t n, va_list args)
         return num_create(0, NULL, NULL);
 
     uint64_t value = va_arg(args, uint64_t);
-    node_p tail = node_create(value, NULL, NULL);
+    chunk_p tail = chunk_create(value, NULL, NULL);
 
-    node_p node = tail;
+    chunk_p chunk = tail;
     for(uint64_t i=1; i<n; i++)
     {
         uint64_t value = va_arg(args, uint64_t);
-        node = node_create(value, node, NULL);
+        chunk = chunk_create(value, chunk, NULL);
     }
-    return num_create(n, node, tail);
+    return num_create(n, chunk, tail);
 }
 
 num_p num_create_immed(uint64_t n, ...)
@@ -127,46 +127,46 @@ bool num_str_inner(num_p num_1, num_p num_2)
         return false;
     }
 
-    node_p node_1 = num_1->tail;
-    node_p node_2 = num_2->tail;
+    chunk_p chunk_1 = num_1->tail;
+    chunk_p chunk_2 = num_2->tail;
     for(uint64_t count = num_1->count; count > 0; count--)
     {
         if(count > 1)
         {
-            if(node_1->prev == NULL)
+            if(chunk_1->prev == NULL)
             {
-                printf("\n\n\tNODE VALIDITY ERROR\t| NUMBER SHORTER THAN EXPECTED");
+                printf("\n\n\tchunk VALIDITY ERROR\t| NUMBER SHORTER THAN EXPECTED");
                 return false;
             }
 
-            if(node_1->prev->next != node_1)
+            if(chunk_1->prev->next != chunk_1)
             {
-                printf("\n\n\tNODE VALIDITY ERROR\t| INVALID LINKAGE");
+                printf("\n\n\tchunk VALIDITY ERROR\t| INVALID LINKAGE");
                 return false;
             }
         }
         else
         {
-            if(node_1 != num_1->head)
+            if(chunk_1 != num_1->head)
             {
-                printf("\n\n\tNODE VALIDITY ERROR\t| INVALID HEAD");
+                printf("\n\n\tchunk VALIDITY ERROR\t| INVALID HEAD");
                 return false;
             }
         }
 
-        if(!uint64(node_1->value, node_2->value))
+        if(!uint64(chunk_1->value, chunk_2->value))
         {
             printf("\n\tNUMBER ASSERT ERROR\t| DIFFERENCE IN VALUE " U64P() "", count - 1);
             return false;
         }
 
-        node_1 = node_1->prev;
-        node_2 = node_2->prev;
+        chunk_1 = chunk_1->prev;
+        chunk_2 = chunk_2->prev;
     }
 
-    if(node_1 != NULL)
+    if(chunk_1 != NULL)
     {
-        printf("\n\tNODE VALIDITY ERROR\t| NUMBER LONGER THAN EXPECTED");
+        printf("\n\tchunk VALIDITY ERROR\t| NUMBER LONGER THAN EXPECTED");
         return false;
     }
 
@@ -201,11 +201,11 @@ bool num_immed(num_p num, uint64_t n, ...)
 
 
 
-node_p num_get_node(num_p num, uint64_t count)
+chunk_p num_get_chunk(num_p num, uint64_t count)
 {
-    node_p node = num->head;
-    for(uint64_t i=0; i<count && node; i++, node = node->next);
-    return node;
+    chunk_p chunk = num->head;
+    for(uint64_t i=0; i<count && chunk; i++, chunk = chunk->next);
+    return chunk;
 }
 
 #endif
@@ -273,9 +273,9 @@ void num_display_opts(num_p num, bool length, bool full)
     }
 
     uint64_t max = full ? UINT64_MAX : 4;
-    node_p node = num->tail;
-    for(uint64_t i=0; i<max && node != NULL; i++, node = node->prev)
-        printf("" U64PX " ", node->value);
+    chunk_p chunk = num->tail;
+    for(uint64_t i=0; i<max && chunk != NULL; i++, chunk = chunk->prev)
+        printf("" U64PX " ", chunk->value);
 
     if(!full && num->count > 4)
         printf("...");
@@ -304,51 +304,51 @@ void num_display_full(char *tag, num_p num)
 
 
 
-node_p node_create(uint64_t value, node_p next, node_p prev)
+chunk_p chunk_create(uint64_t value, chunk_p next, chunk_p prev)
 {
     DBG_CHECK_PTR(next);
     DBG_CHECK_PTR(prev);
 
-    node_p node = malloc(sizeof(node_t));
-    assert(node);
+    chunk_p chunk = malloc(sizeof(chunk_t));
+    assert(chunk);
 
-    if(next) next->prev = node;
-    if(prev) prev->next = node;
+    if(next) next->prev = chunk;
+    if(prev) prev->next = chunk;
 
-    *node = (node_t)
+    *chunk = (chunk_t)
     {
         .value = value,
         .next = next,
         .prev = prev
     };
-    return node;
+    return chunk;
 }
 
-node_p node_consume(node_p node)
+chunk_p chunk_consume(chunk_p chunk)
 {
-    DBG_CHECK_PTR(node);
+    DBG_CHECK_PTR(chunk);
 
-    if(node == NULL)
+    if(chunk == NULL)
         return NULL;
 
-    node_p node_next = node->next;
-    free(node);
+    chunk_p chunk_next = chunk->next;
+    free(chunk);
 
-    if(node_next) node_next->prev = NULL;
-    return node_next;
+    if(chunk_next) chunk_next->prev = NULL;
+    return chunk_next;
 }
 
-void node_free(node_p node)
+void chunk_free(chunk_p chunk)
 {
-    DBG_CHECK_PTR(node);
+    DBG_CHECK_PTR(chunk);
 
-    while(node)
-        node = node_consume(node);
+    while(chunk)
+        chunk = chunk_consume(chunk);
 }
 
 
 
-num_p num_create(uint64_t count, node_p head, node_p tail)
+num_p num_create(uint64_t count, chunk_p head, chunk_p tail)
 {
     DBG_CHECK_PTR(head);
     DBG_CHECK_PTR(tail);
@@ -365,11 +365,11 @@ num_p num_create(uint64_t count, node_p head, node_p tail)
     return num;
 }
 
-node_p num_insert(num_p num, uint64_t value)
+chunk_p num_insert(num_p num, uint64_t value)
 {
     DBG_CHECK_PTR(num);
 
-    num->tail = node_create(value, NULL, num->tail);
+    num->tail = chunk_create(value, NULL, num->tail);
 
     num->count++;
     num->head = COALESCE(num->head, num->tail);
@@ -377,11 +377,11 @@ node_p num_insert(num_p num, uint64_t value)
     return num->tail;
 }
 
-node_p num_insert_head(num_p num, uint64_t value)
+chunk_p num_insert_head(num_p num, uint64_t value)
 {
     DBG_CHECK_PTR(num);
 
-    num->head = node_create(value, num->head, NULL);
+    num->head = chunk_create(value, num->head, NULL);
 
     num->count++;
     num->tail = COALESCE(num->tail, num->head);
@@ -396,9 +396,9 @@ void num_remove_head(num_p num)
     if(num->count == 0)
         return;
 
-    node_p node_head = num->head;
-    num->head = node_head->next;
-    free(node_head);
+    chunk_p chunk_head = num->head;
+    num->head = chunk_head->next;
+    free(chunk_head);
 
     num->count--;
     if(num->count == 0)
@@ -407,7 +407,7 @@ void num_remove_head(num_p num)
         num->head->prev = NULL;
 }
 
-void num_insert_list(num_p num, node_p head, node_p tail, uint64_t cnt)
+void num_insert_list(num_p num, chunk_p head, chunk_p tail, uint64_t cnt)
 {
     DBG_CHECK_PTR(num);
     DBG_CHECK_PTR(head);
@@ -434,12 +434,12 @@ void num_insert_list(num_p num, node_p head, node_p tail, uint64_t cnt)
     num->tail = tail;
 }
 
-node_p num_denormalize(num_p num, node_p node)
+chunk_p num_denormalize(num_p num, chunk_p chunk)
 {
     DBG_CHECK_PTR(num);
-    DBG_CHECK_PTR(node);
+    DBG_CHECK_PTR(chunk);
 
-    return COALESCE(node, num_insert(num, 0));
+    return COALESCE(chunk, num_insert(num, 0));
 }
 
 bool num_normalize(num_p num)
@@ -449,12 +449,12 @@ bool num_normalize(num_p num)
     if(num->count == 0)
         return false;
 
-    node_p node_tail = num->tail;
-    if(node_tail->value != 0)
+    chunk_p chunk_tail = num->tail;
+    if(chunk_tail->value != 0)
         return false;
 
-    num->tail = node_tail->prev;
-    free(node_tail);
+    num->tail = chunk_tail->prev;
+    free(chunk_tail);
 
     num->count--;
     if(num->count == 0)
@@ -472,8 +472,8 @@ num_p num_wrap(uint64_t value)
     if(value == 0)
         return num_create(0, NULL, NULL);
 
-    node_p node = node_create(value, NULL, NULL);
-    return num_create(1, node,  node);
+    chunk_p chunk = chunk_create(value, NULL, NULL);
+    return num_create(1, chunk,  chunk);
 }
 
 num_p num_wrap_dec(char str[])
@@ -552,8 +552,8 @@ num_p num_copy(num_p num)
     DBG_CHECK_PTR(num);
 
     num_p num_res = num_create(0, NULL, NULL);
-    for(node_p node = num->head; node; node = node->next)
-        num_insert(num_res, node->value);
+    for(chunk_p chunk = num->head; chunk; chunk = chunk->next)
+        num_insert(num_res, chunk->value);
 
     return num_res;
 }
@@ -562,44 +562,44 @@ void num_free(num_p num)
 {
     DBG_CHECK_PTR(num);
 
-    node_free(num->head);
+    chunk_free(num->head);
     free(num);
 }
 
 
 
-node_p num_add_uint_offset(num_p num, node_p node, uint64_t value)
+chunk_p num_add_uint_offset(num_p num, chunk_p chunk, uint64_t value)
 {
     DBG_CHECK_PTR(num);
-    DBG_CHECK_PTR(node);
+    DBG_CHECK_PTR(chunk);
 
-    node_p node_0 = node;
-    for(;value && node; node = node->next)
+    chunk_p chunk_0 = chunk;
+    for(;value && chunk; chunk = chunk->next)
     {
-        node->value += value;
-        value = node->value < value;
+        chunk->value += value;
+        value = chunk->value < value;
     }
 
     if(value)
         num_insert(num, value);
 
-    return node_0 ? node_0 : value ? num->tail : NULL;
+    return chunk_0 ? chunk_0 : value ? num->tail : NULL;
 }
 
 /* returns TRUE if passed offset is TAIL and ELIMINATED */
-bool num_sub_uint_offset(num_p num, node_p node, uint64_t value)
+bool num_sub_uint_offset(num_p num, chunk_p chunk, uint64_t value)
 {
     DBG_CHECK_PTR(num);
-    DBG_CHECK_PTR(node);
+    DBG_CHECK_PTR(chunk);
 
-    bool is_tail = node == num->tail;
+    bool is_tail = chunk == num->tail;
 
-    for(; value; node = node->next)
+    for(; value; chunk = chunk->next)
     {
-        assert(node);
+        assert(chunk);
 
-        uint64_t next = node->value < value;
-        node->value -= value;
+        uint64_t next = chunk->value < value;
+        chunk->value -= value;
         value = next;
     }
 
@@ -607,28 +607,28 @@ bool num_sub_uint_offset(num_p num, node_p node, uint64_t value)
 }
 
 /* num_res CANNOT be NULL */
-node_p num_mul_uint_offset(num_p num_res, node_p node_res, node_p node_2, uint64_t value)
+chunk_p num_mul_uint_offset(num_p num_res, chunk_p chunk_res, chunk_p chunk_2, uint64_t value)
 {
     DBG_CHECK_PTR(num_res);
-    DBG_CHECK_PTR(node_res);
-    DBG_CHECK_PTR(node_2);
+    DBG_CHECK_PTR(chunk_res);
+    DBG_CHECK_PTR(chunk_2);
 
-    if(node_2 == NULL)
-        return node_res;
+    if(chunk_2 == NULL)
+        return chunk_res;
 
-    node_p node_0 = node_res = num_denormalize(num_res, node_res);
-    while(node_2)
+    chunk_p chunk_0 = chunk_res = num_denormalize(num_res, chunk_res);
+    while(chunk_2)
     {
-        uint128_t u = MUL(node_2->value, value);
-        node_res = num_add_uint_offset(num_res, node_res, LOW(u));
-        node_res = num_denormalize(num_res, node_res);
-        num_add_uint_offset(num_res, node_res->next, HIGH(u));
+        uint128_t u = MUL(chunk_2->value, value);
+        chunk_res = num_add_uint_offset(num_res, chunk_res, LOW(u));
+        chunk_res = num_denormalize(num_res, chunk_res);
+        num_add_uint_offset(num_res, chunk_res->next, HIGH(u));
 
-        node_res = node_res->next;
-        node_2 = node_2->next;
+        chunk_res = chunk_res->next;
+        chunk_2 = chunk_2->next;
     }
 
-    return node_0;
+    return chunk_0;
 }
 
 
@@ -641,10 +641,10 @@ num_p num_shl_uint(num_p num, uint64_t bits)
         return num;
 
     uint64_t carry = 0;
-    for(node_p node = num->head; node; node = node->next)
+    for(chunk_p chunk = num->head; chunk; chunk = chunk->next)
     {
-        uint64_t value = node->value;
-        node->value = (value << bits) | carry;
+        uint64_t value = chunk->value;
+        chunk->value = (value << bits) | carry;
         carry = value >> (64 - bits);
     }
 
@@ -659,10 +659,10 @@ num_p num_shr_uint(num_p num, uint64_t bits)
     DBG_CHECK_PTR(num);
 
     uint64_t carry = 0;
-    for(node_p node = num->tail; node; node = node->prev)
+    for(chunk_p chunk = num->tail; chunk; chunk = chunk->prev)
     {
-        uint64_t value = node->value;
-        node->value = (value >> bits) | carry;
+        uint64_t value = chunk->value;
+        chunk->value = (value >> bits) | carry;
         carry = value << (64 - bits);
     }
     num_normalize(num);
@@ -712,54 +712,54 @@ int64_t num_cmp_offset(num_p num_1, num_p num_2, uint64_t offset)
     if(num_1->count < num_2->count + offset)
         return -1;
 
-    node_p node_1 = num_1->tail;
-    node_p node_2 = num_2->tail;
-    while(node_2)
+    chunk_p chunk_1 = num_1->tail;
+    chunk_p chunk_2 = num_2->tail;
+    while(chunk_2)
     {
-        if(node_1->value > node_2->value)
+        if(chunk_1->value > chunk_2->value)
             return 1;
 
-        if(node_1->value < node_2->value)
+        if(chunk_1->value < chunk_2->value)
             return -1;
 
-        node_1 = node_1->prev;
-        node_2 = node_2->prev;
+        chunk_1 = chunk_1->prev;
+        chunk_2 = chunk_2->prev;
     }
 
     return 0;
 }
 
-node_p num_sub_offset(num_p num_1, node_p node_1, node_p node_2) // TODO test
+chunk_p num_sub_offset(num_p num_1, chunk_p chunk_1, chunk_p chunk_2) // TODO test
 {
     DBG_CHECK_PTR(num_1);
-    DBG_CHECK_PTR(node_1);
-    DBG_CHECK_PTR(node_2);
+    DBG_CHECK_PTR(chunk_1);
+    DBG_CHECK_PTR(chunk_2);
 
-    if(node_2 == NULL)
-        return node_1;
+    if(chunk_2 == NULL)
+        return chunk_1;
 
-    node_p node_0 = node_1;
-    node_p prev_0 = node_0->prev;
+    chunk_p chunk_0 = chunk_1;
+    chunk_p prev_0 = chunk_0->prev;
 
-    while(node_2)
+    while(chunk_2)
     {
-        if(num_sub_uint_offset(num_1, node_1, node_2->value))
+        if(num_sub_uint_offset(num_1, chunk_1, chunk_2->value))
         {
-            assert(node_2->next == NULL);
-            free(node_2);
+            assert(chunk_2->next == NULL);
+            free(chunk_2);
 
             while(num_1->tail != prev_0)
                 if(!num_normalize(num_1))
                     break;
 
-            return num_1->tail == prev_0 ? NULL : node_0;
+            return num_1->tail == prev_0 ? NULL : chunk_0;
         }
 
-        node_1 = node_1->next;
-        node_2 = node_consume(node_2);
+        chunk_1 = chunk_1->next;
+        chunk_2 = chunk_consume(chunk_2);
     }
 
-    return node_0;
+    return chunk_0;
 }
 
 /*
@@ -769,10 +769,10 @@ node_p num_sub_offset(num_p num_1, node_p node_1, node_p node_2) // TODO test
 num_p num_cmp_mul_uint(num_p num_a, num_p num_b, uint64_t r, uint64_t offset) // TODO test
 {
     num_p num_aux = num_create(0, NULL, NULL);
-    node_p node = num_b->tail;
-    for(offset += num_b->count-1; node; node = node->prev, offset--)
+    chunk_p chunk = num_b->tail;
+    for(offset += num_b->count-1; chunk; chunk = chunk->prev, offset--)
     {
-        uint128_t u = MUL(node->value, r);
+        uint128_t u = MUL(chunk->value, r);
         num_add_uint(num_aux, HIGH(u));
         num_insert_head(num_aux, LOW(u));
 
@@ -789,26 +789,26 @@ num_p num_cmp_mul_uint(num_p num_a, num_p num_b, uint64_t r, uint64_t offset) //
 void num_div_mod_offset(
     num_p num_q,
     num_p num_r,
-    node_p node_r,
+    chunk_p chunk_r,
     uint64_t offset_r,
     num_p num_2
 )
 {
     DBG_CHECK_PTR(num_q);
     DBG_CHECK_PTR(num_r);
-    DBG_CHECK_PTR(node_r);
+    DBG_CHECK_PTR(chunk_r);
     DBG_CHECK_PTR(num_2);
 
     bool bool_2 = num_2->count == 1;
     uint128_t val_2_1 = num_2->tail->value;
     uint128_t val_2_2 = bool_2 ? val_2_1 : U128_IMMED(val_2_1, num_2->tail->prev->value);
 
-    for(; node_r;)
+    for(; chunk_r;)
     {
         if(num_normalize(num_r))
         {
             num_insert_head(num_q, 0);
-            node_r = num_r->tail;
+            chunk_r = num_r->tail;
             offset_r--;
             continue;
         }
@@ -834,13 +834,13 @@ void num_div_mod_offset(
                 num_aux = num_mul_uint(NULL, num_2, r_aux);
             }
             r += r_aux;
-            node_r = num_sub_offset(num_r, node_r, num_aux->head);
+            chunk_r = num_sub_offset(num_r, chunk_r, num_aux->head);
 
             free(num_aux);
         }
 
         num_insert_head(num_q, r);
-        node_r = node_r ? node_r->prev : num_r->tail;
+        chunk_r = chunk_r ? chunk_r->prev : num_r->tail;
         offset_r--;
     }
 }
@@ -912,19 +912,19 @@ num_p num_add(num_p num_1, num_p num_2)
     DBG_CHECK_PTR(num_1);
     DBG_CHECK_PTR(num_2)
 
-    node_p node_1 = num_1->head;
-    node_p node_2 = num_2->head;
+    chunk_p chunk_1 = num_1->head;
+    chunk_p chunk_2 = num_2->head;
     uint64_t count = num_2->count;
-    for(; node_1 && node_2; count--)
+    for(; chunk_1 && chunk_2; count--)
     {
-        num_add_uint_offset(num_1, node_1, node_2->value);
+        num_add_uint_offset(num_1, chunk_1, chunk_2->value);
 
-        node_1 = node_1->next;
-        node_2 = node_consume(node_2);
+        chunk_1 = chunk_1->next;
+        chunk_2 = chunk_consume(chunk_2);
     }
 
-    if(node_1 == NULL && node_2)
-        num_insert_list(num_1, node_2, num_2->tail, count);
+    if(chunk_1 == NULL && chunk_2)
+        num_insert_list(num_1, chunk_2, num_2->tail, count);
 
     free(num_2);
     return num_1;
@@ -954,19 +954,19 @@ num_p num_mul(num_p num_1, num_p num_2)
     }
 
     num_p num_res = num_create(0, NULL, NULL);
-    node_p node_1 = num_1->head;
-    node_p node_2 = num_2->head;
+    chunk_p chunk_1 = num_1->head;
+    chunk_p chunk_2 = num_2->head;
 
     // printf(" | count: %lu |", num_2->count/1000);
     uint64_t i=0;
-    for(node_p node_res = NULL; node_2; node_res = node_res->next, i++)
+    for(chunk_p chunk_res = NULL; chunk_2; chunk_res = chunk_res->next, i++)
     {
         // if(i%1000 == 0) printf("\t%lu", i/1000);
 
-        node_res = num_mul_uint_offset(num_res, node_res, node_1, node_2->value);
-        node_res = num_denormalize(num_res, node_res);
+        chunk_res = num_mul_uint_offset(num_res, chunk_res, chunk_1, chunk_2->value);
+        chunk_res = num_denormalize(num_res, chunk_res);
 
-        node_2 = node_consume(node_2);
+        chunk_2 = chunk_consume(chunk_2);
     }
 
     num_free(num_1);
@@ -1014,14 +1014,14 @@ uint64_t num_div_mod_inner(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_
     num_1 = num_shl_uint(num_1, bits);
     num_2 = num_shl_uint(num_2, bits);
 
-    node_p node_r = num_1->tail;
+    chunk_p chunk_r = num_1->tail;
     for(uint64_t i=1; i<num_2->count; i++)
-        node_r = node_r->prev;
+        chunk_r = chunk_r->prev;
 
     num_div_mod_offset(
         num_q,
         num_1,
-        node_r,
+        chunk_r,
         num_1->count - num_2->count,
         num_2
     );
