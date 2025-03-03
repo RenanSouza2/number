@@ -9,8 +9,8 @@
 
 STRUCT(fix)
 {
-    uint64_t size; // TODO change name
     snum_p snum;
+    uint64_t size; // TODO change name
 };
 
 #endif

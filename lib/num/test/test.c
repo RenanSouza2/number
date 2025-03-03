@@ -10,11 +10,11 @@ void test_uint_from_char(bool show)
     printf("\n\t%s", __func__);
 
     #define TEST_UINT_FROM_CHAR(TAG, CHAR, UINT)                \
-        {                                                       \
-            if(show) printf("\n\t\t%s " #TAG "\t\t", __func__); \
-            uint64_t res = uint_from_char(CHAR);                \
-            assert(uint64(res, UINT));                          \
-        }
+    {                                                       \
+        if(show) printf("\n\t\t%s " #TAG "\t\t", __func__); \
+        uint64_t res = uint_from_char(CHAR);                \
+        assert(uint64(res, UINT));                          \
+    }
 
     TEST_UINT_FROM_CHAR(1, '0',  0);
     TEST_UINT_FROM_CHAR(2, '1',  1);
@@ -469,41 +469,24 @@ void test_num_wrap_dec(bool show)
 {
     printf("\n\t%s", __func__);
 
-    if(show) printf("\n\t\t%s 1", __func__);
-    num_p num = num_wrap_dec("0");
-    assert(num_immed(num, 0));
+    #define TEST_NUM_WRAP_DEC(TAG, STR, ...)            \
+    {                                                   \
+        if(show) printf("\n\t\t%s " #TAG "", __func__); \
+        num_p num = num_wrap_dec(STR);                  \
+        assert(num_immed(num, __VA_ARGS__));            \
+    }
 
-    if(show) printf("\n\t\t%s 2", __func__);
-    num = num_wrap_dec("1");
-    assert(num_immed(num, 1, 1));
+    TEST_NUM_WRAP_DEC(1, "0", 0);
+    TEST_NUM_WRAP_DEC(2, "1", 1, 1);
+    TEST_NUM_WRAP_DEC(3, "9", 1, 9);
+    TEST_NUM_WRAP_DEC(4, "10", 1, 10);
+    TEST_NUM_WRAP_DEC(5, "18446744073709551615", 1, UINT64_MAX);
+    TEST_NUM_WRAP_DEC(6, "18446744073709551616", 2, 1, 0);
+    TEST_NUM_WRAP_DEC(7, "0000", 0);
+    TEST_NUM_WRAP_DEC(8, "00001", 1, 1);
+    TEST_NUM_WRAP_DEC(9, "", 0);
 
-    if(show) printf("\n\t\t%s 3", __func__);
-    num = num_wrap_dec("9");
-    assert(num_immed(num, 1, 9));
-
-    if(show) printf("\n\t\t%s 4", __func__);
-    num = num_wrap_dec("10");
-    assert(num_immed(num, 1, 10));
-
-    if(show) printf("\n\t\t%s 5", __func__);
-    num = num_wrap_dec("18446744073709551615");
-    assert(num_immed(num, 1, UINT64_MAX));
-
-    if(show) printf("\n\t\t%s 6", __func__);
-    num = num_wrap_dec("18446744073709551616");
-    assert(num_immed(num, 2, 1, 0));
-
-    if(show) printf("\n\t\t%s 7", __func__);
-    num = num_wrap_dec("0000");
-    assert(num_immed(num, 0));
-
-    if(show) printf("\n\t\t%s 8", __func__);
-    num = num_wrap_dec("00001");
-    assert(num_immed(num, 1, 1));
-
-    if(show) printf("\n\t\t%s 9", __func__);
-    num = num_wrap_dec("");
-    assert(num_immed(num, 0));
+    #undef TEST_NUM_WRAP_DEC
 
     assert(clu_mem_empty());
 }
@@ -634,6 +617,27 @@ void test_num_wrap_str(bool show)
     if(show) printf("\n\t\t%s 18", __func__);
     num = num_wrap_str("0x00001");
     assert(num_immed(num, 1, 1));
+
+    assert(clu_mem_empty());
+}
+
+void test_num_read_dec(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    #define TEST_NUM_READ_DEC(TAG, ...)                         \
+    {                                                           \
+        if(show) printf("\n\t\t%s " #TAG "", __func__);         \
+        num_p num = num_read_dec("numbers/num_" #TAG ".txt");   \
+        assert(num_immed(num, __VA_ARGS__));                    \
+    }
+
+    TEST_NUM_READ_DEC(1, 0);
+    TEST_NUM_READ_DEC(2, 1, 1);
+    TEST_NUM_READ_DEC(3, 1, 10);
+    assert(false);
+
+    #undef TEST_NUM_READ_DEC
 
     assert(clu_mem_empty());
 }
@@ -1517,7 +1521,7 @@ void test_num()
 {
     printf("\n%s", __func__);
 
-    bool show = false;
+    bool show = true;
 
     test_uint_from_char(show);
     test_uint128(show);
@@ -1537,6 +1541,7 @@ void test_num()
     test_num_wrap_dec(show);
     test_num_wrap_hex(show);
     test_num_wrap_str(show);
+    test_num_read_dec(show);
     test_num_copy(show);
 
     test_num_sub_uint_offset(show);

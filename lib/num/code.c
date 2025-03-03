@@ -233,20 +233,20 @@ uint64_t uint_from_char(char c)
 void num_display_dec(num_p num)
 {
     num = num_copy(num);
-    num_p num_base = num_exp(num_wrap(1000000000000000000), 19 * num->count / 18);
+    num_p num_base = num_exp(num_wrap(10), 19 * num->count + num->count / 5);
     while(num_cmp(num, num_base) >= 0)
-        num_base = num_mul(num_base, num_wrap(1000000000000000000));
+        num_base = num_mul(num_base, num_wrap(10));
 
-    num_base = num_div(num_base, num_wrap(1000000000000000000));
+    num_base = num_div(num_base, num_wrap(10));
 
     while(!num_is_zero(num_base))
     {
         num_p num_q, num_r;
         num_div_mod(&num_q, &num_r, num, num_copy(num_base));
-        printf("" U64P(018) "", num_unwrap(num_q));
+        printf("" U64P() "", num_unwrap(num_q));
 
         num = num_r;
-        num_base = num_div(num_base, num_wrap(1000000000000000000));
+        num_base = num_div(num_base, num_wrap(10));
     }
 }
 
@@ -515,6 +515,26 @@ num_p num_wrap_str(char str[])
 {
     return str[0] == '0' && str[1] == 'x' ?
         num_wrap_hex(str) : num_wrap_dec(str);
+}
+
+num_p num_read_dec(char file_name[])
+{
+    FILE *fp = fopen(file_name, "r");
+    assert(fp);
+
+    num_p num = num_create(0, NULL, NULL);
+    for(char c = fgetc(fp); c != EOF; c = fgetc(fp))
+    {
+        uint64_t d = uint_from_char(c);
+        assert(d < 10);
+
+        num_p num_aux = num_mul_uint(num_wrap(d), num, 10);
+
+        num_free(num);
+        num = num_aux;
+    }
+    fclose(fp);
+    return num;
 }
 
 uint64_t num_unwrap(num_p num) // TODO test

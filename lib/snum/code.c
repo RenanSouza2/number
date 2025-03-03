@@ -81,12 +81,11 @@ void snum_display(snum_p snum)
         return;
     }
 
-    if(snum->signal & POSITIVE)
-        printf("+ ");
-    else
-        printf("- ");
+    printf("%c ", snum->signal & POSITIVE ? '+': '-');
 
+    printf("[");
     num_display(snum->num);
+    printf("]");
 }
 
 void snum_display_tag(char tag[], snum_p snum)

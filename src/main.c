@@ -208,13 +208,8 @@ void mod_fib(mod_p *mod_a, mod_p *mod_b)
     *mod_b = mod_c;
 }
 
-
-
-int main(int argc, char** argv)
+void time_dec()
 {
-    setbuf(stdout, NULL);
-    srand(time(NULL));
-
     printf("\n");
     num_p num = num_generate(20, 2);
     printf("\ngenerated\n");
@@ -224,6 +219,24 @@ int main(int argc, char** argv)
     uint64_t end = altutime();
     printf("\n");
     printf("\ntime: %.3f", (end - begin) / 1e3);
+}
+
+
+
+int main(int argc, char** argv)
+{
+    setbuf(stdout, NULL);
+    srand(time(NULL));
+
+    fix_p fix_1 = fix_wrap(1, 5);
+    fix_p fix_2 = fix_wrap(1085, 5);
+    fix_display_tag("fix_1", fix_1);
+    fix_display_tag("fix_2", fix_2);
+    fix_1 = fix_div(fix_1, fix_2);
+    fix_display_tag("res", fix_1);
+    fix_2 = fix_wrap(1085, 5);
+    fix_1 = fix_mul(fix_1, fix_2);
+    fix_display_tag("res", fix_1);
 
     printf("\n");
     return 0;
