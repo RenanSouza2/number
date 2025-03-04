@@ -178,8 +178,8 @@ bool num_str(num_p num_1, num_p num_2)
     if(!num_str_inner(num_1, num_2))
     {
         printf("\n");
-        num_display_tag("\tnum_1", num_1);
-        num_display_tag("\tnum_2", num_2);
+        num_display_full("\tnum_1", num_1);
+        num_display_full("\tnum_2", num_2);
         return false;
     }
 
@@ -245,16 +245,15 @@ void num_display_dec(num_p num)
         if(i%1000 == 0) fprintf(stderr, "\n%llu", num->count);
 
         num_p num_q, num_r;
-        num_div_mod(&num_q, &num_r, num, num_wrap(10));
+        num_div_mod(&num_q, &num_r, num, num_wrap(1000000000000000000));
         uint64_t value = num_unwrap(num_r);
         num_insert(num_dec, value);
         num = num_q;
     }
-    
 
-
-    for(chunk_p chunk = num_dec->tail; chunk; chunk = chunk->prev)
-        printf("%llu", chunk->value);
+    printf(U64P(), num_dec->tail->value);
+    for(chunk_p chunk = num_dec->tail->prev; chunk; chunk = chunk->prev)
+        printf(U64P(018), chunk->value);
 
     num_free(num_dec);
     num_free(num);
@@ -268,7 +267,7 @@ void num_display_opts(num_p num, bool length, bool full)
     {
         if(num->count == 0)
         {
-            printf("(    0)\t");
+            printf("(    0) | ");
         }
         else
         {
@@ -532,17 +531,40 @@ num_p num_read_dec(char file_name[])
     FILE *fp = fopen(file_name, "r");
     assert(fp);
 
+    uint64_t target = 1000;
     num_p num = num_create(0, NULL, NULL);
-    for(char c = fgetc(fp); c != EOF; c = fgetc(fp))
+    for(;;)
     {
-        uint64_t d = uint_from_char(c);
-        assert(d < 10);
+        if(num->count == target)
+        {
+            printf("\n%llu", target);
+            target += 1000;
+        }
 
-        num_p num_aux = num_mul_uint(num_wrap(d), num, 10);
+        uint64_t res = 0, base = 1;
+        for(
+            char c = fgetc(fp); 
+            base < 1000000000000000000 && c != EOF;
+            c = fgetc(fp)
+        )
+        {
+            uint64_t d = uint_from_char(c);
+            assert(d < 10);
+            res = res * 10 + d;
+            base *= 10;
+        }
 
+        if(base == 1)
+            break;
+
+        num_p num_aux = num_mul_uint(num_wrap(res), num, base);
         num_free(num);
         num = num_aux;
+
+        if(base < 1000000000000000000)
+            break;
     }
+
     fclose(fp);
     return num;
 }
@@ -574,6 +596,35 @@ void num_free(num_p num)
 
     chunk_free(num->head);
     free(num);
+}
+
+
+
+num_p num_rebase(num_p num, uint64_t value)
+{
+    num_p num_res = num_create(0, NULL, NULL);
+    while (num->count)
+    {
+        num_p num_q, num_r;
+        num_div_mod(&num_q, &num_r, num, num_wrap(value));
+        num_insert(num_res, num_unwrap(num_r));
+        num = num_q;
+    }
+    num_free(num);
+    return num_res;
+}
+
+num_p num_base(num_p num, uint64_t value)
+{
+    num_p num_res = num_create(0, NULL, NULL);
+    for(chunk_p chunk = num->tail; chunk; chunk = chunk->prev)
+    {
+        num_p num_aux = num_mul_uint(num_wrap(chunk->value), num_res, value);
+        num_free(num_res);
+        num_res = num_aux;
+    }
+    num_free(num);
+    return num_res;
 }
 
 

@@ -668,6 +668,82 @@ void test_num_copy(bool show)
 
 
 
+void test_num_rebase(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s 1", __func__);
+    num_p num = num_create_immed(0);
+    num = num_rebase(num, 10);
+    assert(num_immed(num, 0));
+
+    if(show) printf("\n\t\t%s 2", __func__);
+    num = num_create_immed(1, 1);
+    num = num_rebase(num, 10);
+    assert(num_immed(num, 1, 1));
+
+    if(show) printf("\n\t\t%s 3", __func__);
+    num = num_create_immed(1, 9);
+    num = num_rebase(num, 10);
+    assert(num_immed(num, 1, 9));
+
+    if(show) printf("\n\t\t%s 4", __func__);
+    num = num_create_immed(1, 10);
+    num = num_rebase(num, 10);
+    assert(num_immed(num, 2, 1, 0));
+
+    if(show) printf("\n\t\t%s 5", __func__);
+    num = num_create_immed(1, 99);
+    num = num_rebase(num, 10);
+    assert(num_immed(num, 2, 9, 9));
+
+    if(show) printf("\n\t\t%s 6", __func__);
+    num = num_create_immed(1, 100);
+    num = num_rebase(num, 10);
+    assert(num_immed(num, 3, 1, 0, 0));
+
+    if(show) printf("\n\t\t%s 7", __func__);
+    num = num_create_immed(2, 5, 0x6bc75e2d63100000);
+    num = num_rebase(num, 10);
+    assert(num_immed(num, 21, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+
+    assert(clu_mem_empty());
+}
+
+void test_num_base(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s 1", __func__);
+    num_p num = num_create_immed(0);
+    num = num_base(num, 10);
+    assert(num_immed(num, 0));
+
+    if(show) printf("\n\t\t%s 2", __func__);
+    num = num_create_immed(1, 1);
+    num = num_base(num, 10);
+    assert(num_immed(num, 1, 1));
+
+    if(show) printf("\n\t\t%s 3", __func__);
+    num = num_create_immed(1, 9);
+    num = num_base(num, 10);
+    assert(num_immed(num, 1, 9));
+
+    if(show) printf("\n\t\t%s 4", __func__);
+    num = num_create_immed(2, 1, 0);
+    num = num_base(num, 10);
+    assert(num_immed(num, 1, 10));
+
+    if(show) printf("\n\t\t%s 5", __func__);
+    num = num_create_immed(21, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    num = num_base(num, 10);
+    assert(num_immed(num, 2, 5, 0x6bc75e2d63100000));
+
+    assert(clu_mem_empty());
+}
+
+
+
 void test_num_sub_uint_offset(bool show)
 {
     printf("\n\t%s\t\t", __func__);
@@ -1542,6 +1618,9 @@ void test_num()
     test_num_wrap_str(show);
     test_num_read_dec(show);
     test_num_copy(show);
+
+    test_num_rebase(show);
+    test_num_base(show);
 
     test_num_sub_uint_offset(show);
 

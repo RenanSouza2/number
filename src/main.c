@@ -230,9 +230,13 @@ int main(int argc, char** argv)
     // fix_1 = fix_mul(fix_1, fix_2);
     // fix_display_tag("res", fix_1);
 
-    num_p num = num_generate(15, 2);
-    printf("\n\n");
-    num_display_dec(num);
+    // num_p num = num_generate(20, 2);
+    // num_display_opts(num, true, true);
+    // num_display_dec(num);
+    // printf("\ngenerated");
+
+    num_p num_r = num_read_dec("number.txt");
+    num_display_opts(num_r, true, true);
 
     printf("\n");
     return 0;
