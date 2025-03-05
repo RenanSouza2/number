@@ -13,7 +13,7 @@
 
 snum_p snum_create_variadic(uint64_t signal, uint64_t n, va_list args)
 {
-    num_p num = num_create_variadic(n, args);
+    num_p num = num_create_variadic(n, &args);
     return snum_create(signal, num);
 }
 

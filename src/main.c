@@ -26,6 +26,7 @@ num_p num_generate(uint64_t max, uint64_t salt)
     num_p num = num_wrap(2);
     for(uint64_t i=0; i<max; i++)
     {
+        printf("\n%llu", i);
         num = num_add(num, num_wrap(salt));
         num = num_mul(num, num_copy(num));
     }
@@ -220,7 +221,9 @@ int main(int argc, char** argv)
     setbuf(stdout, NULL);
     srand(time(NULL));
 
-    time_1(13, 21);
+    num_p num = num_generate(21, 2);
+    printf("\n");
+    num_display_dec(num);
 
     printf("\n");
     return 0;

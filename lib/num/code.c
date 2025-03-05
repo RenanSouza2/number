@@ -11,28 +11,42 @@
 
 #ifdef DEBUG
 
-num_p num_create_variadic(uint64_t n, va_list args)
+num_p num_create_variadic(uint64_t n, va_list *args)
 {
     if(n == 0)
         return num_create(0, NULL, NULL);
 
-    uint64_t value = va_arg(args, uint64_t);
+    uint64_t value = va_arg(*args, uint64_t);
     chunk_p tail = chunk_create(value, NULL, NULL);
 
     chunk_p chunk = tail;
     for(uint64_t i=1; i<n; i++)
     {
-        uint64_t value = va_arg(args, uint64_t);
+        uint64_t value = va_arg(*args, uint64_t);
         chunk = chunk_create(value, chunk, NULL);
     }
     return num_create(n, chunk, tail);
+}
+
+num_p num_create_variadic_n(va_list *args)
+{
+    uint64_t n = va_arg(*args, uint64_t);
+    return num_create_variadic(n, args);
 }
 
 num_p num_create_immed(uint64_t n, ...)
 {
     va_list args;
     va_start(args, n);
-    return num_create_variadic(n, args);
+    return num_create_variadic(n, &args);
+}
+
+void num_create_immed_vec(num_p out_num[], uint64_t n, ...)
+{
+    va_list args;
+    va_start(args, n);
+    for(uint64_t i=0; i<n; i++)
+        out_num[i] = num_create_variadic_n(&args);
 }
 
 
@@ -175,7 +189,11 @@ bool num_str_inner(num_p num_1, num_p num_2)
 
 bool num_str(num_p num_1, num_p num_2)
 {
-    if(!num_str_inner(num_1, num_2))
+    bool res = num_str_inner(num_1, num_2);
+    num_free(num_1);
+    num_free(num_2);
+
+    if(!res)
     {
         printf("\n");
         num_display_full("\tnum_1", num_1);
@@ -190,13 +208,8 @@ bool num_immed(num_p num, uint64_t n, ...)
 {
     va_list args;
     va_start(args, n);
-    num_p num_2 = num_create_variadic(n, args);
-
-    bool res = num_str(num, num_2);
-
-    num_free(num_2);
-    num_free(num);
-    return res;
+    num_p num_2 = num_create_variadic(n, &args);
+    return num_str(num, num_2);
 }
 
 
@@ -224,7 +237,6 @@ uint64_t uint_from_char(char c)
         case 'a' ... 'f': return c - 'a' + 10;
         case 'A' ... 'F': return c - 'A' + 10;
     }
-
     assert(false);
 }
 
@@ -254,6 +266,8 @@ uint64_t uint_read(FILE *fp, uint64_t size, uint64_t base)
 
 void num_display_dec(num_p num)
 {
+    DBG_CHECK_PTR(num);
+
     if(num->count == 0)
     {
         printf("0");
@@ -301,6 +315,8 @@ void num_display_opts(num_p num, bool length, bool full)
 
 void num_display(num_p num)
 {
+    DBG_CHECK_PTR(num);
+
     num_display_opts(num, true, false);
 }
 
@@ -483,6 +499,32 @@ bool num_normalize(num_p num)
     return true;
 }
 
+void num_break(num_p *out_num_h, num_p *out_num_l, num_p num, uint64_t count) // TODO test
+{
+    DBG_CHECK_PTR(num);
+
+    if(num->count <= count)
+    {
+        *out_num_h = num_create(0, NULL, NULL);
+        *out_num_l = num;
+        return;
+    }
+
+    chunk_p chunk = num->head;
+    for(uint64_t i=0; i<count; i++)
+        chunk = chunk->next;
+
+    chunk->prev = NULL;
+    num_p num_h = num_create(num->count - count, chunk, num->tail);
+
+    num->count = count;
+    num->tail = chunk->prev;
+    num->tail->next = NULL;
+
+    *out_num_h = num_h;
+    *out_num_l = num;
+}
+
 
 
 num_p num_wrap(uint64_t value)
@@ -510,12 +552,11 @@ num_p num_wrap_dec(char str[])
 
 num_p num_wrap_hex(char str[])
 {
-    assert(str[0] == '0');
-    assert(str[1] == 'x');
+    assert(str[0] == '0' && str[1] == 'x');
 
     uint64_t len = strlen(str);
     uint64_t size = (len - 2) % 16;
-    uint64_t value = uint_from_str(str, size, 10);
+    uint64_t value = uint_from_str(&str[2], size, 16);
     num_p num = num_wrap(value);
     for(uint64_t i = 2 + size; i < len; i += 16)
     {
@@ -555,6 +596,8 @@ num_p num_read_dec(char file_name[])
 
 uint64_t num_unwrap(num_p num) // TODO test
 {
+    DBG_CHECK_PTR(num);
+
     assert(num->count < 2);
 
     uint64_t value = num->count ? num->head->value : 0;
@@ -586,6 +629,8 @@ void num_free(num_p num)
 
 num_p num_base_to(num_p num, uint64_t value)
 {
+    DBG_CHECK_PTR(num);
+
     num_p num_res = num_create(0, NULL, NULL);
     while (num->count)
     {
@@ -600,6 +645,8 @@ num_p num_base_to(num_p num, uint64_t value)
 
 num_p num_base_from(num_p num, uint64_t value)
 {
+    DBG_CHECK_PTR(num);
+
     num_p num_res = num_create(0, NULL, NULL);
     for(chunk_p chunk = num->tail; chunk; chunk = chunk->prev)
     {
@@ -910,6 +957,8 @@ int64_t num_cmp(num_p num_1, num_p num_2)
 
 num_p num_shl(num_p num, uint64_t bits)
 {
+    DBG_CHECK_PTR(num);
+
     for(; bits > 63; bits -= 64)
         num_insert_head(num, 0);
 
@@ -920,6 +969,8 @@ num_p num_shl(num_p num, uint64_t bits)
 
 num_p num_shr(num_p num, uint64_t bits)
 {
+    DBG_CHECK_PTR(num);
+
     for(; bits > 63 && num->count; bits -= 64)
         num_remove_head(num);
 
@@ -931,6 +982,8 @@ num_p num_shr(num_p num, uint64_t bits)
 
 num_p num_exp(num_p num, uint64_t value) // TODO test
 {
+    DBG_CHECK_PTR(num);
+
     if(num->count == 0)
     {
         assert(value);
@@ -1000,12 +1053,8 @@ num_p num_mul(num_p num_1, num_p num_2)
     chunk_p chunk_1 = num_1->head;
     chunk_p chunk_2 = num_2->head;
 
-    // printf(" | count: %lu |", num_2->count/1000);
-    uint64_t i=0;
-    for(chunk_p chunk_res = NULL; chunk_2; chunk_res = chunk_res->next, i++)
+    for(chunk_p chunk_res = NULL; chunk_2; chunk_res = chunk_res->next)
     {
-        // if(i%1000 == 0) printf("\t%lu", i/1000);
-
         chunk_res = num_mul_uint_offset(num_res, chunk_res, chunk_1, chunk_2->value);
         chunk_res = num_denormalize(num_res, chunk_res);
 
@@ -1077,6 +1126,9 @@ uint64_t num_div_mod_inner(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_
 
 void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
 {
+    DBG_CHECK_PTR(num_1);
+    DBG_CHECK_PTR(num_2);
+
     uint64_t bits = num_div_mod_inner(out_num_q, out_num_r, num_1, num_2);
     num_normalize(*out_num_q);
     num_shr_uint(*out_num_r, bits);

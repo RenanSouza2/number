@@ -10,7 +10,8 @@ typedef __uint128_t uint128_t;
 #include <stdarg.h>
 
 num_p num_create_immed(uint64_t n, ...);
-num_p num_create_variadic(uint64_t n, va_list args);
+num_p num_create_variadic(uint64_t n, va_list *args);
+void num_create_immed_vec(num_p out_num[], uint64_t n, ...);
 
 bool int64(int64_t u1, int64_t u2);
 bool uint64(uint64_t u1, uint64_t u2);
