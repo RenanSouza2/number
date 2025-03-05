@@ -503,6 +503,13 @@ void num_break(num_p *out_num_h, num_p *out_num_l, num_p num, uint64_t count) //
 {
     DBG_CHECK_PTR(num);
 
+    if(count == 0)
+    {
+        *out_num_h = num;
+        *out_num_l = num_create(0, NULL, NULL);
+        return;
+    }
+
     if(num->count <= count)
     {
         *out_num_h = num_create(0, NULL, NULL);
@@ -514,12 +521,14 @@ void num_break(num_p *out_num_h, num_p *out_num_l, num_p num, uint64_t count) //
     for(uint64_t i=0; i<count; i++)
         chunk = chunk->next;
 
-    chunk->prev = NULL;
     num_p num_h = num_create(num->count - count, chunk, num->tail);
-
     num->count = count;
     num->tail = chunk->prev;
+
+    chunk->prev = NULL;
     num->tail->next = NULL;
+
+    while(num_normalize(num));
 
     *out_num_h = num_h;
     *out_num_l = num;

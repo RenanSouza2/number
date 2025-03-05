@@ -494,6 +494,81 @@ void test_num_normalize(bool show)
     assert(clu_mem_empty());
 }
 
+void test_num_break(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    #define TEST_NUM_BREAK(TAG, COUNT, ...)                 \
+    {                                                       \
+        num_p num[3], num_h, num_l;                         \
+        if(show) printf("\n\t\t%s %2d\t\t", __func__, TAG); \
+        num_create_immed_vec(num, 3, __VA_ARGS__);          \
+        num_break(&num_h, &num_l, num[0], COUNT);           \
+        assert(num_str(num_h, num[1]));                     \
+        assert(num_str(num_l, num[2]));                     \
+    }
+
+    TEST_NUM_BREAK( 1, 0,
+        0,
+        0,
+        0
+    );
+    TEST_NUM_BREAK( 2, 1,
+        0,
+        0,
+        0
+    );
+    TEST_NUM_BREAK( 3, 0,
+        1, 1,
+        1, 1,
+        0
+    );
+    TEST_NUM_BREAK( 4, 1,
+        1, 1,
+        0,
+        1, 1
+    );
+    TEST_NUM_BREAK( 5, 2,
+        1, 1,
+        0,
+        1, 1
+    );
+    TEST_NUM_BREAK( 6, 0,
+        2, 1, 2,
+        2, 1, 2,
+        0
+    );
+    TEST_NUM_BREAK( 7, 1,
+        2, 1, 2,
+        1, 1,
+        1, 2
+    );
+    TEST_NUM_BREAK( 8, 2,
+        2, 1, 2,
+        0,
+        2, 1, 2
+    );
+    TEST_NUM_BREAK( 9, 3,
+        2, 1, 2,
+        0,
+        2, 1, 2
+    );
+    TEST_NUM_BREAK(10, 2,
+        3, 1, 0, 2,
+        1, 1,
+        1, 2
+    );
+    TEST_NUM_BREAK(11, 2,
+        3, 1, 0, 0,
+        1, 1,
+        0
+    );
+
+    #undef TEST_NUM_BREAK
+
+    assert(clu_mem_empty());
+}
+
 
 
 void test_num_wrap(bool show)
@@ -1602,6 +1677,7 @@ void test_num()
     test_num_insert_list(show);
     test_num_denormalize(show);
     test_num_normalize(show);
+    test_num_break(show);
 
     test_num_wrap(show);
     test_num_wrap_dec(show);
