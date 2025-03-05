@@ -83,7 +83,7 @@ void time_1(uint64_t begin, uint64_t end)
         uint64_t begin = altutime();
         num_p num = num_div(num_1_copy, num_2_copy);
         uint64_t end = altutime();
-        printf("\t%10.3f", (end - begin) / 1e6);
+        printf("\t%10.3f", (end - begin) / 1e3);
 
         num_free(num);
     }
@@ -115,7 +115,7 @@ void time_2(int argc, char** argv, uint64_t max)
         uint64_t begin = altutime();
         num_aux_1 = num_div(num_aux_1, num_aux_2);
         uint64_t end = altutime();
-        printf("\t%10.3lf", (end - begin) / 1e6);
+        printf("\t%10.3lf", (end - begin) / 1e3);
     }
 }
 
@@ -220,23 +220,7 @@ int main(int argc, char** argv)
     setbuf(stdout, NULL);
     srand(time(NULL));
 
-    // fix_p fix_1 = fix_wrap(1, 5);
-    // fix_p fix_2 = fix_wrap(1085, 5);
-    // fix_display_tag("fix_1", fix_1);
-    // fix_display_tag("fix_2", fix_2);
-    // fix_1 = fix_div(fix_1, fix_2);
-    // fix_display_tag("res", fix_1);
-    // fix_2 = fix_wrap(1085, 5);
-    // fix_1 = fix_mul(fix_1, fix_2);
-    // fix_display_tag("res", fix_1);
-
-    // num_p num = num_generate(20, 2);
-    // num_display_opts(num, true, true);
-    // num_display_dec(num);
-    // printf("\ngenerated");
-
-    num_p num_r = num_read_dec("number.txt");
-    num_display_opts(num_r, true, true);
+    time_1(13, 21);
 
     printf("\n");
     return 0;

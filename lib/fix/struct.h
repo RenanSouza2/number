@@ -10,7 +10,7 @@
 STRUCT(fix)
 {
     snum_p snum;
-    uint64_t size; // TODO change name
+    uint64_t pos;
 };
 
 #endif

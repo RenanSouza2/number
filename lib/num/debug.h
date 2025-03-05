@@ -46,8 +46,8 @@ bool num_normalize(num_p num);
 num_p num_wrap_dec(char str[]);
 num_p num_wrap_hex(char str[]);
 
-num_p num_rebase(num_p num, uint64_t value);
-num_p num_base(num_p num, uint64_t value);
+num_p num_base_to(num_p num, uint64_t value);
+num_p num_base_from(num_p num, uint64_t value);
 
 bool num_sub_uint_offset(num_p num, chunk_p chunk, uint64_t value);
 

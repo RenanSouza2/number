@@ -228,6 +228,28 @@ uint64_t uint_from_char(char c)
     assert(false);
 }
 
+uint64_t uint_from_str(char str[], uint64_t size, uint64_t base) // TODO test
+{
+    uint64_t value = 0;
+    for(uint64_t i=0; i<size; i++)
+    {
+        uint64_t aux = uint_from_char(str[i]);
+        assert(aux < base);
+        value = value * base + uint_from_char(str[i]);
+    }
+
+    return value;
+}
+
+uint64_t uint_read(FILE *fp, uint64_t size, uint64_t base)
+{
+    char str[size];
+    for(uint64_t i=0; i<size; i++)
+        str[i] = fgetc(fp);
+
+    return uint_from_str(str, size, base);
+}
+
 
 
 void num_display_dec(num_p num)
@@ -238,24 +260,11 @@ void num_display_dec(num_p num)
         return;
     }
 
-    num_p num_dec = num_create(0, NULL, NULL);
-    num = num_copy(num);
-    for(uint64_t i=0; num->count; i++)
-    {
-        if(i%1000 == 0) fprintf(stderr, "\n%llu", num->count);
-
-        num_p num_q, num_r;
-        num_div_mod(&num_q, &num_r, num, num_wrap(1000000000000000000));
-        uint64_t value = num_unwrap(num_r);
-        num_insert(num_dec, value);
-        num = num_q;
-    }
-
-    printf(U64P(), num_dec->tail->value);
-    for(chunk_p chunk = num_dec->tail->prev; chunk; chunk = chunk->prev)
+    num = num_base_to(num_copy(num), 1000000000000000000);
+    printf(U64P(), num->tail->value);
+    for(chunk_p chunk = num->tail->prev; chunk; chunk = chunk->prev)
         printf(U64P(018), chunk->value);
 
-    num_free(num_dec);
     num_free(num);
 }
 
@@ -488,18 +497,15 @@ num_p num_wrap(uint64_t value)
 num_p num_wrap_dec(char str[])
 {
     uint64_t len = strlen(str);
-    num_p num = num_create(0, NULL, NULL);
-    for(uint64_t i=0; i<len; i++)
+
+    uint64_t value = uint_from_str(str, len % 18, 10);
+    num_p num = num_wrap(value);
+    for(uint64_t i=len % 18; i<len; i+=18)
     {
-        uint64_t d = uint_from_char(str[i]);
-        assert(d < 10);
-
-        num_p num_aux = num_mul_uint(num_wrap(d), num, 10);
-
-        num_free(num);
-        num = num_aux;
+        value = uint_from_str(&str[i], 18, 10);
+        num_insert_head(num, value);
     }
-    return num;
+    return num_base_from(num, 1000000000000000000);
 }
 
 num_p num_wrap_hex(char str[])
@@ -508,14 +514,13 @@ num_p num_wrap_hex(char str[])
     assert(str[1] == 'x');
 
     uint64_t len = strlen(str);
-    num_p num = num_create(0, NULL, NULL);
-    for(uint64_t i=2; i<len; i++)
+    uint64_t size = (len - 2) % 16;
+    uint64_t value = uint_from_str(str, size, 10);
+    num_p num = num_wrap(value);
+    for(uint64_t i = 2 + size; i < len; i += 16)
     {
-        uint64_t d = uint_from_char(str[i]);
-        num_p num_aux = num_mul_uint(num_wrap(d), num, 16);
-
-        num_free(num);
-        num = num_aux;
+        value = uint_from_str(&str[i], 16, 16);
+        num_insert_head(num, value);
     }
     return num;
 }
@@ -531,42 +536,21 @@ num_p num_read_dec(char file_name[])
     FILE *fp = fopen(file_name, "r");
     assert(fp);
 
-    uint64_t target = 1000;
-    num_p num = num_create(0, NULL, NULL);
-    for(;;)
+    fseek(fp, 0, SEEK_END);
+    uint64_t size = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+
+    uint64_t value = uint_read(fp, size % 18, 10);
+    num_p num = num_wrap(value);
+
+    while(ftell(fp) < size)
     {
-        if(num->count == target)
-        {
-            printf("\n%llu", target);
-            target += 1000;
-        }
-
-        uint64_t res = 0, base = 1;
-        for(
-            char c = fgetc(fp); 
-            base < 1000000000000000000 && c != EOF;
-            c = fgetc(fp)
-        )
-        {
-            uint64_t d = uint_from_char(c);
-            assert(d < 10);
-            res = res * 10 + d;
-            base *= 10;
-        }
-
-        if(base == 1)
-            break;
-
-        num_p num_aux = num_mul_uint(num_wrap(res), num, base);
-        num_free(num);
-        num = num_aux;
-
-        if(base < 1000000000000000000)
-            break;
+        uint64_t value = uint_read(fp, 18, 10);
+        num_insert_head(num, value);
     }
 
     fclose(fp);
-    return num;
+    return num_base_from(num, 1000000000000000000);
 }
 
 uint64_t num_unwrap(num_p num) // TODO test
@@ -600,7 +584,7 @@ void num_free(num_p num)
 
 
 
-num_p num_rebase(num_p num, uint64_t value)
+num_p num_base_to(num_p num, uint64_t value)
 {
     num_p num_res = num_create(0, NULL, NULL);
     while (num->count)
@@ -614,11 +598,12 @@ num_p num_rebase(num_p num, uint64_t value)
     return num_res;
 }
 
-num_p num_base(num_p num, uint64_t value)
+num_p num_base_from(num_p num, uint64_t value)
 {
     num_p num_res = num_create(0, NULL, NULL);
     for(chunk_p chunk = num->tail; chunk; chunk = chunk->prev)
     {
+        assert(chunk->value < value);
         num_p num_aux = num_mul_uint(num_wrap(chunk->value), num_res, value);
         num_free(num_res);
         num_res = num_aux;
@@ -864,13 +849,12 @@ void num_div_mod_offset(
     uint128_t val_2_1 = num_2->tail->value;
     uint128_t val_2_2 = bool_2 ? val_2_1 : U128_IMMED(val_2_1, num_2->tail->prev->value);
 
-    for(; chunk_r;)
+    for(; chunk_r; offset_r--)
     {
         if(num_normalize(num_r))
         {
             num_insert_head(num_q, 0);
             chunk_r = num_r->tail;
-            offset_r--;
             continue;
         }
 
@@ -883,7 +867,6 @@ void num_div_mod_offset(
             uint128_t val_1 = bool_1 || !bool_2 ?
                 U128_IMMED(num_r->tail->value, num_r->tail->prev->value) :
                 num_r->tail->value;
-
 
             uint128_t tmp = val_1 / val_2;
             uint64_t r_aux = tmp > UINT64_MAX ? UINT64_MAX : tmp;
@@ -902,7 +885,6 @@ void num_div_mod_offset(
 
         num_insert_head(num_q, r);
         chunk_r = chunk_r ? chunk_r->prev : num_r->tail;
-        offset_r--;
     }
 }
 
