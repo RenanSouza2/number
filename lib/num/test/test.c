@@ -379,101 +379,117 @@ void test_num_insert_list(bool show)
 {
     printf("\n\t%s", __func__);
 
-    if(show) printf("\n\t\t%s 1\t\t", __func__);
-    num_p num_1 = num_create_immed(0);
-    num_p num_2 = num_create_immed(0);
-    num_insert_list(num_1, num_2->head, num_2->tail, num_2->count);
-    assert(num_immed(num_1, 0));
-    free(num_2);
+    #define TEST_NUM_INSERT_LIST(TAG, ...)                                  \
+    {                                                                       \
+        num_p num[3];                                                       \
+        if(show) printf("\n\t\t%s %d\t\t", __func__, TAG);                  \
+        num_create_immed_vec(num, 3, __VA_ARGS__);                          \
+        num_insert_list(num[0], num[1]->head, num[1]->tail, num[1]->count); \
+        assert(num_str(num[0], num[2]));                                    \
+        free(num[1]);                                                       \
+    }
 
-    if(show) printf("\n\t\t%s 2\t\t", __func__);
-    num_1 = num_create_immed(0);
-    num_2 = num_create_immed(1, 2);
-    num_insert_list(num_1, num_2->head, num_2->tail, num_2->count);
-    assert(num_immed(num_1, 1, 2));
-    free(num_2);
+    TEST_NUM_INSERT_LIST(1, 
+        0, 
+        0, 
+        0
+    );
+    TEST_NUM_INSERT_LIST(2, 
+        0, 
+        1, 2, 
+        1, 2
+    );
+    TEST_NUM_INSERT_LIST(3, 
+        1, 1, 
+        0, 
+        1, 1
+    );
+    TEST_NUM_INSERT_LIST(4, 
+        1, 1, 
+        1, 2, 
+        2, 2, 1
+    );
+    TEST_NUM_INSERT_LIST(5, 
+        2, 1, 2, 
+        2, 3, 4, 
+        4, 3, 4, 1, 2
+    );
 
-    if(show) printf("\n\t\t%s 3\t\t", __func__);
-    num_1 = num_create_immed(1, 1);
-    num_2 = num_create_immed(0);
-    num_insert_list(num_1, num_2->head, num_2->tail, num_2->count);
-    assert(num_immed(num_1, 1, 1));
-    free(num_2);
-
-    if(show) printf("\n\t\t%s 4\t\t", __func__);
-    num_1 = num_create_immed(1, 1);
-    num_2 = num_create_immed(1, 2);
-    num_insert_list(num_1, num_2->head, num_2->tail, num_2->count);
-    assert(num_immed(num_1, 2, 2, 1));
-    free(num_2);
-
-    if(show) printf("\n\t\t%s 5\t\t", __func__);
-    num_1 = num_create_immed(2, 1, 2);
-    num_2 = num_create_immed(2, 3, 4);
-    num_insert_list(num_1, num_2->head, num_2->tail, num_2->count);
-    assert(num_immed(num_1, 4, 3, 4, 1, 2));
-    free(num_2);
-
-    assert(clu_mem_empty());
-}
-
-void test_num_num_denormalize(bool show)
-{
-    printf("\n\t%s", __func__);
-
-    if(show) printf("\n\t\t%s 1\t\t", __func__);
-    num_p num = num_create_immed(0);
-    chunk_p chunk = num_denormalize(num, NULL);
-    assert(num->tail == chunk);
-    assert(num_immed(num, 1, 0));
-
-    if(show) printf("\n\t\t%s 2\t\t", __func__);
-    num = num_create_immed(1, 1);
-    chunk = num_denormalize(num, NULL);
-    assert(num->tail == chunk);
-    assert(num_immed(num, 2, 0, 1));
-
-    if(show) printf("\n\t\t%s 3\t\t", __func__);
-    num = num_create_immed(1, 1);
-    chunk = num_denormalize(num, num->head);
-    assert(num_immed(num, 1, 1));
+    #undef TEST_NUM_INSERT_LIST
 
     assert(clu_mem_empty());
 }
 
-void test_num_num_normalize(bool show)
+void test_num_denormalize(bool show)
 {
     printf("\n\t%s", __func__);
 
-    if(show) printf("\n\t\t%s 1\t\t", __func__);
-    num_p num = num_create_immed(0);
-    bool res = num_normalize(num);
-    assert(res == false);
-    assert(num_immed(num, 0));
+    #define TEST_NUM_DENORMALIZE(TAG, ...)                  \
+    {                                                       \
+        num_p num[2];                                       \
+        if(show) printf("\n\t\t%s " #TAG "\t\t", __func__); \
+        num_create_immed_vec(num, 2, __VA_ARGS__);          \
+        chunk_p chunk = num_denormalize(num[0], NULL);      \
+        assert(num[0]->tail == chunk);                      \
+        assert(num_str(num[0], num[1]));                    \
+    }
 
-    if(show) printf("\n\t\t%s 2\t\t", __func__);
-    num = num_create_immed(1, 1);
-    res = num_normalize(num);
-    assert(res == false);
-    assert(num_immed(num, 1, 1));
+    TEST_NUM_DENORMALIZE(1, 
+        0, 
+        1, 0
+    );
+    TEST_NUM_DENORMALIZE(2,
+        1, 1,
+        2, 0, 1
+    );
+
+    #undef TEST_NUM_DENORMALIZE
 
     if(show) printf("\n\t\t%s 3\t\t", __func__);
-    num = num_create_immed(1, 0);
-    res = num_normalize(num);
-    assert(res == true);
-    assert(num_immed(num, 0));
-
-    if(show) printf("\n\t\t%s 4\t\t", __func__);
-    num = num_create_immed(2, 0, 1);
-    res = num_normalize(num);
-    assert(res == true);
+    num_p num =  num_create_immed(1, 1);
+    chunk_p chunk = num_denormalize(num, num->head);
+    assert(num->head == chunk);
     assert(num_immed(num, 1, 1));
 
-    if(show) printf("\n\t\t%s 4\t\t", __func__);
-    num = num_create_immed(2, 0, 0);
-    res = num_normalize(num);
-    assert(res == true);
-    assert(num_immed(num, 1, 0));
+    assert(clu_mem_empty());
+}
+
+void test_num_normalize(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    #define TEST_NUM_NORMALIZE(TAG, RES, ...)               \
+    {                                                       \
+        num_p num[2];                                       \
+        if(show) printf("\n\t\t%s %d\t\t", __func__, TAG);  \
+        num_create_immed_vec(num, 2, __VA_ARGS__);          \
+        bool res = num_normalize(num[0]);                   \
+        assert(res == RES);                                 \
+        assert(num_str(num[0], num[1]));                    \
+    }
+
+    TEST_NUM_NORMALIZE(1, false, 
+        0,
+        0
+    );
+    TEST_NUM_NORMALIZE(2, false,
+        1, 1,
+        1, 1
+    );
+    TEST_NUM_NORMALIZE(3, true,
+        1, 0,
+        0
+    );
+    TEST_NUM_NORMALIZE(4, true,
+        2, 0, 1,
+        1, 1
+    );
+    TEST_NUM_NORMALIZE(5, true,
+        2, 0, 0,
+        1, 0
+    );
+
+    #undef TEST_NUM_NORMALIZE
 
     assert(clu_mem_empty());
 }
@@ -484,17 +500,18 @@ void test_num_wrap(bool show)
 {
     printf("\n\t%s", __func__);
 
-    if(show) printf("\n\t\t%s 1", __func__);
-    num_p num = num_wrap(0);
-    assert(num_immed(num, 0));
+    #define TEST_NUM_WRAP(TAG, NUM, ...)                \
+    {                                                   \
+        if(show) printf("\n\t\t%s %d", __func__, TAG);  \
+        num_p num = num_wrap(NUM);                      \
+        assert(num_immed(num, __VA_ARGS__));            \
+    }
 
-    if(show) printf("\n\t\t%s 2", __func__);
-    num = num_wrap(2);
-    assert(num_immed(num, 1, 2));
+    TEST_NUM_WRAP(1, 0, 0);
+    TEST_NUM_WRAP(2, 2, 1, 2);
+    TEST_NUM_WRAP(3, UINT64_MAX, 1, UINT64_MAX);
 
-    if(show) printf("\n\t\t%s 3", __func__);
-    num = num_wrap(UINT64_MAX);
-    assert(num_immed(num, 1, UINT64_MAX));
+    #undef TEST_NUM_WRAP
 
     assert(clu_mem_empty());
 }
@@ -557,77 +574,33 @@ void test_num_wrap_str(bool show)
 {
     printf("\n\t%s", __func__);
 
-    if(show) printf("\n\t\t%s  1", __func__);
-    num_p num = num_wrap_str("0");
-    assert(num_immed(num, 0));
+    #define TEST_NUM_WRAP_STR(TAG, STR, ...)            \
+    {                                                   \
+        if(show) printf("\n\t\t%s %2d", __func__, TAG); \
+        num_p num = num_wrap_str(STR);                  \
+        assert(num_immed(num, __VA_ARGS__));            \
+    }
 
-    if(show) printf("\n\t\t%s  2", __func__);
-    num = num_wrap_str("1");
-    assert(num_immed(num, 1, 1));
+    TEST_NUM_WRAP_STR( 1, "0", 0);
+    TEST_NUM_WRAP_STR( 2, "1", 1, 1);
+    TEST_NUM_WRAP_STR( 3, "9", 1, 9);
+    TEST_NUM_WRAP_STR( 4, "10", 1, 10);
+    TEST_NUM_WRAP_STR( 5, "18446744073709551615", 1, UINT64_MAX);
+    TEST_NUM_WRAP_STR( 6, "18446744073709551616", 2, 1, 0);
+    TEST_NUM_WRAP_STR( 7, "0000", 0);
+    TEST_NUM_WRAP_STR( 8, "00001", 1, 1);
+    TEST_NUM_WRAP_STR( 9, "0x0", 0);
+    TEST_NUM_WRAP_STR(10, "0x1", 1, 1);
+    TEST_NUM_WRAP_STR(11, "0x9", 1, 9);
+    TEST_NUM_WRAP_STR(12, "0xa", 1, 10);
+    TEST_NUM_WRAP_STR(13, "0xA", 1, 10);
+    TEST_NUM_WRAP_STR(14, "0x10", 1, 16);
+    TEST_NUM_WRAP_STR(15, "0xffffffffffffffff", 1, UINT64_MAX);
+    TEST_NUM_WRAP_STR(16, "0x10000000000000000", 2, 1, 0);
+    TEST_NUM_WRAP_STR(17, "0x0000", 0);
+    TEST_NUM_WRAP_STR(18, "0x00001", 1, 1);
 
-    if(show) printf("\n\t\t%s  3", __func__);
-    num = num_wrap_str("9");
-    assert(num_immed(num, 1, 9));
-
-    if(show) printf("\n\t\t%s  4", __func__);
-    num = num_wrap_str("10");
-    assert(num_immed(num, 1, 10));
-
-    if(show) printf("\n\t\t%s  5", __func__);
-    num = num_wrap_str("18446744073709551615");
-    assert(num_immed(num, 1, UINT64_MAX));
-
-    if(show) printf("\n\t\t%s  6", __func__);
-    num = num_wrap_str("18446744073709551616");
-    assert(num_immed(num, 2, 1, 0));
-
-    if(show) printf("\n\t\t%s  7", __func__);
-    num = num_wrap_str("0000");
-    assert(num_immed(num, 0));
-
-    if(show) printf("\n\t\t%s  8", __func__);
-    num = num_wrap_str("00001");
-    assert(num_immed(num, 1, 1));
-
-    if(show) printf("\n\t\t%s  9", __func__);
-    num = num_wrap_str("0x0");
-    assert(num_immed(num, 0));
-
-    if(show) printf("\n\t\t%s 10", __func__);
-    num = num_wrap_str("0x1");
-    assert(num_immed(num, 1, 1));
-
-    if(show) printf("\n\t\t%s 11", __func__);
-    num = num_wrap_str("0x9");
-    assert(num_immed(num, 1, 9));
-
-    if(show) printf("\n\t\t%s 12", __func__);
-    num = num_wrap_str("0xa");
-    assert(num_immed(num, 1, 10));
-
-    if(show) printf("\n\t\t%s 13", __func__);
-    num = num_wrap_str("0xA");
-    assert(num_immed(num, 1, 10));
-
-    if(show) printf("\n\t\t%s 14", __func__);
-    num = num_wrap_str("0x10");
-    assert(num_immed(num, 1, 16));
-
-    if(show) printf("\n\t\t%s 15", __func__);
-    num = num_wrap_str("0xffffffffffffffff");
-    assert(num_immed(num, 1, UINT64_MAX));
-
-    if(show) printf("\n\t\t%s 16", __func__);
-    num = num_wrap_str("0x10000000000000000");
-    assert(num_immed(num, 2, 1, 0));
-
-    if(show) printf("\n\t\t%s 17", __func__);
-    num = num_wrap_str("0x0000");
-    assert(num_immed(num, 0));
-
-    if(show) printf("\n\t\t%s 18", __func__);
-    num = num_wrap_str("0x00001");
-    assert(num_immed(num, 1, 1));
+    #undef TEST_NUM_WRAP_STR
 
     assert(clu_mem_empty());
 }
@@ -659,24 +632,20 @@ void test_num_read_dec(bool show)
 void test_num_copy(bool show)
 {
     printf("\n\t%s", __func__);
+    
+    #define TEST_NUM_COPY(TAG, ...)                     \
+    {                                                   \
+        if(show) printf("\n\t\t%s %d", __func__, TAG);  \
+        num_p num = num_create_immed(__VA_ARGS__);      \
+        num_p num_res = num_copy(num);                  \
+        assert(num_str(num_res, num));                  \
+    }
 
-    if(show) printf("\n\t\t%s 1", __func__);
-    num_p num = num_wrap(0);
-    num_p num_res = num_copy(num);
-    assert(num_immed(num_res, 0));
-    num_free(num);
-
-    if(show) printf("\n\t\t%s 2", __func__);
-    num = num_create_immed(1, 1);
-    num_res = num_copy(num);
-    assert(num_immed(num_res, 1, 1));
-    num_free(num);
-
-    if(show) printf("\n\t\t%s 3", __func__);
-    num = num_create_immed(2, 1, 2);
-    num_res = num_copy(num);
-    assert(num_immed(num_res, 2, 1, 2));
-    num_free(num);
+    TEST_NUM_COPY(1, 0);
+    TEST_NUM_COPY(2, 1, 1);
+    TEST_NUM_COPY(3, 2, 1, 2);
+    
+    #undef TEST_NUM_COPY
 
     assert(clu_mem_empty());
 }
@@ -687,40 +656,45 @@ void test_num_base_to(bool show)
 {
     printf("\n\t%s", __func__);
 
-    if(show) printf("\n\t\t%s 1", __func__);
-    num_p num = num_create_immed(0);
-    num = num_base_to(num, 10);
-    assert(num_immed(num, 0));
+    #define TEST_NUM_BASE_TO(TAG, ...)                  \
+    {                                                   \
+        num_p num[2];                                   \
+        if(show) printf("\n\t\t%s %d", __func__, TAG);  \
+        num_create_immed_vec(num, 2, __VA_ARGS__);      \
+        num[0] = num_base_to(num[0], 10);               \
+        assert(num_str(num[0], num[1]));                \
+    }
 
-    if(show) printf("\n\t\t%s 2", __func__);
-    num = num_create_immed(1, 1);
-    num = num_base_to(num, 10);
-    assert(num_immed(num, 1, 1));
+    TEST_NUM_BASE_TO(1,
+        0,
+        0
+    );
+    TEST_NUM_BASE_TO(2,
+        1, 1,
+        1, 1
+    );
+    TEST_NUM_BASE_TO(3,
+        1, 9,
+        1, 9
+    );
+    TEST_NUM_BASE_TO(4,
+        1, 10,
+        2, 1, 0
+    );
+    TEST_NUM_BASE_TO(5,
+        1, 100,
+        3, 1, 0, 0
+    );
+    TEST_NUM_BASE_TO(6,
+        1, 99,
+        2, 9, 9
+    );
+    TEST_NUM_BASE_TO(7,
+        2, 5, 0x6bc75e2d63100000,
+        21, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    );
 
-    if(show) printf("\n\t\t%s 3", __func__);
-    num = num_create_immed(1, 9);
-    num = num_base_to(num, 10);
-    assert(num_immed(num, 1, 9));
-
-    if(show) printf("\n\t\t%s 4", __func__);
-    num = num_create_immed(1, 10);
-    num = num_base_to(num, 10);
-    assert(num_immed(num, 2, 1, 0));
-
-    if(show) printf("\n\t\t%s 5", __func__);
-    num = num_create_immed(1, 99);
-    num = num_base_to(num, 10);
-    assert(num_immed(num, 2, 9, 9));
-
-    if(show) printf("\n\t\t%s 6", __func__);
-    num = num_create_immed(1, 100);
-    num = num_base_to(num, 10);
-    assert(num_immed(num, 3, 1, 0, 0));
-
-    if(show) printf("\n\t\t%s 7", __func__);
-    num = num_create_immed(2, 5, 0x6bc75e2d63100000);
-    num = num_base_to(num, 10);
-    assert(num_immed(num, 21, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+    #undef TEST_NUM_BASE_TO
 
     assert(clu_mem_empty());
 }
@@ -1626,8 +1600,8 @@ void test_num()
     test_num_insert_head(show);
     test_num_remove_head(show);
     test_num_insert_list(show);
-    test_num_num_denormalize(show);
-    test_num_num_normalize(show);
+    test_num_denormalize(show);
+    test_num_normalize(show);
 
     test_num_wrap(show);
     test_num_wrap_dec(show);
