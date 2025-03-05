@@ -64,8 +64,8 @@ bool snum_immed(snum_p snum, uint64_t signal, uint64_t count, ...)
 
     bool res = snum_str(snum, snum_2);
 
-    snum_free(snum);
-    snum_free(snum_2);
+    free(snum);
+    free(snum_2);
     return res;
 }
 
