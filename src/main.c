@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 #include <time.h>
 
 #include "../utils/assert.h"
@@ -215,15 +216,82 @@ void time_dec()
 }
 
 
+void pi_1()
+{
+    uint64_t pos = 3;
+    fix_p fix = fix_wrap(0, pos);
+    for(uint64_t i=1; ; i++)
+    {
+        int64_t base = 16 * i * i - 16 * i + 3;
+        fix_p fix_1 = fix_wrap(8, pos);
+        fix_p fix_2 = fix_wrap(base, pos);
+        fix_1 = fix_div(fix_1, fix_2);
+        fix = fix_add(fix, fix_copy(fix_1));
+
+        if(i%1000000 == 0)
+        {
+            printf("\ni: %llu\t", i);
+            fix_display_dec(fix);
+            printf("\t");
+            fix_display_dec(fix_1);
+            fix_free(fix_1);
+        }
+    }
+}
+
+void e()
+{
+    uint64_t pos = 1000;
+    fix_p fix = fix_wrap(0, pos);
+    fix_p base = fix_wrap(1, pos);
+    for(uint64_t i=1; ; i++)
+    {
+        fix_p fix_2 = fix_wrap(i, pos);
+        base = fix_div(base, fix_2);
+        fix = fix_add(fix, fix_copy(base));
+
+        if(i%1000 == 0)
+        {
+            fprintf(stderr, "\ni: %llu", i);
+            printf("\n");
+            fix_display_dec(fix);
+        }
+    }
+}
+
 
 int main(int argc, char** argv)
 {
     setbuf(stdout, NULL);
     srand(time(NULL));
 
-    num_p num = num_generate(21, 2);
-    printf("\n");
-    num_display_dec(num);
+    // uint64_t pos = 2;
+    // fix_p fix = fix_wrap(2, pos);
+    // for(uint64_t i=1; ; i++)
+    // {
+    //     uint64_t base = 4 * i * i;
+    //     fix = fix_mul(fix, fix_wrap(base, pos));
+    //     fix = fix_div(fix, fix_wrap(base - 1, pos));
+    //
+    //     if(i%1000000 == 0)
+    //     {
+    //         printf("\n");
+    //         fix_display_dec(fix);
+    //     }
+    // }
+
+    double fix = 2;
+    for(uint64_t i=1; ; i++)
+    {
+
+        double base = 4 * i * i;
+        fix *= base / (base - 1);
+
+        if(i%1000000 == 0)
+        {
+            printf("\n%.16f %.0f %.16f %f", fix, base, base / (base - 1), (double)(4 * i * i) / INT_MAX);
+        }
+    }
 
     printf("\n");
     return 0;

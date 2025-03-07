@@ -3,7 +3,9 @@
 
 #include "debug.h"
 
+#include "../snum/struct.h"
 #include "../../utils/assert.h"
+#include "../../utils/U64.h"
 
 #ifdef DEBUG
 
@@ -12,6 +14,31 @@
 #endif
 
 
+
+void fix_display_dec(fix_p fix)
+{
+    fix = fix_copy(fix);
+
+    num_p num_h, num_l;
+    num_break(&num_h, &num_l, fix->snum->num, fix->pos);
+
+    if(fix->snum->signal == NEGATIVE)
+        printf("-");
+    else
+        printf("+");
+
+    num_display_dec(num_h);
+    num_free(num_h);
+
+    printf(".");
+
+    for(uint64_t i=0; !num_is_zero(num_l) && i < fix->pos; i++ )
+    {
+        num_l = num_mul(num_l, num_wrap(1000000000000000000));
+        num_break(&num_h, &num_l, num_l, fix->pos);
+        printf(U64P(018), num_unwrap(num_h));
+    }
+}
 
 void fix_display(fix_p fix)
 {
@@ -43,6 +70,18 @@ fix_p fix_wrap(int64_t value, uint64_t pos) // TODO test
     snum_p snum = snum_wrap(value);
     snum = snum_shl(snum, pos << 6);
     return fix_create(snum, pos);
+}
+
+fix_p fix_copy(fix_p fix) // TODO test
+{
+    snum_p snum = snum_copy(fix->snum);
+    return fix_create(snum, fix->pos);
+}
+
+void fix_free(fix_p fix)
+{
+    snum_free(fix->snum);
+    free(fix);
 }
 
 

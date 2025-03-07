@@ -157,6 +157,7 @@ void snum_free(snum_p snum)
 }
 
 
+
 bool snum_is_zero(snum_p snum)
 {
     return snum->signal == ZERO;

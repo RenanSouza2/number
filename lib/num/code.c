@@ -499,7 +499,7 @@ bool num_normalize(num_p num)
     return true;
 }
 
-void num_break(num_p *out_num_h, num_p *out_num_l, num_p num, uint64_t count) // TODO test
+void num_break(num_p *out_num_h, num_p *out_num_l, num_p num, uint64_t count)
 {
     DBG_CHECK_PTR(num);
 

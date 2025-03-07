@@ -3,7 +3,9 @@
 
 #include "header.h"
 
-#include "../num/header.h"
+#define POSITIVE 1
+#define NEGATIVE 2
+#define ZERO 3
 
 STRUCT(snum)
 {

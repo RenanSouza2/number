@@ -778,30 +778,37 @@ void test_num_base_from(bool show)
 {
     printf("\n\t%s", __func__);
 
-    if(show) printf("\n\t\t%s 1", __func__);
-    num_p num = num_create_immed(0);
-    num = num_base_from(num, 10);
-    assert(num_immed(num, 0));
+    #define TEST_NUM_BASE_FROM(TAG, ...)                    \
+    {                                                       \
+        num_p num[2];                                       \
+        if(show) printf("\n\t\t%s %d\t\t", __func__, TAG);  \
+        num_create_immed_vec(num, 2, __VA_ARGS__);          \
+        num[0] = num_base_from(num[0], 10);                 \
+        assert(num_str(num[0], num[1]));                    \
+    }
 
-    if(show) printf("\n\t\t%s 2", __func__);
-    num = num_create_immed(1, 1);
-    num = num_base_from(num, 10);
-    assert(num_immed(num, 1, 1));
+    TEST_NUM_BASE_FROM(1, 
+        0, 
+        0
+    );
+    TEST_NUM_BASE_FROM(2, 
+        1, 1,
+        1, 1
+    );
+    TEST_NUM_BASE_FROM(3,
+        1, 9,
+        1, 9
+    );
+    TEST_NUM_BASE_FROM(4,
+        2, 1, 0,
+        1, 10
+    );
+    TEST_NUM_BASE_FROM(5,
+        21, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        2, 5, 0x6bc75e2d63100000
+    );
 
-    if(show) printf("\n\t\t%s 3", __func__);
-    num = num_create_immed(1, 9);
-    num = num_base_from(num, 10);
-    assert(num_immed(num, 1, 9));
-
-    if(show) printf("\n\t\t%s 4", __func__);
-    num = num_create_immed(2, 1, 0);
-    num = num_base_from(num, 10);
-    assert(num_immed(num, 1, 10));
-
-    if(show) printf("\n\t\t%s 5", __func__);
-    num = num_create_immed(21, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-    num = num_base_from(num, 10);
-    assert(num_immed(num, 2, 5, 0x6bc75e2d63100000));
+    #undef TEST_NUM_BASE_FROM
 
     assert(clu_mem_empty());
 }
@@ -811,6 +818,22 @@ void test_num_base_from(bool show)
 void test_num_sub_uint_offset(bool show)
 {
     printf("\n\t%s\t\t", __func__);
+
+    #define TEST_NUM_SUB_UINT_OFFSET(TAG, OFFSET, VALUE, RES, ...)  \
+    {                                                               \
+        num_p num[2];                                               \
+        if(show) printf("\n\t\t%s %d\t\t", __func__, TAG);          \
+        num_create_immed_vec(num, 2, __VA_ARGS__);                  \
+        chunk_p chunk = num_get_chunk(num[0], OFFSET);              \
+        bool res = num_sub_uint_offset(num[0], chunk, VALUE);       \
+        assert(num_str(num[0], num[1]));                            \
+        assert(res == RES);                                    \
+    }
+
+    TEST_NUM_SUB_UINT_OFFSET(1, 0, 1, false,
+        2, 2, 3,
+        2, 2, 2
+    );
 
     if(show) printf("\n\t\t%s 1\t\t", __func__);
     num_p num = num_create_immed(2, 2, 3);
