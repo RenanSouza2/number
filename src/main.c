@@ -27,7 +27,6 @@ num_p num_generate(uint64_t max, uint64_t salt)
     num_p num = num_wrap(2);
     for(uint64_t i=0; i<max; i++)
     {
-        printf("\n%llu", i);
         num = num_add(num, num_wrap(salt));
         num = num_mul(num, num_copy(num));
     }
@@ -280,18 +279,20 @@ int main(int argc, char** argv)
     //     }
     // }
 
-    double fix = 2;
-    for(uint64_t i=1; ; i++)
-    {
+    // double fix = 2;
+    // for(uint64_t i=1; ; i++)
+    // {
 
-        double base = 4 * i * i;
-        fix *= base / (base - 1);
+    //     double base = 4 * i * i;
+    //     fix *= base / (base - 1);
 
-        if(i%1000000 == 0)
-        {
-            printf("\n%.16f %.0f %.16f %f", fix, base, base / (base - 1), (double)(4 * i * i) / INT_MAX);
-        }
-    }
+    //     if(i%1000000 == 0)
+    //     {
+    //         printf("\n%.16f %.0f %.16f %f", fix, base, base / (base - 1), (double)(4 * i * i) / INT_MAX);
+    //     }
+    // }
+
+    time_1(13, 21);
 
     printf("\n");
     return 0;

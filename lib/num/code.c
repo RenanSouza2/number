@@ -338,13 +338,24 @@ void num_display_full(char *tag, num_p num)
 
 
 
+handler_p chunk_pool = NULL;
+
 chunk_p chunk_create(uint64_t value, chunk_p next, chunk_p prev)
 {
     DBG_CHECK_PTR(next);
     DBG_CHECK_PTR(prev);
 
-    chunk_p chunk = malloc(sizeof(chunk_t));
-    assert(chunk);
+    chunk_p chunk;
+    if(chunk_pool == NULL)
+    {
+        chunk = malloc(sizeof(chunk_t));
+        assert(chunk);
+    }
+    else
+    {
+        chunk = chunk_pool;
+        chunk_pool = *(handler_p*)chunk;
+    }
 
     if(next) next->prev = chunk;
     if(prev) prev->next = chunk;
@@ -358,6 +369,12 @@ chunk_p chunk_create(uint64_t value, chunk_p next, chunk_p prev)
     return chunk;
 }
 
+void chunk_free_item(chunk_p chunk)
+{
+    *(handler_p*)chunk = chunk_pool;
+    chunk_pool = chunk;
+}
+
 chunk_p chunk_consume(chunk_p chunk)
 {
     DBG_CHECK_PTR(chunk);
@@ -366,7 +383,7 @@ chunk_p chunk_consume(chunk_p chunk)
         return NULL;
 
     chunk_p chunk_next = chunk->next;
-    free(chunk);
+    chunk_free_item(chunk);
 
     if(chunk_next) chunk_next->prev = NULL;
     return chunk_next;
@@ -378,6 +395,17 @@ void chunk_free(chunk_p chunk)
 
     while(chunk)
         chunk = chunk_consume(chunk);
+}
+
+void chunk_pool_clean()
+{
+    while(chunk_pool)
+    {
+        chunk_p chunk = chunk_pool;
+        chunk_pool = *(handler_p*)chunk;
+
+        free(chunk);
+    }
 }
 
 
@@ -432,7 +460,7 @@ void num_remove_head(num_p num)
 
     chunk_p chunk_head = num->head;
     num->head = chunk_head->next;
-    free(chunk_head);
+    chunk_free_item(chunk_head);
 
     num->count--;
     if(num->count == 0)
@@ -488,7 +516,7 @@ bool num_normalize(num_p num)
         return false;
 
     num->tail = chunk_tail->prev;
-    free(chunk_tail);
+    chunk_free_item(chunk_tail);
 
     num->count--;
     if(num->count == 0)
@@ -848,7 +876,7 @@ chunk_p num_sub_offset(num_p num_1, chunk_p chunk_1, chunk_p chunk_2) // TODO te
         if(num_sub_uint_offset(num_1, chunk_1, chunk_2->value))
         {
             assert(chunk_2->next == NULL);
-            free(chunk_2);
+            chunk_free_item(chunk_2);
 
             while(num_1->tail != prev_0)
                 if(!num_normalize(num_1))

@@ -28,6 +28,7 @@ void test_uint_from_char(bool show)
 
     #undef TEST_UINT_FROM_CHAR
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -105,6 +106,7 @@ void test_uint128(bool show)
     u /= 2;
     assert(uint128_immed(u, UINT64_MAX >> 1, UINT64_MAX));
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -161,6 +163,7 @@ void test_chunk_create(bool show)
     free(chunk_next);
     free(chunk_prev);
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -168,16 +171,16 @@ void test_chunk_consume(bool show)
 {
     printf("\n\t%s", __func__);
 
-    if(show) printf("\n\t\t%s 1", __func__);
+    if(show) printf("\n\t\t%s 1\t\t", __func__);
     chunk_p chunk = chunk_consume(NULL);
     assert(chunk == NULL);
 
-    if(show) printf("\n\t\t%s 2", __func__);
+    if(show) printf("\n\t\t%s 2\t\t", __func__);
     chunk = chunk_create(1, NULL, NULL);
     chunk = chunk_consume(chunk);
     assert(chunk == NULL);
 
-    if(show) printf("\n\t\t%s 2", __func__);
+    if(show) printf("\n\t\t%s 2\t\t", __func__);
     chunk = chunk_create(1, NULL, NULL);
     chunk = chunk_create(2, chunk, NULL);
     chunk = chunk_consume(chunk);
@@ -186,6 +189,7 @@ void test_chunk_consume(bool show)
     assert(chunk->prev == NULL);
     chunk_free(chunk);
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -238,6 +242,7 @@ void test_num_create_immed(bool show)
     assert(num->tail == num->head->next);
     num_free(num);
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -270,6 +275,7 @@ void test_num_create_immed_vec(bool show)
     assert(num_immed(num[0], 1, 1));
     assert(num_immed(num[1], 0));
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -311,6 +317,7 @@ void test_num_insert(bool show)
     assert(num->tail == chunk);
     assert(num_immed(num, 2, 1, 2));
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -350,6 +357,7 @@ void test_num_insert_head(bool show)
     assert(num->tail != chunk);
     assert(num_immed(num, 2, 2, 1));
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -372,6 +380,7 @@ void test_num_remove_head(bool show)
     num_remove_head(num);
     assert(num_immed(num, 1, 1));
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -417,6 +426,7 @@ void test_num_insert_list(bool show)
 
     #undef TEST_NUM_INSERT_LIST
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -451,6 +461,7 @@ void test_num_denormalize(bool show)
     assert(num->head == chunk);
     assert(num_immed(num, 1, 1));
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -491,6 +502,7 @@ void test_num_normalize(bool show)
 
     #undef TEST_NUM_NORMALIZE
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -566,6 +578,7 @@ void test_num_break(bool show)
 
     #undef TEST_NUM_BREAK
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -588,6 +601,7 @@ void test_num_wrap(bool show)
 
     #undef TEST_NUM_WRAP
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -614,6 +628,7 @@ void test_num_wrap_dec(bool show)
 
     #undef TEST_NUM_WRAP_DEC
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -642,6 +657,7 @@ void test_num_wrap_hex(bool show)
 
     #undef TEST_NUM_WRAP_HEX
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -677,6 +693,7 @@ void test_num_wrap_str(bool show)
 
     #undef TEST_NUM_WRAP_STR
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -701,6 +718,7 @@ void test_num_read_dec(bool show)
 
     #undef TEST_NUM_READ_DEC
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -722,6 +740,7 @@ void test_num_copy(bool show)
     
     #undef TEST_NUM_COPY
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -771,6 +790,7 @@ void test_num_base_to(bool show)
 
     #undef TEST_NUM_BASE_TO
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -810,6 +830,7 @@ void test_num_base_from(bool show)
 
     #undef TEST_NUM_BASE_FROM
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -861,6 +882,7 @@ void test_num_sub_uint_offset(bool show)
 
     #undef TEST_NUM_SUB_UINT_OFFSET
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -910,6 +932,7 @@ void test_num_shl_uint(bool show) // TODO refactor
 
     #undef TEST_NUM_SHL_UINT
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -948,6 +971,7 @@ void test_num_shr_uint(bool show) // TODO refactor
     assert(num_immed(num, 1, 3));
 
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -975,6 +999,7 @@ void test_num_add_uint(bool show) // TODO refactor
     num_add_uint(num, 3);
     assert(num_immed(num, 2, 1, 2));
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -1007,6 +1032,7 @@ void test_num_sub_uint(bool show) // TODO refactor
     num_sub_uint(num, 1);
     assert(num_immed(num, 1, UINT64_MAX));
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -1124,6 +1150,7 @@ void test_num_mul_uint(bool show) // TODO refactor
     assert(num_immed(num_res, 2, 0xc6bfba060d, 0xdf4c110fd2f33f0c));
     num_free(num);
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -1145,6 +1172,7 @@ void test_num_is_zero(bool show) // TODO refactor
     assert(res == false);
     num_free(num);
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -1240,6 +1268,7 @@ void test_num_cmp(bool show) // TODO refactor
     num_free(num_1);
     num_free(num_2);
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -1269,6 +1298,7 @@ void test_num_shl(bool show) // TODO refactor
     num_shl(num, 65);
     assert(num_immed(num, 2, 2, 0));
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -1296,6 +1326,7 @@ void test_num_shr(bool show) // TODO refactor
     num_shr(num, 64);
     assert(num_immed(num, 1, 1));
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -1354,6 +1385,7 @@ void test_num_add(bool show) // TODO refactor
     num_res = num_add(num_1, num_2);
     assert(num_immed(num_res, 3, 1, 0, 0));
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -1403,6 +1435,7 @@ void test_num_sub(bool show) // TODO refactor
     num_res = num_sub(num_1, num_2);
     assert(num_immed(num_res, 0));
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -1500,6 +1533,7 @@ void test_num_mul(bool show) // TODO refactor
     num_res = num_mul(num_1, num_2);
     assert(num_immed(num_res, 5, 10, 27, 52, 45, 28));
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -1656,6 +1690,7 @@ void test_num_div_mod(bool show) // TODO refactor
     assert(num_immed(num_q, 1, UINT64_MAX));
     assert(num_immed(num_r, 3, 1, UINT64_MAX - 1, UINT64_MAX));
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -1713,6 +1748,7 @@ void test_num()
     test_num_mul(show);
     test_num_div_mod(show);
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
