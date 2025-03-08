@@ -9,16 +9,16 @@
 void test_mod_create(bool show)
 {
     char offset[] = "\t";
-    printf("\n%s%s", offset, __func__);
+    printf("\n%s%s\t\t", offset, __func__);
 
     num_p p = num_wrap(7);
 
-    if(show) printf("\n%s\t%s 1", offset, __func__);
+    if(show) printf("\n%s\t%s 1\t\t", offset, __func__);
     num_p num = num_create_immed(0);
     mod_p mod = mod_create(num, p);
     assert(mod_immed(mod, 0));
 
-    if(show) printf("\n%s\t%s 2", offset, __func__);
+    if(show) printf("\n%s\t%s 2\t\t", offset, __func__);
     num = num_create_immed(1, 1);
     mod = mod_create(num, p);
     assert(mod_immed(mod, 1, 1));

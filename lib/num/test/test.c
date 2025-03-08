@@ -197,17 +197,19 @@ void test_chunk_consume(bool show)
 
 void test_num_create_immed(bool show)
 {
-    printf("\n\t%s", __func__);
+    printf("\n\t%s\t\t", __func__);
 
-    if(show) printf("\n\t\t%s 1", __func__);
+    if(show) printf("\n\t\t%s 1\t\t", __func__);
     num_p num = num_create_immed(0);
+    assert(num != NULL);
     assert(num->count == 0);
     assert(num->head == NULL);
     assert(num->tail == NULL);
     num_free(num);
 
-    if(show) printf("\n\t\t%s 2", __func__);
+    if(show) printf("\n\t\t%s 2\t\t", __func__);
     num = num_create_immed(1, 2);
+    assert(num != NULL);
     assert(num->count == 1);
     assert(num->head != NULL);
     assert(num->head->value == 2);
@@ -216,8 +218,9 @@ void test_num_create_immed(bool show)
     assert(num->tail == num->head);
     num_free(num);
 
-    if(show) printf("\n\t\t%s 3", __func__);
+    if(show) printf("\n\t\t%s 3\t\t", __func__);
     num = num_create_immed(2, 2, 1);
+    assert(num != NULL);
     assert(num->count == 2);
     assert(num->head != NULL)
     assert(num->head->value == 1);
@@ -229,7 +232,7 @@ void test_num_create_immed(bool show)
     assert(num->tail == num->head->next);
     num_free(num);
 
-    if(show) printf("\n\t\t%s 4", __func__);
+    if(show) printf("\n\t\t%s 4\t\t", __func__);
     num = num_create_immed(2, 2, 0);
     assert(num->count == 2);
     assert(num->head != NULL)
@@ -750,13 +753,13 @@ void test_num_base_to(bool show)
 {
     printf("\n\t%s", __func__);
 
-    #define TEST_NUM_BASE_TO(TAG, ...)                  \
-    {                                                   \
-        num_p num[2];                                   \
-        if(show) printf("\n\t\t%s %d", __func__, TAG);  \
-        num_create_immed_vec(num, 2, __VA_ARGS__);      \
-        num[0] = num_base_to(num[0], 10);               \
-        assert(num_str(num[0], num[1]));                \
+    #define TEST_NUM_BASE_TO(TAG, ...)                      \
+    {                                                       \
+        num_p num[2];                                       \
+        if(show) printf("\n\t\t%s %d\t\t", __func__, TAG);  \
+        num_create_immed_vec(num, 2, __VA_ARGS__);          \
+        num[0] = num_base_to(num[0], 10);                   \
+        assert(num_str(num[0], num[1]));                    \
     }
 
     TEST_NUM_BASE_TO(1,
