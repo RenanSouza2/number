@@ -864,7 +864,7 @@ void test_num_sub_uint_offset(bool show)
     );
     TEST_NUM_SUB_UINT_OFFSET(3, 1, 1, true,
         2, 1, 3,
-        2, 1, 3
+        1, 3
     )
     TEST_NUM_SUB_UINT_OFFSET(4, 1, 1, true,
         2, 1, 0,

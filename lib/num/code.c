@@ -189,18 +189,21 @@ bool num_str_inner(num_p num_1, num_p num_2)
 
 bool num_str(num_p num_1, num_p num_2)
 {
-    bool res = num_str_inner(num_1, num_2);
-    num_free(num_1);
-    num_free(num_2);
+    DBG_CHECK_PTR(num_1);
+    DBG_CHECK_PTR(num_2);
 
-    if(!res)
+    if(!num_str_inner(num_1, num_2))
     {
         printf("\n");
         num_display_full("\tnum_1", num_1);
         num_display_full("\tnum_2", num_2);
+        num_free(num_1);
+        num_free(num_2);
         return false;
     }
 
+    num_free(num_1);
+    num_free(num_2);
     return true;
 }
 
