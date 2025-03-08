@@ -357,7 +357,7 @@ chunk_p chunk_create(uint64_t value, chunk_p next, chunk_p prev)
     else
     {
         chunk = chunk_pool;
-        chunk_pool = *(handler_p*)chunk;
+        chunk_pool = chunk->next;
     }
 
     if(next) next->prev = chunk;
@@ -374,7 +374,7 @@ chunk_p chunk_create(uint64_t value, chunk_p next, chunk_p prev)
 
 void chunk_free_item(chunk_p chunk)
 {
-    *(handler_p*)chunk = chunk_pool;
+    chunk->next = chunk_pool;
     chunk_pool = chunk;
 }
 
@@ -405,7 +405,7 @@ void chunk_pool_clean()
     while(chunk_pool)
     {
         chunk_p chunk = chunk_pool;
-        chunk_pool = *(handler_p*)chunk;
+        chunk_pool = chunk->next;
 
         free(chunk);
     }
