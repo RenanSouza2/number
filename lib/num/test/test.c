@@ -180,14 +180,14 @@ void test_chunk_consume(bool show)
     chunk = chunk_consume(chunk);
     assert(chunk == NULL);
 
-    if(show) printf("\n\t\t%s 2\t\t", __func__);
+    if(show) printf("\n\t\t%s 3\t\t", __func__);
     chunk = chunk_create(1, NULL, NULL);
     chunk = chunk_create(2, chunk, NULL);
     chunk = chunk_consume(chunk);
     assert(chunk != NULL);
     assert(chunk->value == 1);
     assert(chunk->prev == NULL);
-    chunk_free(chunk);
+    chunk_free(chunk, chunk);
 
     chunk_pool_clean();
     assert(clu_mem_empty());

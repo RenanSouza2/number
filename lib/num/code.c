@@ -392,12 +392,16 @@ chunk_p chunk_consume(chunk_p chunk)
     return chunk_next;
 }
 
-void chunk_free(chunk_p chunk)
+void chunk_free(chunk_p head, chunk_p tail)
 {
-    DBG_CHECK_PTR(chunk);
+    DBG_CHECK_PTR(head);
+    DBG_CHECK_PTR(tail);
 
-    while(chunk)
-        chunk = chunk_consume(chunk);
+    if(head == NULL)
+        return;
+
+    tail->next = chunk_pool;
+    chunk_pool = head;
 }
 
 void chunk_pool_clean()
@@ -661,7 +665,7 @@ void num_free(num_p num)
 {
     DBG_CHECK_PTR(num);
 
-    chunk_free(num->head);
+    chunk_free(num->head, num->tail);
     free(num);
 }
 
