@@ -979,6 +979,63 @@ void num_div_mod_offset(
     }
 }
 
+uint64_t num_div_mod_inner(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
+{
+    DBG_CHECK_PTR(num_1);
+    DBG_CHECK_PTR(num_2);
+
+    assert(num_2->count);
+
+    num_p num_q = num_create(0, NULL, NULL);
+
+    if(num_cmp(num_1, num_2) < 0)
+    {
+        *out_num_q = num_q;
+        *out_num_r = num_1;
+        num_free(num_2);
+        return 0;
+    }
+
+    if(num_2->count == 1)
+    {
+        num_div_mod_offset(
+            num_q,
+            num_1,
+            num_1->tail,
+            num_1->count - num_2->count,
+            num_2
+        );
+
+        *out_num_q = num_q;
+        *out_num_r = num_1;
+        num_free(num_2);
+        return 0;
+    }
+
+    uint64_t bits = 0;
+    for(uint64_t l = num_2->tail->value; l >> 63 == 0; l <<= 1)
+        bits++;
+
+    num_1 = num_shl_uint(num_1, bits);
+    num_2 = num_shl_uint(num_2, bits);
+
+    chunk_p chunk_r = num_1->tail;
+    for(uint64_t i=1; i<num_2->count; i++)
+        chunk_r = chunk_r->prev;
+
+    num_div_mod_offset(
+        num_q,
+        num_1,
+        chunk_r,
+        num_1->count - num_2->count,
+        num_2
+    );
+    num_free(num_2);
+
+    *out_num_q = num_q;
+    *out_num_r = num_1;
+    return bits;
+}
 
 
 
@@ -1108,64 +1165,6 @@ num_p num_mul(num_p num_1, num_p num_2)
     num_free(num_1);
     free(num_2);
     return num_res;
-}
-
-uint64_t num_div_mod_inner(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
-{
-    DBG_CHECK_PTR(num_1);
-    DBG_CHECK_PTR(num_2);
-
-    assert(num_2->count);
-
-    num_p num_q = num_create(0, NULL, NULL);
-
-    if(num_cmp(num_1, num_2) < 0)
-    {
-        *out_num_q = num_q;
-        *out_num_r = num_1;
-        num_free(num_2);
-        return 0;
-    }
-
-    if(num_2->count == 1)
-    {
-        num_div_mod_offset(
-            num_q,
-            num_1,
-            num_1->tail,
-            num_1->count - num_2->count,
-            num_2
-        );
-
-        *out_num_q = num_q;
-        *out_num_r = num_1;
-        num_free(num_2);
-        return 0;
-    }
-
-    uint64_t bits = 0;
-    for(uint64_t l = num_2->tail->value; l >> 63 == 0; l <<= 1)
-        bits++;
-
-    num_1 = num_shl_uint(num_1, bits);
-    num_2 = num_shl_uint(num_2, bits);
-
-    chunk_p chunk_r = num_1->tail;
-    for(uint64_t i=1; i<num_2->count; i++)
-        chunk_r = chunk_r->prev;
-
-    num_div_mod_offset(
-        num_q,
-        num_1,
-        chunk_r,
-        num_1->count - num_2->count,
-        num_2
-    );
-    num_free(num_2);
-
-    *out_num_q = num_q;
-    *out_num_r = num_1;
-    return bits;
 }
 
 void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)

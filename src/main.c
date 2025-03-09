@@ -292,7 +292,7 @@ int main(int argc, char** argv)
     //     }
     // }
 
-    time_1(13, 21);
+    time_1(13, 30);
 
     printf("\n");
     return 0;
