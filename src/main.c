@@ -1,11 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 #include <time.h>
+
+#include "../utils/assert.h"
+#include "../utils/U64.h"
 
 #include "../lib/num/header.h"
 #include "../lib/mod/header.h"
-#include "../utils/assert.h"
-#include "../utils/U64.h"
+#include "../lib/fix/header.h"
 
 #include "../utils/clu/header.h"
 
@@ -14,26 +17,18 @@ uint64_t altutime()
 {
     struct timespec time;
     clock_gettime(CLOCK_MONOTONIC, &time);
-    return time.tv_sec * 1e6 + time.tv_nsec / 1e3;
+    return time.tv_sec * 1e3 + time.tv_nsec / 1e6;
 }
 
 
 
 num_p num_generate(uint64_t max, uint64_t salt)
 {
-    // uint64_t begin = altutime();
-
     num_p num = num_wrap(2);
     for(uint64_t i=0; i<max; i++)
     {
-        // printf("\ni: %lu", i);
-
         num = num_add(num, num_wrap(salt));
         num = num_mul(num, num_copy(num));
-
-        // uint64_t end = altutime();
-        // num_display_full("num", num);
-        // printf("\n%lu: %10.3f", i, (end - begin) / 1e6);
     }
     return num;
 }
@@ -89,7 +84,7 @@ void time_1(uint64_t begin, uint64_t end)
         uint64_t begin = altutime();
         num_p num = num_div(num_1_copy, num_2_copy);
         uint64_t end = altutime();
-        printf("\t%10.3f", (end - begin) / 1e6);
+        printf("\t%10.3f", (end - begin) / 1e3);
 
         num_free(num);
     }
@@ -121,7 +116,7 @@ void time_2(int argc, char** argv, uint64_t max)
         uint64_t begin = altutime();
         num_aux_1 = num_div(num_aux_1, num_aux_2);
         uint64_t end = altutime();
-        printf("\t%10.3lf", (end - begin) / 1e6);
+        printf("\t%10.3lf", (end - begin) / 1e3);
     }
 }
 
@@ -206,6 +201,81 @@ void mod_fib(mod_p *mod_a, mod_p *mod_b)
     *mod_b = mod_c;
 }
 
+void time_dec()
+{
+    printf("\n");
+    num_p num = num_generate(20, 2);
+    printf("\ngenerated\n");
+    printf("\n");
+    uint64_t begin = altutime();
+    num_display_dec(num);
+    uint64_t end = altutime();
+    printf("\n");
+    printf("\ntime: %.3f", (end - begin) / 1e3);
+}
+
+
+void pi_1()
+{
+    uint64_t pos = 3;
+    fix_p fix = fix_wrap(0, pos);
+    for(uint64_t i=1; ; i++)
+    {
+        int64_t base = 16 * i * i - 16 * i + 3;
+        fix_p fix_1 = fix_wrap(8, pos);
+        fix_p fix_2 = fix_wrap(base, pos);
+        fix_1 = fix_div(fix_1, fix_2);
+        fix = fix_add(fix, fix_copy(fix_1));
+
+        if(i%1000000 == 0)
+        {
+            printf("\ni: " U64P() "\t", i);
+            fix_display_dec(fix);
+            printf("\t");
+            fix_display_dec(fix_1);
+            fix_free(fix_1);
+        }
+    }
+}
+
+void e()
+{
+    uint64_t pos = 1000;
+    fix_p fix = fix_wrap(0, pos);
+    fix_p base = fix_wrap(1, pos);
+    for(uint64_t i=1; ; i++)
+    {
+        fix_p fix_2 = fix_wrap(i, pos);
+        base = fix_div(base, fix_2);
+        fix = fix_add(fix, fix_copy(base));
+
+        if(i%1000 == 0)
+        {
+            fprintf(stderr, "\ni: " U64P() "", i);
+            printf("\n");
+            fix_display_dec(fix);
+        }
+    }
+}
+
+void pi_2()
+{
+    uint64_t pos = 2;
+    fix_p fix = fix_wrap(2, pos);
+    for(uint64_t i=1; ; i++)
+    {
+        uint64_t base = 4 * i * i;
+        fix = fix_mul(fix, fix_wrap(base, pos));
+        fix = fix_div(fix, fix_wrap(base - 1, pos));
+    
+        if(i%1000000 == 0)
+        {
+            printf("\n");
+            fix_display_dec(fix);
+        }
+    }
+}
+
 
 
 int main(int argc, char** argv)
@@ -213,18 +283,10 @@ int main(int argc, char** argv)
     setbuf(stdout, NULL);
     srand(time(NULL));
 
-    time_1(13, 21);
-    // time_2(argc, argv, 18);
-    // num_generate(30, 2);
 
-    // fibonacci();
-    // fibonacci_2();
-    // factorial();
 
-    // num_p num = num_wrap_dec("1000000000000000000");
-    // num_display_tag("num", num);
 
-    // clu_mem_report("AAAA");
+    time_1(13, 30);
 
     printf("\n");
     return 0;

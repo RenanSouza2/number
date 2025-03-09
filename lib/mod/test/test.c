@@ -9,22 +9,23 @@
 void test_mod_create(bool show)
 {
     char offset[] = "\t";
-    printf("\n%s%s", offset, __func__);
+    printf("\n%s%s\t\t", offset, __func__);
 
     num_p p = num_wrap(7);
 
-    if(show) printf("\n%s\t%s 1", offset, __func__);
+    if(show) printf("\n%s\t%s 1\t\t", offset, __func__);
     num_p num = num_create_immed(0);
     mod_p mod = mod_create(num, p);
     assert(mod_immed(mod, 0));
 
-    if(show) printf("\n%s\t%s 2", offset, __func__);
+    if(show) printf("\n%s\t%s 2\t\t", offset, __func__);
     num = num_create_immed(1, 1);
     mod = mod_create(num, p);
     assert(mod_immed(mod, 1, 1));
 
     num_free(p);
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -45,6 +46,7 @@ void test_mod_wrap(bool show)
 
     num_free(p);
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -83,6 +85,7 @@ void test_mod_add(bool show)
 
     num_free(p);
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -125,6 +128,7 @@ void test_mod_sub(bool show)
 
     num_free(p);
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -176,6 +180,7 @@ void test_mod_mul(bool show)
 
     num_free(p);
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -206,6 +211,7 @@ void test_mod_div(bool show)
 
     num_free(p);
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
@@ -225,6 +231,7 @@ void test_mod()
     test_mod_mul(show);
     test_mod_div(show);
 
+    chunk_pool_clean();
     assert(clu_mem_empty());
 }
 

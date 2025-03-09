@@ -8,13 +8,18 @@
 
 PLACEHOLDER(num);
 
+void num_display_dec(num_p num);
 void num_display_opts(num_p num, bool length, bool full);
 void num_display(num_p num);
 void num_display_tag(char *tag, num_p num);
 void num_display_full(char *tag, num_p num);
 
+void num_break(num_p *out_num_h, num_p *out_num_l, num_p num, uint64_t count);
+
 num_p num_wrap(uint64_t value);
 num_p num_wrap_str(char str[]);
+num_p num_read_dec(char file_name[]);
+uint64_t num_unwrap(num_p num);
 num_p num_copy(num_p num);
 void num_free(num_p num);
 
@@ -23,6 +28,7 @@ int64_t num_cmp(num_p num_1, num_p num_2);
 
 num_p num_shl(num_p num, uint64_t bits);
 num_p num_shr(num_p num, uint64_t bits);
+num_p num_exp(num_p num, uint64_t value);
 
 num_p num_add(num_p num_1, num_p num_2);
 num_p num_sub(num_p num_1, num_p num_2);

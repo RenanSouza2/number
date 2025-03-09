@@ -13,10 +13,9 @@ bool mod_immed(mod_p mod, uint64_t n, ...)
 {
     va_list args;
     va_start(args, n);
-    num_p num = num_create_variadic(n, args);
+    num_p num = num_create_variadic(n, &args);
     bool res = num_str(mod->num, num);
-    num_free(num);
-    mod_free(mod);
+    free(mod);
     return res;
 }
 

@@ -11,7 +11,7 @@
 
 #include "../num/debug.h"
 
-snum_p snum_create_variadic(uint64_t signal, uint64_t n, va_list args)
+snum_p snum_create_variadic(uint64_t signal, uint64_t n, va_list *args)
 {
     num_p num = num_create_variadic(n, args);
     return snum_create(signal, num);
@@ -21,7 +21,7 @@ snum_p snum_create_immed(uint64_t signal, uint64_t n, ...)
 {
     va_list args;
     va_start(args, n);
-    return snum_create_variadic(signal, n, args);
+    return snum_create_variadic(signal, n, &args);
 }
 
 
@@ -60,12 +60,12 @@ bool snum_immed(snum_p snum, uint64_t signal, uint64_t count, ...)
 {
     va_list args;
     va_start(args, count);
-    snum_p snum_2 = snum_create_variadic(signal, count, args);
+    snum_p snum_2 = snum_create_variadic(signal, count, &args);
 
     bool res = snum_str(snum, snum_2);
 
-    snum_free(snum);
-    snum_free(snum_2);
+    free(snum);
+    free(snum_2);
     return res;
 }
 
@@ -81,17 +81,16 @@ void snum_display(snum_p snum)
         return;
     }
 
-    if(snum->signal & POSITIVE)
-        printf("+ ");
-    else
-        printf("- ");
+    printf("%c ", snum->signal & POSITIVE ? '+': '-');
 
+    printf("[");
     num_display(snum->num);
+    printf("]");
 }
 
 void snum_display_tag(char tag[], snum_p snum)
 {
-    printf("\n%s: ", tag);
+    printf("\n%s:\t", tag);
     snum_display(snum);
 }
 
@@ -156,6 +155,7 @@ void snum_free(snum_p snum)
     num_free(snum->num);
     free(snum);
 }
+
 
 
 bool snum_is_zero(snum_p snum)

@@ -10,7 +10,8 @@ typedef __uint128_t uint128_t;
 #include <stdarg.h>
 
 num_p num_create_immed(uint64_t n, ...);
-num_p num_create_variadic(uint64_t n, va_list args);
+num_p num_create_variadic(uint64_t n, va_list *args);
+void num_create_immed_vec(num_p out_num[], uint64_t n, ...);
 
 bool int64(int64_t u1, int64_t u2);
 bool uint64(uint64_t u1, uint64_t u2);
@@ -19,7 +20,7 @@ bool uint128_immed(uint128_t u1, uint64_t v2h, uint64_t v2l);
 bool num_str(num_p num_1, num_p num_2);
 bool num_immed(num_p num, uint64_t n, ...);
 
-node_p num_get_node(num_p num, uint64_t count);
+chunk_p num_get_chunk(num_p num, uint64_t count);
 
 #endif
 
@@ -31,22 +32,26 @@ node_p num_get_node(num_p num, uint64_t count);
 
 uint64_t uint_from_char(char c);
 
-node_p node_create(uint64_t value, node_p next, node_p prev);
-node_p node_consume(node_p node);
-void node_free(node_p node);
+chunk_p chunk_create(uint64_t value, chunk_p next, chunk_p prev);
+chunk_p chunk_consume(chunk_p chunk);
+void chunk_free(chunk_p head, chunk_p tail);
+void chunk_pool_clean();
 
-num_p num_create(uint64_t count, node_p head, node_p tail);
-node_p num_insert(num_p num, uint64_t value);
-node_p num_insert_head(num_p num, uint64_t value);
+num_p num_create(uint64_t count, chunk_p head, chunk_p tail);
+chunk_p num_insert(num_p num, uint64_t value);
+chunk_p num_insert_head(num_p num, uint64_t value);
 void num_remove_head(num_p num);
-void num_insert_list(num_p num, node_p head, node_p tail, uint64_t cnt);
-node_p num_denormalize(num_p num, node_p node);
+void num_insert_list(num_p num, chunk_p head, chunk_p tail, uint64_t cnt);
+chunk_p num_denormalize(num_p num, chunk_p chunk);
 bool num_normalize(num_p num);
 
 num_p num_wrap_dec(char str[]);
 num_p num_wrap_hex(char str[]);
 
-bool num_sub_uint_offset(num_p num, node_p node, uint64_t value);
+num_p num_base_to(num_p num, uint64_t value);
+num_p num_base_from(num_p num, uint64_t value);
+
+bool num_sub_uint_offset(num_p num, chunk_p chunk, uint64_t value);
 
 num_p num_shl_uint(num_p num, uint64_t bits);
 num_p num_shr_uint(num_p num, uint64_t bits);

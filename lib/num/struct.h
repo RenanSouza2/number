@@ -3,18 +3,16 @@
 
 #include "header.h"
 
-// NOTE: NULL num pointer represents zero
-
-STRUCT(node)
+STRUCT(chunk)
 {
     uint64_t value;
-    node_p next, prev;
+    chunk_p next, prev;
 };
 
 STRUCT(num)
 {
     uint64_t count;
-    node_p head, tail;
+    chunk_p head, tail;
 };
 
 #endif
