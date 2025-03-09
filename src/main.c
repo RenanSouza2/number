@@ -229,7 +229,7 @@ void pi_1()
 
         if(i%1000000 == 0)
         {
-            printf("\ni: %llu\t", i);
+            printf("\ni: " U64P() "\t", i);
             fix_display_dec(fix);
             printf("\t");
             fix_display_dec(fix_1);
@@ -251,7 +251,25 @@ void e()
 
         if(i%1000 == 0)
         {
-            fprintf(stderr, "\ni: %llu", i);
+            fprintf(stderr, "\ni: " U64P() "", i);
+            printf("\n");
+            fix_display_dec(fix);
+        }
+    }
+}
+
+void pi_2()
+{
+    uint64_t pos = 2;
+    fix_p fix = fix_wrap(2, pos);
+    for(uint64_t i=1; ; i++)
+    {
+        uint64_t base = 4 * i * i;
+        fix = fix_mul(fix, fix_wrap(base, pos));
+        fix = fix_div(fix, fix_wrap(base - 1, pos));
+    
+        if(i%1000000 == 0)
+        {
             printf("\n");
             fix_display_dec(fix);
         }
@@ -259,38 +277,14 @@ void e()
 }
 
 
+
 int main(int argc, char** argv)
 {
     setbuf(stdout, NULL);
     srand(time(NULL));
 
-    // uint64_t pos = 2;
-    // fix_p fix = fix_wrap(2, pos);
-    // for(uint64_t i=1; ; i++)
-    // {
-    //     uint64_t base = 4 * i * i;
-    //     fix = fix_mul(fix, fix_wrap(base, pos));
-    //     fix = fix_div(fix, fix_wrap(base - 1, pos));
-    //
-    //     if(i%1000000 == 0)
-    //     {
-    //         printf("\n");
-    //         fix_display_dec(fix);
-    //     }
-    // }
 
-    // double fix = 2;
-    // for(uint64_t i=1; ; i++)
-    // {
 
-    //     double base = 4 * i * i;
-    //     fix *= base / (base - 1);
-
-    //     if(i%1000000 == 0)
-    //     {
-    //         printf("\n%.16f %.0f %.16f %f", fix, base, base / (base - 1), (double)(4 * i * i) / INT_MAX);
-    //     }
-    // }
 
     time_1(13, 30);
 
