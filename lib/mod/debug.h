@@ -9,6 +9,6 @@ bool mod_immed(mod_p mod, uint64_t n, ...);
 
 #endif
 
-mod_p mod_create(num_p num, num_p p);
+mod_p mod_create(num_t num, num_t p);
 
 #endif

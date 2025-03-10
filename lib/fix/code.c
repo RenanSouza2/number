@@ -19,7 +19,7 @@ void fix_display_dec(fix_p fix)
 {
     fix = fix_copy(fix);
 
-    num_p num_h, num_l;
+    num_t num_h, num_l;
     num_break(&num_h, &num_l, fix->snum->num, fix->pos);
 
     if(fix->snum->signal == NEGATIVE)

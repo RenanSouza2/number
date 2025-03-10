@@ -4,8 +4,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-
-#include "../num/header.h"
 #include "../../utils/struct.h"
 
 PLACEHOLDER(snum);

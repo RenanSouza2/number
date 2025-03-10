@@ -11,6 +11,6 @@ bool snum_immed(snum_p snum, uint64_t signal, uint64_t n, ...);
 
 #endif
 
-snum_p snum_create(uint64_t signal, num_p num);
+snum_p snum_create(uint64_t signal, num_t num);
 
 #endif

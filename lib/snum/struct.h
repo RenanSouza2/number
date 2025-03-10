@@ -1,6 +1,8 @@
 #ifndef __SIG_STRUCT_H__
 #define __SIG_STRUCT_H__
 
+#include "../num/struct.h"
+
 #include "header.h"
 
 #define POSITIVE 1
@@ -10,7 +12,7 @@
 STRUCT(snum)
 {
     uint64_t signal;
-    num_p num;
+    num_t num;
 };
 
 #endif

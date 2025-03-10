@@ -13,7 +13,7 @@
 
 snum_p snum_create_variadic(uint64_t signal, uint64_t n, va_list *args)
 {
-    num_p num = num_create_variadic(n, args);
+    num_t num = num_create_variadic(n, args);
     return snum_create(signal, num);
 }
 
@@ -96,7 +96,7 @@ void snum_display_tag(char tag[], snum_p snum)
 
 
 
-snum_p snum_create(uint64_t signal, num_p num)
+snum_p snum_create(uint64_t signal, num_t num)
 {
     snum_p snum = malloc(sizeof(snum_t));
     assert(snum);
@@ -120,17 +120,17 @@ snum_p snum_wrap(int64_t value)
 {
     if(value == 0)
     {
-        num_p num = num_wrap(0);
+        num_t num = num_wrap(0);
         return snum_create(ZERO, num);
     }
 
     if(value < 0)
     {
-        num_p num = num_wrap(-value);
+        num_t num = num_wrap(-value);
         return snum_create(NEGATIVE, num);
     }
 
-    num_p num = num_wrap(value);
+    num_t num = num_wrap(value);
     return snum_create(POSITIVE, num);
 }
 
@@ -138,13 +138,13 @@ snum_p snum_wrap_str(char str[])
 {
     uint64_t signal = str[0] == '-' ? NEGATIVE : POSITIVE;
     uint64_t offset = str[0] == '-' || str[0] == '+' ? 1 : 0;
-    num_p num = num_wrap_str(&str[offset]);
+    num_t num = num_wrap_str(&str[offset]);
     return snum_create(signal, num);
 }
 
 snum_p snum_copy(snum_p snum)
 {
-    num_p num = num_copy(snum->num);
+    num_t num = num_copy(snum->num);
     return snum_create(snum->signal, num);
 }
 
@@ -214,7 +214,7 @@ snum_p snum_add(snum_p snum_1, snum_p snum_2)
     uint64_t signal_res = snum_1->signal & snum_2->signal;
     if(signal_res)
     {
-        num_p num_res = num_add(snum_1->num, snum_2->num);
+        num_t num_res = num_add(snum_1->num, snum_2->num);
         free(snum_1);
         free(snum_2);
         return snum_create(signal_res, num_res);
@@ -222,14 +222,14 @@ snum_p snum_add(snum_p snum_1, snum_p snum_2)
 
     if(num_cmp(snum_1->num, snum_2->num) > 0)
     {
-        num_p num_res = num_sub(snum_1->num, snum_2->num);
+        num_t num_res = num_sub(snum_1->num, snum_2->num);
         signal_res = snum_1->signal;
         free(snum_1);
         free(snum_2);
         return snum_create(signal_res, num_res);
     }
 
-    num_p num_res = num_sub(snum_2->num, snum_1->num);
+    num_t num_res = num_sub(snum_2->num, snum_1->num);
     signal_res = snum_2->signal;
     free(snum_1);
     free(snum_2);
@@ -247,7 +247,7 @@ snum_p snum_mul(snum_p snum_1, snum_p snum_2)
     uint64_t signal_res = snum_1->signal & snum_2->signal ?
         POSITIVE : NEGATIVE;
 
-    num_p num_res = num_mul(snum_1->num, snum_2->num);
+    num_t num_res = num_mul(snum_1->num, snum_2->num);
     free(snum_1);
     free(snum_2);
     return snum_create(signal_res, num_res);
@@ -258,7 +258,7 @@ snum_p snum_div(snum_p snum_1, snum_p snum_2)
     uint64_t signal_res = snum_1->signal & snum_2->signal ?
         POSITIVE : NEGATIVE;
 
-    num_p num_res = num_div(snum_1->num, snum_2->num);
+    num_t num_res = num_div(snum_1->num, snum_2->num);
     free(snum_1);
     free(snum_2);
     return snum_create(signal_res, num_res);

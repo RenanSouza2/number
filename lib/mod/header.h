@@ -1,14 +1,14 @@
 #ifndef __MOD_H__
 #define __MOD_H__
 
-#include "../num/header.h"
+#include "../num/struct.h"
 #include "../../utils/struct.h"
 
 PLACEHOLDER(mod);
 
 void mod_display(char tag[], mod_p mod);
 
-mod_p mod_wrap(uint64_t value, num_p p);
+mod_p mod_wrap(uint64_t value, num_t p);
 mod_p mod_copy(mod_p mod);
 void mod_free(mod_p mod);
 

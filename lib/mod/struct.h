@@ -5,8 +5,8 @@
 
 STRUCT(mod)
 {
-    num_p num;
-    num_p max;
+    num_t num;
+    num_t max;
 };
 
 #endif

@@ -11,10 +11,10 @@ void test_mod_create(bool show)
     char offset[] = "\t";
     printf("\n%s%s\t\t", offset, __func__);
 
-    num_p p = num_wrap(7);
+    num_t p = num_wrap(7);
 
     if(show) printf("\n%s\t%s 1\t\t", offset, __func__);
-    num_p num = num_create_immed(0);
+    num_t num = num_create_immed(0);
     mod_p mod = mod_create(num, p);
     assert(mod_immed(mod, 0));
 
@@ -34,7 +34,7 @@ void test_mod_wrap(bool show)
     char offset[] = "\t";
     printf("\n%s%s", offset, __func__);
 
-    num_p p = num_wrap(7);
+    num_t p = num_wrap(7);
 
     if(show) printf("\n%s\t%s 1", offset, __func__);
     mod_p mod = mod_wrap(0, p);
@@ -57,7 +57,7 @@ void test_mod_add(bool show)
     char offset[] = "\t";
     printf("\n%s%s", offset, __func__);
 
-    num_p p = num_wrap(7);
+    num_t p = num_wrap(7);
 
     if(show) printf("\n%s\t%s 1", offset, __func__);
     mod_p mod_1 = mod_wrap(0, p);
@@ -94,7 +94,7 @@ void test_mod_sub(bool show)
     char offset[] = "\t";
     printf("\n%s%s", offset, __func__);
 
-    num_p p = num_wrap(7);
+    num_t p = num_wrap(7);
 
     if(show) printf("\n%s\t%s 1", offset, __func__);
     mod_p mod_1 = mod_wrap(0, p);
@@ -137,7 +137,7 @@ void test_mod_mul(bool show)
     char offset[] = "\t";
     printf("\n%s%s", offset, __func__);
 
-    num_p p = num_wrap(7);
+    num_t p = num_wrap(7);
 
     if(show) printf("\n%s\t%s 1", offset, __func__);
     mod_p mod_1 = mod_wrap(0, p);
@@ -189,7 +189,7 @@ void test_mod_div(bool show)
     char offset[] = "\t";
     printf("\n%s%s", offset, __func__);
 
-    num_p p = num_wrap(7);
+    num_t p = num_wrap(7);
 
     if(show) printf("\n%s\t%s 1", offset, __func__);
     mod_p mod_1 = mod_wrap(0, p);
