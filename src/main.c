@@ -267,7 +267,7 @@ void pi_2()
         uint64_t base = 4 * i * i;
         fix = fix_mul(fix, fix_wrap(base, pos));
         fix = fix_div(fix, fix_wrap(base - 1, pos));
-    
+
         if(i%1000000 == 0)
         {
             printf("\n");

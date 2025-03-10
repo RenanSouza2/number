@@ -352,7 +352,7 @@ void test_num_insert_head(bool show)
         1, 2,
         2, 2, 1
     );
-    
+
     #undef TEST_NUM_INSERT_HEAD
 
     chunk_pool_clean();
@@ -404,29 +404,29 @@ void test_num_insert_list(bool show)
         assert(num_str(num[0], num[2]));                                            \
     }
 
-    TEST_NUM_INSERT_LIST(1, 
-        0, 
-        0, 
+    TEST_NUM_INSERT_LIST(1,
+        0,
+        0,
         0
     );
-    TEST_NUM_INSERT_LIST(2, 
-        0, 
-        1, 2, 
+    TEST_NUM_INSERT_LIST(2,
+        0,
+        1, 2,
         1, 2
     );
-    TEST_NUM_INSERT_LIST(3, 
-        1, 1, 
-        0, 
+    TEST_NUM_INSERT_LIST(3,
+        1, 1,
+        0,
         1, 1
     );
-    TEST_NUM_INSERT_LIST(4, 
-        1, 1, 
-        1, 2, 
+    TEST_NUM_INSERT_LIST(4,
+        1, 1,
+        1, 2,
         2, 2, 1
     );
-    TEST_NUM_INSERT_LIST(5, 
-        2, 1, 2, 
-        2, 3, 4, 
+    TEST_NUM_INSERT_LIST(5,
+        2, 1, 2,
+        2, 3, 4,
         4, 3, 4, 1, 2
     );
 
@@ -450,8 +450,8 @@ void test_num_denormalize(bool show)
         assert(num_str(num[0], num[1]));                    \
     }
 
-    TEST_NUM_DENORMALIZE(1, 
-        0, 
+    TEST_NUM_DENORMALIZE(1,
+        0,
         1, 0
     );
     TEST_NUM_DENORMALIZE(2,
@@ -485,7 +485,7 @@ void test_num_normalize(bool show)
         assert(num_str(num[0], num[1]));                    \
     }
 
-    TEST_NUM_NORMALIZE(1, false, 
+    TEST_NUM_NORMALIZE(1, false,
         0,
         0
     );
@@ -731,7 +731,7 @@ void test_num_read_dec(bool show)
 void test_num_copy(bool show)
 {
     printf("\n\t%s", __func__);
-    
+
     #define TEST_NUM_COPY(TAG, ...)                     \
     {                                                   \
         if(show) printf("\n\t\t%s %d", __func__, TAG);  \
@@ -743,7 +743,7 @@ void test_num_copy(bool show)
     TEST_NUM_COPY(1, 0);
     TEST_NUM_COPY(2, 1, 1);
     TEST_NUM_COPY(3, 2, 1, 2);
-    
+
     #undef TEST_NUM_COPY
 
     chunk_pool_clean();
@@ -813,11 +813,11 @@ void test_num_base_from(bool show)
         assert(num_str(num[0], num[1]));                    \
     }
 
-    TEST_NUM_BASE_FROM(1, 
-        0, 
+    TEST_NUM_BASE_FROM(1,
+        0,
         0
     );
-    TEST_NUM_BASE_FROM(2, 
+    TEST_NUM_BASE_FROM(2,
         1, 1,
         1, 1
     );
@@ -907,7 +907,7 @@ void test_num_shl_uint(bool show)
         assert(num_str(num[0], num[1]));                \
     }
 
-    TEST_NUM_SHL_UINT(1, 0, 
+    TEST_NUM_SHL_UINT(1, 0,
         0,
         0
     );
@@ -1089,7 +1089,7 @@ void test_num_mul_uint(bool show)
         0
     );
     TEST_NUM_MUL_UINT(4, 3,
-        1, 2, 
+        1, 2,
         1, 6
     );
     TEST_NUM_MUL_UINT(5, UINT64_MAX,
@@ -1147,7 +1147,7 @@ void test_num_add_mul_uint(bool show)
         1, 1
     );
     TEST_NUM_ADD_MUL_UINT(4, 3,
-        1, 2, 
+        1, 2,
         1, 7
     );
     TEST_NUM_ADD_MUL_UINT(5, UINT64_MAX,

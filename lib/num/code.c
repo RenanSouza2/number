@@ -907,10 +907,10 @@ chunk_p num_sub_offset(num_p num_1, chunk_p chunk_1, chunk_p chunk_2) // TODO te
 }
 
 /*
-* returns NUM_2 * R if less then NUM_1, 0 and invalid output otherwise;
+* returns NUM_2 * R if less then NUM_1, 0 otherwise;
 *  keeps NUM_1 and NUM_2
 */
-num_t num_cmp_mul_uint(bool *out_valid, num_t num_1, num_t num_2, uint64_t r, uint64_t offset) // TODO test
+num_t num_cmp_mul_uint(num_t num_1, num_t num_2, uint64_t r, uint64_t offset) // TODO test
 {
     num_t num_aux = num_create(0, NULL, NULL);
     chunk_p chunk = num_2.tail;
@@ -923,21 +923,14 @@ num_t num_cmp_mul_uint(bool *out_valid, num_t num_1, num_t num_2, uint64_t r, ui
         if(num_cmp_offset(num_1, num_aux, offset) < 0)
         {
             num_free(num_aux);
-            *out_valid = false;
             return num_create(0, NULL, NULL);
         }
     }
 
-    *out_valid = true;
     return num_aux;
 }
 
-num_t num_div_mod_offset(
-    num_p num_1,
-    chunk_p chunk_1,
-    uint64_t offset_1,
-    num_t num_2
-)
+num_t num_div_mod_offset(num_p num_1, chunk_p chunk_1, uint64_t offset_1, num_t num_2 )
 {
     DBG_CHECK_PTR(num_1->head);
     DBG_CHECK_PTR(chunk_1);
@@ -970,10 +963,9 @@ num_t num_div_mod_offset(
 
             uint128_t tmp = val_1 / val_2;
             uint64_t r_aux = tmp > UINT64_MAX ? UINT64_MAX : tmp;
-            
-            bool valid;
-            num_t num_aux = num_cmp_mul_uint(&valid, *num_1, num_2, r_aux, offset_1);
-            if(!valid)
+
+            num_t num_aux = num_cmp_mul_uint(*num_1, num_2, r_aux, offset_1);
+            if(num_aux.count == 0)
             {
                 r_aux = val_1 / (val_2 + 1);
                 num_aux = num_mul_uint(num_2, r_aux);
