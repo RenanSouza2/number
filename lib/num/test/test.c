@@ -1588,158 +1588,148 @@ void test_num_mul(bool show) // TODO refactor
     assert(clu_mem_empty());
 }
 
-void test_num_div_mod(bool show) // TODO refactor
+void test_num_div_mod(bool show)
 {
     printf("\n\t%s", __func__);
 
-    num_t num_q, num_r;
+    #define TEST_NUM_DIV_MOD(TAG, ...)                      \
+    {                                                       \
+        num_t num_q, num_r, num[4];                         \
+        if(show) printf("\n\t\t%s %2d\t\t", __func__, TAG); \
+        num_create_immed_vec(num, 4, __VA_ARGS__);          \
+        num_div_mod(&num_q, &num_r, num[0], num[1]);        \
+        assert(num_str(num_q, num[2]));                     \
+        assert(num_str(num_r, num[3]));                     \
+        chunk_pool_clean();                                 \
+        assert(clu_mem_empty());                            \
+    }
 
-    if(show) printf("\n\t\t%s  1\t\t", __func__);
-    num_t num_1 = num_create_immed(0);
-    num_t num_2 = num_create_immed(1, 1);
-    num_div_mod(&num_q, &num_r, num_1, num_2);
-    assert(num_immed(num_q, 0));
-    assert(num_immed(num_r, 0));
-
-    if(show) printf("\n\t\t%s  2\t\t", __func__);
-    num_1 = num_create_immed(1, 4);
-    num_2 = num_create_immed(1, 2);
-    num_div_mod(&num_q, &num_r, num_1, num_2);
-    assert(num_immed(num_q, 1, 2));
-    assert(num_immed(num_r, 0));
-
-    if(show) printf("\n\t\t%s  3\t\t", __func__);
-    num_1 = num_create_immed(1, 5);
-    num_2 = num_create_immed(1, 2);
-    num_div_mod(&num_q, &num_r, num_1, num_2);
-    assert(num_immed(num_q, 1, 2));
-    assert(num_immed(num_r, 1, 1));
-
-    if(show) printf("\n\t\t%s  4\t\t", __func__);
-    num_1 = num_create_immed(1, 5);
-    num_2 = num_create_immed(1, 5);
-    num_div_mod(&num_q, &num_r, num_1, num_2);
-    assert(num_immed(num_q, 1, 1));
-    assert(num_immed(num_r, 0));
-
-    if(show) printf("\n\t\t%s  5\t\t", __func__);
-    num_1 = num_create_immed(1, 9);
-    num_2 = num_create_immed(1, 3);
-    num_div_mod(&num_q, &num_r, num_1, num_2);
-    assert(num_immed(num_q, 1, 3));
-    assert(num_immed(num_r, 0));
-
-    if(show) printf("\n\t\t%s  6\t\t", __func__);
-    num_1 = num_create_immed(3, 1, 0, 0);
-    num_2 = num_create_immed(2, 1, 0);
-    num_div_mod(&num_q, &num_r, num_1, num_2);
-    assert(num_immed(num_q, 2, 1, 0));
-    assert(num_immed(num_r, 0));
-
-    if(show) printf("\n\t\t%s  7\t\t", __func__);
-    num_1 = num_create_immed(1, 1);
-    num_2 = num_create_immed(2, 1, 0);
-    num_div_mod(&num_q, &num_r, num_1, num_2);
-    assert(num_immed(num_q, 0));
-    assert(num_immed(num_r, 1, 1));
-
-    if(show) printf("\n\t\t%s  8\t\t", __func__);
-    num_1 = num_create_immed(2, 4, UINT64_MAX);
-    num_2 = num_create_immed(2, 2, 0);
-    num_div_mod(&num_q, &num_r, num_1, num_2);
-    assert(num_immed(num_q, 1, 2));
-    assert(num_immed(num_r, 1, UINT64_MAX));
-
-    if(show) printf("\n\t\t%s  9\t\t", __func__);
-    num_1 = num_create_immed(2, 4, 0);
-    num_2 = num_create_immed(2, 2, UINT64_MAX);
-    num_div_mod(&num_q, &num_r, num_1, num_2);
-    assert(num_immed(num_q, 1, 1));
-    assert(num_immed(num_r, 2, 1, 1));
-
-    if(show) printf("\n\t\t%s 10\t\t", __func__);
-    num_1 = num_create_immed(2, 1, 0);
-    num_2 = num_create_immed(1, UINT64_MAX);
-    num_div_mod(&num_q, &num_r, num_1, num_2);
-    assert(num_immed(num_q, 1, 1));
-    assert(num_immed(num_r, 1, 1));
-
-    if(show) printf("\n\t\t%s 11\t\t", __func__);
-    num_1 = num_create_immed(2, UINT64_MAX, 0);
-    num_2 = num_create_immed(2, 1, UINT64_MAX);
-    num_div_mod(&num_q, &num_r, num_1, num_2);
-    assert(num_immed(num_q, 1, 0x7fffffffffffffff));
-    assert(num_immed(num_r, 2, 1, 0x7fffffffffffffff));
-
-    if(show) printf("\n\t\t%s 12\t\t", __func__);
-    num_1 = num_create_immed(2, 0xc929d7d593, 0xb7090a859117cfa4);
-    num_2 = num_create_immed(2, 6, 0xea7db545decb57a4);
-    num_div_mod(&num_q, &num_r, num_1, num_2);
-    assert(num_immed(num_q, 1, 0x0000001d1635b735));
-    assert(num_immed(num_r, 1, 0x88c80995d8646eb0));
-
-    if(show) printf("\n\t\t%s 13\t\t", __func__);
-    num_1 = num_create_immed(3, UINT64_MAX, 0, UINT64_MAX);
-    num_2 = num_create_immed(1, UINT64_MAX);
-    num_div_mod(&num_q, &num_r, num_1, num_2);
-    assert(num_immed(num_q, 3, 1, 0, 1));
-    assert(num_immed(num_r, 0));
-
-    if(show) printf("\n\t\t%s 14\t\t", __func__);
-    num_1 = num_create_immed(5, UINT64_MAX, 0, 0, 0, UINT64_MAX);
-    num_2 = num_create_immed(1, UINT64_MAX);
-    num_div_mod(&num_q, &num_r, num_1, num_2);
-    assert(num_immed(num_q, 5, 1, 0, 0, 0, 1));
-    assert(num_immed(num_r, 0));
-
-    if(show) printf("\n\t\t%s 15\t\t", __func__);
-    num_1 = num_create_immed(6, 4, 0, 8, 4, 0, 0);
-    num_2 = num_create_immed(4, 4, 0, 0, 4);
-    num_div_mod(&num_q, &num_r, num_1, num_2);
-    assert(num_immed(num_q, 3, 1, 0, 1));
-    assert(num_immed(num_r, 4, 3, UINT64_MAX, UINT64_MAX, UINT64_MAX - 3));
-
-    if(show) printf("\n\t\t%s 16\t\t", __func__);
-    num_1 = num_create_immed(3, 1, 1, 0);
-    num_2 = num_create_immed(2, 1, 2);
-    num_div_mod(&num_q, &num_r, num_1, num_2);
-    assert(num_immed(num_q, 1, UINT64_MAX));
-    assert(num_immed(num_r, 1, 2));
-
-    if(show) printf("\n\t\t%s 17\t\t", __func__);
-    num_1 = num_create_immed(3, UINT64_MAX, UINT64_MAX, UINT64_MAX);
-    num_2 = num_create_immed(2, UINT64_MAX, UINT64_MAX);
-    num_div_mod(&num_q, &num_r, num_1, num_2);
-    assert(num_immed(num_q, 2, 1, 0));
-    assert(num_immed(num_r, 1, UINT64_MAX));
-
-    if(show) printf("\n\t\t%s 18\t\t", __func__);
-    num_1 = num_create_immed(3, 1, 0, 0);
-    num_2 = num_create_immed(2, 1, UINT64_MAX);
-    num_div_mod(&num_q, &num_r, num_1, num_2);
-    assert(num_immed(num_q, 1, 0x8000000000000000));
-    assert(num_immed(num_r, 1, 0x8000000000000000));
-
-    if(show) printf("\n\t\t%s 19\t\t", __func__);
-    num_1 = num_create_immed(4, 1, 0, 0, 0);
-    num_2 = num_create_immed(3, 1, 0, UINT64_MAX);
-    num_div_mod(&num_q, &num_r, num_1, num_2);
-    assert(num_immed(num_q, 1, UINT64_MAX));
-    assert(num_immed(num_r, 2, 1, UINT64_MAX));
-
-    if(show) printf("\n\t\t%s 20\t\t", __func__);
-    num_1 = num_create_immed(3, 1, UINT64_MAX - 1, 0);
-    num_2 = num_create_immed(2, 1, UINT64_MAX);
-    num_div_mod(&num_q, &num_r, num_1, num_2);
-    assert(num_immed(num_q, 1, UINT64_MAX));
-    assert(num_immed(num_r, 1, UINT64_MAX));
-
-    if(show) printf("\n\t\t%s 21\t\t", __func__);
-    num_1 = num_create_immed(4, 1, UINT64_MAX, UINT64_MAX - 1, 0);
-    num_2 = num_create_immed(3, 1, UINT64_MAX, UINT64_MAX);
-    num_div_mod(&num_q, &num_r, num_1, num_2);
-    assert(num_immed(num_q, 1, UINT64_MAX));
-    assert(num_immed(num_r, 3, 1, UINT64_MAX - 1, UINT64_MAX));
+    TEST_NUM_DIV_MOD(1,
+        0,
+        1, 1,
+        0,
+        0
+    );
+    TEST_NUM_DIV_MOD(2,
+        1, 4,
+        1, 2,
+        1, 2,
+        0
+    );
+    TEST_NUM_DIV_MOD(3,
+        1, 5,
+        1, 2,
+        1, 2,
+        1, 1
+    );
+    TEST_NUM_DIV_MOD(4,
+        1, 5,
+        1, 5,
+        1, 1,
+        0
+    );
+    TEST_NUM_DIV_MOD(5,
+        1, 9,
+        1, 3,
+        1, 3,
+        0
+    );
+    TEST_NUM_DIV_MOD(6,
+        3, 1, 0, 0,
+        2, 1, 0,
+        2, 1, 0,
+        0
+    );
+    TEST_NUM_DIV_MOD(7,
+        1, 1,
+        2, 1, 0,
+        0,
+        1, 1
+    );
+    TEST_NUM_DIV_MOD(8,
+        2, 4, UINT64_MAX,
+        2, 2, 0,
+        1, 2,
+        1, UINT64_MAX
+    );
+    TEST_NUM_DIV_MOD(9,
+        2, 4, 0,
+        2, 2, UINT64_MAX,
+        1, 1,
+        2, 1, 1
+    );
+    TEST_NUM_DIV_MOD(10,
+        2, 1, 0,
+        1, UINT64_MAX,
+        1, 1,
+        1, 1
+    );
+    TEST_NUM_DIV_MOD(11,
+        2, UINT64_MAX, 0,
+        2, 1, UINT64_MAX,
+        1, 0x7fffffffffffffff,
+        2, 1, 0x7fffffffffffffff
+    );
+    TEST_NUM_DIV_MOD(12,
+        2, 0xc929d7d593, 0xb7090a859117cfa4,
+        2, 6, 0xea7db545decb57a4,
+        1, 0x0000001d1635b735,
+        1, 0x88c80995d8646eb0
+    );
+    TEST_NUM_DIV_MOD(13,
+        3, UINT64_MAX, 0, UINT64_MAX,
+        1, UINT64_MAX,
+        3, 1, 0, 1,
+        0
+    );
+    TEST_NUM_DIV_MOD(14,
+        5, UINT64_MAX, 0, 0, 0, UINT64_MAX,
+        1, UINT64_MAX,
+        5, 1, 0, 0, 0, 1,
+        0
+    );
+    TEST_NUM_DIV_MOD(15,
+        6, 4, 0, 8, 4, 0, 0,
+        4, 4, 0, 0, 4,
+        3, 1, 0, 1,
+        4, 3, UINT64_MAX, UINT64_MAX, UINT64_MAX - 3
+    );
+    TEST_NUM_DIV_MOD(16,
+        3, 1, 1, 0,
+        2, 1, 2,
+        1, UINT64_MAX,
+        1, 2
+    );
+    TEST_NUM_DIV_MOD(17,
+        3, UINT64_MAX, UINT64_MAX, UINT64_MAX,
+        2, UINT64_MAX, UINT64_MAX,
+        2, 1, 0,
+        1, UINT64_MAX
+    );
+    TEST_NUM_DIV_MOD(18,
+        3, 1, 0, 0,
+        2, 1, UINT64_MAX,
+        1, 0x8000000000000000,
+        1, 0x8000000000000000
+    );
+    TEST_NUM_DIV_MOD(19,
+        4, 1, 0, 0, 0,
+        3, 1, 0, UINT64_MAX,
+        1, UINT64_MAX,
+        2, 1, UINT64_MAX
+    );
+    TEST_NUM_DIV_MOD(20,
+        3, 1, UINT64_MAX - 1, 0,
+        2, 1, UINT64_MAX,
+        1, UINT64_MAX,
+        1, UINT64_MAX
+    );
+    TEST_NUM_DIV_MOD(21,
+        4, 1, UINT64_MAX, UINT64_MAX - 1, 0,
+        3, 1, UINT64_MAX, UINT64_MAX,
+        1, UINT64_MAX,
+        3, 1, UINT64_MAX - 1, UINT64_MAX
+    );
 
     chunk_pool_clean();
     assert(clu_mem_empty());
@@ -1751,7 +1741,7 @@ void test_num()
 {
     printf("\n%s", __func__);
 
-    bool show = false;
+    bool show = true;
 
     test_uint_from_char(show);
     test_uint128(show);

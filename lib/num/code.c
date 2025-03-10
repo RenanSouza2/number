@@ -907,8 +907,9 @@ chunk_p num_sub_offset(num_p num_1, chunk_p chunk_1, chunk_p chunk_2) // TODO te
 }
 
 /*
-* returns NUM_2 * R if less then NUM_1, 0 otherwise;
-*  keeps NUM_1 and NUM_2
+R cannot be zero
+returns NUM_2 * R if less then NUM_1,
+keeps NUM_1 and NUM_2
 */
 num_t num_cmp_mul_uint(num_t num_1, num_t num_2, uint64_t r, uint64_t offset) // TODO test
 {
@@ -930,7 +931,39 @@ num_t num_cmp_mul_uint(num_t num_1, num_t num_2, uint64_t r, uint64_t offset) //
     return num_aux;
 }
 
-num_t num_div_mod_offset(num_p num_1, chunk_p chunk_1, uint64_t offset_1, num_t num_2 )
+/* RES is quocient NUM_1 is remainder */
+num_t num_div_mod_sigle(num_p num_1, chunk_p chunk_1, uint64_t value_2)
+{
+    DBG_CHECK_PTR(num_1->head);
+    DBG_CHECK_PTR(chunk_1);
+
+    num_t num_2 = num_wrap(value_2);
+    num_t num_q = num_create(0, NULL, NULL);
+    for(uint64_t offset_1 = num_1->count - 1; chunk_1; offset_1--)
+    {
+        if(num_normalize(num_1))
+        {
+            num_insert_head(&num_q, 0);
+            chunk_1 = num_1->tail;
+            continue;
+        }
+
+        uint128_t value_1 = num_1->count > 1 + offset_1 ?
+            U128_IMMED(num_1->tail->value, num_1->tail->prev->value) :
+            num_1->tail->value;
+
+        uint64_t r = value_1 / value_2;
+        num_t num_aux = num_mul_uint(num_2, r);
+        chunk_1 = num_sub_offset(num_1, chunk_1, num_aux.head);
+        
+        num_insert_head(&num_q, r);
+        chunk_1 = chunk_1 ? chunk_1->prev : num_1->tail;
+    }
+    num_free(num_2);
+    return num_q;
+}
+
+num_t num_div_mod_general(num_p num_1, chunk_p chunk_1, num_t num_2)
 {
     DBG_CHECK_PTR(num_1->head);
     DBG_CHECK_PTR(chunk_1);
@@ -938,11 +971,11 @@ num_t num_div_mod_offset(num_p num_1, chunk_p chunk_1, uint64_t offset_1, num_t 
 
     num_t num_q = num_create(0, NULL, NULL);
 
-    bool bool_2 = num_2.count == 1;
+    assert(num_2.count > 1);
     uint128_t val_2_1 = num_2.tail->value;
-    uint128_t val_2_2 = bool_2 ? val_2_1 : U128_IMMED(val_2_1, num_2.tail->prev->value);
+    uint128_t val_2_2 = U128_IMMED(val_2_1, num_2.tail->prev->value);
 
-    for(; chunk_1; offset_1--)
+    for(uint64_t offset_1 = num_1->count - num_2.count; chunk_1; offset_1--)
     {
         if(num_normalize(num_1))
         {
@@ -954,12 +987,8 @@ num_t num_div_mod_offset(num_p num_1, chunk_p chunk_1, uint64_t offset_1, num_t 
         uint64_t r =  0;
         while(num_cmp_offset(*num_1, num_2, offset_1) >= 0)
         {
-            bool bool_1 = num_1->count > num_2.count + offset_1;
-
-            uint128_t val_2 = bool_1 ||  bool_2 ? val_2_1 : val_2_2;
-            uint128_t val_1 = bool_1 || !bool_2 ?
-                U128_IMMED(num_1->tail->value, num_1->tail->prev->value) :
-                num_1->tail->value;
+            uint128_t val_2 = num_1->count > num_2.count + offset_1 ? val_2_1 : val_2_2;
+            uint128_t val_1 = U128_IMMED(num_1->tail->value, num_1->tail->prev->value);
 
             uint128_t tmp = val_1 / val_2;
             uint64_t r_aux = tmp > UINT64_MAX ? UINT64_MAX : tmp;
@@ -980,7 +1009,11 @@ num_t num_div_mod_offset(num_p num_1, chunk_p chunk_1, uint64_t offset_1, num_t 
     return num_q;
 }
 
-uint64_t num_div_mod_inner(num_p out_num_q, num_p out_num_r, num_t num_1, num_t num_2)
+/* 
+NUM_Q might be unormalized
+NUM_R has to be shifted RES bites to the right
+*/
+uint64_t num_div_mod_unajusted(num_p out_num_q, num_p out_num_r, num_t num_1, num_t num_2)
 {
     DBG_CHECK_PTR(num_1.head);
     DBG_CHECK_PTR(num_2.head);
@@ -997,16 +1030,10 @@ uint64_t num_div_mod_inner(num_p out_num_q, num_p out_num_r, num_t num_1, num_t 
 
     if(num_2.count == 1)
     {
-        num_t num_q = num_div_mod_offset(
-            &num_1,
-            num_1.tail,
-            num_1.count - num_2.count,
-            num_2
-        );
+        num_t num_q = num_div_mod_sigle(&num_1, num_1.tail, num_unwrap(num_2));
 
         *out_num_q = num_q;
         *out_num_r = num_1;
-        num_free(num_2);
         return 0;
     }
 
@@ -1021,12 +1048,7 @@ uint64_t num_div_mod_inner(num_p out_num_q, num_p out_num_r, num_t num_1, num_t 
     for(uint64_t i=1; i<num_2.count; i++)
         chunk_r = chunk_r->prev;
 
-    num_t num_q = num_div_mod_offset(
-        &num_1,
-        chunk_r,
-        num_1.count - num_2.count,
-        num_2
-    );
+    num_t num_q = num_div_mod_general(&num_1, chunk_r, num_2);
     num_free(num_2);
 
     *out_num_q = num_q;
@@ -1164,7 +1186,7 @@ void num_div_mod(num_p out_num_q, num_p out_num_r, num_t num_1, num_t num_2)
     DBG_CHECK_PTR(num_2.head);
 
     num_t num_q, num_r;
-    uint64_t bits = num_div_mod_inner(&num_q, &num_r, num_1, num_2);
+    uint64_t bits = num_div_mod_unajusted(&num_q, &num_r, num_1, num_2);
     num_normalize(&num_q);
     num_r = num_shr_uint(num_r, bits);
 
@@ -1178,7 +1200,7 @@ num_t num_div(num_t num_1, num_t num_2)
     DBG_CHECK_PTR(num_2.head);
 
     num_t num_q, num_r;
-    num_div_mod_inner(&num_q, &num_r, num_1, num_2);
+    num_div_mod_unajusted(&num_q, &num_r, num_1, num_2);
     num_normalize(&num_q);
     num_free(num_r);
     return num_q;
@@ -1190,7 +1212,7 @@ num_t num_mod(num_t num_1, num_t num_2)
     DBG_CHECK_PTR(num_2.head);
 
     num_t num_q, num_r;
-    uint64_t bits = num_div_mod_inner(&num_q, &num_r, num_1, num_2);
+    uint64_t bits = num_div_mod_unajusted(&num_q, &num_r, num_1, num_2);
     num_shr_uint(num_r, bits);
     num_free(num_q);
     return num_r;
