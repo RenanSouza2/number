@@ -10,38 +10,48 @@ void test_snum_create(bool show)
     printf("\n\t%s\t\t", __func__);
 
     if(show) printf("\n\t\t%s 1\t\t", __func__);
-    num_p num = num_create_immed(1, 1);
+    num_t num = num_create_immed(1, 1);
     snum_p snum = snum_create(POSITIVE, num);
     assert(snum->signal == POSITIVE);
-    assert(snum->num == num);
+    assert(snum->num.count == num.count);
+    assert(snum->num.head == num.head);
+    assert(snum->num.tail == num.tail);
     snum_free(snum);
 
     if(show) printf("\n\t\t%s 2\t\t", __func__);
     num = num_create_immed(1, 1);
     snum = snum_create(NEGATIVE, num);
     assert(snum->signal == NEGATIVE);
-    assert(snum->num == num);
+    assert(snum->num.count == num.count);
+    assert(snum->num.head == num.head);
+    assert(snum->num.tail == num.tail);
     snum_free(snum);
 
     if(show) printf("\n\t\t%s 3\t\t", __func__);
     num = num_create_immed(0);
     snum = snum_create(POSITIVE, num);
     assert(snum->signal == ZERO);
-    assert(snum->num == num);
+    assert(snum->num.count == num.count);
+    assert(snum->num.head == num.head);
+    assert(snum->num.tail == num.tail);
     snum_free(snum);
 
     if(show) printf("\n\t\t%s 4\t\t", __func__);
     num = num_create_immed(0);
     snum = snum_create(ZERO, num);
     assert(snum->signal == ZERO);
-    assert(snum->num == num);
+    assert(snum->num.count == num.count);
+    assert(snum->num.head == num.head);
+    assert(snum->num.tail == num.tail);
     snum_free(snum);
 
     if(show) printf("\n\t\t%s 5\t\t", __func__);
     num = num_create_immed(0);
     snum = snum_create(NEGATIVE, num);
     assert(snum->signal == ZERO);
-    assert(snum->num == num);
+    assert(snum->num.count == num.count);
+    assert(snum->num.head == num.head);
+    assert(snum->num.tail == num.tail);
     snum_free(snum);
 
     chunk_pool_clean();
@@ -559,7 +569,7 @@ void test_snum()
 {
     printf("\n%s\t\t", __func__);
 
-    bool show = false;
+    bool show = true;
 
     test_snum_create(show);
     test_snum_create_immed(show);

@@ -183,13 +183,13 @@ int64_t snum_cmp(snum_p snum_1, snum_p snum_2)
 
 snum_p snum_shl(snum_p snum, uint64_t bits)
 {
-    num_shl(snum->num, bits);
+    snum->num = num_shl(snum->num, bits);
     return snum;
 }
 
 snum_p snum_shr(snum_p snum, uint64_t bits)
 {
-    num_shr(snum->num, bits);
+    snum->num = num_shr(snum->num, bits);
     if(num_is_zero(snum->num))
         snum->signal = ZERO;
 

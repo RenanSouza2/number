@@ -231,7 +231,7 @@ chunk_p num_get_chunk(num_t num, uint64_t count)
 
 
 
-#define COALESCE(PTR_A, PTR_B) (PTR_A) ? (PTR_A) : (PTR_B);
+#define COALESCE(PTR_A, PTR_B) ((PTR_A) ? (PTR_A) : (PTR_B));
 
 
 
