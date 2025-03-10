@@ -20,9 +20,9 @@ void fix_display_dec(fix_p fix)
     fix = fix_copy(fix);
 
     num_t num_h, num_l;
-    num_break(&num_h, &num_l, fix->snum->num, fix->pos);
+    num_break(&num_h, &num_l, fix->snum.num, fix->pos);
 
-    if(fix->snum->signal == NEGATIVE)
+    if(fix->snum.signal == NEGATIVE)
         printf("-");
     else
         printf("+");
@@ -52,7 +52,7 @@ void fix_display_tag(char tag[], fix_p fix)
 
 
 
-fix_p fix_create(snum_p snum, uint64_t pos) // TODO test
+fix_p fix_create(snum_t snum, uint64_t pos) // TODO test
 {
     fix_p fix = malloc(sizeof(fix_t));
     assert(fix);
@@ -67,14 +67,14 @@ fix_p fix_create(snum_p snum, uint64_t pos) // TODO test
 
 fix_p fix_wrap(int64_t value, uint64_t pos) // TODO test
 {
-    snum_p snum = snum_wrap(value);
+    snum_t snum = snum_wrap(value);
     snum = snum_shl(snum, pos << 6);
     return fix_create(snum, pos);
 }
 
 fix_p fix_copy(fix_p fix) // TODO test
 {
-    snum_p snum = snum_copy(fix->snum);
+    snum_t snum = snum_copy(fix->snum);
     return fix_create(snum, fix->pos);
 }
 

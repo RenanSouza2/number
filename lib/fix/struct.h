@@ -5,11 +5,11 @@
 
 #include "header.h"
 
-#include "../snum/header.h"
+#include "../snum/struct.h"
 
 STRUCT(fix)
 {
-    snum_p snum;
+    snum_t snum;
     uint64_t pos;
 };
 
