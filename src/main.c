@@ -283,7 +283,7 @@ int main(int argc, char** argv)
     setbuf(stdout, NULL);
     srand(time(NULL));
 
-    time_1(13, 23);
+    time_1(13, 21);
 
     printf("\n");
     return 0;

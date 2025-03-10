@@ -971,7 +971,6 @@ num_t num_div_mod_general(num_p num_1, chunk_p chunk_1, num_t num_2)
 
     num_t num_q = num_create(0, NULL, NULL);
 
-    assert(num_2.count > 1);
     uint128_t val_2_1 = num_2.tail->value;
     uint128_t val_2_2 = U128_IMMED(val_2_1, num_2.tail->prev->value);
 
