@@ -1124,12 +1124,12 @@ num_t num_mul(num_t num_1, num_t num_2)
     num_t num_res = num_create(0, NULL, NULL);
     chunk_p chunk_2 = num_2.head;
 
-    printf("\ntotal: %lu", num_2.count/1000);
-    uint64_t i=0;
+    // uint64_t i=0;
+    // printf("\ntotal: %lu", num_2.count/1000);
     for(chunk_p chunk_res = NULL; chunk_2; chunk_res = chunk_res->next)
     {
-        if(i%1000 == 0) printf("\t%lu", i/1000);
-        i++;
+        // if(i%1000 == 0) printf("\t%lu", i/1000);
+        // i++;
 
         chunk_res = num_add_mul_uint_offset(&num_res, chunk_res, num_1.head, chunk_2->value);
         chunk_res = num_denormalize(&num_res, chunk_res);
@@ -1150,30 +1150,25 @@ num_t num_sqr(num_t num) // TODO test
     chunk_p chunk_res = num_denormalize(&num_res, NULL);
     for(chunk_p chunk = num.head; chunk;)
     {
-        printf("\n\n------------");
-        printf("\nloop:%lu", chunk->value);
         uint64_t value = chunk->value;
         chunk = chunk_consume(chunk);
 
-        num_display_tag("res 1", num_res);
         uint128_t u = MUL(value, value);
         chunk_res = num_add_uint_offset(&num_res, chunk_res, LOW(u));
-        num_display_tag("res 2", num_res);
         chunk_res = num_denormalize(&num_res, chunk_res);
-        num_display_tag("res 3", num_res);
         chunk_res = chunk_res->next;
         chunk_res = num_add_uint_offset(&num_res, chunk_res, HIGH(u));
-        num_display_tag("res 4", num_res);
 
         // TODO optmize
-        num_t num_aux = num_create(0, NULL, NULL);
-        num_add_mul_uint_offset(&num_aux, NULL, chunk, value);
-        num_aux = num_shl_uint(num_aux, 1);
-        chunk_res = num_add_offset(&num_res, chunk_res, num_aux);
-
+        chunk_res = num_add_mul_uint_offset(&num_res, chunk_res, chunk, value << 1);
         chunk_res = num_denormalize(&num_res, chunk_res);
         chunk_res = chunk_res->next;
-    }
+
+        if(value < 0x8000000000000000)
+            continue;
+
+        chunk_res = num_add_mul_uint_offset(&num_res, chunk_res, chunk, 1);
+}
     num_normalize(&num_res);
     return num_res;
 }
