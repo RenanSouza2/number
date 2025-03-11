@@ -1563,6 +1563,60 @@ void test_num_mul(bool show)
     assert(clu_mem_empty());
 }
 
+void test_num_sqr(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    #define TEST_NUM_SQR(TAG, ...)                      \
+    {                                                   \
+        num_t num[2];                                   \
+        if(show) printf("\n\t\t%s %d", __func__, TAG);  \
+        num_create_immed_vec(num, 2, __VA_ARGS__);      \
+        num[0] = num_sqr(num[0]);                       \
+        assert(num_str(num[0], num[1]));                \
+    }
+
+    TEST_NUM_SQR(1,
+        0,
+        0
+    );
+    TEST_NUM_SQR(2,
+        1, 1,
+        1, 1
+    );
+    TEST_NUM_SQR(3,
+        1, 2,
+        1, 4
+    );
+    TEST_NUM_SQR(4,
+        1, UINT32_MAX,
+        1, 0xfffffffe00000001
+    );
+    TEST_NUM_SQR(5,
+        1, (uint64_t)1 << 32,
+        2, 1, 0
+    );
+    TEST_NUM_SQR(6,
+        2, 1, 0,
+        3, 1, 0, 0
+    );
+    TEST_NUM_SQR(7,
+        2, 2, 3,
+        3, 4, 12, 9
+    );
+    TEST_NUM_SQR(8,
+        2, UINT64_MAX, UINT64_MAX,
+        4, UINT64_MAX, UINT64_MAX - 1, 0, 1
+    );
+
+    #undef TEST_NUM_SQR
+
+    assert(false);
+
+    chunk_pool_clean();
+    assert(clu_mem_empty());
+}
+
 void test_num_div_mod(bool show)
 {
     printf("\n\t%s", __func__);
@@ -1718,7 +1772,7 @@ void test_num()
 {
     printf("\n%s", __func__);
 
-    bool show = false;
+    bool show = true;
 
     test_uint_from_char(show);
     test_uint128(show);
@@ -1762,6 +1816,7 @@ void test_num()
     test_num_add(show);
     test_num_sub(show);
     test_num_mul(show);
+    test_num_sqr(show);
     test_num_div_mod(show);
 
     test_num_base_to(show);

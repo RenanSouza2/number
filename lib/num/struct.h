@@ -21,7 +21,7 @@ void num_display(num_t num);
 void num_display_tag(char *tag, num_t num);
 void num_display_full(char *tag, num_t num);
 
-void num_break(num_t *out_num_h, num_t *out_num_l, num_t num, uint64_t count);
+void num_break(num_p out_num_h, num_p out_num_l, num_t num, uint64_t count);
 
 num_t num_wrap(uint64_t value);
 num_t num_wrap_str(char str[]);
@@ -40,8 +40,10 @@ num_t num_exp(num_t num, uint64_t value);
 num_t num_add(num_t num_1, num_t num_2);
 num_t num_sub(num_t num_1, num_t num_2);
 num_t num_mul(num_t num_1, num_t num_2);
-void num_div_mod(num_t *out_num_q, num_t *out_num_r, num_t num_1, num_t num_2);
+void num_div_mod(num_p out_num_q, num_p out_num_r, num_t num_1, num_t num_2);
 num_t num_div(num_t num_1, num_t num_2);
 num_t num_mod(num_t num_1, num_t num_2);
+
+num_t num_sqr(num_t num);
 
 #endif

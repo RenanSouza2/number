@@ -295,16 +295,7 @@ int main(int argc, char** argv)
     setbuf(stdout, NULL);
     srand(time(NULL));
 
-    // num_t num_1 = num_generate_2(23702);
-    // num_t num_2 = num_generate_2(23705);
-
-    // num_display_tag("num_1", num_1);
-    // num_display_tag("num_2", num_2);
-    
-    // printf("\nh1: ");display_bit(num_1.tail->value);
-    // printf("\nh2: ");display_bit(num_2.tail->value);
-
-    time_2(argc, argv, 19);
+    fibonacci_2();
 
     printf("\n");
     return 0;
