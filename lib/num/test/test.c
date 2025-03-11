@@ -1179,117 +1179,90 @@ void test_num_add_mul_uint(bool show)
 
 
 
-void test_num_is_zero(bool show) // TODO refactor
+void test_num_is_zero(bool show)
 {
     printf("\n\t%s", __func__);
 
-    if(show) printf("\n\t\t%s 1\t\t", __func__);
-    num_t num = num_create_immed(0);
-    bool res = num_is_zero(num);
-    assert(res == true);
-    num_free(num);
+    #define TEST_NUM_IS_ZERO(TAG, IS_ZERO, ...)             \
+    {                                                       \
+        if(show) printf("\n\t\t%s %d\t\t", __func__, TAG);  \
+        num_t num = num_create_immed(__VA_ARGS__);          \
+        bool res = num_is_zero(num);                        \
+        assert(res == IS_ZERO);                             \
+        num_free(num);                                      \
+    }
 
-    if(show) printf("\n\t\t%s 2\t\t", __func__);
-    num = num_create_immed(1, 1);
-    res = num_is_zero(num);
-    assert(res == false);
-    num_free(num);
+    TEST_NUM_IS_ZERO(1, true, 0);
+    TEST_NUM_IS_ZERO(1, false, 1, 1);
+    TEST_NUM_IS_ZERO(1, false, 2, 1, 2);
+
+    #undef TEST_NUM_IS_ZERO
 
     chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
-void test_num_cmp(bool show) // TODO refactor
+void test_num_cmp(bool show)
 {
-    printf("\n\t%s", __func__);
+    printf("\n\t%s\t\t", __func__);
 
-    if(show) printf("\n\t\t%s  1\t\t", __func__);
-    num_t num_1 = num_create_immed(0);
-    num_t num_2 = num_create_immed(0);
-    int64_t cmp = num_cmp(num_1, num_2);
-    assert(cmp == 0);
-    num_free(num_1);
-    num_free(num_2);
+    #define TEST_NUM_CMP(TAG, RELATION, ...)            \
+    {                                                   \
+        num_t num[2];                                   \
+        if(show) printf("\n\t\t%s  1\t\t", __func__);   \
+        num_create_immed_vec(num, 2, __VA_ARGS__);      \
+        int64_t cmp = num_cmp(num[0], num[1]);          \
+        assert(cmp RELATION 0);                         \
+        num_free(num[0]);                               \
+        num_free(num[1]);                               \
+    }
 
-    if(show) printf("\n\t\t%s  2\t\t", __func__);
-    num_1 = num_create_immed(1, 1);
-    num_2 = num_create_immed(0);
-    cmp = num_cmp(num_1, num_2);
-    assert(cmp > 0);
-    num_free(num_1);
-    num_free(num_2);
+    TEST_NUM_CMP( 1, ==,   
+        0,
+        0
+    );
+    TEST_NUM_CMP( 2, >,
+        1, 1,
+        0
+    );
+    TEST_NUM_CMP( 3, <,
+        0,
+        1, 1
+    );
+    TEST_NUM_CMP( 4, <,
+        1, 1,
+        1, 2
+    );
+    TEST_NUM_CMP( 5, ==,
+        1, 2,
+        1, 2
+    );
+    TEST_NUM_CMP( 6, >,
+        1, 3,
+        1, 2
+    );
+    TEST_NUM_CMP( 7, >,
+        2, 2, 0,
+        2, 1, 0
+    );
+    TEST_NUM_CMP( 8, ==,
+        2, 2, 0,
+        2, 2, 0
+    );
+    TEST_NUM_CMP( 9, <,
+        2, 2, 0,
+        2, 3, 0
+    );
+    TEST_NUM_CMP(10, <,
+        2, 0x8000000000000000, 0,
+        2, 0x8000000000000000, 0x7fffffffffffffff
+    );
+    TEST_NUM_CMP(11, <,
+        3, 0x8000000000000000, 0, 0,
+        3, 0x8000000000000000, 0x7fffffffffffffff, 0x8000000000000000
+    );
 
-    if(show) printf("\n\t\t%s  3\t\t", __func__);
-    num_1 = num_create_immed(0);
-    num_2 = num_create_immed(1, 1);
-    cmp = num_cmp(num_1, num_2);
-    assert(cmp < 0);
-    num_free(num_1);
-    num_free(num_2);
-
-    if(show) printf("\n\t\t%s  4\t\t", __func__);
-    num_1 = num_create_immed(1, 1);
-    num_2 = num_create_immed(1, 2);
-    cmp = num_cmp(num_1, num_2);
-    assert(cmp < 0);
-    num_free(num_1);
-    num_free(num_2);
-
-    if(show) printf("\n\t\t%s  5\t\t", __func__);
-    num_1 = num_create_immed(1, 2);
-    num_2 = num_create_immed(1, 2);
-    cmp = num_cmp(num_1, num_2);
-    assert(cmp == 0);
-    num_free(num_1);
-    num_free(num_2);
-
-    if(show) printf("\n\t\t%s  6\t\t", __func__);
-    num_1 = num_create_immed(1, 3);
-    num_2 = num_create_immed(1, 2);
-    cmp = num_cmp(num_1, num_2);
-    assert(cmp > 0);
-    num_free(num_1);
-    num_free(num_2);
-
-    if(show) printf("\n\t\t%s  7\t\t", __func__);
-    num_1 = num_create_immed(2, 2, 0);
-    num_2 = num_create_immed(2, 1, 0);
-    cmp = num_cmp(num_1, num_2);
-    assert(cmp > 0);
-    num_free(num_1);
-    num_free(num_2);
-
-    if(show) printf("\n\t\t%s  8\t\t", __func__);
-    num_1 = num_create_immed(2, 2, 0);
-    num_2 = num_create_immed(2, 2, 0);
-    cmp = num_cmp(num_1, num_2);
-    assert(cmp == 0);
-    num_free(num_1);
-    num_free(num_2);
-
-    if(show) printf("\n\t\t%s  9\t\t", __func__);
-    num_1 = num_create_immed(2, 2, 0);
-    num_2 = num_create_immed(2, 3, 0);
-    cmp = num_cmp(num_1, num_2);
-    assert(cmp < 0);
-    num_free(num_1);
-    num_free(num_2);
-
-    if(show) printf("\n\t\t%s 10\t\t", __func__);
-    num_1 = num_create_immed(2, 0x8000000000000000, 0);
-    num_2 = num_create_immed(2, 0x8000000000000000, 0x7fffffffffffffff);
-    cmp = num_cmp(num_1, num_2);
-    assert(cmp < 0);
-    num_free(num_1);
-    num_free(num_2);
-
-    if(show) printf("\n\t\t%s 11\t\t", __func__);
-    num_1 = num_create_immed(3, 0x8000000000000000, 0, 0);
-    num_2 = num_create_immed(3, 0x8000000000000000, 0x7fffffffffffffff, 0x8000000000000000);
-    cmp = num_cmp(num_1, num_2);
-    assert(cmp < 0);
-    num_free(num_1);
-    num_free(num_2);
+    #undef TEST_NUM_CMP
 
     chunk_pool_clean();
     assert(clu_mem_empty());
@@ -1440,149 +1413,151 @@ void test_num_add(bool show)
     assert(clu_mem_empty());
 }
 
-void test_num_sub(bool show) // TODO refactor
+void test_num_sub(bool show)
 {
     printf("\n\t%s", __func__);
 
-    if(show) printf("\n\t\t%s 1\t\t", __func__);
-    num_t num_1 = num_create_immed(0);
-    num_t num_2 = num_create_immed(0);
-    num_t num_res = num_sub(num_1, num_2);
-    assert(num_immed(num_res, 0));
+    #define TEST_NUM_SUB(TAG, ...)                          \
+    {                                                       \
+        num_t num[3];                                       \
+        if(show) printf("\n\t\t%s %d\t\t", __func__, TAG);  \
+        num_create_immed_vec(num, 3, __VA_ARGS__);          \
+        num[0] = num_sub(num[0], num[1]);                   \
+        assert(num_str(num[0], num[2]));                    \
+    }
 
-    if(show) printf("\n\t\t%s 2\t\t", __func__);
-    num_1 = num_create_immed(1, 1);
-    num_2 = num_create_immed(0);
-    num_res = num_sub(num_1, num_2);
-    assert(num_immed(num_res, 1, 1));
+    TEST_NUM_SUB(1,
+        0,
+        0,
+        0
+    );
+    TEST_NUM_SUB(2,
+        1, 1,
+        0,
+        1, 1
+    );
+    TEST_NUM_SUB(3,
+        1, 2,
+        1, 1,
+        1, 1
+    );
+    TEST_NUM_SUB(4,
+        1, 2,
+        1, 2,
+        0
+    );
+    TEST_NUM_SUB(5,
+        2, 1, 0,
+        1, 1,
+        1, UINT64_MAX
+    );
+    TEST_NUM_SUB(6,
+        2, 4, 3,
+        2, 1, 2,
+        2, 3, 1
+    );
+    TEST_NUM_SUB(7,
+        2, 1, 0,
+        2, 1, 0,
+        0
+    );
 
-    if(show) printf("\n\t\t%s 3\t\t", __func__);
-    num_1 = num_create_immed(1, 2);
-    num_2 = num_create_immed(1, 1);
-    num_res = num_sub(num_1, num_2);
-    assert(num_immed(num_res, 1, 1));
-
-    if(show) printf("\n\t\t%s 4\t\t", __func__);
-    num_1 = num_create_immed(1, 2);
-    num_2 = num_create_immed(1, 2);
-    num_res = num_sub(num_1, num_2);
-    assert(num_immed(num_res, 0));
-
-    if(show) printf("\n\t\t%s 5\t\t", __func__);
-    num_1 = num_create_immed(2, 1, 0);
-    num_2 = num_create_immed(1, 1);
-    num_res = num_sub(num_1, num_2);
-    assert(num_immed(num_res, 1, UINT64_MAX));
-
-    if(show) printf("\n\t\t%s 6\t\t", __func__);
-    num_1 = num_create_immed(2, 4, 3);
-    num_2 = num_create_immed(2, 1, 2);
-    num_res = num_sub(num_1, num_2);
-    assert(num_immed(num_res, 2, 3, 1));
-
-    if(show) printf("\n\t\t%s 7\t\t", __func__);
-    num_1 = num_create_immed(2, 1, 0);
-    num_2 = num_create_immed(2, 1, 0);
-    num_res = num_sub(num_1, num_2);
-    assert(num_immed(num_res, 0));
+    #undef TEST_NUM_SUB
 
     chunk_pool_clean();
     assert(clu_mem_empty());
 }
 
-void test_num_mul(bool show) // TODO refactor
+void test_num_mul(bool show)
 {
     printf("\n\t%s", __func__);
 
-    if(show) printf("\n\t\t%s  1", __func__);
-    num_t num_1 = num_create_immed(0);
-    num_t num_2 = num_create_immed(0);
-    num_t num_res = num_mul(num_1, num_2);
-    assert(num_immed(num_res, 0));
+    #define TEST_NUM_MUL(TAG, ...)                      \
+    {                                                   \
+        num_t num[3];                                   \
+        if(show) printf("\n\t\t%s %2d", __func__, TAG); \
+        num_create_immed_vec(num, 3, __VA_ARGS__);      \
+        num[0] = num_mul(num[0], num[1]);               \
+        assert(num_str(num[0], num[2]));                \
+    }
 
-    if(show) printf("\n\t\t%s  2", __func__);
-    num_1 = num_create_immed(1, 1);
-    num_2 = num_create_immed(0);
-    num_res = num_mul(num_1, num_2);
-    assert(num_immed(num_res, 0));
+    TEST_NUM_MUL( 1,
+        0,
+        0,
+        0
+    );
+    TEST_NUM_MUL( 2,
+        1, 1,
+        0,
+        0
+    );
+    TEST_NUM_MUL( 3,
+        0,
+        1, 1,
+        0
+    );
+    TEST_NUM_MUL( 4,
+        1, 2,
+        1, 3,
+        1, 6
+    );
+    TEST_NUM_MUL( 5,
+        1, UINT64_MAX,
+        1, UINT64_MAX,
+        2, UINT64_MAX - 1, 1
+    );
+    TEST_NUM_MUL( 6,
+        2, 2, 3,
+        1, 4,
+        2, 8, 12
+    );
+    TEST_NUM_MUL( 7,
+        1, 2,
+        2, 3, 4,
+        2, 6, 8
+    );
+    TEST_NUM_MUL( 8,
+        2, 2, 3,
+        2, 4, 5,
+        3, 8, 22, 15
+    );
+    TEST_NUM_MUL( 9,
+        2, 1, 0,
+        1, 1,
+        2, 1, 0
+    );
+    TEST_NUM_MUL(10,
+        1, 1,
+        2, 1, 0,
+        2, 1, 0
+    );
+    TEST_NUM_MUL(11,
+        2, 1, 0,
+        2, 1, 0,
+        3, 1, 0, 0
+    );
+    TEST_NUM_MUL(12,
+        1, 2,
+        2, 2, UINT64_MAX,
+        2, 5, UINT64_MAX - 1
+    );
+    TEST_NUM_MUL(13,
+        2, UINT64_MAX, UINT64_MAX,
+        2, UINT64_MAX, UINT64_MAX,
+        4, UINT64_MAX, UINT64_MAX - 1, 0, 1
+    );
+    TEST_NUM_MUL(14,
+        3, 2, 3, 4,
+        3, 5, 6, 7,
+        5, 10, 27, 52, 45, 28
+    );
+    TEST_NUM_MUL(14,
+        3, 2, 3, 4,
+        3, 5, 6, 7,
+        5, 10, 27, 52, 45, 28
+    );
 
-    if(show) printf("\n\t\t%s  3", __func__);
-    num_1 = num_create_immed(0);
-    num_2 = num_create_immed(1, 1);
-    num_res = num_mul(num_1, num_2);
-    assert(num_immed(num_res, 0));
-
-    if(show) printf("\n\t\t%s  4", __func__);
-    num_1 = num_create_immed(1, 2);
-    num_2 = num_create_immed(1, 3);
-    num_res = num_mul(num_1, num_2);
-    assert(num_immed(num_res, 1, 6));
-
-    if(show) printf("\n\t\t%s  5", __func__);
-    num_1 = num_create_immed(1, UINT64_MAX);
-    num_2 = num_create_immed(1, UINT64_MAX);
-    num_res = num_mul(num_1, num_2);
-    assert(num_immed(num_res, 2, UINT64_MAX - 1, 1));
-
-    if(show) printf("\n\t\t%s  6", __func__);
-    num_1 = num_create_immed(2, 2, 3);
-    num_2 = num_create_immed(1, 4);
-    num_res = num_mul(num_1, num_2);
-    assert(num_immed(num_res, 2, 8, 12));
-
-    if(show) printf("\n\t\t%s  7", __func__);
-    num_1 = num_create_immed(1, 2);
-    num_2 = num_create_immed(2, 3, 4);
-    num_res = num_mul(num_1, num_2);
-    assert(num_immed(num_res, 2, 6, 8));
-
-    if(show) printf("\n\t\t%s  8", __func__);
-    num_1 = num_create_immed(2, 2, 3);
-    num_2 = num_create_immed(2, 4, 5);
-    num_res = num_mul(num_1, num_2);
-    assert(num_immed(num_res, 3, 8, 22, 15));
-
-    if(show) printf("\n\t\t%s  9", __func__);
-    num_1 = num_create_immed(2, 1, 0);
-    num_2 = num_create_immed(1, 1);
-    num_res = num_mul(num_1, num_2);
-    assert(num_immed(num_res, 2, 1, 0));
-
-    if(show) printf("\n\t\t%s 10", __func__);
-    num_1 = num_create_immed(1, 1);
-    num_2 = num_create_immed(2, 1, 0);
-    num_res = num_mul(num_1, num_2);
-    assert(num_immed(num_res, 2, 1, 0));
-
-    if(show) printf("\n\t\t%s 11", __func__);
-    num_1 = num_create_immed(2, 1, 0);
-    num_2 = num_create_immed(2, 1, 0);
-    num_res = num_mul(num_1, num_2);
-    assert(num_immed(num_res, 3, 1, 0, 0));
-
-    if(show) printf("\n\t\t%s 12", __func__);
-    num_1 = num_create_immed(1, 2);
-    num_2 = num_create_immed(2, 2, UINT64_MAX);
-    num_res = num_mul(num_1, num_2);
-    assert(num_immed(num_res, 2, 5, UINT64_MAX - 1));
-
-    if(show) printf("\n\t\t%s 13", __func__);
-    num_1 = num_create_immed(2, UINT64_MAX, UINT64_MAX);
-    num_2 = num_create_immed(2, UINT64_MAX, UINT64_MAX);
-    num_res = num_mul(num_1, num_2);
-    assert(num_immed(num_res, 4, UINT64_MAX, UINT64_MAX - 1, 0, 1));
-
-    if(show) printf("\n\t\t%s 14", __func__);
-    num_1 = num_create_immed(3, 2, 3, 4);
-    num_2 = num_create_immed(3, 5, 6, 7);
-    num_res = num_mul(num_1, num_2);
-    assert(num_immed(num_res, 5, 10, 27, 52, 45, 28));
-
-    if(show) printf("\n\t\t%s 14", __func__);
-    num_1 = num_create_immed(3, 2, 3, 4);
-    num_2 = num_create_immed(3, 5, 6, 7);
-    num_res = num_mul(num_1, num_2);
-    assert(num_immed(num_res, 5, 10, 27, 52, 45, 28));
+    #undef TEST_NUM_MUL
 
     chunk_pool_clean();
     assert(clu_mem_empty());
