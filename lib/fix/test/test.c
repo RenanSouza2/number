@@ -19,7 +19,7 @@ void test_fixed()
 {
     printf("\n%s\t\t", __func__);
 
-    bool show = true;
+    bool show = false;
 
     test_fixed_fn(show);
 
