@@ -1743,7 +1743,7 @@ void test_num()
 {
     printf("\n%s", __func__);
 
-    bool show = false;
+    bool show = true;
 
     test_uint_from_char(show);
     test_uint128(show);

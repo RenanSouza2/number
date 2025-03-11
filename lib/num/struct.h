@@ -16,7 +16,7 @@ STRUCT(num)
 };
 
 void num_display_dec(num_t num);
-void num_display_opts(num_t num, bool length, bool full);
+void num_display_opts(num_t num, char *tag, bool length, bool full);
 void num_display(num_t num);
 void num_display_tag(char *tag, num_t num);
 void num_display_full(char *tag, num_t num);

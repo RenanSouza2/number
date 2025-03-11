@@ -24,9 +24,9 @@ bool mod_immed(mod_t mod, uint64_t n, ...)
 void mod_display(char tag[], mod_t mod)
 {
     printf("\n%s: (", tag);
-    num_display_opts(mod.num, false, true);
+    num_display_opts(mod.num, NULL, false, true);
     printf(") / (");
-    num_display_opts(mod.max, false, true);
+    num_display_opts(mod.max, NULL, false, true);
     printf(")");
 }
 

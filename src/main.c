@@ -28,6 +28,7 @@ num_t num_generate(uint64_t max, uint64_t salt)
     num_t num = num_wrap(2);
     for(uint64_t i=0; i<max; i++)
     {
+        // printf("\ni: %lu", i);
         num = num_add(num, num_wrap(salt));
         num = num_mul(num, num_copy(num));
     }
@@ -280,12 +281,30 @@ void pi_2()
 
 
 
+void display_bit(uint64_t value)
+{
+    for(uint64_t i=0; i<64; i++)
+    {
+        printf("%lu", value >> 63);
+        value <<= 1;
+    }
+}
+
 int main(int argc, char** argv)
 {
     setbuf(stdout, NULL);
     srand(time(NULL));
 
-    time_1(13, 21);
+    // num_t num_1 = num_generate_2(23702);
+    // num_t num_2 = num_generate_2(23705);
+
+    // num_display_tag("num_1", num_1);
+    // num_display_tag("num_2", num_2);
+    
+    // printf("\nh1: ");display_bit(num_1.tail->value);
+    // printf("\nh2: ");display_bit(num_2.tail->value);
+
+    time_2(argc, argv, 19);
 
     printf("\n");
     return 0;
