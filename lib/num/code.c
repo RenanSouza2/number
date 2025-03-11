@@ -340,7 +340,6 @@ void num_display_full(char *tag, num_t num)
 {
     DBG_CHECK_PTR(num.head);
 
-    printf("\n%s: ", tag);
     num_display_opts(num, tag, true, true);
 }
 
@@ -744,26 +743,24 @@ bool num_sub_uint_offset(num_p num, chunk_p chunk, uint64_t value)
     return num_normalize(num) && is_tail;
 }
 
-/* num_res CANNOT be NULL */
-chunk_p num_mul_uint_offset(num_p num_res, chunk_p chunk_res, chunk_p chunk_2, uint64_t value)
+/* keeps NUM_1 */
+chunk_p num_add_mul_uint_offset(num_p num_res, chunk_p chunk_res, chunk_p chunk_1, uint64_t value)
 {
     DBG_CHECK_PTR(num_res->head);
     DBG_CHECK_PTR(chunk_res);
-    DBG_CHECK_PTR(chunk_2);
+    DBG_CHECK_PTR(chunk_1);
 
-    if(chunk_2 == NULL)
+    if(chunk_1 == NULL)
         return chunk_res;
 
     chunk_p chunk_0 = chunk_res = num_denormalize(num_res, chunk_res);
-    while(chunk_2)
+    for(; chunk_1; chunk_1 = chunk_1->next)
     {
-        uint128_t u = MUL(chunk_2->value, value);
+        uint128_t u = MUL(chunk_1->value, value);
         chunk_res = num_add_uint_offset(num_res, chunk_res, LOW(u));
         chunk_res = num_denormalize(num_res, chunk_res);
-        num_add_uint_offset(num_res, chunk_res->next, HIGH(u));
-
         chunk_res = chunk_res->next;
-        chunk_2 = chunk_2->next;
+        chunk_res = num_add_uint_offset(num_res, chunk_res, HIGH(u));
     }
 
     return chunk_0;
@@ -831,7 +828,7 @@ num_t num_add_mul_uint(num_t num_res, num_t num, uint64_t value)
     DBG_CHECK_PTR(num.head);
 
     if(value)
-        num_mul_uint_offset(&num_res, num_res.head, num.head, value);
+        num_add_mul_uint_offset(&num_res, num_res.head, num.head, value);
 
     return num_res;
 }
@@ -843,16 +840,6 @@ num_t num_mul_uint(num_t num, uint64_t value)
 
     num_t num_res = num_create(0, NULL, NULL);
     return num_add_mul_uint(num_res, num, value);
-}
-
-num_t num_mul_uint_dest(num_t num, uint64_t value)
-{
-    DBG_CHECK_PTR(num.head);
-
-    num_t num_res = num_create(0, NULL, NULL);
-    num_res = num_add_mul_uint(num_res, num, value);
-    num_free(num);
-    return num_res;
 }
 
 
@@ -947,6 +934,7 @@ num_t num_cmp_mul_uint(num_t num_1, num_t num_2, uint64_t r, uint64_t offset) //
 num_t num_div_mod_sigle(num_p num_1, num_t num_2)
 {
     DBG_CHECK_PTR(num_1->head);
+    DBG_CHECK_PTR(num_2.head);
 
     chunk_p chunk_1 = num_1->tail;
     uint64_t value_2 = num_2.head->value;
@@ -1027,7 +1015,6 @@ num_t num_div_mod_general(num_p num_1, chunk_p chunk_1, num_t num_2)
     return num_q;
 }
 
-// TODO documentation
 /*
 NUM_R has to be shifted RES bites to the right
 */
@@ -1043,22 +1030,22 @@ uint64_t num_div_mod_unajusted(num_p out_num_q, num_p out_num_r, num_t num_1, nu
         num_free(num_2);
         *out_num_q = num_create(0, NULL, NULL);
         *out_num_r = num_1;
-        return 1;
+        return 0;
     }
 
     if(num_2.count == 1)
     {
         *out_num_q = num_div_mod_sigle(&num_1, num_2);
         *out_num_r = num_1;
-        return 1;
+        return 0;
     }
 
-    uint64_t n = UINT64_MAX;
-    uint64_t d = num_2.tail->value + 1;
-    uint64_t factor = d ? n / d : 1;
+    uint64_t bits = 0;
+    for(uint64_t l = num_2.tail->value; l < 0x8000000000000000; l <<= 1)
+        bits++;
 
-    num_1 = num_mul_uint_dest(num_1, factor);
-    num_2 = num_mul_uint_dest(num_2, factor);
+    num_1 = num_shl_uint(num_1, bits);
+    num_2 = num_shl_uint(num_2, bits);
 
     chunk_p chunk_r = num_1.tail;
     for(uint64_t i=1; i<num_2.count; i++)
@@ -1066,7 +1053,7 @@ uint64_t num_div_mod_unajusted(num_p out_num_q, num_p out_num_r, num_t num_1, nu
 
     *out_num_q = num_div_mod_general(&num_1, chunk_r, num_2);
     *out_num_r = num_1;
-    return factor;
+    return bits;
 }
 
 
@@ -1178,7 +1165,6 @@ num_t num_mul(num_t num_1, num_t num_2)
     }
 
     num_t num_res = num_create(0, NULL, NULL);
-    chunk_p chunk_1 = num_1.head;
     chunk_p chunk_2 = num_2.head;
 
     // printf("\ntotal: %lu", num_2.count/1000);
@@ -1188,7 +1174,7 @@ num_t num_mul(num_t num_1, num_t num_2)
         // if(i%1000 == 0) printf("\t%lu", i/1000);
         // i++;
 
-        chunk_res = num_mul_uint_offset(&num_res, chunk_res, chunk_1, chunk_2->value);
+        chunk_res = num_add_mul_uint_offset(&num_res, chunk_res, num_1.head, chunk_2->value);
         chunk_res = num_denormalize(&num_res, chunk_res);
 
         chunk_2 = chunk_consume(chunk_2);
@@ -1204,9 +1190,9 @@ void num_div_mod(num_p out_num_q, num_p out_num_r, num_t num_1, num_t num_2)
     DBG_CHECK_PTR(num_2.head);
 
     num_t num_q, num_r;
-    uint64_t factor = num_div_mod_unajusted(&num_q, &num_r, num_1, num_2);
+    uint64_t bits = num_div_mod_unajusted(&num_q, &num_r, num_1, num_2);
 
-    *out_num_r = num_div_mod_sigle(&num_r, num_wrap(factor));
+    *out_num_r = num_shr_uint(num_r, bits);
     *out_num_q = num_q;
 }
 
@@ -1228,8 +1214,8 @@ num_t num_mod(num_t num_1, num_t num_2)
     DBG_CHECK_PTR(num_2.head);
 
     num_t num_q, num_r;
-    uint64_t factor = num_div_mod_unajusted(&num_q, &num_r, num_1, num_2);
+    uint64_t bits = num_div_mod_unajusted(&num_q, &num_r, num_1, num_2);
     num_free(num_q);
 
-    return num_div_mod_sigle(&num_r, num_wrap(factor));
+    return num_shr_uint(num_r, bits);
 }
