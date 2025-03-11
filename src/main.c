@@ -28,13 +28,13 @@ num_t num_generate(uint64_t max, uint64_t salt)
     num_t num = num_wrap(2);
     for(uint64_t i=0; i<max; i++)
     {
-        printf("\n%lu", i);
+        // printf("\n%lu", i);
 
-        uint64_t begin = altutime();
+        // uint64_t begin = altutime();
         num = num_add(num, num_wrap(salt));
         num = num_sqr(num);
-        uint64_t end = altutime();
-        printf("\t%10.3f", (end - begin) / 1e3);
+        // uint64_t end = altutime();
+        // printf("\t%10.3f", (end - begin) / 1e3);
     }
     return num;
 }
@@ -299,7 +299,8 @@ int main(int argc, char** argv)
     setbuf(stdout, NULL);
     srand(time(NULL));
 
-    num_generate(21, 2);
+    // num_generate(21, 2);
+    time_1(13, 21);
 
     printf("\n");
     return 0;

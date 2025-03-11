@@ -836,28 +836,22 @@ int64_t num_cmp_offset(num_t num_1, num_t num_2, uint64_t offset)
     return 0;
 }
 
-chunk_p num_add_offset(num_p num_1, chunk_p chunk_1, num_t num_2) // TODO test
+chunk_p num_add_offset(num_p num_1, chunk_p chunk_1, chunk_p chunk_2, bool keep) // TODO test
 {
     DBG_CHECK_PTR(num_1->head);
     DBG_CHECK_PTR(chunk_1);
-    DBG_CHECK_PTR(num_2.head);
+    DBG_CHECK_PTR(chunk_2);
 
-    if(num_2.count == 0)
-        return NULL;
+    if(chunk_2 == NULL)
+        return chunk_1;
 
-    uint64_t count = num_2.count;
-    chunk_p chunk_2 = num_2.head;
     chunk_p chunk_0 = chunk_1 = num_denormalize(num_1, chunk_1);
-    for(; chunk_1 && chunk_2; count--)
+    for(; chunk_2; chunk_2 = keep ? chunk_2->next : chunk_consume(chunk_2))
     {
-        num_add_uint_offset(num_1, chunk_1, chunk_2->value);
-
+        chunk_1 = num_add_uint_offset(num_1, chunk_1, chunk_2->value);
+        chunk_1 = num_denormalize(num_1, chunk_1);
         chunk_1 = chunk_1->next;
-        chunk_2 = chunk_consume(chunk_2);
     }
-
-    if(chunk_1 == NULL && chunk_2)
-        *num_1 = num_insert_list(*num_1, chunk_2, num_2.tail, count);
 
     return chunk_0;
 }
@@ -1096,7 +1090,7 @@ num_t num_add(num_t num_1, num_t num_2)
     DBG_CHECK_PTR(num_1.head);
     DBG_CHECK_PTR(num_2.head);
 
-    num_add_offset(&num_1, num_1.head, num_2);
+    num_add_offset(&num_1, num_1.head, num_2.head, false);
     return num_1;
 }
 
@@ -1148,7 +1142,7 @@ num_t num_sqr(num_t num) // TODO test
         return num_res;
 
     chunk_p chunk_res = num_denormalize(&num_res, NULL);
-    for(chunk_p chunk = num.head; chunk;)
+    for(chunk_p chunk = num.head; chunk; num.count--)
     {
         uint64_t value = chunk->value;
         chunk = chunk_consume(chunk);
@@ -1159,7 +1153,6 @@ num_t num_sqr(num_t num) // TODO test
         chunk_res = chunk_res->next;
         chunk_res = num_add_uint_offset(&num_res, chunk_res, HIGH(u));
 
-        // TODO optmize
         chunk_res = num_add_mul_uint_offset(&num_res, chunk_res, chunk, value << 1);
         chunk_res = num_denormalize(&num_res, chunk_res);
         chunk_res = chunk_res->next;
@@ -1167,7 +1160,7 @@ num_t num_sqr(num_t num) // TODO test
         if(value < 0x8000000000000000)
             continue;
 
-        chunk_res = num_add_mul_uint_offset(&num_res, chunk_res, chunk, 1);
+        chunk_res = num_add_offset(&num_res, chunk_res, chunk, true);
 }
     num_normalize(&num_res);
     return num_res;

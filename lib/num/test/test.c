@@ -1206,15 +1206,15 @@ void test_num_cmp(bool show)
 {
     printf("\n\t%s\t\t", __func__);
 
-    #define TEST_NUM_CMP(TAG, RELATION, ...)            \
-    {                                                   \
-        num_t num[2];                                   \
-        if(show) printf("\n\t\t%s  1\t\t", __func__);   \
-        num_create_immed_vec(num, 2, __VA_ARGS__);      \
-        int64_t cmp = num_cmp(num[0], num[1]);          \
-        assert(cmp RELATION 0);                         \
-        num_free(num[0]);                               \
-        num_free(num[1]);                               \
+    #define TEST_NUM_CMP(TAG, RELATION, ...)                \
+    {                                                       \
+        num_t num[2];                                       \
+        if(show) printf("\n\t\t%s %2d\t\t", __func__, TAG); \
+        num_create_immed_vec(num, 2, __VA_ARGS__);          \
+        int64_t cmp = num_cmp(num[0], num[1]);              \
+        assert(cmp RELATION 0);                             \
+        num_free(num[0]);                                   \
+        num_free(num[1]);                                   \
     }
 
     TEST_NUM_CMP( 1, ==,   
