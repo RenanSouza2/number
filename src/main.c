@@ -13,6 +13,7 @@
 #include "../utils/clu/header.h"
 
 
+
 uint64_t altutime()
 {
     struct timespec time;
@@ -213,6 +214,7 @@ void time_dec()
     printf("\n");
     printf("\ntime: %.3f", (end - begin) / 1e3);
 }
+
 
 
 void pi_1()
