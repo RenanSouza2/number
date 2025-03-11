@@ -1731,6 +1731,8 @@ void test_num_div_mod(bool show)
         3, 1, UINT64_MAX - 1, UINT64_MAX
     );
 
+    #undef TEST_NUM_DIV_MOD
+
     chunk_pool_clean();
     assert(clu_mem_empty());
 }
@@ -1741,7 +1743,7 @@ void test_num()
 {
     printf("\n%s", __func__);
 
-    bool show = true;
+    bool show = false;
 
     test_uint_from_char(show);
     test_uint128(show);
