@@ -285,7 +285,7 @@ void display_bit(uint64_t value)
 {
     for(uint64_t i=0; i<64; i++)
     {
-        printf("%lu", value >> 63);
+        printf(U64PX, value >> 63);
         value <<= 1;
     }
 }

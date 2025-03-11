@@ -1053,7 +1053,9 @@ uint64_t num_div_mod_unajusted(num_p out_num_q, num_p out_num_r, num_t num_1, nu
         return 1;
     }
 
-    uint64_t factor = UINT64_MAX / num_2.tail->value;
+    uint64_t n = UINT64_MAX;
+    uint64_t d = num_2.tail->value + 1;
+    uint64_t factor = d ? n / d : 1;
 
     num_1 = num_mul_uint_dest(num_1, factor);
     num_2 = num_mul_uint_dest(num_2, factor);
@@ -1203,9 +1205,8 @@ void num_div_mod(num_p out_num_q, num_p out_num_r, num_t num_1, num_t num_2)
 
     num_t num_q, num_r;
     uint64_t factor = num_div_mod_unajusted(&num_q, &num_r, num_1, num_2);
-    num_r = num_div_mod_sigle(&num_r, num_wrap(factor));
 
-    *out_num_r = num_r;
+    *out_num_r = num_div_mod_sigle(&num_r, num_wrap(factor));
     *out_num_q = num_q;
 }
 
@@ -1215,9 +1216,9 @@ num_t num_div(num_t num_1, num_t num_2)
     DBG_CHECK_PTR(num_2.head);
 
     num_t num_q, num_r;
-    num_free(num_r);
-
     num_div_mod_unajusted(&num_q, &num_r, num_1, num_2);
+    num_free(num_r);
+    
     return num_q;
 }
 
@@ -1230,6 +1231,5 @@ num_t num_mod(num_t num_1, num_t num_2)
     uint64_t factor = num_div_mod_unajusted(&num_q, &num_r, num_1, num_2);
     num_free(num_q);
 
-    num_r = num_div_mod_sigle(&num_r, num_wrap(factor));
-    return num_r;
+    return num_div_mod_sigle(&num_r, num_wrap(factor));
 }
