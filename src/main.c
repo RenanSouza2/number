@@ -149,36 +149,31 @@ void fibonacci()
     }
 }
 
-void fibonacci_2()
+void fibonacci_2(uint64_t min, uint64_t max)
 {
-    num_t num_a = num_wrap(1);
-    num_t num_b = num_wrap(0);
+    num_t num_a = num_wrap(0);
+    num_t num_b = num_wrap(1);
     num_t num_c = num_wrap(1);
 
-    uint64_t space = 1;
-    for(uint64_t i=0; ; i++)
+    for(uint64_t i=0; i < max; i++)
     {
-        num_display_full("num_b", num_b);
+        if(i > min)
+            printf("\n" U64P() "", i);
 
-        if(i%space == 0)
-        {
-            printf("\n" U64P() " num: ", i);
-            num_display(num_c);
-        }
-
-        num_t num_b_2 = num_mul(num_copy(num_b), num_copy(num_b));
+        uint64_t begin = altutime();
         num_t num_a_2 = num_mul(num_copy(num_a), num_copy(num_a));
-        num_t num_a_new = num_add(num_a_2, num_copy(num_b_2));
+        num_t num_b_2 = num_mul(num_copy(num_b), num_copy(num_b));
+        num_t num_c_2 = num_mul(num_copy(num_c), num_copy(num_c));
 
-        num_t num_b_new = num_add(num_a, num_copy(num_c));
-        num_b_new = num_mul(num_b_new, num_copy(num_c));
+        num_a = num_add(num_a, num_c);
+        num_b = num_mul(num_b, num_a);
 
-        num_t num_c_2 = num_mul(num_c, num_copy(num_c));
-        num_t num_c_new = num_add(num_b_2, num_c_2);
-
-        num_a = num_a_new;
-        num_b = num_b_new;
-        num_c = num_c_new;
+        num_a = num_add(num_a_2, num_copy(num_b_2));
+        num_c = num_add(num_b_2, num_c_2);
+        uint64_t end = altutime();
+        
+        if(i > min)
+            printf("\t%10.3f", (end - begin) / 1e3);
     }
 }
 
@@ -294,13 +289,16 @@ void display_bit(uint64_t value)
     }
 }
 
+
+
 int main(int argc, char** argv)
 {
     setbuf(stdout, NULL);
     srand(time(NULL));
 
     // num_generate(21, 2);
-    time_1(13, 21);
+    // time_1(13, 21);
+    fibonacci_2(16, 23);
 
     printf("\n");
     return 0;
