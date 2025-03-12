@@ -1539,15 +1539,15 @@ void test_num_mul(bool show)
 
 void test_num_sqr(bool show)
 {
-    printf("\n\t%s", __func__);
+    printf("\n\t%s\t\t", __func__);
 
-    #define TEST_NUM_SQR(TAG, ...)                      \
-    {                                                   \
-        num_t num[2];                                   \
-        if(show) printf("\n\t\t%s %d", __func__, TAG);  \
-        num_create_immed_vec(num, 2, __VA_ARGS__);      \
-        num[0] = num_sqr(num[0]);                       \
-        assert(num_str(num[0], num[1]));                \
+    #define TEST_NUM_SQR(TAG, ...)                          \
+    {                                                       \
+        num_t num[2];                                       \
+        if(show) printf("\n\t\t%s %d\t\t", __func__, TAG);  \
+        num_create_immed_vec(num, 2, __VA_ARGS__);          \
+        num[0] = num_sqr(num[0]);                           \
+        assert(num_str(num[0], num[1]));                    \
     }
 
     TEST_NUM_SQR(1,
@@ -1744,7 +1744,7 @@ void test_num()
 {
     printf("\n%s", __func__);
 
-    bool show = true;
+    bool show = false;
 
     test_uint_from_char(show);
     test_uint128(show);

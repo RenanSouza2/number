@@ -1108,13 +1108,9 @@ num_t num_mul(num_t num_1, num_t num_2)
     num_t num_res = num_create(0, NULL, NULL);
     chunk_p chunk_2 = num_2.head;
 
-    // uint64_t i=0;
     // printf("\ntotal: %lu", num_2.count/1000);
     for(chunk_p chunk_res = NULL; chunk_2; chunk_res = chunk_res->next)
     {
-        // if(i%1000 == 0) printf("\t%lu", i/1000);
-        // i++;
-
         chunk_res = num_add_mul_uint_offset(&num_res, chunk_res, num_1.head, chunk_2->value);
         chunk_res = num_denormalize(&num_res, chunk_res);
 
@@ -1132,8 +1128,9 @@ num_t num_sqr(num_t num)
     if(num.count == 0)
         return num_res;
 
-    chunk_p chunk_res = num_denormalize(&num_res, NULL);
-    for(chunk_p chunk = num.head; chunk; num.count--)
+    chunk_p chunk = num.head;
+    chunk_p chunk_res = NULL;
+    while(chunk)
     {
         uint64_t value = chunk->value;
         chunk = chunk->next;
