@@ -28,9 +28,13 @@ num_t num_generate(uint64_t max, uint64_t salt)
     num_t num = num_wrap(2);
     for(uint64_t i=0; i<max; i++)
     {
-        // printf("\ni: %lu", i);
+        // printf("\n%lu", i);
+
+        // uint64_t begin = altutime();
         num = num_add(num, num_wrap(salt));
-        num = num_mul(num, num_copy(num));
+        num = num_sqr(num);
+        // uint64_t end = altutime();
+        // printf("\t%10.3f", (end - begin) / 1e3);
     }
     return num;
 }
@@ -90,6 +94,8 @@ void time_1(uint64_t begin, uint64_t end)
 
         num_free(num);
     }
+    num_free(num_1);
+    num_free(num_2);
 }
 
 void time_2(int argc, char** argv, uint64_t max)
@@ -145,36 +151,31 @@ void fibonacci()
     }
 }
 
-void fibonacci_2()
+void fibonacci_2(uint64_t min, uint64_t max)
 {
-    num_t num_a = num_wrap(1);
-    num_t num_b = num_wrap(0);
+    num_t num_a = num_wrap(0);
+    num_t num_b = num_wrap(1);
     num_t num_c = num_wrap(1);
 
-    uint64_t space = 1;
-    for(uint64_t i=0; ; i++)
+    for(uint64_t i=0; i < max; i++)
     {
-        num_display_full("num_b", num_b);
+        if(i > min)
+            printf("\n" U64P() "", i);
 
-        if(i%space == 0)
-        {
-            printf("\n" U64P() " num: ", i);
-            num_display(num_c);
-        }
+        uint64_t begin = altutime();
+        num_t num_a_2 = num_sqr(num_copy(num_a));
+        num_t num_b_2 = num_sqr(num_copy(num_b));
+        num_t num_c_2 = num_sqr(num_copy(num_c));
 
-        num_t num_b_2 = num_mul(num_copy(num_b), num_copy(num_b));
-        num_t num_a_2 = num_mul(num_copy(num_a), num_copy(num_a));
-        num_t num_a_new = num_add(num_a_2, num_copy(num_b_2));
+        num_a = num_add(num_a, num_c);
+        num_b = num_mul(num_b, num_a);
 
-        num_t num_b_new = num_add(num_a, num_copy(num_c));
-        num_b_new = num_mul(num_b_new, num_copy(num_c));
-
-        num_t num_c_2 = num_mul(num_c, num_copy(num_c));
-        num_t num_c_new = num_add(num_b_2, num_c_2);
-
-        num_a = num_a_new;
-        num_b = num_b_new;
-        num_c = num_c_new;
+        num_a = num_add(num_a_2, num_copy(num_b_2));
+        num_c = num_add(num_b_2, num_c_2);
+        uint64_t end = altutime();
+        
+        if(i > min)
+            printf("\t%10.3f", (end - begin) / 1e3);
     }
 }
 
@@ -191,6 +192,54 @@ void factorial()
             printf("\ni: " U64P() "\t", i);
         }
     }
+}
+
+num_t fib_1(uint64_t index)
+{
+    if(index < 2)
+        return num_wrap(1);
+
+    num_t num_a = num_wrap(1);
+    num_t num_b = num_wrap(1);
+    for(uint64_t i=1; i<index; i++)
+    {
+        num_t num_c = num_add(num_a, num_copy(num_b));
+        num_a = num_b;
+        num_b = num_c;
+    }
+    num_free(num_a);
+    return num_b;
+}
+
+num_t fib_2(uint64_t index)
+{
+    num_t num_a = num_wrap(1);
+    num_t num_b = num_wrap(0);
+    num_t num_c = num_wrap(1);
+    for(uint64_t mask = 0x8000000000000000; mask; mask >>= 1)
+    {
+        num_t num_a_2 = num_sqr(num_copy(num_a));
+        num_t num_b_2 = num_sqr(num_copy(num_b));
+        num_t num_c_2 = num_sqr(num_copy(num_c));
+
+        num_a = num_add(num_a, num_c);
+        num_b = num_mul(num_b, num_a);
+
+        num_a = num_add(num_a_2, num_copy(num_b_2));
+        num_c = num_add(num_b_2, num_c_2);
+
+        if((mask & index) == 0)
+            continue;
+
+        num_c_2 = num_add(num_copy(num_b), num_copy(num_c));
+        num_free(num_a);
+        num_a = num_b;
+        num_b = num_c;
+        num_c = num_c_2;
+    }
+    num_free(num_a);
+    num_free(num_b);
+    return num_c;
 }
 
 
@@ -290,21 +339,18 @@ void display_bit(uint64_t value)
     }
 }
 
+
+
 int main(int argc, char** argv)
 {
     setbuf(stdout, NULL);
     srand(time(NULL));
 
-    // num_t num_1 = num_generate_2(23702);
-    // num_t num_2 = num_generate_2(23705);
-
-    // num_display_tag("num_1", num_1);
-    // num_display_tag("num_2", num_2);
-    
-    // printf("\nh1: ");display_bit(num_1.tail->value);
-    // printf("\nh2: ");display_bit(num_2.tail->value);
-
-    time_2(argc, argv, 19);
+    // num_generate(21, 2);
+    time_1(13, 22);
+    // time_2(argc, argv, 19);
+    // fibonacci_2(16, 23);
+    // fibonacci();
 
     printf("\n");
     return 0;

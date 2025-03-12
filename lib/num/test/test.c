@@ -167,32 +167,6 @@ void test_chunk_create(bool show)
     assert(clu_mem_empty());
 }
 
-void test_chunk_consume(bool show)
-{
-    printf("\n\t%s", __func__);
-
-    if(show) printf("\n\t\t%s 1\t\t", __func__);
-    chunk_p chunk = chunk_consume(NULL);
-    assert(chunk == NULL);
-
-    if(show) printf("\n\t\t%s 2\t\t", __func__);
-    chunk = chunk_create(1, NULL, NULL);
-    chunk = chunk_consume(chunk);
-    assert(chunk == NULL);
-
-    if(show) printf("\n\t\t%s 3\t\t", __func__);
-    chunk = chunk_create(1, NULL, NULL);
-    chunk = chunk_create(2, chunk, NULL);
-    chunk = chunk_consume(chunk);
-    assert(chunk != NULL);
-    assert(chunk->value == 1);
-    assert(chunk->prev == NULL);
-    chunk_free(chunk, chunk);
-
-    chunk_pool_clean();
-    assert(clu_mem_empty());
-}
-
 
 
 void test_num_create_immed(bool show)
@@ -290,7 +264,7 @@ void test_num_insert(bool show)
         num_t num[2];                                   \
         if(show) printf("\n\t\t%s %d", __func__, TAG);  \
         num_create_immed_vec(num, 2, __VA_ARGS__);      \
-        chunk_p chunk = num_insert(&num[0], VALUE);     \
+        chunk_p chunk = num_insert_tail(&num[0], VALUE);     \
         assert(uint64(chunk->value, VALUE));            \
         assert((num[0].head == chunk) == IS_HEAD);      \
         assert(num[0].tail == chunk);                   \
@@ -1206,15 +1180,15 @@ void test_num_cmp(bool show)
 {
     printf("\n\t%s\t\t", __func__);
 
-    #define TEST_NUM_CMP(TAG, RELATION, ...)            \
-    {                                                   \
-        num_t num[2];                                   \
-        if(show) printf("\n\t\t%s  1\t\t", __func__);   \
-        num_create_immed_vec(num, 2, __VA_ARGS__);      \
-        int64_t cmp = num_cmp(num[0], num[1]);          \
-        assert(cmp RELATION 0);                         \
-        num_free(num[0]);                               \
-        num_free(num[1]);                               \
+    #define TEST_NUM_CMP(TAG, RELATION, ...)                \
+    {                                                       \
+        num_t num[2];                                       \
+        if(show) printf("\n\t\t%s %2d\t\t", __func__, TAG); \
+        num_create_immed_vec(num, 2, __VA_ARGS__);          \
+        int64_t cmp = num_cmp(num[0], num[1]);              \
+        assert(cmp RELATION 0);                             \
+        num_free(num[0]);                                   \
+        num_free(num[1]);                                   \
     }
 
     TEST_NUM_CMP( 1, ==,   
@@ -1563,6 +1537,58 @@ void test_num_mul(bool show)
     assert(clu_mem_empty());
 }
 
+void test_num_sqr(bool show)
+{
+    printf("\n\t%s\t\t", __func__);
+
+    #define TEST_NUM_SQR(TAG, ...)                          \
+    {                                                       \
+        num_t num[2];                                       \
+        if(show) printf("\n\t\t%s %d\t\t", __func__, TAG);  \
+        num_create_immed_vec(num, 2, __VA_ARGS__);          \
+        num[0] = num_sqr(num[0]);                           \
+        assert(num_str(num[0], num[1]));                    \
+    }
+
+    TEST_NUM_SQR(1,
+        0,
+        0
+    );
+    TEST_NUM_SQR(2,
+        1, 1,
+        1, 1
+    );
+    TEST_NUM_SQR(3,
+        1, 2,
+        1, 4
+    );
+    TEST_NUM_SQR(4,
+        1, UINT32_MAX,
+        1, 0xfffffffe00000001
+    );
+    TEST_NUM_SQR(5,
+        1, (uint64_t)1 << 32,
+        2, 1, 0
+    );
+    TEST_NUM_SQR(6,
+        2, 1, 0,
+        3, 1, 0, 0
+    );
+    TEST_NUM_SQR(7,
+        2, 2, 3,
+        3, 4, 12, 9
+    );
+    TEST_NUM_SQR(8,
+        2, UINT64_MAX, UINT64_MAX,
+        4, UINT64_MAX, UINT64_MAX - 1, 0, 1
+    );
+
+    #undef TEST_NUM_SQR
+
+    chunk_pool_clean();
+    assert(clu_mem_empty());
+}
+
 void test_num_div_mod(bool show)
 {
     printf("\n\t%s", __func__);
@@ -1579,55 +1605,55 @@ void test_num_div_mod(bool show)
         assert(clu_mem_empty());                            \
     }
 
-    TEST_NUM_DIV_MOD(1,
+    TEST_NUM_DIV_MOD( 1,
         0,
         1, 1,
         0,
         0
     );
-    TEST_NUM_DIV_MOD(2,
+    TEST_NUM_DIV_MOD( 2,
         1, 4,
         1, 2,
         1, 2,
         0
     );
-    TEST_NUM_DIV_MOD(3,
+    TEST_NUM_DIV_MOD( 3,
         1, 5,
         1, 2,
         1, 2,
         1, 1
     );
-    TEST_NUM_DIV_MOD(4,
+    TEST_NUM_DIV_MOD( 4,
         1, 5,
         1, 5,
         1, 1,
         0
     );
-    TEST_NUM_DIV_MOD(5,
+    TEST_NUM_DIV_MOD( 5,
         1, 9,
         1, 3,
         1, 3,
         0
     );
-    TEST_NUM_DIV_MOD(6,
+    TEST_NUM_DIV_MOD( 6,
         3, 1, 0, 0,
         2, 1, 0,
         2, 1, 0,
         0
     );
-    TEST_NUM_DIV_MOD(7,
+    TEST_NUM_DIV_MOD( 7,
         1, 1,
         2, 1, 0,
         0,
         1, 1
     );
-    TEST_NUM_DIV_MOD(8,
+    TEST_NUM_DIV_MOD( 8,
         2, 4, UINT64_MAX,
         2, 2, 0,
         1, 2,
         1, UINT64_MAX
     );
-    TEST_NUM_DIV_MOD(9,
+    TEST_NUM_DIV_MOD( 9,
         2, 4, 0,
         2, 2, UINT64_MAX,
         1, 1,
@@ -1724,7 +1750,6 @@ void test_num()
     test_uint128(show);
 
     test_chunk_create(show);
-    test_chunk_consume(show);
 
     test_num_create_immed(show);
     test_num_create_immed_vec(show);
@@ -1762,6 +1787,7 @@ void test_num()
     test_num_add(show);
     test_num_sub(show);
     test_num_mul(show);
+    test_num_sqr(show);
     test_num_div_mod(show);
 
     test_num_base_to(show);

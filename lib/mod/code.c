@@ -60,6 +60,11 @@ void mod_free(mod_t mod)
     num_free(mod.num);
 }
 
+mod_t mod_adjust(mod_t mod) // TODO test
+{
+    mod.num = num_mod(mod.num, num_copy(mod.max));
+    return mod;
+}
 
 
 bool mod_cmp(mod_t mod_1, mod_t mod_2) // TODO test
@@ -71,10 +76,8 @@ bool mod_cmp(mod_t mod_1, mod_t mod_2) // TODO test
 
 mod_t mod_add(mod_t mod_1, mod_t mod_2)
 {
-    num_t num = num_add(mod_1.num, mod_2.num);
-    mod_1.num = num_mod(num, num_copy(mod_1.max));
-
-    return mod_1;
+    mod_1.num = num_add(mod_1.num, mod_2.num);
+    return mod_adjust(mod_1);
 }
 
 mod_t mod_sub(mod_t mod_1, mod_t mod_2)
@@ -88,11 +91,36 @@ mod_t mod_sub(mod_t mod_1, mod_t mod_2)
 
 mod_t mod_mul(mod_t mod_1, mod_t mod_2)
 {
-    num_t num = num_mul(mod_1.num, mod_2.num);
-    mod_1.num = num_mod(num, num_copy(mod_1.max));
-    return mod_1;
+    mod_1.num = num_mul(mod_1.num, mod_2.num);
+    return mod_adjust(mod_1);
 }
 
+mod_t mod_sqr(mod_t mod)
+{
+    mod.num = num_sqr(mod.num);
+    return mod_adjust(mod);
+}
+
+mod_t mod_exp(mod_t mod, uint64_t value) // TODO test
+{
+    DBG_CHECK_PTR(mod.num.head);
+
+    if(mod.num.count == 0)
+    {
+        assert(value);
+        return mod;
+    }
+
+    mod_t mod_res = mod_wrap(1, mod.max);
+    for(uint64_t mask = (uint64_t)1 << 63; mask; mask >>= 1)
+    {
+        mod_res = mod_sqr(mod_res);
+        if(value & mask)
+            mod_res = mod_mul(mod_res, mod_copy(mod));
+    }
+    mod_free(mod);
+    return mod_res;
+}
 mod_t mod_div(mod_t mod_1, mod_t mod_2)
 {
     assert(!num_is_zero(mod_2.num));

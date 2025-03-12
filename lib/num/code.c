@@ -382,20 +382,6 @@ void chunk_free_item(chunk_p chunk)
     chunk_pool = chunk;
 }
 
-chunk_p chunk_consume(chunk_p chunk)
-{
-    DBG_CHECK_PTR(chunk);
-
-    if(chunk == NULL)
-        return NULL;
-
-    chunk_p chunk_next = chunk->next;
-    chunk_free_item(chunk);
-
-    if(chunk_next) chunk_next->prev = NULL;
-    return chunk_next;
-}
-
 void chunk_free(chunk_p head, chunk_p tail)
 {
     DBG_CHECK_PTR(head);
@@ -434,7 +420,7 @@ num_t num_create(uint64_t count, chunk_p head, chunk_p tail)
     };
 }
 
-chunk_p num_insert(num_p num, uint64_t value)
+chunk_p num_insert_tail(num_p num, uint64_t value)
 {
     DBG_CHECK_PTR(num->head);
 
@@ -509,7 +495,7 @@ chunk_p num_denormalize(num_p num, chunk_p chunk)
     DBG_CHECK_PTR(num->head);
     DBG_CHECK_PTR(chunk);
 
-    return COALESCE(chunk, num_insert(num, 0));
+    return COALESCE(chunk, num_insert_tail(num, 0));
 }
 
 bool num_normalize(num_p num)
@@ -657,7 +643,7 @@ num_t num_copy(num_t num)
 
     num_t num_res = num_create(0, NULL, NULL);
     for(chunk_p chunk = num.head; chunk; chunk = chunk->next)
-        num_insert(&num_res, chunk->value);
+        num_insert_tail(&num_res, chunk->value);
 
     return num_res;
 }
@@ -667,40 +653,6 @@ void num_free(num_t num)
     DBG_CHECK_PTR(num.head);
 
     chunk_free(num.head, num.tail);
-}
-
-
-
-num_t num_base_to(num_t num, uint64_t value)
-{
-    DBG_CHECK_PTR(num.head);
-
-    num_t num_res = num_create(0, NULL, NULL);
-    while (num.count)
-    {
-        num_t num_q, num_r;
-        num_div_mod(&num_q, &num_r, num, num_wrap(value));
-        num_insert(&num_res, num_unwrap(num_r));
-        num = num_q;
-    }
-    num_free(num);
-    return num_res;
-}
-
-num_t num_base_from(num_t num, uint64_t value)
-{
-    DBG_CHECK_PTR(num.head);
-
-    num_t num_res = num_create(0, NULL, NULL);
-    for(chunk_p chunk = num.tail; chunk; chunk = chunk->prev)
-    {
-        assert(chunk->value < value);
-        num_t num_aux = num_add_mul_uint(num_wrap(chunk->value), num_res, value);
-        num_free(num_res);
-        num_res = num_aux;
-    }
-    num_free(num);
-    return num_res;
 }
 
 
@@ -718,7 +670,7 @@ chunk_p num_add_uint_offset(num_p num, chunk_p chunk, uint64_t value)
     }
 
     if(value)
-        num_insert(num, value);
+        num_insert_tail(num, value);
 
     return chunk_0 ? chunk_0 : value ? num->tail : NULL;
 }
@@ -750,7 +702,7 @@ chunk_p num_add_mul_uint_offset(num_p num_res, chunk_p chunk_res, chunk_p chunk_
     DBG_CHECK_PTR(chunk_res);
     DBG_CHECK_PTR(chunk_1);
 
-    if(chunk_1 == NULL)
+    if(chunk_1 == NULL || value == 0)
         return chunk_res;
 
     chunk_p chunk_0 = chunk_res = num_denormalize(num_res, chunk_res);
@@ -784,7 +736,7 @@ num_t num_shl_uint(num_t num, uint64_t bits)
     }
 
     if(carry)
-        num_insert(&num, carry);
+        num_insert_tail(&num, carry);
 
     return num;
 }
@@ -827,9 +779,7 @@ num_t num_add_mul_uint(num_t num_res, num_t num, uint64_t value)
     DBG_CHECK_PTR(num_res.head);
     DBG_CHECK_PTR(num.head);
 
-    if(value)
-        num_add_mul_uint_offset(&num_res, num_res.head, num.head, value);
-
+    num_add_mul_uint_offset(&num_res, num_res.head, num.head, value);
     return num_res;
 }
 
@@ -872,7 +822,8 @@ int64_t num_cmp_offset(num_t num_1, num_t num_2, uint64_t offset)
     return 0;
 }
 
-chunk_p num_sub_offset(num_p num_1, chunk_p chunk_1, chunk_p chunk_2) // TODO test
+/* keeps NUM_2 */
+chunk_p num_add_offset(num_p num_1, chunk_p chunk_1, chunk_p chunk_2) // TODO test
 {
     DBG_CHECK_PTR(num_1->head);
     DBG_CHECK_PTR(chunk_1);
@@ -881,6 +832,28 @@ chunk_p num_sub_offset(num_p num_1, chunk_p chunk_1, chunk_p chunk_2) // TODO te
     if(chunk_2 == NULL)
         return chunk_1;
 
+    chunk_p chunk_0 = chunk_1 = num_denormalize(num_1, chunk_1);
+    for(; chunk_2; chunk_2 = chunk_2->next)
+    {
+        chunk_1 = num_add_uint_offset(num_1, chunk_1, chunk_2->value);
+        chunk_1 = num_denormalize(num_1, chunk_1);
+        chunk_1 = chunk_1->next;
+    }
+
+    return chunk_0;
+}
+
+chunk_p num_sub_offset(num_p num_1, chunk_p chunk_1, num_t num_2) // TODO test
+{
+    DBG_CHECK_PTR(num_1->head);
+    DBG_CHECK_PTR(chunk_1);
+    DBG_CHECK_PTR(num_2.head);
+
+    if(num_2.count == 0)
+        return chunk_1;
+
+    assert(chunk_1);
+    chunk_p chunk_2 = num_2.head;
     chunk_p chunk_0 = chunk_1;
     chunk_p prev_0 = chunk_0->prev;
 
@@ -889,7 +862,7 @@ chunk_p num_sub_offset(num_p num_1, chunk_p chunk_1, chunk_p chunk_2) // TODO te
         if(num_sub_uint_offset(num_1, chunk_1, chunk_2->value))
         {
             assert(chunk_2->next == NULL);
-            chunk_free_item(chunk_2);
+            num_free(num_2);
 
             while(num_1->tail != prev_0) // TODO  && num_normalize(&num_1)
                 if(!num_normalize(num_1))
@@ -899,8 +872,9 @@ chunk_p num_sub_offset(num_p num_1, chunk_p chunk_1, chunk_p chunk_2) // TODO te
         }
 
         chunk_1 = chunk_1->next;
-        chunk_2 = chunk_consume(chunk_2);
+        chunk_2 = chunk_2->next;
     }
+    num_free(num_2);
 
     return chunk_0;
 }
@@ -954,7 +928,7 @@ num_t num_div_mod_sigle(num_p num_1, num_t num_2)
 
         uint64_t r = value_1 / value_2;
         num_t num_aux = num_mul_uint(num_2, r);
-        chunk_1 = num_sub_offset(num_1, chunk_1, num_aux.head);
+        chunk_1 = num_sub_offset(num_1, chunk_1, num_aux);
         
         num_insert_head(&num_q, r);
         chunk_1 = chunk_1 ? chunk_1->prev : num_1->tail;
@@ -1003,7 +977,7 @@ num_t num_div_mod_general(num_p num_1, chunk_p chunk_1, num_t num_2)
                 num_aux = num_mul_uint(num_2, r_aux);
             }
             r += r_aux;
-            chunk_1 = num_sub_offset(num_1, chunk_1, num_aux.head);
+            chunk_1 = num_sub_offset(num_1, chunk_1, num_aux);
         }
 
         num_insert_head(&num_q, r);
@@ -1098,27 +1072,6 @@ num_t num_shr(num_t num, uint64_t bits)
     return num;
 }
 
-num_t num_exp(num_t num, uint64_t value) // TODO test
-{
-    DBG_CHECK_PTR(num.head);
-
-    if(num.count == 0)
-    {
-        assert(value);
-        return num;
-    }
-
-    num_t num_res = num_wrap(1);
-    for(uint64_t mask = (uint64_t)1 << 63; mask; mask >>= 1)
-    {
-        num_res = num_mul(num_res, num_copy(num_res));
-        if(value & mask)
-            num_res = num_mul(num_res, num_copy(num));
-    }
-    num_free(num);
-    return num_res;
-}
-
 
 
 num_t num_add(num_t num_1, num_t num_2)
@@ -1126,20 +1079,8 @@ num_t num_add(num_t num_1, num_t num_2)
     DBG_CHECK_PTR(num_1.head);
     DBG_CHECK_PTR(num_2.head);
 
-    chunk_p chunk_1 = num_1.head;
-    chunk_p chunk_2 = num_2.head;
-    uint64_t count = num_2.count;
-    for(; chunk_1 && chunk_2; count--)
-    {
-        num_add_uint_offset(&num_1, chunk_1, chunk_2->value);
-
-        chunk_1 = chunk_1->next;
-        chunk_2 = chunk_consume(chunk_2);
-    }
-
-    if(chunk_1 == NULL && chunk_2)
-        num_1 = num_insert_list(num_1, chunk_2, num_2.tail, count);
-
+    num_add_offset(&num_1, num_1.head, num_2.head);
+    num_free(num_2);
     return num_1;
 }
 
@@ -1148,7 +1089,7 @@ num_t num_sub(num_t num_1, num_t num_2)
     DBG_CHECK_PTR(num_1.head);
     DBG_CHECK_PTR(num_2.head);
 
-    num_sub_offset(&num_1, num_1.head, num_2.head);
+    num_sub_offset(&num_1, num_1.head, num_2);
     return num_1;
 }
 
@@ -1168,19 +1109,71 @@ num_t num_mul(num_t num_1, num_t num_2)
     chunk_p chunk_2 = num_2.head;
 
     // printf("\ntotal: %lu", num_2.count/1000);
-    // uint64_t i=0;
     for(chunk_p chunk_res = NULL; chunk_2; chunk_res = chunk_res->next)
     {
-        // if(i%1000 == 0) printf("\t%lu", i/1000);
-        // i++;
-
         chunk_res = num_add_mul_uint_offset(&num_res, chunk_res, num_1.head, chunk_2->value);
         chunk_res = num_denormalize(&num_res, chunk_res);
 
-        chunk_2 = chunk_consume(chunk_2);
+        chunk_2 = chunk_2->next;
     }
 
     num_free(num_1);
+    num_free(num_2);
+    return num_res;
+}
+
+num_t num_sqr(num_t num)
+{
+    num_t num_res = num_create(0, NULL, NULL);
+    if(num.count == 0)
+        return num_res;
+
+    chunk_p chunk = num.head;
+    chunk_p chunk_res = NULL;
+    while(chunk)
+    {
+        uint64_t value = chunk->value;
+        chunk = chunk->next;
+
+        uint128_t u = MUL(value, value);
+        chunk_res = num_add_uint_offset(&num_res, chunk_res, LOW(u));
+        chunk_res = num_denormalize(&num_res, chunk_res);
+        chunk_res = chunk_res->next;
+        chunk_res = num_add_uint_offset(&num_res, chunk_res, HIGH(u));
+
+        chunk_res = num_add_mul_uint_offset(&num_res, chunk_res, chunk, value << 1);
+        chunk_res = num_denormalize(&num_res, chunk_res);
+        chunk_res = chunk_res->next;
+
+        if(value < 0x8000000000000000)
+            continue;
+
+        chunk_res = num_add_offset(&num_res, chunk_res, chunk);
+    }
+    num_normalize(&num_res);
+
+    num_free(num);
+    return num_res;
+}
+
+num_t num_exp(num_t num, uint64_t value) // TODO test
+{
+    DBG_CHECK_PTR(num.head);
+
+    if(num.count == 0)
+    {
+        assert(value);
+        return num;
+    }
+
+    num_t num_res = num_wrap(1);
+    for(uint64_t mask = (uint64_t)1 << 63; mask; mask >>= 1)
+    {
+        num_res = num_sqr(num_res);
+        if(value & mask)
+            num_res = num_mul(num_res, num_copy(num));
+    }
+    num_free(num);
     return num_res;
 }
 
@@ -1218,4 +1211,38 @@ num_t num_mod(num_t num_1, num_t num_2)
     num_free(num_q);
 
     return num_shr_uint(num_r, bits);
+}
+
+
+
+num_t num_base_to(num_t num, uint64_t value)
+{
+    DBG_CHECK_PTR(num.head);
+
+    num_t num_res = num_create(0, NULL, NULL);
+    while (num.count)
+    {
+        num_t num_q, num_r;
+        num_div_mod(&num_q, &num_r, num, num_wrap(value));
+        num_insert_tail(&num_res, num_unwrap(num_r));
+        num = num_q;
+    }
+    num_free(num);
+    return num_res;
+}
+
+num_t num_base_from(num_t num, uint64_t value)
+{
+    DBG_CHECK_PTR(num.head);
+
+    num_t num_res = num_create(0, NULL, NULL);
+    for(chunk_p chunk = num.tail; chunk; chunk = chunk->prev)
+    {
+        assert(chunk->value < value);
+        num_t num_aux = num_add_mul_uint(num_wrap(chunk->value), num_res, value);
+        num_free(num_res);
+        num_res = num_aux;
+    }
+    num_free(num);
+    return num_res;
 }
