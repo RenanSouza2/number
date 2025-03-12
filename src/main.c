@@ -347,11 +347,41 @@ int main(int argc, char** argv)
     srand(time(NULL));
 
     // num_generate(21, 2);
-    time_1(13, 22);
+    // time_1(13, 22);
     // time_2(argc, argv, 19);
     // fibonacci_2(16, 23);
     // fibonacci();
 
+    // k = 2, k/2 = 1;
+
+    uint64_t pos = 1;
+    printf("\na");
+    fix_t fix_k = fix_wrap(1, pos);
+    fix_t fix_x = fix_wrap(0, pos);
+    fix_t fix_n = fix_wrap(1, pos);
+    for(uint64_t i=0; fix_cmp(fix_x, fix_n) != 0; i++)
+    {
+        printf("\ni: %lu", i);
+
+        fix_free(fix_x);
+        fix_x = fix_n;
+
+        fix_t fix_a = fix_shr(fix_copy(fix_x), 1);
+        fix_t fix_b = fix_div(fix_copy(fix_k), fix_copy(fix_x));
+        fix_n = fix_add(fix_a, fix_b);
+    }
+    fix_free(fix_n);
+    fix_free(fix_k);
+
+    printf("\n\n");
+    fix_display_dec(fix_x);
+    fix_free(fix_x);
+
+    chunk_pool_clean();
+
     printf("\n");
     return 0;
 }
+
+// 0m0.154s
+// 0m1.585s

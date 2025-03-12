@@ -6,6 +6,8 @@
 #include "../../utils/assert.h"
 #include "../../utils/U64.h"
 
+
+
 #ifdef DEBUG
 
 #include "../../utils/clu/header.h"
@@ -37,6 +39,7 @@ void fix_display_dec(fix_t fix)
         num_break(&num_h, &num_l, num_l, fix.pos);
         printf(U64P(018), num_unwrap(num_h));
     }
+    num_free(num_l);
 }
 
 void fix_display(fix_t fix)
@@ -76,6 +79,27 @@ fix_t fix_copy(fix_t fix) // TODO test
 void fix_free(fix_t fix)
 {
     snum_free(fix.snum);
+}
+
+
+
+int64_t fix_cmp(fix_t fix_1, fix_t fix_2) // TODO test
+{
+    return snum_cmp(fix_1.snum, fix_2.snum);
+}
+
+
+
+fix_t fix_shl(fix_t fix, uint64_t value) // TODO test
+{
+    fix.snum = snum_shl(fix.snum, value);
+    return fix;
+}
+
+fix_t fix_shr(fix_t fix, uint64_t value) // TODO test
+{
+    fix.snum = snum_shr(fix.snum, value);
+    return fix;
 }
 
 

@@ -1,11 +1,9 @@
 #ifndef __FIX_STRUCT_H__
 #define __FIX_STRUCT_H__
 
-#include <stdint.h>
+#include "../snum/struct.h"
 
 #include "header.h"
-
-#include "../snum/struct.h"
 
 STRUCT(fix)
 {
@@ -22,6 +20,11 @@ void fix_display_tag(char tag[], fix_t fix);
 fix_t fix_wrap(int64_t value, uint64_t pos);
 fix_t fix_copy(fix_t fix);
 void fix_free(fix_t fix);
+
+int64_t fix_cmp(fix_t fix_1, fix_t fix_2);
+
+fix_t fix_shl(fix_t fix, uint64_t value);
+fix_t fix_shr(fix_t fix, uint64_t value);
 
 fix_t fix_add(fix_t fix_1, fix_t fix_2);
 fix_t fix_sub(fix_t fix_1, fix_t fix_2);
