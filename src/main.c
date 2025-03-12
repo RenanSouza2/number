@@ -94,6 +94,8 @@ void time_1(uint64_t begin, uint64_t end)
 
         num_free(num);
     }
+    num_free(num_1);
+    num_free(num_2);
 }
 
 void time_2(int argc, char** argv, uint64_t max)
@@ -161,9 +163,9 @@ void fibonacci_2(uint64_t min, uint64_t max)
             printf("\n" U64P() "", i);
 
         uint64_t begin = altutime();
-        num_t num_a_2 = num_mul(num_copy(num_a), num_copy(num_a));
-        num_t num_b_2 = num_mul(num_copy(num_b), num_copy(num_b));
-        num_t num_c_2 = num_mul(num_copy(num_c), num_copy(num_c));
+        num_t num_a_2 = num_sqr(num_copy(num_a));
+        num_t num_b_2 = num_sqr(num_copy(num_b));
+        num_t num_c_2 = num_sqr(num_copy(num_c));
 
         num_a = num_add(num_a, num_c);
         num_b = num_mul(num_b, num_a);
@@ -190,6 +192,54 @@ void factorial()
             printf("\ni: " U64P() "\t", i);
         }
     }
+}
+
+num_t fib_1(uint64_t index)
+{
+    if(index < 2)
+        return num_wrap(1);
+
+    num_t num_a = num_wrap(1);
+    num_t num_b = num_wrap(1);
+    for(uint64_t i=1; i<index; i++)
+    {
+        num_t num_c = num_add(num_a, num_copy(num_b));
+        num_a = num_b;
+        num_b = num_c;
+    }
+    num_free(num_a);
+    return num_b;
+}
+
+num_t fib_2(uint64_t index)
+{
+    num_t num_a = num_wrap(1);
+    num_t num_b = num_wrap(0);
+    num_t num_c = num_wrap(1);
+    for(uint64_t mask = 0x8000000000000000; mask; mask >>= 1)
+    {
+        num_t num_a_2 = num_sqr(num_copy(num_a));
+        num_t num_b_2 = num_sqr(num_copy(num_b));
+        num_t num_c_2 = num_sqr(num_copy(num_c));
+
+        num_a = num_add(num_a, num_c);
+        num_b = num_mul(num_b, num_a);
+
+        num_a = num_add(num_a_2, num_copy(num_b_2));
+        num_c = num_add(num_b_2, num_c_2);
+
+        if((mask & index) == 0)
+            continue;
+
+        num_c_2 = num_add(num_copy(num_b), num_copy(num_c));
+        num_free(num_a);
+        num_a = num_b;
+        num_b = num_c;
+        num_c = num_c_2;
+    }
+    num_free(num_a);
+    num_free(num_b);
+    return num_c;
 }
 
 
@@ -297,8 +347,10 @@ int main(int argc, char** argv)
     srand(time(NULL));
 
     // num_generate(21, 2);
-    // time_1(13, 21);
-    fibonacci_2(16, 23);
+    time_1(13, 22);
+    // time_2(argc, argv, 19);
+    // fibonacci_2(16, 23);
+    // fibonacci();
 
     printf("\n");
     return 0;

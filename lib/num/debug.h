@@ -33,12 +33,10 @@ chunk_p num_get_chunk(num_t num, uint64_t count);
 uint64_t uint_from_char(char c);
 
 chunk_p chunk_create(uint64_t value, chunk_p next, chunk_p prev);
-chunk_p chunk_consume(chunk_p chunk);
 void chunk_free(chunk_p head, chunk_p tail);
-void chunk_pool_clean();
 
 num_t num_create(uint64_t count, chunk_p head, chunk_p tail);
-chunk_p num_insert(num_p num, uint64_t value);
+chunk_p num_insert_tail(num_p num, uint64_t value);
 chunk_p num_insert_head(num_p num, uint64_t value);
 num_t num_remove_head(num_t num);
 num_t num_insert_list(num_t num, chunk_p head, chunk_p tail, uint64_t cnt);

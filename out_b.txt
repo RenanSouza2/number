@@ -1,0 +1,30 @@
+make clean --directory=src -s
+make clean --directory=lib -s
+cleaning lib
+cleaning lib/fix
+cleaning lib/mod
+cleaning lib/num
+cleaning lib/snum
+cleaning clu
+cleaning clu lib
+cleaning clu lib/list
+cleaning clu lib/list/body
+cleaning clu lib/list/head
+cleaning clu lib/mem
+cleaning clu lib/tag
+make build --directory=src -s
+building object lib/fix
+building object lib/mod
+building object lib/num
+building object lib/snum
+ linking object lib
+
+13	     0.001
+14	     0.002
+15	     0.006
+16	     0.026
+17	     0.106
+18	     0.441
+19	     1.631
+20	     6.874
+21	    30.390

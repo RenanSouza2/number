@@ -15,6 +15,8 @@ STRUCT(num)
     chunk_p head, tail;
 };
 
+void chunk_pool_clean();
+
 void num_display_dec(num_t num);
 void num_display_opts(num_t num, char *tag, bool length, bool full);
 void num_display(num_t num);
