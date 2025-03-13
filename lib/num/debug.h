@@ -33,7 +33,7 @@ chunk_p num_get_chunk(num_t num, uint64_t count);
 uint64_t uint_from_char(char c);
 
 chunk_p chunk_create(uint64_t value, chunk_p next, chunk_p prev);
-void chunk_free(chunk_p head, chunk_p tail);
+void chunk_free_list(chunk_p head, chunk_p tail);
 
 num_t num_create(uint64_t count, chunk_p head, chunk_p tail);
 chunk_p num_insert_tail(num_p num, uint64_t value);

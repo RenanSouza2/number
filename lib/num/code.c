@@ -377,7 +377,7 @@ chunk_p chunk_create(uint64_t value, chunk_p next, chunk_p prev)
     return chunk;
 }
 
-void chunk_free_item(chunk_p chunk)
+void chunk_free(chunk_p chunk)
 {
     CLU_CHECK_PTR(chunk);
     CLU_UNREGISTER(chunk);
@@ -386,7 +386,7 @@ void chunk_free_item(chunk_p chunk)
     chunk_pool = chunk;
 }
 
-void chunk_free(chunk_p head, chunk_p tail)
+void chunk_free_list(chunk_p head, chunk_p tail)
 {
     CLU_CHECK_PTR(head);
     CLU_CHECK_PTR(tail);
@@ -462,7 +462,7 @@ num_t num_remove_head(num_t num)
 
     chunk_p chunk_head = num.head;
     num.head = chunk_head->next;
-    chunk_free_item(chunk_head);
+    chunk_free(chunk_head);
 
     num.count--;
     if(num.count == 0)
@@ -520,7 +520,7 @@ bool num_normalize(num_p num)
         return false;
 
     num->tail = chunk_tail->prev;
-    chunk_free_item(chunk_tail);
+    chunk_free(chunk_tail);
 
     num->count--;
     if(num->count == 0)
@@ -662,7 +662,7 @@ void num_free(num_t num)
 {
     CLU_CHECK_PTR(num.head);
 
-    chunk_free(num.head, num.tail);
+    chunk_free_list(num.head, num.tail);
 }
 
 
