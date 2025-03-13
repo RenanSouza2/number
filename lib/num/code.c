@@ -586,19 +586,26 @@ num_t num_wrap_str(char str[])
         num_wrap_hex(str) : num_wrap_dec(str);
 }
 
+uint64_t get_ftell(FILE* fp)
+{
+    int64_t res = ftell(fp);
+    assert(res >= 0);
+    return res;
+}
+
 num_t num_read_dec(char file_name[])
 {
     FILE *fp = fopen(file_name, "r");
     assert(fp);
 
-    fseek(fp, 0, SEEK_END);
-    uint64_t size = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
+    assert(!fseek(fp, 0, SEEK_END));
+    uint64_t size = get_ftell(fp);
+    assert(!fseek(fp, 0, SEEK_SET));
 
     uint64_t value = uint_read(fp, size % 18, 10);
     num_t num = num_wrap(value);
 
-    while(ftell(fp) < size)
+    while((uint64_t)get_ftell(fp) < size)
     {
         uint64_t value = uint_read(fp, 18, 10);
         num_insert_head(&num, value);
@@ -608,7 +615,7 @@ num_t num_read_dec(char file_name[])
     return num_base_from(num, 1000000000000000000);
 }
 
-uint64_t num_unwrap(num_t num) // TODO test
+uint64_t num_unwrap(num_t num)
 {
     CLU_CHECK_PTR(num.head);
 
