@@ -282,9 +282,9 @@ void pi_1()
         if(i%1000000 == 0)
         {
             printf("\ni: " U64P() "\t", i);
-            fix_display_dec(fix);
+            fix_display_dec("fix", fix);
             printf("\t");
-            fix_display_dec(fix_1);
+            fix_display_dec("fix_1", fix_1);
             fix_free(fix_1);
         }
     }
@@ -304,8 +304,7 @@ void e()
         if(i%1000 == 0)
         {
             fprintf(stderr, "\ni: " U64P() "", i);
-            printf("\n");
-            fix_display_dec(fix);
+            fix_display_dec("fix", fix);
         }
     }
 }
@@ -321,10 +320,7 @@ void pi_2()
         fix = fix_div(fix, fix_wrap(base - 1, pos));
 
         if(i%1000000 == 0)
-        {
-            printf("\n");
-            fix_display_dec(fix);
-        }
+            fix_display_dec("fix", fix);
     }
 }
 
@@ -352,32 +348,35 @@ int main(int argc, char** argv)
     // fibonacci_2(16, 23);
     // fibonacci();
 
-    // k = 2, k/2 = 1;
-
-    uint64_t pos = 1;
-    printf("\na");
-    fix_t fix_k = fix_wrap(1, pos);
-    fix_t fix_x = fix_wrap(0, pos);
-    fix_t fix_n = fix_wrap(1, pos);
-    for(uint64_t i=0; fix_cmp(fix_x, fix_n) != 0; i++)
+    fix_t fix_k = fix_wrap(1, 1);
+    fix_t fix_x = fix_wrap(1, 1);
+    for(uint64_t pos = 1; ; pos *= 2)
     {
-        printf("\ni: %lu", i);
+        printf("\n\npos: %lu", pos);
+        fprintf(stderr, "\n\npos: %lu", pos);
+        fix_k = fix_repositiion(fix_k, pos);
+        fix_x = fix_repositiion(fix_x, pos);
+        for(uint64_t i=0; ; i++)
+        {
+            printf("\ni: %lu", i);
+            fprintf(stderr, "\ni: %lu", i);
+            
+            fix_t fix_a = fix_shr(fix_copy(fix_x), 1);
+            fix_t fix_b = fix_div(fix_copy(fix_k), fix_copy(fix_x));
+            fix_t fix_n = fix_add(fix_a, fix_b);
 
-        fix_free(fix_x);
-        fix_x = fix_n;
+            fix_t fix_d = fix_sub(fix_copy(fix_n), fix_x);
+            bool res = num_cmp(fix_d.snum.num, num_wrap(10)) < 0;
 
-        fix_t fix_a = fix_shr(fix_copy(fix_x), 1);
-        fix_t fix_b = fix_div(fix_copy(fix_k), fix_copy(fix_x));
-        fix_n = fix_add(fix_a, fix_b);
+            fix_free(fix_d);
+            fix_x = fix_n;
+            if(res)
+                break;
+        }
+
+        printf("\n");
+        fix_display_dec("res", fix_x);
     }
-    fix_free(fix_n);
-    fix_free(fix_k);
-
-    printf("\n\n");
-    fix_display_dec(fix_x);
-    fix_free(fix_x);
-
-    chunk_pool_clean();
 
     printf("\n");
     return 0;

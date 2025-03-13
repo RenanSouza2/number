@@ -69,7 +69,7 @@ bool snum_immed(snum_t snum, uint64_t signal, uint64_t count, ...)
 
 
 
-void snum_display(snum_t snum)
+void snum_display(snum_t snum, bool full)
 {
     if(snum.signal == ZERO)
     {
@@ -80,14 +80,20 @@ void snum_display(snum_t snum)
     printf("%c ", snum.signal & POSITIVE ? '+': '-');
 
     printf("[");
-    num_display(snum.num);
+    num_display_opts(snum.num, NULL, true, full);
     printf("]");
 }
 
 void snum_display_tag(char tag[], snum_t snum)
 {
     printf("\n%s:\t", tag);
-    snum_display(snum);
+    snum_display(snum, false);
+}
+
+void snum_display_full(char tag[], snum_t snum)
+{
+    printf("\n%s:\t", tag);
+    snum_display(snum, true);
 }
 
 
@@ -227,6 +233,12 @@ snum_t snum_mul(snum_t snum_1, snum_t snum_2)
 
     num_t num_res = num_mul(snum_1.num, snum_2.num);
     return snum_create(signal_res, num_res);
+}
+
+snum_t snum_sqr(snum_t snum) // TODO test
+{
+    num_t num = num_sqr(snum.num);
+    return snum_create(POSITIVE, num);
 }
 
 snum_t snum_div(snum_t snum_1, snum_t snum_2)
