@@ -365,51 +365,6 @@ void test_num_remove_head(bool show)
     assert(clu_mem_empty());
 }
 
-void test_num_insert_list(bool show)
-{
-    printf("\n\t%s", __func__);
-
-    #define TEST_NUM_INSERT_LIST(TAG, ...)                                          \
-    {                                                                               \
-        num_t num[3];                                                               \
-        if(show) printf("\n\t\t%s %d\t\t", __func__, TAG);                          \
-        num_create_immed_vec(num, 3, __VA_ARGS__);                                  \
-        num[0] = num_insert_list(num[0], num[1].head, num[1].tail, num[1].count);   \
-        assert(num_str(num[0], num[2]));                                            \
-    }
-
-    TEST_NUM_INSERT_LIST(1,
-        0,
-        0,
-        0
-    );
-    TEST_NUM_INSERT_LIST(2,
-        0,
-        1, 2,
-        1, 2
-    );
-    TEST_NUM_INSERT_LIST(3,
-        1, 1,
-        0,
-        1, 1
-    );
-    TEST_NUM_INSERT_LIST(4,
-        1, 1,
-        1, 2,
-        2, 2, 1
-    );
-    TEST_NUM_INSERT_LIST(5,
-        2, 1, 2,
-        2, 3, 4,
-        4, 3, 4, 1, 2
-    );
-
-    #undef TEST_NUM_INSERT_LIST
-
-    chunk_pool_clean();
-    assert(clu_mem_empty());
-}
-
 void test_num_denormalize(bool show)
 {
     printf("\n\t%s", __func__);
@@ -1757,7 +1712,6 @@ void test_num()
     test_num_insert(show);
     test_num_insert_head(show);
     test_num_remove_head(show);
-    test_num_insert_list(show);
     test_num_denormalize(show);
     test_num_normalize(show);
     test_num_break(show);

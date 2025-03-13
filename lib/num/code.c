@@ -473,33 +473,6 @@ num_t num_remove_head(num_t num)
     return num;
 }
 
-num_t num_insert_list(num_t num, chunk_p head, chunk_p tail, uint64_t cnt)
-{
-    CLU_CHECK_PTR(num.head);
-    CLU_CHECK_PTR(head);
-    CLU_CHECK_PTR(tail);
-
-    if(cnt == 0)
-        return num;
-
-    if(num.count == 0)
-    {
-        return (num_t)
-        {
-            .count = cnt,
-            .head = head,
-            .tail = tail
-        };
-    }
-
-    num.tail->next = head;
-    head->prev = num.tail;
-
-    num.count += cnt;
-    num.tail = tail;
-    return num;
-}
-
 chunk_p num_denormalize(num_p num, chunk_p chunk)
 {
     CLU_CHECK_PTR(num->head);
