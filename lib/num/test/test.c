@@ -1,6 +1,7 @@
 #include "../debug.h"
 #include "../../../utils/U64.h"
 #include "../../../utils/assert.h"
+#include "../../../utils/test_revert.h"
 #include "../../../utils/clu/header.h"
 
 
@@ -11,7 +12,7 @@ void test_uint_from_char(bool show)
 
     #define TEST_UINT_FROM_CHAR(TAG, CHAR, UINT)            \
     {                                                       \
-        if(show) printf("\n\t\t%s " #TAG "\t\t", __func__); \
+        if(show) printf("\n\t\t%s %2d\t\t", __func__, TAG); \
         uint64_t res = uint_from_char(CHAR);                \
         assert(uint64(res, UINT));                          \
     }
@@ -25,6 +26,11 @@ void test_uint_from_char(bool show)
     TEST_UINT_FROM_CHAR(7, 'A', 10);
     TEST_UINT_FROM_CHAR(8, 'B', 11);
     TEST_UINT_FROM_CHAR(9, 'F', 15);
+
+    if(show) printf("\n\t\t%s 10\t\t", __func__);
+    TEST_REVERT_OPEN
+    uint_from_char('g');
+    TEST_REVERT_CLOSE
 
     #undef TEST_UINT_FROM_CHAR
 
