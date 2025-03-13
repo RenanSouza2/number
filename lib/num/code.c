@@ -231,7 +231,7 @@ chunk_p num_get_chunk(num_t num, uint64_t count)
 
 
 
-#define COALESCE(PTR_A, PTR_B) ((PTR_A) ? (PTR_A) : (PTR_B));
+#define COALESCE(HANDLER_A, HANDLER_B) ((HANDLER_A) ? (HANDLER_A) : (HANDLER_B));
 
 
 
@@ -566,9 +566,9 @@ num_t num_wrap_dec(char str[])
 
 num_t num_wrap_hex(char str[])
 {
-    assert(str[0] == '0' && str[1] == 'x');
-
     uint64_t len = strlen(str);
+    assert(len > 1 && str[0] == '0' && str[1] == 'x');
+
     uint64_t size = (len - 2) % 16;
     uint64_t value = uint_from_str(&str[2], size, 16);
     num_t num = num_wrap(value);

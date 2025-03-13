@@ -17,22 +17,22 @@ void test_uint_from_char(bool show)
         assert(uint64(res, UINT));                          \
     }
 
-    TEST_UINT_FROM_CHAR(1, '0',  0);
-    TEST_UINT_FROM_CHAR(2, '1',  1);
-    TEST_UINT_FROM_CHAR(3, '9',  9);
-    TEST_UINT_FROM_CHAR(4, 'a', 10);
-    TEST_UINT_FROM_CHAR(5, 'b', 11);
-    TEST_UINT_FROM_CHAR(6, 'f', 15);
-    TEST_UINT_FROM_CHAR(7, 'A', 10);
-    TEST_UINT_FROM_CHAR(8, 'B', 11);
-    TEST_UINT_FROM_CHAR(9, 'F', 15);
+    TEST_UINT_FROM_CHAR( 1, '0',  0);
+    TEST_UINT_FROM_CHAR( 2, '1',  1);
+    TEST_UINT_FROM_CHAR( 3, '9',  9);
+    TEST_UINT_FROM_CHAR( 4, 'a', 10);
+    TEST_UINT_FROM_CHAR( 5, 'b', 11);
+    TEST_UINT_FROM_CHAR( 6, 'f', 15);
+    TEST_UINT_FROM_CHAR( 7, 'A', 10);
+    TEST_UINT_FROM_CHAR( 8, 'B', 11);
+    TEST_UINT_FROM_CHAR( 9, 'F', 15);
+
+    #undef TEST_UINT_FROM_CHAR
 
     if(show) printf("\n\t\t%s 10\t\t", __func__);
     TEST_REVERT_OPEN
     uint_from_char('g');
     TEST_REVERT_CLOSE
-
-    #undef TEST_UINT_FROM_CHAR
 
     chunk_pool_clean();
     assert(clu_mem_empty());
@@ -598,6 +598,21 @@ void test_num_wrap_hex(bool show)
 
     #undef TEST_NUM_WRAP_HEX
 
+    #define TEST_NUM_WRAP_HEX(TAG, STR)                 \
+    {                                                   \
+        if(show) printf("\n\t\t%s %2d", __func__, TAG); \
+        TEST_REVERT_OPEN                                \
+        num_wrap_hex(STR);                              \
+        TEST_REVERT_CLOSE                               \
+    }
+
+    TEST_NUM_WRAP_HEX(12, "");
+    TEST_NUM_WRAP_HEX(13, "0");
+    TEST_NUM_WRAP_HEX(14, "ab");
+    TEST_NUM_WRAP_HEX(14, "0b");
+
+    #undef TEST_NUM_WRAP_HEX
+
     chunk_pool_clean();
     assert(clu_mem_empty());
 }
@@ -644,7 +659,7 @@ void test_num_read_dec(bool show)
 
     #define TEST_NUM_READ_DEC(TAG, ...)                         \
     {                                                           \
-        if(show) printf("\n\t\t%s " #TAG "", __func__);         \
+        if(show) printf("\n\t\t%s %d", __func__, TAG);         \
         num_t num = num_read_dec("numbers/num_" #TAG ".txt");   \
         assert(num_immed(num, __VA_ARGS__));                    \
     }
@@ -658,6 +673,36 @@ void test_num_read_dec(bool show)
     TEST_NUM_READ_DEC(7, 2, 6, 0xb14e9f812f366c35);
 
     #undef TEST_NUM_READ_DEC
+
+    if(show) printf("\n\t\t%s 8", __func__);
+    TEST_REVERT_OPEN
+    num_read_dec("numbers/num_8.txt");
+    TEST_REVERT_CLOSE
+
+    chunk_pool_clean();
+    assert(clu_mem_empty());
+}
+
+void test_num_unwrap(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s 1", __func__);
+    num_t num = num_create_immed(0);
+    uint64_t res = num_unwrap(num);
+    assert(res == 0);
+
+    if(show) printf("\n\t\t%s 2", __func__);
+    num = num_create_immed(1, 1);
+    res = num_unwrap(num);
+    assert(res == 1);
+
+    if(show) printf("\n\t\t%s 3", __func__);
+    num = num_create_immed(2, 3, 4);
+    TEST_REVERT_OPEN
+    num_unwrap(num);
+    TEST_REVERT_CLOSE
+    num_free(num);
 
     chunk_pool_clean();
     assert(clu_mem_empty());
@@ -784,7 +829,7 @@ void test_num_sub_uint_offset(bool show)
     #define TEST_NUM_SUB_UINT_OFFSET(TAG, OFFSET, VALUE, RES, ...)  \
     {                                                               \
         num_t num[2];                                               \
-        if(show) printf("\n\t\t%s %d\t\t", __func__, TAG);          \
+        if(show) printf("\n\t\t%s %2d\t\t", __func__, TAG);          \
         num_create_immed_vec(num, 2, __VA_ARGS__);                  \
         chunk_p chunk = num_get_chunk(num[0], OFFSET);              \
         bool res = num_sub_uint_offset(&num[0], chunk, VALUE);      \
@@ -792,34 +837,55 @@ void test_num_sub_uint_offset(bool show)
         assert(res == RES);                                         \
     }
 
-    TEST_NUM_SUB_UINT_OFFSET(1, 0, 1, false,
+    TEST_NUM_SUB_UINT_OFFSET( 1, 0, 1, false,
         2, 2, 3,
         2, 2, 2
     );
-    TEST_NUM_SUB_UINT_OFFSET(2, 1, 1, false,
+    TEST_NUM_SUB_UINT_OFFSET( 2, 1, 1, false,
         2, 2, 3,
         2, 1, 3
     );
-    TEST_NUM_SUB_UINT_OFFSET(3, 1, 1, true,
+    TEST_NUM_SUB_UINT_OFFSET( 3, 1, 1, true,
         2, 1, 3,
         1, 3
     )
-    TEST_NUM_SUB_UINT_OFFSET(4, 1, 1, true,
+    TEST_NUM_SUB_UINT_OFFSET( 4, 1, 1, true,
         2, 1, 0,
         1, 0
     );
-    TEST_NUM_SUB_UINT_OFFSET(5, 2, 1, true,
+    TEST_NUM_SUB_UINT_OFFSET( 5, 2, 1, true,
         3, 1, 0, 1,
         2, 0, 1
     );
-    TEST_NUM_SUB_UINT_OFFSET(6, 1, 1, false,
+    TEST_NUM_SUB_UINT_OFFSET( 6, 1, 1, false,
         3, 1, 0, 1,
         2, UINT64_MAX, 1
     );
-    TEST_NUM_SUB_UINT_OFFSET(6, 1, 1, true,
+    TEST_NUM_SUB_UINT_OFFSET( 7, 1, 1, true,
         2, 1, 0,
         1, 0
     );
+    TEST_NUM_SUB_UINT_OFFSET( 8, 0, 0, false,
+        0,
+        0
+    );
+
+    #undef TEST_NUM_SUB_UINT_OFFSET
+
+    #define TEST_NUM_SUB_UINT_OFFSET(TAG, OFFSET, VALUE, ...)   \
+    {                                                           \
+        if(show) printf("\n\t\t%s %2d\t\t", __func__, TAG);     \
+        num_t num = num_create_immed(__VA_ARGS__);              \
+        chunk_p chunk = num_get_chunk(num, OFFSET);             \
+        TEST_REVERT_OPEN                                        \
+        num_sub_uint_offset(&num, chunk, VALUE);                \
+        TEST_REVERT_CLOSE                                       \
+        num_free(num);                                          \
+    }
+
+    TEST_NUM_SUB_UINT_OFFSET( 9, 0, 1, 0);
+    TEST_NUM_SUB_UINT_OFFSET(10, 0, 3, 1, 2);
+    TEST_NUM_SUB_UINT_OFFSET(11, 1, 1, 1, 2);
 
     #undef TEST_NUM_SUB_UINT_OFFSET
 
@@ -1705,7 +1771,7 @@ void test_num()
 {
     printf("\n%s", __func__);
 
-    bool show = false;
+    bool show = true;
 
     test_uint_from_char(show);
     test_uint128(show);
@@ -1727,6 +1793,7 @@ void test_num()
     test_num_wrap_hex(show);
     test_num_wrap_str(show);
     test_num_read_dec(show);
+    test_num_unwrap(show);
     test_num_copy(show);
 
     test_num_sub_uint_offset(show);
