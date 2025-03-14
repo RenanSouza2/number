@@ -829,7 +829,7 @@ void test_num_sub_uint_offset(bool show)
     #define TEST_NUM_SUB_UINT_OFFSET(TAG, OFFSET, VALUE, RES, ...)  \
     {                                                               \
         num_t num[2];                                               \
-        if(show) printf("\n\t\t%s %2d\t\t", __func__, TAG);          \
+        if(show) printf("\n\t\t%s %2d\t\t", __func__, TAG);         \
         num_create_immed_vec(num, 2, __VA_ARGS__);                  \
         chunk_p chunk = num_get_chunk(num[0], OFFSET);              \
         bool res = num_sub_uint_offset(&num[0], chunk, VALUE);      \
@@ -1173,6 +1173,90 @@ void test_num_add_mul_uint(bool show)
     );
 
     #undef TEST_NUM_ADD_MUL_UINT
+
+    chunk_pool_clean();
+    assert(clu_mem_empty());
+}
+
+
+
+void test_num_sub_offset(bool show)
+{
+    printf("\n\t%s\t\t", __func__);
+
+    #define TEST_NUM_SUB_OFFSET(TAG, OFFSET, ELIMINATE, ...)            \
+    {                                                                   \
+        num_t num[3];                                                   \
+        if(show) printf("\n\t\t%s %d\t\t", __func__, TAG);             \
+        num_create_immed_vec(num, 3, __VA_ARGS__);                      \
+        chunk_p chunk_bef = num_get_chunk(num[0], OFFSET);              \
+        chunk_p chunk_aft = num_sub_offset(&num[0], chunk_bef, num[1]); \
+        CLU_CHECK_PTR(chunk_aft);                                       \
+        assert(num_str(num[0], num[2]));                                \
+        if(ELIMINATE) {assert(chunk_aft == NULL);}                      \
+        else          {assert(chunk_aft == chunk_bef);}                 \
+    }
+
+    TEST_NUM_SUB_OFFSET(1, 0, true,
+        0,
+        0,
+        0
+    );
+    TEST_NUM_SUB_OFFSET(2, 0, false,
+        0,
+        0,
+        0
+    );
+    TEST_NUM_SUB_OFFSET(3, 1, true,
+        2, 1, 2,
+        1, 1,
+        1, 2
+    );
+    TEST_NUM_SUB_OFFSET(4, 1, true,
+        2, 1, 0,
+        1, 1,
+        1, 0
+    );
+    TEST_NUM_SUB_OFFSET(5, 1, true,
+        3, 1, 2, 3,
+        2, 1, 2,
+        1, 3
+    );
+    TEST_NUM_SUB_OFFSET(6, 1, false,
+        3, 1, 2, 3,
+        2, 1, 1,
+        2, 1, 3
+    );
+
+    #undef TEST_NUM_SUB_OFFSET
+
+    #define TEST_NUM_SUB_OFFSET(TAG, OFFSET, ...)           \
+    {                                                       \
+        num_t num[3];                                       \
+        if(show) printf("\n\t\t%s %d\t\t", __func__, TAG); \
+        num_create_immed_vec(num, 2, __VA_ARGS__);          \
+        chunk_p chunk = num_get_chunk(num[0], OFFSET);      \
+        TEST_REVERT_OPEN                                    \
+        num_sub_offset(&num[0], chunk, num[1]);             \
+        TEST_REVERT_CLOSE                                   \
+        num_free(num[0]);                                   \
+        num_free(num[1]);                                   \
+    }
+
+    TEST_NUM_SUB_OFFSET(7, 0, 
+        0,
+        1, 1
+    );
+    TEST_NUM_SUB_OFFSET(8, 1, 
+        2, 2, 1,
+        1, 3
+    );
+    TEST_NUM_SUB_OFFSET(9, 1, 
+        2, 2, 1,
+        2, 1, 2
+    );
+
+    #undef TEST_NUM_SUB_OFFSET
 
     chunk_pool_clean();
     assert(clu_mem_empty());
@@ -1804,6 +1888,8 @@ void test_num()
     test_num_sub_uint(show);
     test_num_mul_uint(show);
     test_num_add_mul_uint(show);
+
+    test_num_sub_offset(show);
 
     test_num_is_zero(show);
     test_num_cmp(show);

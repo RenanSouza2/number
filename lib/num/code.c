@@ -833,7 +833,8 @@ chunk_p num_add_offset(num_p num_1, chunk_p chunk_1, chunk_p chunk_2) // TODO te
     return chunk_0;
 }
 
-chunk_p num_sub_offset(num_p num_1, chunk_p chunk_1, num_t num_2) // TODO test
+/* returns NUM_RES in num_1 */
+chunk_p num_sub_offset(num_p num_1, chunk_p chunk_1, num_t num_2)
 {
     CLU_CHECK_PTR(num_1->head);
     CLU_CHECK_PTR(chunk_1);

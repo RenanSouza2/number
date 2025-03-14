@@ -39,12 +39,13 @@ num_t num_create(uint64_t count, chunk_p head, chunk_p tail);
 chunk_p num_insert_tail(num_p num, uint64_t value);
 chunk_p num_insert_head(num_p num, uint64_t value);
 num_t num_remove_head(num_t num);
-num_t num_insert_list(num_t num, chunk_p head, chunk_p tail, uint64_t cnt);
 chunk_p num_denormalize(num_p num, chunk_p chunk);
 bool num_normalize(num_p num);
 
 num_t num_wrap_dec(char str[]);
 num_t num_wrap_hex(char str[]);
+
+chunk_p num_sub_offset(num_p num_1, chunk_p chunk_1, num_t num_2);
 
 num_t num_base_to(num_t num, uint64_t value);
 num_t num_base_from(num_t num, uint64_t value);
