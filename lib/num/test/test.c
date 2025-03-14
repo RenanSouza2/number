@@ -1187,7 +1187,7 @@ void test_num_sub_offset(bool show)
     #define TEST_NUM_SUB_OFFSET(TAG, OFFSET, ELIMINATE, ...)            \
     {                                                                   \
         num_t num[3];                                                   \
-        if(show) printf("\n\t\t%s %d\t\t", __func__, TAG);             \
+        if(show) printf("\n\t\t%s %d\t\t", __func__, TAG);              \
         num_create_immed_vec(num, 3, __VA_ARGS__);                      \
         chunk_p chunk_bef = num_get_chunk(num[0], OFFSET);              \
         chunk_p chunk_aft = num_sub_offset(&num[0], chunk_bef, num[1]); \
@@ -1233,7 +1233,7 @@ void test_num_sub_offset(bool show)
     #define TEST_NUM_SUB_OFFSET(TAG, OFFSET, ...)           \
     {                                                       \
         num_t num[3];                                       \
-        if(show) printf("\n\t\t%s %d\t\t", __func__, TAG); \
+        if(show) printf("\n\t\t%s %d\t\t", __func__, TAG);  \
         num_create_immed_vec(num, 2, __VA_ARGS__);          \
         chunk_p chunk = num_get_chunk(num[0], OFFSET);      \
         TEST_REVERT_OPEN                                    \
@@ -1844,6 +1844,16 @@ void test_num_div_mod(bool show)
     );
 
     #undef TEST_NUM_DIV_MOD
+
+    if(show) printf("\n\t\t%s 22\t\t", __func__);
+    num_t num_1 = num_create_immed(1, 1);
+    num_t num_2 = num_create_immed(0);
+    num_t num_q, num_r;
+    TEST_REVERT_OPEN
+    num_div_mod(&num_q, &num_r, num_1, num_2);
+    TEST_REVERT_CLOSE
+    num_free(num_1);
+    num_free(num_2);
 
     chunk_pool_clean();
     assert(clu_mem_empty());
