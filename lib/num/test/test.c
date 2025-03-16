@@ -1243,15 +1243,15 @@ void test_num_sub_offset(bool show)
         num_free(num[1]);                                   \
     }
 
-    TEST_NUM_SUB_OFFSET(7, 0, 
+    TEST_NUM_SUB_OFFSET(7, 0,
         0,
         1, 1
     );
-    TEST_NUM_SUB_OFFSET(8, 1, 
+    TEST_NUM_SUB_OFFSET(8, 1,
         2, 2, 1,
         1, 3
     );
-    TEST_NUM_SUB_OFFSET(9, 1, 
+    TEST_NUM_SUB_OFFSET(9, 1,
         2, 2, 1,
         2, 1, 2
     );
@@ -1302,7 +1302,7 @@ void test_num_cmp(bool show)
         num_free(num[1]);                                   \
     }
 
-    TEST_NUM_CMP( 1, ==,   
+    TEST_NUM_CMP( 1, ==,
         0,
         0
     );

@@ -18,7 +18,7 @@ void fix_display(fix_t fix);
 void fix_display_tag(char tag[], fix_t fix);
 void fix_display_full(char tag[], fix_t fix);
 
-fix_t fix_repositiion(fix_t fix, uint64_t pos);
+fix_t fix_reposition(fix_t fix, uint64_t pos);
 
 fix_t fix_wrap(int64_t value, uint64_t pos);
 fix_t fix_copy(fix_t fix);

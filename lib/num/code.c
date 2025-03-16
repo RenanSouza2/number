@@ -920,7 +920,7 @@ num_t num_div_mod_sigle(num_p num_1, num_t num_2)
         uint64_t r = value_1 / value_2;
         num_t num_aux = num_mul_uint(num_2, r);
         chunk_1 = num_sub_offset(num_1, chunk_1, num_aux);
-        
+
         num_insert_head(&num_q, r);
         chunk_1 = chunk_1 ? chunk_1->prev : num_1->tail;
     }
@@ -975,7 +975,7 @@ num_t num_div_mod_general(num_p num_1, chunk_p chunk_1, num_t num_2)
         chunk_1 = chunk_1 ? chunk_1->prev : num_1->tail;
     }
     num_free(num_2);
-    
+
     num_normalize(&num_q);
     return num_q;
 }
@@ -1186,7 +1186,7 @@ num_t num_div(num_t num_1, num_t num_2)
     num_t num_q, num_r;
     num_div_mod_unajusted(&num_q, &num_r, num_1, num_2);
     num_free(num_r);
-    
+
     return num_q;
 }
 

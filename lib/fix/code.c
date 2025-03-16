@@ -22,7 +22,7 @@ void fix_display_dec(char tag[], fix_t fix)
 
     // num_display_tag
     fix = fix_copy(fix);
-    
+
     num_t num_h, num_l;
     num_break(&num_h, &num_l, fix.snum.num, fix.pos);
 
@@ -86,7 +86,7 @@ void fix_free(fix_t fix)
 
 
 
-fix_t fix_repositiion(fix_t fix, uint64_t pos) // TODO test
+fix_t fix_reposition(fix_t fix, uint64_t pos) // TODO test
 {
     if(fix.snum.num.count == 0)
         return (fix_t)
@@ -106,7 +106,7 @@ fix_t fix_repositiion(fix_t fix, uint64_t pos) // TODO test
     {
         .snum = snum_shr(fix.snum, (fix.pos - pos) << 6),
         .pos = pos
-    };    
+    };
 }
 
 

@@ -173,7 +173,7 @@ void fibonacci_2(uint64_t min, uint64_t max)
         num_a = num_add(num_a_2, num_copy(num_b_2));
         num_c = num_add(num_b_2, num_c_2);
         uint64_t end = altutime();
-        
+
         if(i > min)
             printf("\t%10.3f", (end - begin) / 1e3);
     }
@@ -354,13 +354,13 @@ int main(int argc, char** argv)
     {
         printf("\n\npos: %lu", pos);
         fprintf(stderr, "\n\npos: %lu", pos);
-        fix_k = fix_repositiion(fix_k, pos);
-        fix_x = fix_repositiion(fix_x, pos);
+        fix_k = fix_reposition(fix_k, pos);
+        fix_x = fix_reposition(fix_x, pos);
         for(uint64_t i=0; ; i++)
         {
             printf("\ni: %lu", i);
             fprintf(stderr, "\ni: %lu", i);
-            
+   
             fix_t fix_a = fix_shr(fix_copy(fix_x), 1);
             fix_t fix_b = fix_div(fix_copy(fix_k), fix_copy(fix_x));
             fix_t fix_n = fix_add(fix_a, fix_b);
