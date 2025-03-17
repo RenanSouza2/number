@@ -78,18 +78,24 @@ void time_1(uint64_t begin, uint64_t end)
     {
         printf("\n" U64P() "", i);
 
+        uint64_t begin = altutime();
         num_1 = num_add(num_1, num_wrap(1));
-        num_1 = num_mul(num_1, num_copy(num_1));
+        num_1 = num_sqr(num_1);
+        uint64_t end = altutime();
+        // printf("\t%10.3f", (end - begin) / 1e3);
 
+        begin = altutime();
         num_2 = num_add(num_2, num_wrap(2));
-        num_2 = num_mul(num_2, num_copy(num_2));
+        num_2 = num_sqr(num_2);
+        end = altutime();
+        // printf("\t%10.3f", (end - begin) / 1e3);
 
         num_t num_1_copy = num_copy(num_1);
         num_t num_2_copy = num_copy(num_2);
 
-        uint64_t begin = altutime();
+        begin = altutime();
         num_t num = num_div(num_1_copy, num_2_copy);
-        uint64_t end = altutime();
+        end = altutime();
         printf("\t%10.3f", (end - begin) / 1e3);
 
         num_free(num);
@@ -343,40 +349,40 @@ int main(int argc, char** argv)
     srand(time(NULL));
 
     // num_generate(21, 2);
-    // time_1(13, 22);
+    time_1(14, 22);
     // time_2(argc, argv, 19);
     // fibonacci_2(16, 23);
     // fibonacci();
 
-    fix_t fix_k = fix_wrap(1, 1);
-    fix_t fix_x = fix_wrap(1, 1);
-    for(uint64_t pos = 1; ; pos *= 2)
-    {
-        printf("\n\npos: %lu", pos);
-        fprintf(stderr, "\n\npos: %lu", pos);
-        fix_k = fix_reposition(fix_k, pos);
-        fix_x = fix_reposition(fix_x, pos);
-        for(uint64_t i=0; ; i++)
-        {
-            printf("\ni: %lu", i);
-            fprintf(stderr, "\ni: %lu", i);
-   
-            fix_t fix_a = fix_shr(fix_copy(fix_x), 1);
-            fix_t fix_b = fix_div(fix_copy(fix_k), fix_copy(fix_x));
-            fix_t fix_n = fix_add(fix_a, fix_b);
-
-            fix_t fix_d = fix_sub(fix_copy(fix_n), fix_x);
-            bool res = num_cmp(fix_d.snum.num, num_wrap(10)) < 0;
-
-            fix_free(fix_d);
-            fix_x = fix_n;
-            if(res)
-                break;
-        }
-
-        printf("\n");
-        fix_display_dec("res", fix_x);
-    }
+    // fix_t fix_k = fix_wrap(1, 1);
+    // fix_t fix_x = fix_wrap(1, 1);
+    // for(uint64_t pos = 1; ; pos *= 2)
+    // {
+    //     printf("\n\npos: %lu", pos);
+    //     fprintf(stderr, "\n\npos: %lu", pos);
+    //     fix_k = fix_reposition(fix_k, pos);
+    //     fix_x = fix_reposition(fix_x, pos);
+    //     for(uint64_t i=0; ; i++)
+    //     {
+    //         printf("\ni: %lu", i);
+    //         fprintf(stderr, "\ni: %lu", i);
+    //
+    //         fix_t fix_a = fix_shr(fix_copy(fix_x), 1);
+    //         fix_t fix_b = fix_div(fix_copy(fix_k), fix_copy(fix_x));
+    //         fix_t fix_n = fix_add(fix_a, fix_b);
+    //
+    //         fix_t fix_d = fix_sub(fix_copy(fix_n), fix_x);
+    //         bool res = num_cmp(fix_d.snum.num, num_wrap(10)) < 0;
+    //
+    //         fix_free(fix_d);
+    //         fix_x = fix_n;
+    //         if(res)
+    //             break;
+    //     }
+    //
+    //     printf("\n");
+    //     fix_display_dec("res", fix_x);
+    // }
 
     printf("\n");
     return 0;

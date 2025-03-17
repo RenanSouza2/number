@@ -939,9 +939,7 @@ num_t num_div_mod_general(num_p num_1, chunk_p chunk_1, num_t num_2)
 
     num_t num_q = num_create(0, NULL, NULL);
 
-    uint128_t val_2_1 = num_2.tail->value;
-    uint128_t val_2_2 = U128_IMMED(val_2_1, num_2.tail->prev->value);
-
+    uint128_t val_2 = num_2.tail->value;
     for(uint64_t offset_1 = num_1->count - num_2.count; chunk_1; offset_1--)
     {
         if(num_normalize(num_1))
@@ -955,8 +953,8 @@ num_t num_div_mod_general(num_p num_1, chunk_p chunk_1, num_t num_2)
         while(num_cmp_offset(*num_1, num_2, offset_1) >= 0)
         {
             chunk_p tail = num_1->tail;
-            uint128_t val_2 = num_1->count > num_2.count + offset_1 ? val_2_1 : val_2_2;
-            uint128_t val_1 = U128_IMMED(tail->value, tail->prev->value);
+            uint128_t val_1 = num_1->count > num_2.count + offset_1 ?
+                U128_IMMED(tail->value, tail->prev->value) : tail->value;
 
             uint128_t tmp = val_1 / val_2;
             uint64_t r_aux = tmp > UINT64_MAX ? UINT64_MAX : tmp;

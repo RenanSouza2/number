@@ -31,7 +31,8 @@ void fix_display_dec(char tag[], fix_t fix)
     num_free(num_h);
     printf(".");
 
-    for(uint64_t i=0; !num_is_zero(num_l) && i < fix.pos; i++)
+    uint64_t pos = fix.pos;
+    for(uint64_t i=0; !num_is_zero(num_l) && i < pos; i++)
     {
         num_l = num_mul(num_l, num_wrap(1000000000000000000));
         num_break(&num_h, &num_l, num_l, fix.pos);
