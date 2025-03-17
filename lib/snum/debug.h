@@ -5,9 +5,9 @@
 
 #ifdef DEBUG
 
-snum_t snum_create_immed(uint64_t signal, uint64_t n, ...);
+snum_t snum_create_immed(uint64_t signal, ...);
 
-bool snum_immed(snum_t snum, uint64_t signal, uint64_t n, ...);
+bool snum_immed(snum_t snum, uint64_t signal, ...);
 
 #endif
 

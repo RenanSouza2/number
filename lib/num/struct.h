@@ -43,9 +43,11 @@ num_t num_add(num_t num_1, num_t num_2);
 num_t num_sub(num_t num_1, num_t num_2);
 num_t num_mul(num_t num_1, num_t num_2);
 void num_div_mod(num_p out_num_q, num_p out_num_r, num_t num_1, num_t num_2);
+num_t num_sqr(num_t num);
 num_t num_div(num_t num_1, num_t num_2);
 num_t num_mod(num_t num_1, num_t num_2);
 
-num_t num_sqr(num_t num);
+num_t num_base_to(num_t num, uint64_t base);
+num_t num_base_from(num_t num, uint64_t base);
 
 #endif

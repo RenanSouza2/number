@@ -11,7 +11,7 @@
 
 #ifdef DEBUG
 
-num_t num_create_variadic(uint64_t n, va_list *args)
+num_t num_create_variadic_n(uint64_t n, va_list *args)
 {
     if(n == 0)
         return num_create(0, NULL, NULL);
@@ -28,17 +28,17 @@ num_t num_create_variadic(uint64_t n, va_list *args)
     return num_create(n, chunk, tail);
 }
 
-num_t num_create_variadic_n(va_list *args)
+num_t num_create_variadic(va_list *args)
 {
     uint64_t n = va_arg(*args, uint64_t);
-    return num_create_variadic(n, args);
+    return num_create_variadic_n(n, args);
 }
 
 num_t num_create_immed(uint64_t n, ...)
 {
     va_list args;
     va_start(args, n);
-    return num_create_variadic(n, &args);
+    return num_create_variadic_n(n, &args);
 }
 
 void num_create_immed_vec(num_t out_num[], uint64_t n, ...)
@@ -46,7 +46,7 @@ void num_create_immed_vec(num_t out_num[], uint64_t n, ...)
     va_list args;
     va_start(args, n);
     for(uint64_t i=0; i<n; i++)
-        out_num[i] = num_create_variadic_n(&args);
+        out_num[i] = num_create_variadic(&args);
 }
 
 
@@ -214,7 +214,7 @@ bool num_immed(num_t num, uint64_t n, ...)
 {
     va_list args;
     va_start(args, n);
-    num_t num_2 = num_create_variadic(n, &args);
+    num_t num_2 = num_create_variadic_n(n, &args);
     return num_str(num, num_2);
 }
 
@@ -647,6 +647,7 @@ void num_free(num_t num)
 
 
 
+
 chunk_p num_add_uint_offset(num_p num, chunk_p chunk, uint64_t value)
 {
     CLU_CHECK_PTR(num->head);
@@ -875,7 +876,7 @@ R cannot be zero
 returns NUM_2 * R if less then NUM_1,
 keeps NUM_1 and NUM_2
 */
-num_t num_cmp_mul_uint_offset(num_t num_1, num_t num_2, uint64_t r, uint64_t offset) // TODO test
+num_t num_cmp_mul_uint_offset(num_t num_1, num_t num_2, uint64_t r, uint64_t offset)
 {
     num_t num_aux = num_create(0, NULL, NULL);
     chunk_p chunk = num_2.tail;
@@ -1213,7 +1214,7 @@ num_t num_gcd(num_t num_1, num_t num_2)
 
 
 
-num_t num_base_to(num_t num, uint64_t value)
+num_t num_base_to(num_t num, uint64_t base)
 {
     CLU_CHECK_PTR(num.head);
 
@@ -1221,7 +1222,7 @@ num_t num_base_to(num_t num, uint64_t value)
     while (num.count)
     {
         num_t num_q, num_r;
-        num_div_mod(&num_q, &num_r, num, num_wrap(value));
+        num_div_mod(&num_q, &num_r, num, num_wrap(base));
         num_insert_tail(&num_res, num_unwrap(num_r));
         num = num_q;
     }
@@ -1229,15 +1230,15 @@ num_t num_base_to(num_t num, uint64_t value)
     return num_res;
 }
 
-num_t num_base_from(num_t num, uint64_t value)
+num_t num_base_from(num_t num, uint64_t base)
 {
     CLU_CHECK_PTR(num.head);
 
     num_t num_res = num_create(0, NULL, NULL);
     for(chunk_p chunk = num.tail; chunk; chunk = chunk->prev)
     {
-        assert(chunk->value < value);
-        num_t num_aux = num_add_mul_uint(num_wrap(chunk->value), num_res, value);
+        assert(chunk->value < base);
+        num_t num_aux = num_add_mul_uint(num_wrap(chunk->value), num_res, base);
         num_free(num_res);
         num_res = num_aux;
     }

@@ -9,8 +9,9 @@ typedef __uint128_t uint128_t;
 
 #include <stdarg.h>
 
+num_t num_create_variadic_n(uint64_t n, va_list *args);
+num_t num_create_variadic(va_list *args);
 num_t num_create_immed(uint64_t n, ...);
-num_t num_create_variadic(uint64_t n, va_list *args);
 void num_create_immed_vec(num_t out_num[], uint64_t n, ...);
 
 bool int64(int64_t u1, int64_t u2);
@@ -46,9 +47,6 @@ num_t num_wrap_dec(char str[]);
 num_t num_wrap_hex(char str[]);
 
 chunk_p num_sub_offset(num_p num_1, chunk_p chunk_1, num_t num_2);
-
-num_t num_base_to(num_t num, uint64_t value);
-num_t num_base_from(num_t num, uint64_t value);
 
 bool num_sub_uint_offset(num_p num, chunk_p chunk, uint64_t value);
 num_t num_cmp_mul_uint_offset(num_t num_1, num_t num_2, uint64_t r, uint64_t offset);

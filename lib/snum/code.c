@@ -11,17 +11,17 @@
 
 #include "../num/debug.h"
 
-snum_t snum_create_variadic(uint64_t signal, uint64_t n, va_list *args)
+snum_t snum_create_variadic(uint64_t signal, va_list *args)
 {
-    num_t num = num_create_variadic(n, args);
+    num_t num = num_create_variadic(args);
     return snum_create(signal, num);
 }
 
-snum_t snum_create_immed(uint64_t signal, uint64_t n, ...)
+snum_t snum_create_immed(uint64_t signal, ...)
 {
     va_list args;
-    va_start(args, n);
-    return snum_create_variadic(signal, n, &args);
+    va_start(args, signal);
+    return snum_create_variadic(signal, &args);
 }
 
 
@@ -56,11 +56,11 @@ bool snum_str(snum_t snum_1, snum_t snum_2)
     return true;
 }
 
-bool snum_immed(snum_t snum, uint64_t signal, uint64_t count, ...)
+bool snum_immed(snum_t snum, uint64_t signal, ...)
 {
     va_list args;
-    va_start(args, count);
-    snum_t snum_2 = snum_create_variadic(signal, count, &args);
+    va_start(args, signal);
+    snum_t snum_2 = snum_create_variadic(signal, &args);
 
     return snum_str(snum, snum_2);
 }
