@@ -1262,6 +1262,123 @@ void test_num_sub_offset(bool show)
     assert(clu_mem_empty());
 }
 
+void test_num_cmp_mul_uint(bool show)
+{
+    printf("\n\t%s\t\t", __func__);
+
+    #define TEST_NUM_CMP_MUL_UINT_OFFSET(TAG, VALUE, OFFSET, ...)               \
+    {                                                                           \
+        num_t num[3];                                                           \
+        if(show) printf("\n\t\t%s %2d\t\t", __func__, TAG);                     \
+        num_create_immed_vec(num, 3, __VA_ARGS__);                              \
+        num_t num_res = num_cmp_mul_uint_offset(num[0], num[1], VALUE, OFFSET); \
+        assert(num_str(num_res, num[2]));                                       \
+        num_free(num[0]);                                                       \
+        num_free(num[1]);                                                       \
+    }
+
+    TEST_NUM_CMP_MUL_UINT_OFFSET( 1, 2, 0,
+        1, 7,
+        1, 3,
+        1, 6
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET( 2, 2, 0,
+        1, 6,
+        1, 3,
+        1, 6
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET( 3, 2, 0,
+        1, 5,
+        1, 3,
+        0
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET( 4, 5, 0,
+        2, 16, 20,
+        2, 3, 4,
+        2, 15, 20
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET( 5, 5, 0,
+        2, 15, 20,
+        2, 3, 4,
+        2, 15, 20
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET( 6, 5, 0,
+        2, 14, 20,
+        2, 3, 4,
+        0
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET( 7, 5, 0,
+        2, 15, 21,
+        2, 3, 4,
+        2, 15, 20
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET( 8, 5, 0,
+        2, 15, 20,
+        2, 3, 4,
+        2, 15, 20
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET( 9, 5, 0,
+        2, 15, 19,
+        2, 3, 4,
+        0
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET(10, UINT64_MAX, 0,
+        2, UINT64_MAX, 1,
+        1, UINT64_MAX,
+        2, UINT64_MAX - 1, 1
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET(11, UINT64_MAX, 0,
+        2, UINT64_MAX - 1, 1,
+        1, UINT64_MAX,
+        2, UINT64_MAX - 1, 1
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET(12, UINT64_MAX, 0,
+        2, UINT64_MAX - 2, 1,
+        1, UINT64_MAX,
+        0
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET(13, UINT64_MAX, 0,
+        2, UINT64_MAX - 1, 2,
+        1, UINT64_MAX,
+        2, UINT64_MAX - 1, 1
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET(14, UINT64_MAX, 0,
+        2, UINT64_MAX - 1, 1,
+        1, UINT64_MAX,
+        2, UINT64_MAX - 1, 1
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET(15, UINT64_MAX, 0,
+        2, UINT64_MAX - 1, 0,
+        1, UINT64_MAX,
+        0
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET(16, 2, 0,
+        2, 1, 0,
+        1, 3,
+        1, 6
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET(17, UINT64_MAX, 0,
+        4, UINT64_MAX - 1, UINT64_MAX, UINT64_MAX, 2,
+        3, UINT64_MAX, UINT64_MAX, UINT64_MAX,
+        4, UINT64_MAX - 1, UINT64_MAX, UINT64_MAX, 1
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET(18, UINT64_MAX, 0,
+        4, UINT64_MAX - 1, UINT64_MAX, UINT64_MAX, 1,
+        3, UINT64_MAX, UINT64_MAX, UINT64_MAX,
+        4, UINT64_MAX - 1, UINT64_MAX, UINT64_MAX, 1
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET(18, UINT64_MAX, 0,
+        4, UINT64_MAX - 1, UINT64_MAX, UINT64_MAX, 0,
+        3, UINT64_MAX, UINT64_MAX, UINT64_MAX,
+        0
+    );
+
+    #undef TEST_NUM_CMP_MUL_UINT_OFFSET
+
+    chunk_pool_clean();
+    assert(clu_mem_empty());
+}
+
 
 
 void test_num_is_zero(bool show)
@@ -1865,7 +1982,7 @@ void test_num()
 {
     printf("\n%s", __func__);
 
-    bool show = true;
+    bool show = false;
 
     test_uint_from_char(show);
     test_uint128(show);
@@ -1900,6 +2017,7 @@ void test_num()
     test_num_add_mul_uint(show);
 
     test_num_sub_offset(show);
+    test_num_cmp_mul_uint(show);
 
     test_num_is_zero(show);
     test_num_cmp(show);

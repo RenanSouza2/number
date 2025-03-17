@@ -833,7 +833,7 @@ chunk_p num_add_offset(num_p num_1, chunk_p chunk_1, chunk_p chunk_2) // TODO te
     return chunk_0;
 }
 
-/* returns NUM_RES in num_1 */
+/* returns NUM_RES in num_1, may be unormal */
 chunk_p num_sub_offset(num_p num_1, chunk_p chunk_1, num_t num_2)
 {
     CLU_CHECK_PTR(num_1->head);
@@ -875,7 +875,7 @@ R cannot be zero
 returns NUM_2 * R if less then NUM_1,
 keeps NUM_1 and NUM_2
 */
-num_t num_cmp_mul_uint(num_t num_1, num_t num_2, uint64_t r, uint64_t offset) // TODO test
+num_t num_cmp_mul_uint_offset(num_t num_1, num_t num_2, uint64_t r, uint64_t offset) // TODO test
 {
     num_t num_aux = num_create(0, NULL, NULL);
     chunk_p chunk = num_2.tail;
@@ -959,7 +959,7 @@ num_t num_div_mod_general(num_p num_1, chunk_p chunk_1, num_t num_2)
             uint128_t tmp = val_1 / val_2;
             uint64_t r_aux = tmp > UINT64_MAX ? UINT64_MAX : tmp;
 
-            num_t num_aux = num_cmp_mul_uint(*num_1, num_2, r_aux, offset_1);
+            num_t num_aux = num_cmp_mul_uint_offset(*num_1, num_2, r_aux, offset_1);
             if(num_aux.count == 0)
             {
                 r_aux = val_1 / (val_2 + 1);

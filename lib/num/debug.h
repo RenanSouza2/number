@@ -51,6 +51,7 @@ num_t num_base_to(num_t num, uint64_t value);
 num_t num_base_from(num_t num, uint64_t value);
 
 bool num_sub_uint_offset(num_p num, chunk_p chunk, uint64_t value);
+num_t num_cmp_mul_uint_offset(num_t num_1, num_t num_2, uint64_t r, uint64_t offset);
 
 num_t num_shl_uint(num_t num, uint64_t bits);
 num_t num_shr_uint(num_t num, uint64_t bits);
