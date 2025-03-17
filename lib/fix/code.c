@@ -10,6 +10,17 @@
 
 
 #ifdef DEBUG
+
+#include "../snum/debug.h"
+
+fix_t fix_create_immed(uint64_t pos, ...)
+{
+    va_list args;
+    va_start(args, pos);
+    snum_t snum = snum_create_variadic(&args);
+    return fix_create(snum, pos);
+}
+
 #endif
 
 
