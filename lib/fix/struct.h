@@ -24,6 +24,8 @@ fix_t fix_wrap(int64_t value, uint64_t pos);
 fix_t fix_copy(fix_t fix);
 void fix_free(fix_t fix);
 
+fix_t fix_base_to(fix_t fix, uint64_t base);
+
 int64_t fix_cmp(fix_t fix_1, fix_t fix_2);
 
 fix_t fix_shl(fix_t fix, uint64_t value);

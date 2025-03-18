@@ -504,21 +504,21 @@ bool num_normalize(num_p num)
     return true;
 }
 
-void num_break(num_p out_num_h, num_p out_num_l, num_t num, uint64_t count)
+void num_break(num_p out_num_hi, num_p out_num_lo, num_t num, uint64_t count)
 {
     CLU_CHECK_PTR(num.head);
 
     if(count == 0)
     {
-        *out_num_h = num;
-        *out_num_l = num_create(0, NULL, NULL);
+        *out_num_hi = num;
+        *out_num_lo = num_create(0, NULL, NULL);
         return;
     }
 
     if(num.count <= count)
     {
-        *out_num_h = num_create(0, NULL, NULL);
-        *out_num_l = num;
+        *out_num_hi = num_create(0, NULL, NULL);
+        *out_num_lo = num;
         return;
     }
 
@@ -526,7 +526,7 @@ void num_break(num_p out_num_h, num_p out_num_l, num_t num, uint64_t count)
     for(uint64_t i=0; i<count; i++)
         chunk = chunk->next;
 
-    num_t num_h = num_create(num.count - count, chunk, num.tail);
+    num_t num_hi = num_create(num.count - count, chunk, num.tail);
     num.count = count;
     num.tail = chunk->prev;
 
@@ -535,8 +535,8 @@ void num_break(num_p out_num_h, num_p out_num_l, num_t num, uint64_t count)
 
     while(num_normalize(&num));
 
-    *out_num_h = num_h;
-    *out_num_l = num;
+    *out_num_hi = num_hi;
+    *out_num_lo = num;
 }
 
 

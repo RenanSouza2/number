@@ -341,7 +341,50 @@ void display_bit(uint64_t value)
     }
 }
 
+void sqrt_2()
+{
+    fix_t fix_k = fix_wrap(1, 1);
+    fix_t fix_x = fix_wrap(1, 1);
+    for(uint64_t pos = 1; ; pos *= 2)
+    {
+        printf("\n\npos: %lu", pos);
+        fprintf(stderr, "\n\npos: %lu", pos);
+        fix_k = fix_reposition(fix_k, pos);
+        fix_x = fix_reposition(fix_x, pos);
+        for(uint64_t i=0; ; i++)
+        {
+            printf("\ni: %lu", i);
+            fprintf(stderr, "\ni: %lu", i);
+    
+            fix_t fix_a = fix_shr(fix_copy(fix_x), 1);
+            fix_t fix_b = fix_div(fix_copy(fix_k), fix_x);
+            fix_t fix_n = fix_add(fix_a, fix_b);
+    
+            fix_t fix_d = fix_sub(fix_copy(fix_n), fix_x);
+            bool res = num_cmp(fix_d.snum.num, num_wrap(10)) < 0;
+            fix_free(fix_d);
+            fix_x = fix_n;
+            if(res)
+                break;
+        }
+    
+        printf("\n");
+        fix_display_full("hex", fix_x);
+        fix_display_dec("res", fix_x);
+    }
+}
 
+num_t a(uint64_t index)
+{
+    num_t num = num_wrap(1);
+    for(uint64_t i=0; i<index; i++)
+    {
+        num = num_mul(num, num_wrap(1000000000000000000));
+        if(num.count > 1)
+            num = num_shr(num, 64);
+    }
+    return num;
+}
 
 int main(int argc, char** argv)
 {
@@ -349,44 +392,24 @@ int main(int argc, char** argv)
     srand(time(NULL));
 
     // num_generate(21, 2);
-    time_1(14, 22);
+    // time_1(14, 22);
     // time_2(argc, argv, 19);
     // fibonacci_2(16, 23);
     // fibonacci();
+    sqrt_2();
 
-    // fix_t fix_k = fix_wrap(1, 1);
-    // fix_t fix_x = fix_wrap(1, 1);
-    // for(uint64_t pos = 1; ; pos *= 2)
-    // {
-    //     printf("\n\npos: %lu", pos);
-    //     fprintf(stderr, "\n\npos: %lu", pos);
-    //     fix_k = fix_reposition(fix_k, pos);
-    //     fix_x = fix_reposition(fix_x, pos);
-    //     for(uint64_t i=0; ; i++)
-    //     {
-    //         printf("\ni: %lu", i);
-    //         fprintf(stderr, "\ni: %lu", i);
-    //
-    //         fix_t fix_a = fix_shr(fix_copy(fix_x), 1);
-    //         fix_t fix_b = fix_div(fix_copy(fix_k), fix_copy(fix_x));
-    //         fix_t fix_n = fix_add(fix_a, fix_b);
-    //
-    //         fix_t fix_d = fix_sub(fix_copy(fix_n), fix_x);
-    //         bool res = num_cmp(fix_d.snum.num, num_wrap(10)) < 0;
-    //
-    //         fix_free(fix_d);
-    //         fix_x = fix_n;
-    //         if(res)
-    //             break;
-    //     }
-    //
-    //     printf("\n");
-    //     fix_display_dec("res", fix_x);
-    // }
+    // uint64_t pos = 1e5;
+    // fix_t fix_1 = fix_wrap(1, pos);
+    // fix_t fix_2 = fix_wrap(10, pos);
+    // fix_1 = fix_div(fix_1, fix_2);
+    
+    // uint64_t begin = altutime();
+    // fix_display_dec("res", fix_1);
+    // uint64_t end = altutime();
+    // printf("\n%10.3f", (end - begin) / 1e3);
 
     printf("\n");
     return 0;
 }
 
-// 0m0.154s
-// 0m1.585s
+// 121.193

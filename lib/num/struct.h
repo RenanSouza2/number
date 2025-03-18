@@ -23,7 +23,9 @@ void num_display(num_t num);
 void num_display_tag(char *tag, num_t num);
 void num_display_full(char *tag, num_t num);
 
-void num_break(num_p out_num_h, num_p out_num_l, num_t num, uint64_t count);
+void num_break(num_p out_num_ih, num_p out_num_lo, num_t num, uint64_t count);
+
+chunk_p num_insert_head(num_p num, uint64_t value);
 
 num_t num_wrap(uint64_t value);
 num_t num_wrap_str(char str[]);

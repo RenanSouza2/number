@@ -28,32 +28,59 @@ fix_t fix_create_immed(uint64_t pos, ...)
 void fix_display_dec(char tag[], fix_t fix)
 {
     CLU_CHECK_PTR(fix.snum.num.head);
+    
+    printf("\n%s: %c\t", tag, fix.snum.signal == NEGATIVE ? '-' : '+');
 
-    printf("\n%s: ", tag);
+    num_t num_hi, num_lo;
+    num_break(&num_hi, &num_lo, num_copy(fix.snum.num), fix.pos);
+    
+    if(num_hi.count == 0)
+    {
+        printf("0");
+    }
+    else
+    {    
+        num_hi = num_base_to(num_hi, 1000000000000000000);
+        printf(U64P(), num_hi.tail->value);
+        for(chunk_p chunk = num_hi.tail->prev; chunk; chunk = chunk->prev)
+            printf(U64P(018), chunk->value);
+    }
 
-    // num_display_tag
-    fix = fix_copy(fix);
-
-    num_t num_h, num_l;
-    num_break(&num_h, &num_l, fix.snum.num, fix.pos);
-
-    printf("%c", fix.snum.signal == NEGATIVE ? '-' : '+');
-    num_display_dec(num_h);
-    num_free(num_h);
     printf(".");
 
-    uint64_t pos = fix.pos;
-    for(uint64_t i=0; !num_is_zero(num_l) && i < pos; i++)
+    if(num_lo.count == 0)
     {
-        num_l = num_mul(num_l, num_wrap(1000000000000000000));
-        num_break(&num_h, &num_l, num_l, fix.pos);
-        printf(U64P(018), num_unwrap(num_h));
+        printf("\n0");
     }
-    num_free(num_l);
+    else
+    {    
+        uint64_t pos = fix.pos;
+        num_t num_u = num_wrap(1);
+        for(uint64_t i=0; ; i++)
+        {
+            num_lo = num_mul(num_lo, num_wrap(1000000000000000000));
+            num_u = num_mul(num_u, num_wrap(1000000000000000000));
+
+            if(num_u.count > 2)
+            {
+                num_lo = num_shr(num_lo, 64);
+                num_u = num_shr(num_u, 64);
+                pos--;
+            }
+
+            if(num_u.count > pos)
+                break;
+
+            num_t num_aux;
+            num_break(&num_aux, &num_lo, num_lo, pos);
+            printf(U64P(018), num_unwrap(num_aux));
+        }
+    }
 }
 
 void fix_display(fix_t fix)
 {
+    printf("%lu\t", fix.pos);
     snum_display(fix.snum, false);
 }
 
@@ -119,6 +146,36 @@ fix_t fix_reposition(fix_t fix, uint64_t pos) // TODO test
         .snum = snum_shr(fix.snum, (fix.pos - pos) << 6),
         .pos = pos
     };
+}
+
+
+
+fix_t fix_base_to(fix_t fix, uint64_t base) // TODO test
+{
+    num_t num_hi, num_lo;
+    num_break(&num_hi, &num_lo, fix.snum.num, fix.pos);
+
+    num_hi = num_base_to(num_hi, base);
+    
+    uint64_t pos = fix.pos;
+    fix.pos = 0;
+    num_t num_u = num_wrap(1);
+    for(uint64_t i=0; ; i++)
+    {
+        num_lo = num_mul(num_lo, num_wrap(base));
+        num_u = num_mul(num_u, num_wrap(base));
+
+        if(num_u.count > pos)
+            break;
+
+        num_t num_aux;
+        num_break(&num_aux, &num_lo, num_lo, pos);
+        num_insert_head(&num_hi, num_unwrap(num_aux));
+        fix.pos++;
+    }
+
+    fix.snum.num = num_hi;
+    return fix;
 }
 
 
