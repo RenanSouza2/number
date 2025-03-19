@@ -736,6 +736,9 @@ num_t num_shr_uint(num_t num, uint64_t bits)
 {
     CLU_CHECK_PTR(num.head);
 
+    if(bits == 0)
+        return num;
+
     uint64_t carry = 0;
     for(chunk_p chunk = num.tail; chunk; chunk = chunk->prev)
     {
@@ -958,7 +961,7 @@ num_t num_div_mod_general(num_p num_1, chunk_p chunk_1, num_t num_2)
                 U128_IMMED(tail->value, tail->prev->value) : tail->value;
 
             uint128_t tmp = val_1 / val_2;
-            uint64_t r_aux = tmp > UINT64_MAX ? UINT64_MAX : tmp;
+            uint64_t r_aux = UINT64_MAX < tmp ? UINT64_MAX : tmp;
 
             num_t num_aux = num_cmp_mul_uint_offset(*num_1, num_2, r_aux, offset_1);
             if(num_aux.count == 0)
@@ -1170,8 +1173,8 @@ void num_div_mod(num_p out_num_q, num_p out_num_r, num_t num_1, num_t num_2)
     num_t num_q, num_r;
     uint64_t bits = num_div_mod_unajusted(&num_q, &num_r, num_1, num_2);
 
-    *out_num_r = num_shr_uint(num_r, bits);
     *out_num_q = num_q;
+    *out_num_r = num_shr_uint(num_r, bits);
 }
 
 num_t num_div(num_t num_1, num_t num_2)

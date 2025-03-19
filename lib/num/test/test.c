@@ -980,6 +980,10 @@ void test_num_shr_uint(bool show)
         2, 1, 0x8000000000000000,
         1, 3
     );
+    TEST_NUM_SHR_UINT(7, 0,
+        4, 4, UINT64_MAX, UINT64_MAX, UINT64_MAX - 3,
+        4, 4, UINT64_MAX, UINT64_MAX, UINT64_MAX - 3
+    );
 
     #undef TEST_NUM_SHR_UINT
 
@@ -1963,7 +1967,13 @@ void test_num_div_mod(bool show)
         3, UINT64_MAX, 0, 0,
         2, UINT64_MAX, UINT64_MAX,
         1, UINT64_MAX,
-        3, 1, UINT64_MAX - 1, UINT64_MAX
+        1, UINT64_MAX
+    );
+    TEST_NUM_DIV_MOD(23,
+        3, 2, 0, 0,
+        2, 2, UINT64_MAX,
+        1, 0xAAAAAAAAAAAAAAAA,
+        2, 2, 0xAAAAAAAAAAAAAAAA
     );
 
     #undef TEST_NUM_DIV_MOD
