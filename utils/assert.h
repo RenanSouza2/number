@@ -6,7 +6,15 @@
 
 #undef  assert
 
-#ifdef __linux__
+#ifdef NDEBUG
+
+#define assert(COND)        \
+    if(!(COND))             \
+    {                       \
+        exit(EXIT_FAILURE); \
+    }
+
+#elif defined __linux__
 
 #define assert(COND)                \
     if(!(COND))                     \

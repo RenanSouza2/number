@@ -343,13 +343,11 @@ void display_bit(uint64_t value)
 
 void sqrt_2()
 {
-    fix_t fix_k = fix_wrap(1, 1);
     fix_t fix_x = fix_wrap(1, 1);
     for(uint64_t pos = 1; ; pos *= 2)
     {
         printf("\n\npos: %lu", pos);
         fprintf(stderr, "\n\npos: %lu", pos);
-        fix_k = fix_reposition(fix_k, pos);
         fix_x = fix_reposition(fix_x, pos);
         for(uint64_t i=0; ; i++)
         {
@@ -357,13 +355,13 @@ void sqrt_2()
             fprintf(stderr, "\ni: %lu", i);
     
             fix_t fix_a = fix_shr(fix_copy(fix_x), 1);
-            fix_t fix_b = fix_div(fix_copy(fix_k), fix_x);
-            fix_t fix_n = fix_add(fix_a, fix_b);
+            fix_t fix_b = fix_div(fix_wrap(1, pos), fix_x);
+            fix_x = fix_add(fix_a, fix_b);
     
-            fix_t fix_d = fix_sub(fix_copy(fix_n), fix_x);
-            bool res = num_cmp(fix_d.snum.num, num_wrap(10)) < 0;
-            fix_free(fix_d);
-            fix_x = fix_n;
+            fix_t fix_2 = fix_sqr(fix_copy(fix_x));
+            fix_2 = fix_sub(fix_2, fix_wrap(2, pos));
+            bool res = num_cmp(fix_2.snum.num, num_wrap(10)) < 0;
+            fix_free(fix_2);
             if(res)
                 break;
         }
@@ -386,30 +384,37 @@ num_t a(uint64_t index)
     return num;
 }
 
-int main(int argc, char** argv)
+
+
+// int main(int argc, char** argv)
+int main()
 {
     setbuf(stdout, NULL);
     srand(time(NULL));
 
     // num_generate(21, 2);
-    // time_1(14, 22);
+    time_1(14, 19);
     // time_2(argc, argv, 19);
     // fibonacci_2(16, 23);
     // fibonacci();
-    sqrt_2();
+    // sqrt_2();
 
-    // uint64_t pos = 1e5;
-    // fix_t fix_1 = fix_wrap(1, pos);
-    // fix_t fix_2 = fix_wrap(10, pos);
-    // fix_1 = fix_div(fix_1, fix_2);
+    // uint64_t pos = 1e1;
+    // fix_t fix = fix_wrap(1, pos);
+    // fix = fix_div(fix, fix_wrap(10, pos));
+    // fix = fix_mul(fix, fix_wrap(10, pos));
+    // fix = fix_sub(fix, fix_wrap(1, pos));
     
     // uint64_t begin = altutime();
-    // fix_display_dec("res", fix_1);
+    // fix_display_tag("res", fix);
     // uint64_t end = altutime();
     // printf("\n%10.3f", (end - begin) / 1e3);
+    
+    // printf("\na");
+    // num_t num = num_sub(num_wrap(2), num_wrap(3));
+    // printf("\nb");
+    // num_display(num);
 
     printf("\n");
     return 0;
 }
-
-// 121.193

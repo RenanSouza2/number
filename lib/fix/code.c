@@ -50,7 +50,7 @@ void fix_display_dec(char tag[], fix_t fix)
 
     if(num_lo.count == 0)
     {
-        printf("\n0");
+        printf("0");
     }
     else
     {    

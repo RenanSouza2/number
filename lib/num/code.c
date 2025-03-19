@@ -1096,15 +1096,12 @@ num_t num_mul(num_t num_1, num_t num_2)
     }
 
     num_t num_res = num_create(0, NULL, NULL);
-    chunk_p chunk_2 = num_2.head;
-
-    // printf("\ntotal: %lu", num_2.count/1000);
-    for(chunk_p chunk_res = NULL; chunk_2; chunk_res = chunk_res->next)
+    chunk_p chunk_res = NULL;
+    for(chunk_p chunk_2 = num_2.head; chunk_2; chunk_2 = chunk_2->next)
     {
         chunk_res = num_add_mul_uint_offset(&num_res, chunk_res, num_1.head, chunk_2->value);
         chunk_res = num_denormalize(&num_res, chunk_res);
-
-        chunk_2 = chunk_2->next;
+        chunk_res = chunk_res->next;
     }
 
     num_free(num_1);

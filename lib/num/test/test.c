@@ -1959,6 +1959,12 @@ void test_num_div_mod(bool show)
         1, UINT64_MAX,
         3, 1, UINT64_MAX - 1, UINT64_MAX
     );
+    TEST_NUM_DIV_MOD(22,
+        3, UINT64_MAX, 0, 0,
+        2, UINT64_MAX, UINT64_MAX,
+        1, UINT64_MAX,
+        3, 1, UINT64_MAX - 1, UINT64_MAX
+    );
 
     #undef TEST_NUM_DIV_MOD
 
@@ -1982,7 +1988,7 @@ void test_num()
 {
     printf("\n%s", __func__);
 
-    bool show = false;
+    bool show = true;
 
     test_uint_from_char(show);
     test_uint128(show);
