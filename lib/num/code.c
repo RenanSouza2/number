@@ -1093,9 +1093,8 @@ num_t num_mul(num_t num_1, num_t num_2)
 
     if(num_1.count == 0)
     {
-        num_free(num_1);
         num_free(num_2);
-        return num_create(0, NULL, NULL);
+        return num_1;
     }
 
     num_t num_res = num_create(0, NULL, NULL);

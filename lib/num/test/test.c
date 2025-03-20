@@ -265,16 +265,16 @@ void test_num_insert(bool show)
 {
     printf("\n\t%s", __func__);
 
-    #define TEST_NUM_INSERT(TAG, VALUE, IS_HEAD, ...)   \
-    {                                                   \
-        num_t num[2];                                   \
-        if(show) printf("\n\t\t%s %d", __func__, TAG);  \
-        num_create_immed_vec(num, 2, __VA_ARGS__);      \
-        chunk_p chunk = num_insert_tail(&num[0], VALUE);     \
-        assert(uint64(chunk->value, VALUE));            \
-        assert((num[0].head == chunk) == IS_HEAD);      \
-        assert(num[0].tail == chunk);                   \
-        assert(num_str(num[0], num[1]));                \
+    #define TEST_NUM_INSERT(TAG, VALUE, IS_HEAD, ...)       \
+    {                                                       \
+        num_t num[2];                                       \
+        if(show) printf("\n\t\t%s %d", __func__, TAG);      \
+        num_create_immed_vec(num, 2, __VA_ARGS__);          \
+        chunk_p chunk = num_insert_tail(&num[0], VALUE);    \
+        assert(uint64(chunk->value, VALUE));                \
+        assert((num[0].head == chunk) == IS_HEAD);          \
+        assert(num[0].tail == chunk);                       \
+        assert(num_str(num[0], num[1]));                    \
     }
 
     TEST_NUM_INSERT(1, 0, true,
@@ -952,7 +952,7 @@ void test_num_shr_uint(bool show)
         num_t num[2];                                   \
         if(show) printf("\n\t\t%s %d", __func__, TAG);  \
         num_create_immed_vec(num, 2, __VA_ARGS__);      \
-        num[0] = num_shr(num[0], BITS);                 \
+        num[0] = num_shr_uint(num[0], BITS);            \
         assert(num_str(num[0], num[1]));                \
     }
 
@@ -1059,6 +1059,10 @@ void test_num_sub_uint(bool show)
     TEST_NUM_SUB_UINT(5, 1,
         2, 1, 0,
         1, UINT64_MAX
+    );
+    TEST_NUM_SUB_UINT(6, 0x8000000000000000,
+        5, 1, 0, 0, 0, 0,
+        4, UINT64_MAX, UINT64_MAX, UINT64_MAX, 0x8000000000000000
     );
 
     #undef TEST_NUM_SUB_UINT
@@ -1461,11 +1465,11 @@ void test_num_cmp(bool show)
     );
     TEST_NUM_CMP(10, <,
         2, 0x8000000000000000, 0,
-        2, 0x8000000000000000, 0x7fffffffffffffff
+        2, 0x8000000000000000, UINT64_MAX >> 1
     );
     TEST_NUM_CMP(11, <,
         3, 0x8000000000000000, 0, 0,
-        3, 0x8000000000000000, 0x7fffffffffffffff, 0x8000000000000000
+        3, 0x8000000000000000, UINT64_MAX >> 1, 0x8000000000000000
     );
 
     #undef TEST_NUM_CMP
@@ -1666,6 +1670,11 @@ void test_num_sub(bool show)
         2, 1, 0,
         2, 1, 0,
         0
+    );
+    TEST_NUM_SUB(8,
+        5, 1, 0, 0, 0, 0,
+        4, 0x8000000000000000, 0, 0, 0x8000000000000000,
+        4, UINT64_MAX >> 1, UINT64_MAX, UINT64_MAX, 0x8000000000000000
     );
 
     #undef TEST_NUM_SUB
@@ -1900,8 +1909,8 @@ void test_num_div_mod(bool show)
     TEST_NUM_DIV_MOD(11,
         2, UINT64_MAX, 0,
         2, 1, UINT64_MAX,
-        1, 0x7fffffffffffffff,
-        2, 1, 0x7fffffffffffffff
+        1, UINT64_MAX >> 1,
+        2, 1, UINT64_MAX >> 1
     );
     TEST_NUM_DIV_MOD(12,
         2, 0xc929d7d593, 0xb7090a859117cfa4,
@@ -1975,10 +1984,22 @@ void test_num_div_mod(bool show)
         1, 0xAAAAAAAAAAAAAAAA,
         2, 2, 0xAAAAAAAAAAAAAAAA
     );
+    TEST_NUM_DIV_MOD(24,
+        5, 1, 0, 0, 0, 0,
+        4, 0x8000000000000000, 0, 0, 0x8000000000000000,
+        1, 1,
+        4, UINT64_MAX >> 1, UINT64_MAX, UINT64_MAX, 0x8000000000000000
+    );
+    TEST_NUM_DIV_MOD(25,
+        6, 0x8000000000000000, 1, 0, 0x8000000000000000, 0, 0,
+        4, 0x8000000000000000, 0, 0, 0x8000000000000000,
+        3, 1, 0, 1,
+        4, UINT64_MAX >> 1, UINT64_MAX, UINT64_MAX, 0x8000000000000000
+    );
 
     #undef TEST_NUM_DIV_MOD
 
-    if(show) printf("\n\t\t%s 22\t\t", __func__);
+    if(show) printf("\n\t\t%s 26\t\t", __func__);
     num_t num_1 = num_create_immed(1, 1);
     num_t num_2 = num_create_immed(0);
     num_t num_q, num_r;
