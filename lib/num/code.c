@@ -145,8 +145,8 @@ bool num_str_inner(num_t num_1, num_t num_2)
     chunk_p chunk_2 = num_2.tail;
     for(uint64_t count = num_1.count; count > 0; count--)
     {
-        CLU_CHECK_PTR(chunk_1);
-        CLU_CHECK_PTR(chunk_2);
+        CLU_IS_SAFE(chunk_1);
+        CLU_IS_SAFE(chunk_2);
 
         if(count > 1)
         {
@@ -192,8 +192,8 @@ bool num_str_inner(num_t num_1, num_t num_2)
 
 bool num_str(num_t num_1, num_t num_2)
 {
-    CLU_CHECK_PTR(num_1.head);
-    CLU_CHECK_PTR(num_2.head);
+    CLU_IS_SAFE(num_1.head);
+    CLU_IS_SAFE(num_2.head);
 
     if(!num_str_inner(num_1, num_2))
     {
@@ -272,7 +272,7 @@ uint64_t uint_read(FILE *fp, uint64_t size, uint64_t base)
 
 void num_display_dec(num_t num)
 {
-    CLU_CHECK_PTR(num.head);
+    CLU_IS_SAFE(num.head);
 
     if(num.count == 0)
     {
@@ -290,7 +290,7 @@ void num_display_dec(num_t num)
 
 void num_display_opts(num_t num, char *tag, bool length, bool full)
 {
-    CLU_CHECK_PTR(num.head);
+    CLU_IS_SAFE(num.head);
 
     if(tag)
         printf("\n%s: ", tag);
@@ -324,21 +324,21 @@ void num_display_opts(num_t num, char *tag, bool length, bool full)
 
 void num_display(num_t num)
 {
-    CLU_CHECK_PTR(num.head);
+    CLU_IS_SAFE(num.head);
 
     num_display_opts(num, NULL, true, false);
 }
 
 void num_display_tag(char *tag, num_t num)
 {
-    CLU_CHECK_PTR(num.head);
+    CLU_IS_SAFE(num.head);
 
     num_display_opts(num, tag, true, false);
 }
 
 void num_display_full(char *tag, num_t num)
 {
-    CLU_CHECK_PTR(num.head);
+    CLU_IS_SAFE(num.head);
 
     num_display_opts(num, tag, true, true);
 }
@@ -349,8 +349,8 @@ handler_p chunk_pool = NULL;
 
 chunk_p chunk_create(uint64_t value, chunk_p next, chunk_p prev)
 {
-    CLU_CHECK_PTR(next);
-    CLU_CHECK_PTR(prev);
+    CLU_IS_SAFE(next);
+    CLU_IS_SAFE(prev);
 
     chunk_p chunk;
     if(chunk_pool == NULL)
@@ -379,7 +379,7 @@ chunk_p chunk_create(uint64_t value, chunk_p next, chunk_p prev)
 
 void chunk_free(chunk_p chunk)
 {
-    CLU_CHECK_PTR(chunk);
+    CLU_IS_SAFE(chunk);
     CLU_UNREGISTER(chunk);
 
     chunk->next = chunk_pool;
@@ -388,8 +388,8 @@ void chunk_free(chunk_p chunk)
 
 void chunk_free_list(chunk_p head, chunk_p tail)
 {
-    CLU_CHECK_PTR(head);
-    CLU_CHECK_PTR(tail);
+    CLU_IS_SAFE(head);
+    CLU_IS_SAFE(tail);
 
     if(head == NULL)
         return;
@@ -419,8 +419,8 @@ void chunk_pool_clean()
 
 num_t num_create(uint64_t count, chunk_p head, chunk_p tail)
 {
-    CLU_CHECK_PTR(head);
-    CLU_CHECK_PTR(tail);
+    CLU_IS_SAFE(head);
+    CLU_IS_SAFE(tail);
 
     return (num_t)
     {
@@ -432,7 +432,7 @@ num_t num_create(uint64_t count, chunk_p head, chunk_p tail)
 
 chunk_p num_insert_tail(num_p num, uint64_t value)
 {
-    CLU_CHECK_PTR(num->head);
+    CLU_IS_SAFE(num->head);
 
     num->tail = chunk_create(value, NULL, num->tail);
 
@@ -444,7 +444,7 @@ chunk_p num_insert_tail(num_p num, uint64_t value)
 
 chunk_p num_insert_head(num_p num, uint64_t value)
 {
-    CLU_CHECK_PTR(num->head);
+    CLU_IS_SAFE(num->head);
 
     num->count++;
     num->head = chunk_create(value, num->head, NULL);
@@ -455,7 +455,7 @@ chunk_p num_insert_head(num_p num, uint64_t value)
 
 num_t num_remove_head(num_t num)
 {
-    CLU_CHECK_PTR(num.head);
+    CLU_IS_SAFE(num.head);
 
     if(num.count == 0)
         return num;
@@ -475,15 +475,15 @@ num_t num_remove_head(num_t num)
 
 chunk_p num_denormalize(num_p num, chunk_p chunk)
 {
-    CLU_CHECK_PTR(num->head);
-    CLU_CHECK_PTR(chunk);
+    CLU_IS_SAFE(num->head);
+    CLU_IS_SAFE(chunk);
 
     return COALESCE(chunk, num_insert_tail(num, 0));
 }
 
 bool num_normalize(num_p num)
 {
-    CLU_CHECK_PTR(num->head);
+    CLU_IS_SAFE(num->head);
 
     if(num->count == 0)
         return false;
@@ -506,7 +506,7 @@ bool num_normalize(num_p num)
 
 void num_break(num_p out_num_hi, num_p out_num_lo, num_t num, uint64_t count)
 {
-    CLU_CHECK_PTR(num.head);
+    CLU_IS_SAFE(num.head);
 
     if(count == 0)
     {
@@ -617,7 +617,7 @@ num_t num_read_dec(char file_name[])
 
 uint64_t num_unwrap(num_t num)
 {
-    CLU_CHECK_PTR(num.head);
+    CLU_IS_SAFE(num.head);
 
     assert(num.count < 2);
 
@@ -629,7 +629,7 @@ uint64_t num_unwrap(num_t num)
 
 num_t num_copy(num_t num)
 {
-    CLU_CHECK_PTR(num.head);
+    CLU_IS_SAFE(num.head);
 
     num_t num_res = num_create(0, NULL, NULL);
     for(chunk_p chunk = num.head; chunk; chunk = chunk->next)
@@ -640,7 +640,7 @@ num_t num_copy(num_t num)
 
 void num_free(num_t num)
 {
-    CLU_CHECK_PTR(num.head);
+    CLU_IS_SAFE(num.head);
 
     chunk_free_list(num.head, num.tail);
 }
@@ -650,8 +650,8 @@ void num_free(num_t num)
 
 chunk_p num_add_uint_offset(num_p num, chunk_p chunk, uint64_t value)
 {
-    CLU_CHECK_PTR(num->head);
-    CLU_CHECK_PTR(chunk);
+    CLU_IS_SAFE(num->head);
+    CLU_IS_SAFE(chunk);
 
     chunk_p chunk_0 = chunk;
     for(; value && chunk; chunk = chunk->next)
@@ -669,8 +669,8 @@ chunk_p num_add_uint_offset(num_p num, chunk_p chunk, uint64_t value)
 /* returns TRUE if passed offset is TAIL and ELIMINATED */
 bool num_sub_uint_offset(num_p num, chunk_p chunk, uint64_t value)
 {
-    CLU_CHECK_PTR(num->head);
-    CLU_CHECK_PTR(chunk);
+    CLU_IS_SAFE(num->head);
+    CLU_IS_SAFE(chunk);
 
     bool is_tail = chunk == num->tail;
 
@@ -689,9 +689,9 @@ bool num_sub_uint_offset(num_p num, chunk_p chunk, uint64_t value)
 /* keeps NUM_1 */
 chunk_p num_add_mul_uint_offset(num_p num_res, chunk_p chunk_res, chunk_p chunk, uint64_t value)
 {
-    CLU_CHECK_PTR(num_res->head);
-    CLU_CHECK_PTR(chunk_res);
-    CLU_CHECK_PTR(chunk);
+    CLU_IS_SAFE(num_res->head);
+    CLU_IS_SAFE(chunk_res);
+    CLU_IS_SAFE(chunk);
 
     if(chunk == NULL || value == 0)
         return chunk_res;
@@ -713,7 +713,7 @@ chunk_p num_add_mul_uint_offset(num_p num_res, chunk_p chunk_res, chunk_p chunk,
 
 num_t num_shl_uint(num_t num, uint64_t bits)
 {
-    CLU_CHECK_PTR(num.head);
+    CLU_IS_SAFE(num.head);
 
     if(bits == 0)
         return num;
@@ -734,7 +734,7 @@ num_t num_shl_uint(num_t num, uint64_t bits)
 
 num_t num_shr_uint(num_t num, uint64_t bits)
 {
-    CLU_CHECK_PTR(num.head);
+    CLU_IS_SAFE(num.head);
 
     if(bits == 0)
         return num;
@@ -753,7 +753,7 @@ num_t num_shr_uint(num_t num, uint64_t bits)
 
 num_t num_add_uint(num_t num, uint64_t value)
 {
-    CLU_CHECK_PTR(num.head);
+    CLU_IS_SAFE(num.head);
 
     num_add_uint_offset(&num, num.head, value);
     return num;
@@ -761,7 +761,7 @@ num_t num_add_uint(num_t num, uint64_t value)
 
 num_t num_sub_uint(num_t num, uint64_t value)
 {
-    CLU_CHECK_PTR(num.head);
+    CLU_IS_SAFE(num.head);
 
     num_sub_uint_offset(&num, num.head, value);
     return num;
@@ -770,8 +770,8 @@ num_t num_sub_uint(num_t num, uint64_t value)
 /* preserves NUM */
 num_t num_add_mul_uint(num_t num_res, num_t num, uint64_t value)
 {
-    CLU_CHECK_PTR(num_res.head);
-    CLU_CHECK_PTR(num.head);
+    CLU_IS_SAFE(num_res.head);
+    CLU_IS_SAFE(num.head);
 
     num_add_mul_uint_offset(&num_res, num_res.head, num.head, value);
     return num_res;
@@ -780,7 +780,7 @@ num_t num_add_mul_uint(num_t num_res, num_t num, uint64_t value)
 /* preserves NUM */
 num_t num_mul_uint(num_t num, uint64_t value)
 {
-    CLU_CHECK_PTR(num.head);
+    CLU_IS_SAFE(num.head);
 
     num_t num_res = num_create(0, NULL, NULL);
     return num_add_mul_uint(num_res, num, value);
@@ -790,8 +790,8 @@ num_t num_mul_uint(num_t num, uint64_t value)
 
 int64_t num_cmp_offset(num_t num_1, num_t num_2, uint64_t offset)
 {
-    CLU_CHECK_PTR(num_1.head);
-    CLU_CHECK_PTR(num_2.head);
+    CLU_IS_SAFE(num_1.head);
+    CLU_IS_SAFE(num_2.head);
 
     if(num_1.count > num_2.count + offset)
         return 1;
@@ -819,9 +819,9 @@ int64_t num_cmp_offset(num_t num_1, num_t num_2, uint64_t offset)
 /* keeps NUM_2 */
 chunk_p num_add_offset(num_p num_1, chunk_p chunk_1, chunk_p chunk_2) // TODO test
 {
-    CLU_CHECK_PTR(num_1->head);
-    CLU_CHECK_PTR(chunk_1);
-    CLU_CHECK_PTR(chunk_2);
+    CLU_IS_SAFE(num_1->head);
+    CLU_IS_SAFE(chunk_1);
+    CLU_IS_SAFE(chunk_2);
 
     if(chunk_2 == NULL)
         return chunk_1;
@@ -840,9 +840,9 @@ chunk_p num_add_offset(num_p num_1, chunk_p chunk_1, chunk_p chunk_2) // TODO te
 /* returns NUM_RES in num_1, may be unormal */
 chunk_p num_sub_offset(num_p num_1, chunk_p chunk_1, num_t num_2)
 {
-    CLU_CHECK_PTR(num_1->head);
-    CLU_CHECK_PTR(chunk_1);
-    CLU_CHECK_PTR(num_2.head);
+    CLU_IS_SAFE(num_1->head);
+    CLU_IS_SAFE(chunk_1);
+    CLU_IS_SAFE(num_2.head);
 
     if(num_2.count == 0)
         return chunk_1;
@@ -902,8 +902,8 @@ num_t num_cmp_mul_uint_offset(num_t num_1, num_t num_2, uint64_t r, uint64_t off
 /* RES is quocient NUM_1 is remainder */
 num_t num_div_mod_sigle(num_p num_1, num_t num_2)
 {
-    CLU_CHECK_PTR(num_1->head);
-    CLU_CHECK_PTR(num_2.head);
+    CLU_IS_SAFE(num_1->head);
+    CLU_IS_SAFE(num_2.head);
 
     chunk_p chunk_1 = num_1->tail;
     uint64_t value_2 = num_2.head->value;
@@ -937,9 +937,9 @@ num_t num_div_mod_sigle(num_p num_1, num_t num_2)
 /* RES is quocient NUM_1 is remainder */
 num_t num_div_mod_general(num_p num_1, chunk_p chunk_1, num_t num_2)
 {
-    CLU_CHECK_PTR(num_1->head);
-    CLU_CHECK_PTR(chunk_1);
-    CLU_CHECK_PTR(num_2.head);
+    CLU_IS_SAFE(num_1->head);
+    CLU_IS_SAFE(chunk_1);
+    CLU_IS_SAFE(num_2.head);
 
     num_t num_q = num_create(0, NULL, NULL);
 
@@ -987,8 +987,8 @@ NUM_R has to be shifted RES bites to the right
 */
 uint64_t num_div_mod_unajusted(num_p out_num_q, num_p out_num_r, num_t num_1, num_t num_2)
 {
-    CLU_CHECK_PTR(num_1.head);
-    CLU_CHECK_PTR(num_2.head);
+    CLU_IS_SAFE(num_1.head);
+    CLU_IS_SAFE(num_2.head);
 
     assert(num_2.count);
 
@@ -1027,15 +1027,15 @@ uint64_t num_div_mod_unajusted(num_p out_num_q, num_p out_num_r, num_t num_1, nu
 
 bool num_is_zero(num_t num)
 {
-    CLU_CHECK_PTR(num.head);
+    CLU_IS_SAFE(num.head);
 
     return num.count == 0;
 }
 
 int64_t num_cmp(num_t num_1, num_t num_2)
 {
-    CLU_CHECK_PTR(num_1.head);
-    CLU_CHECK_PTR(num_2.head);
+    CLU_IS_SAFE(num_1.head);
+    CLU_IS_SAFE(num_2.head);
 
     return num_cmp_offset(num_1, num_2, 0);
 }
@@ -1044,7 +1044,7 @@ int64_t num_cmp(num_t num_1, num_t num_2)
 
 num_t num_shl(num_t num, uint64_t bits)
 {
-    CLU_CHECK_PTR(num.head);
+    CLU_IS_SAFE(num.head);
 
     for(; bits > 63; bits -= 64)
         num_insert_head(&num, 0);
@@ -1054,7 +1054,7 @@ num_t num_shl(num_t num, uint64_t bits)
 
 num_t num_shr(num_t num, uint64_t bits)
 {
-    CLU_CHECK_PTR(num.head);
+    CLU_IS_SAFE(num.head);
 
     for(; bits > 63 && num.count; bits -= 64)
         num = num_remove_head(num);
@@ -1069,8 +1069,8 @@ num_t num_shr(num_t num, uint64_t bits)
 
 num_t num_add(num_t num_1, num_t num_2)
 {
-    CLU_CHECK_PTR(num_1.head);
-    CLU_CHECK_PTR(num_2.head);
+    CLU_IS_SAFE(num_1.head);
+    CLU_IS_SAFE(num_2.head);
 
     num_add_offset(&num_1, num_1.head, num_2.head);
     num_free(num_2);
@@ -1079,8 +1079,8 @@ num_t num_add(num_t num_1, num_t num_2)
 
 num_t num_sub(num_t num_1, num_t num_2)
 {
-    CLU_CHECK_PTR(num_1.head);
-    CLU_CHECK_PTR(num_2.head);
+    CLU_IS_SAFE(num_1.head);
+    CLU_IS_SAFE(num_2.head);
 
     num_sub_offset(&num_1, num_1.head, num_2);
     return num_1;
@@ -1088,8 +1088,8 @@ num_t num_sub(num_t num_1, num_t num_2)
 
 num_t num_mul(num_t num_1, num_t num_2)
 {
-    CLU_CHECK_PTR(num_1.head);
-    CLU_CHECK_PTR(num_2.head);
+    CLU_IS_SAFE(num_1.head);
+    CLU_IS_SAFE(num_2.head);
 
     if(num_1.count == 0)
     {
@@ -1145,7 +1145,7 @@ num_t num_sqr(num_t num)
 
 num_t num_exp(num_t num, uint64_t value) // TODO test
 {
-    CLU_CHECK_PTR(num.head);
+    CLU_IS_SAFE(num.head);
 
     if(num.count == 0)
     {
@@ -1166,8 +1166,8 @@ num_t num_exp(num_t num, uint64_t value) // TODO test
 
 void num_div_mod(num_p out_num_q, num_p out_num_r, num_t num_1, num_t num_2)
 {
-    CLU_CHECK_PTR(num_1.head);
-    CLU_CHECK_PTR(num_2.head);
+    CLU_IS_SAFE(num_1.head);
+    CLU_IS_SAFE(num_2.head);
 
     num_t num_q, num_r;
     uint64_t bits = num_div_mod_unajusted(&num_q, &num_r, num_1, num_2);
@@ -1178,8 +1178,8 @@ void num_div_mod(num_p out_num_q, num_p out_num_r, num_t num_1, num_t num_2)
 
 num_t num_div(num_t num_1, num_t num_2)
 {
-    CLU_CHECK_PTR(num_1.head);
-    CLU_CHECK_PTR(num_2.head);
+    CLU_IS_SAFE(num_1.head);
+    CLU_IS_SAFE(num_2.head);
 
     num_t num_q, num_r;
     num_div_mod_unajusted(&num_q, &num_r, num_1, num_2);
@@ -1190,8 +1190,8 @@ num_t num_div(num_t num_1, num_t num_2)
 
 num_t num_mod(num_t num_1, num_t num_2)
 {
-    CLU_CHECK_PTR(num_1.head);
-    CLU_CHECK_PTR(num_2.head);
+    CLU_IS_SAFE(num_1.head);
+    CLU_IS_SAFE(num_2.head);
 
     num_t num_q, num_r;
     uint64_t bits = num_div_mod_unajusted(&num_q, &num_r, num_1, num_2);
@@ -1215,7 +1215,7 @@ num_t num_gcd(num_t num_1, num_t num_2)
 
 num_t num_base_to(num_t num, uint64_t base)
 {
-    CLU_CHECK_PTR(num.head);
+    CLU_IS_SAFE(num.head);
 
     num_t num_res = num_create(0, NULL, NULL);
     while (num.count)
@@ -1231,7 +1231,7 @@ num_t num_base_to(num_t num, uint64_t base)
 
 num_t num_base_from(num_t num, uint64_t base)
 {
-    CLU_CHECK_PTR(num.head);
+    CLU_IS_SAFE(num.head);
 
     num_t num_res = num_create(0, NULL, NULL);
     for(chunk_p chunk = num.tail; chunk; chunk = chunk->prev)
