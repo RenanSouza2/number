@@ -28,8 +28,8 @@ chunk_p num_get_chunk(num_t num, uint64_t count);
 #define U128(V) ((uint128_t)(V))
 #define U128_IMMED(V1, V2) ((U128(V1) << 64) | (V2))
 #define MUL(V1, V2) U128(V1) * U128(V2)
-#define LOW(V) ((uint64_t)(V))
-#define HIGH(V) LOW((V) >> 64)
+#define LOW(V) U64(V)
+#define HIGH(V) U64((V) >> 64)
 
 uint64_t uint_from_char(char c);
 

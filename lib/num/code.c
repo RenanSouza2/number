@@ -1154,7 +1154,7 @@ num_t num_exp(num_t num, uint64_t value) // TODO test
     }
 
     num_t num_res = num_wrap(1);
-    for(uint64_t mask = (uint64_t)1 << 63; mask; mask >>= 1)
+    for(uint64_t mask = 0x8000000000000000; mask; mask >>= 1)
     {
         num_res = num_sqr(num_res);
         if(value & mask)

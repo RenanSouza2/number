@@ -52,7 +52,7 @@ num_t num_generate_2(uint64_t index)
 
 uint64_t rand_64()
 {
-    return ((uint64_t)rand()) << 32 | rand();
+    return (U64(rand()) << 32) | rand();
 }
 
 num_t num_rand(uint64_t count)

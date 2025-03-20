@@ -112,7 +112,7 @@ mod_t mod_exp(mod_t mod, uint64_t value) // TODO test
     }
 
     mod_t mod_res = mod_wrap(1, mod.max);
-    for(uint64_t mask = (uint64_t)1 << 63; mask; mask >>= 1)
+    for(uint64_t mask = 0x8000000000000000; mask; mask >>= 1)
     {
         mod_res = mod_sqr(mod_res);
         if(value & mask)

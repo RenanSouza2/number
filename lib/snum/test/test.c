@@ -115,7 +115,7 @@ void test_snum_wrap(bool show)
 
     if(show) printf("\n\t\t%s 5\t\t", __func__);
     snum = snum_wrap(INT64_MIN);
-    assert(snum_immed(snum, NEGATIVE, 1, (uint64_t)INT64_MIN));
+    assert(snum_immed(snum, NEGATIVE, 1, INT64_MIN));
 
     chunk_pool_clean();
     assert(clu_mem_empty());
@@ -125,12 +125,12 @@ void test_snum_wrap_str(bool show)
 {
     printf("\n\t%s\t\t", __func__);
 
-    #define TEST_SIG_WRAP_STR(TAG, STR, ...)                        \
-        {                                                           \
-            if(show) printf("\n\t\t%s %2d \t\t", __func__, TAG);    \
-            snum_t snum = snum_wrap_str(STR);                          \
-            assert(snum_immed(snum, __VA_ARGS__));                    \
-        }
+    #define TEST_SIG_WRAP_STR(TAG, STR, ...)                    \
+    {                                                           \
+        if(show) printf("\n\t\t%s %2d \t\t", __func__, TAG);    \
+        snum_t snum = snum_wrap_str(STR);                       \
+        assert(snum_immed(snum, __VA_ARGS__));                  \
+    }
 
     TEST_SIG_WRAP_STR( 1, "", ZERO, 0);
     TEST_SIG_WRAP_STR( 2, "0", ZERO, 0);

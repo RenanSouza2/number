@@ -2,6 +2,8 @@
 
 #include <stdint.h>
 
+#define U64(VALUE) ((uint64_t)(VALUE))
+
 #ifdef __linux__
 
 #define U64P(C) "%" #C "lu"
