@@ -34,48 +34,40 @@ void fix_display_dec(char tag[], fix_t fix)
     num_t num_hi, num_lo;
     num_break(&num_hi, &num_lo, num_copy(fix.snum.num), fix.pos);
     
-    if(num_hi.count == 0)
-    {
-        printf("0");
-    }
-    else
-    {    
-        num_hi = num_base_to(num_hi, 1000000000000000000);
-        printf(U64P(), num_hi.tail->value);
-        for(chunk_p chunk = num_hi.tail->prev; chunk; chunk = chunk->prev)
-            printf(U64P(018), chunk->value);
-    }
+    num_display_dec(num_hi);
+    num_free(num_hi);
 
     printf(".");
 
     if(num_lo.count == 0)
     {
         printf("0");
+        return;
     }
-    else
-    {    
-        uint64_t pos = fix.pos;
-        num_t num_u = num_wrap(1);
-        for(uint64_t i=0; ; i++)
+
+    uint64_t pos = fix.pos;
+    num_t num_u = num_wrap(1);
+    for(uint64_t i=0; ; i++)
+    {
+        num_lo = num_mul(num_lo, num_wrap(1000000000000000000));
+        num_u = num_mul(num_u, num_wrap(1000000000000000000));
+
+        if(num_u.count > 2)
         {
-            num_lo = num_mul(num_lo, num_wrap(1000000000000000000));
-            num_u = num_mul(num_u, num_wrap(1000000000000000000));
-
-            if(num_u.count > 2)
-            {
-                num_lo = num_shr(num_lo, 64);
-                num_u = num_shr(num_u, 64);
-                pos--;
-            }
-
-            if(num_u.count > pos)
-                break;
-
-            num_t num_aux;
-            num_break(&num_aux, &num_lo, num_lo, pos);
-            printf(U64P(018), num_unwrap(num_aux));
+            num_lo = num_shr(num_lo, 64);
+            num_u = num_shr(num_u, 64);
+            pos--;
         }
+
+        if(num_u.count > pos)
+            break;
+
+        num_t num_aux;
+        num_break(&num_aux, &num_lo, num_lo, pos);
+        printf(U64P(018), num_unwrap(num_aux));
     }
+    num_free(num_lo);
+    num_free(num_u);
 }
 
 void fix_display(fix_t fix)

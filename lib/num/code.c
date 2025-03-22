@@ -1059,10 +1059,7 @@ num_t num_shr(num_t num, uint64_t bits)
     for(; bits > 63 && num.count; bits -= 64)
         num = num_remove_head(num);
 
-    if(bits && num.count)
-        num = num_shr_uint(num, bits);
-
-    return num;
+    return num_shr_uint(num, bits);;
 }
 
 

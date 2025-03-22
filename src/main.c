@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "../utils/assert.h"
 #include "../utils/U64.h"
@@ -341,47 +342,54 @@ void display_bit(uint64_t value)
     }
 }
 
+
+fix_t fix_step(fix_t fix, uint64_t pos)
+{
+    fix_t fix_a = fix_shr(fix_copy(fix), 1);
+    fix = fix_div(fix_wrap(1, pos), fix);
+    return fix_add(fix, fix_a);
+}
+
 void sqrt_2()
 {
     fix_t fix_x = fix_wrap(1, 1);
-    for(uint64_t pos = 1; ; pos *= 2)
+    num_t num = num_wrap(10);
+
+    for(uint64_t i=0; ; i++)
     {
-        printf("\n\npos: %lu", pos);
-        fprintf(stderr, "\n\npos: %lu", pos);
+        printf("\ni: %lu", i);
+        // fprintf(stderr, "\ni: %lu", i);
+
+        fix_x = fix_step(fix_x, 1);
+
+        fix_t fix_2 = fix_sqr(fix_copy(fix_x));
+        fix_2 = fix_sub(fix_2, fix_wrap(2, 1));
+        bool res = num_cmp(fix_2.snum.num, num) < 0;
+        fix_free(fix_2);
+        if(res)
+            break;
+    }
+
+    for(uint64_t pos = 2; ; pos *= 2)
+    {
         fix_x = fix_reposition(fix_x, pos);
-        for(uint64_t i=0; ; i++)
-        {
-            printf("\ni: %lu", i);
-            fprintf(stderr, "\ni: %lu", i);
-    
-            fix_t fix_a = fix_shr(fix_copy(fix_x), 1);
-            fix_t fix_b = fix_div(fix_wrap(1, pos), fix_x);
-            fix_x = fix_add(fix_a, fix_b);
-    
-            fix_t fix_2 = fix_sqr(fix_copy(fix_x));
-            fix_2 = fix_sub(fix_2, fix_wrap(2, pos));
-            bool res = num_cmp(fix_2.snum.num, num_wrap(10)) < 0;
-            fix_free(fix_2);
-            if(res)
-                break;
-        }
-    
-        printf("\n");
+        fix_x = fix_step(fix_x, pos);
+
+        if(fork())
+            continue;
+
+        printf("\n\n");
         fix_display_full("hex", fix_x);
         fix_display_dec("res", fix_x);
-    }
-}
+        printf("\n\npos: %lu", pos * 2);
 
-num_t a(uint64_t index)
-{
-    num_t num = num_wrap(1);
-    for(uint64_t i=0; i<index; i++)
-    {
-        num = num_mul(num, num_wrap(1000000000000000000));
-        if(num.count > 1)
-            num = num_shr(num, 64);
+        exit(EXIT_SUCCESS);
     }
-    return num;
+
+    fix_display_dec("res", fix_x);
+
+    fix_free(fix_x);
+    num_free(num);
 }
 
 
@@ -404,12 +412,12 @@ int main()
     // fix = fix_div(fix, fix_wrap(10, pos));
     // fix = fix_mul(fix, fix_wrap(10, pos));
     // fix = fix_sub(fix, fix_wrap(1, pos));
-    
+    //
     // uint64_t begin = altutime();
     // fix_display_tag("res", fix);
     // uint64_t end = altutime();
     // printf("\n%10.3f", (end - begin) / 1e3);
-    
+    //
     // printf("\na");
     // num_t num = num_sub(num_wrap(2), num_wrap(3));
     // printf("\nb");

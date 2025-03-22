@@ -55,7 +55,7 @@ void test_snum_create(bool show)
     snum_free(snum);
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_snum_create_immed(bool show)
@@ -88,7 +88,7 @@ void test_snum_create_immed(bool show)
     assert(num_immed(snum.num, 0));
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 
@@ -118,7 +118,7 @@ void test_snum_wrap(bool show)
     assert(snum_immed(snum, NEGATIVE, 1, INT64_MIN));
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_snum_wrap_str(bool show)
@@ -160,7 +160,7 @@ void test_snum_wrap_str(bool show)
     #undef TEST_SIG_WRAP_STR
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_snum_copy(bool show)
@@ -187,7 +187,7 @@ void test_snum_copy(bool show)
     #undef TEST_SIG_COPY
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 
@@ -212,7 +212,7 @@ void test_snum_is_zero(bool show)
     #undef TEST_SIG_IS_ZERO
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_snum_cmp(bool show)
@@ -253,7 +253,7 @@ void test_snum_cmp(bool show)
     #undef TEST_SIG_CMP
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 
@@ -298,7 +298,7 @@ void test_snum_shl(bool show)
     assert(snum_immed(snum, NEGATIVE, 2, 2, 0));
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_snum_shr(bool show)
@@ -351,7 +351,7 @@ void test_snum_shr(bool show)
     assert(snum_immed(snum, NEGATIVE, 1, 1));
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 
@@ -373,7 +373,7 @@ void test_snum_opposite(bool show)
     TEST_SIG_OPPOSITE(3, NEGATIVE, POSITIVE, 1, 1);
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_snum_add(bool show)
@@ -441,7 +441,7 @@ void test_snum_add(bool show)
     assert(snum_immed(snum_res, NEGATIVE, 1, 1));
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_snum_sub(bool show)
@@ -473,7 +473,7 @@ void test_snum_sub(bool show)
     assert(snum_immed(snum_res, POSITIVE, 1, 3));
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_snum_mul(bool show)
@@ -517,7 +517,7 @@ void test_snum_mul(bool show)
     assert(snum_immed(snum_res, NEGATIVE, 1, 6));
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_snum_div(bool show)
@@ -555,7 +555,7 @@ void test_snum_div(bool show)
     assert(snum_immed(snum_res, NEGATIVE, 1, 1));
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 
@@ -586,7 +586,7 @@ void test_snum()
     test_snum_div(show);
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 
