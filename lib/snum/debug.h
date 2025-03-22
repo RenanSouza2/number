@@ -5,9 +5,13 @@
 
 #ifdef DEBUG
 
-snum_t snum_create_immed(uint64_t signal, uint64_t n, ...);
+#include <stdarg.h>
 
-bool snum_immed(snum_t snum, uint64_t signal, uint64_t n, ...);
+snum_t snum_create_variadic(va_list *args);
+snum_t snum_create_immed(uint64_t signal, ...);
+void snum_create_vec_immed(snum_t snum[], uint64_t n, ...);
+
+bool snum_immed(snum_t snum, uint64_t signal, ...);
 
 #endif
 

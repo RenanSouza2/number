@@ -26,7 +26,7 @@ void test_mod_create(bool show)
     num_free(p);
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_mod_wrap(bool show)
@@ -47,7 +47,7 @@ void test_mod_wrap(bool show)
     num_free(p);
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 
@@ -86,7 +86,7 @@ void test_mod_add(bool show)
     num_free(p);
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_mod_sub(bool show)
@@ -129,7 +129,7 @@ void test_mod_sub(bool show)
     num_free(p);
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_mod_mul(bool show)
@@ -181,7 +181,7 @@ void test_mod_mul(bool show)
     num_free(p);
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_mod_div(bool show)
@@ -212,7 +212,7 @@ void test_mod_div(bool show)
     num_free(p);
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 
@@ -232,7 +232,7 @@ void test_mod()
     test_mod_div(show);
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 

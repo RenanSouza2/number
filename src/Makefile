@@ -1,4 +1,4 @@
-FLAGS = -Wall -Werror -Wfatal-errors
+FLAGS = -Wall -Wextra -Werror -Wfatal-errors
 
 LIB = ../lib/lib.o
 DGB = ../lib/debug.o

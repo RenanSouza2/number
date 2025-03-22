@@ -13,7 +13,7 @@ bool mod_immed(mod_t mod, uint64_t n, ...)
 {
     va_list args;
     va_start(args, n);
-    num_t num = num_create_variadic(n, &args);
+    num_t num = num_create_variadic_n(n, &args);
     return num_str(mod.num, num);
 }
 
@@ -103,7 +103,7 @@ mod_t mod_sqr(mod_t mod)
 
 mod_t mod_exp(mod_t mod, uint64_t value) // TODO test
 {
-    DBG_CHECK_PTR(mod.num.head);
+    CLU_IS_SAFE(mod.num.head);
 
     if(mod.num.count == 0)
     {
@@ -112,7 +112,7 @@ mod_t mod_exp(mod_t mod, uint64_t value) // TODO test
     }
 
     mod_t mod_res = mod_wrap(1, mod.max);
-    for(uint64_t mask = (uint64_t)1 << 63; mask; mask >>= 1)
+    for(uint64_t mask = 0x8000000000000000; mask; mask >>= 1)
     {
         mod_res = mod_sqr(mod_res);
         if(value & mask)

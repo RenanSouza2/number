@@ -1,6 +1,7 @@
 #include "../debug.h"
 #include "../../../utils/U64.h"
 #include "../../../utils/assert.h"
+#include "../../../utils/test_revert.h"
 #include "../../../utils/clu/header.h"
 
 
@@ -11,25 +12,30 @@ void test_uint_from_char(bool show)
 
     #define TEST_UINT_FROM_CHAR(TAG, CHAR, UINT)            \
     {                                                       \
-        if(show) printf("\n\t\t%s " #TAG "\t\t", __func__); \
+        if(show) printf("\n\t\t%s %2d\t\t", __func__, TAG); \
         uint64_t res = uint_from_char(CHAR);                \
         assert(uint64(res, UINT));                          \
     }
 
-    TEST_UINT_FROM_CHAR(1, '0',  0);
-    TEST_UINT_FROM_CHAR(2, '1',  1);
-    TEST_UINT_FROM_CHAR(3, '9',  9);
-    TEST_UINT_FROM_CHAR(4, 'a', 10);
-    TEST_UINT_FROM_CHAR(5, 'b', 11);
-    TEST_UINT_FROM_CHAR(6, 'f', 15);
-    TEST_UINT_FROM_CHAR(7, 'A', 10);
-    TEST_UINT_FROM_CHAR(8, 'B', 11);
-    TEST_UINT_FROM_CHAR(9, 'F', 15);
+    TEST_UINT_FROM_CHAR( 1, '0',  0);
+    TEST_UINT_FROM_CHAR( 2, '1',  1);
+    TEST_UINT_FROM_CHAR( 3, '9',  9);
+    TEST_UINT_FROM_CHAR( 4, 'a', 10);
+    TEST_UINT_FROM_CHAR( 5, 'b', 11);
+    TEST_UINT_FROM_CHAR( 6, 'f', 15);
+    TEST_UINT_FROM_CHAR( 7, 'A', 10);
+    TEST_UINT_FROM_CHAR( 8, 'B', 11);
+    TEST_UINT_FROM_CHAR( 9, 'F', 15);
 
     #undef TEST_UINT_FROM_CHAR
 
+    if(show) printf("\n\t\t%s 10\t\t", __func__);
+    TEST_REVERT_OPEN
+    uint_from_char('g');
+    TEST_REVERT_CLOSE
+
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_uint128(bool show)
@@ -107,7 +113,7 @@ void test_uint128(bool show)
     assert(uint128_immed(u, UINT64_MAX >> 1, UINT64_MAX));
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 
@@ -164,7 +170,7 @@ void test_chunk_create(bool show)
     free(chunk_prev);
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 
@@ -217,7 +223,7 @@ void test_num_create_immed(bool show)
     num_free(num);
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_num_create_immed_vec(bool show)
@@ -250,7 +256,7 @@ void test_num_create_immed_vec(bool show)
     assert(num_immed(num[1], 0));
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 
@@ -259,16 +265,16 @@ void test_num_insert(bool show)
 {
     printf("\n\t%s", __func__);
 
-    #define TEST_NUM_INSERT(TAG, VALUE, IS_HEAD, ...)   \
-    {                                                   \
-        num_t num[2];                                   \
-        if(show) printf("\n\t\t%s %d", __func__, TAG);  \
-        num_create_immed_vec(num, 2, __VA_ARGS__);      \
-        chunk_p chunk = num_insert_tail(&num[0], VALUE);     \
-        assert(uint64(chunk->value, VALUE));            \
-        assert((num[0].head == chunk) == IS_HEAD);      \
-        assert(num[0].tail == chunk);                   \
-        assert(num_str(num[0], num[1]));                \
+    #define TEST_NUM_INSERT(TAG, VALUE, IS_HEAD, ...)       \
+    {                                                       \
+        num_t num[2];                                       \
+        if(show) printf("\n\t\t%s %d", __func__, TAG);      \
+        num_create_immed_vec(num, 2, __VA_ARGS__);          \
+        chunk_p chunk = num_insert_tail(&num[0], VALUE);    \
+        assert(uint64(chunk->value, VALUE));                \
+        assert((num[0].head == chunk) == IS_HEAD);          \
+        assert(num[0].tail == chunk);                       \
+        assert(num_str(num[0], num[1]));                    \
     }
 
     TEST_NUM_INSERT(1, 0, true,
@@ -291,7 +297,7 @@ void test_num_insert(bool show)
     #undef TEST_NUM_INSERT
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_num_insert_head(bool show)
@@ -330,7 +336,7 @@ void test_num_insert_head(bool show)
     #undef TEST_NUM_INSERT_HEAD
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_num_remove_head(bool show)
@@ -362,52 +368,7 @@ void test_num_remove_head(bool show)
     #undef TEST_NUM_REMOVE_HEAD
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
-}
-
-void test_num_insert_list(bool show)
-{
-    printf("\n\t%s", __func__);
-
-    #define TEST_NUM_INSERT_LIST(TAG, ...)                                          \
-    {                                                                               \
-        num_t num[3];                                                               \
-        if(show) printf("\n\t\t%s %d\t\t", __func__, TAG);                          \
-        num_create_immed_vec(num, 3, __VA_ARGS__);                                  \
-        num[0] = num_insert_list(num[0], num[1].head, num[1].tail, num[1].count);   \
-        assert(num_str(num[0], num[2]));                                            \
-    }
-
-    TEST_NUM_INSERT_LIST(1,
-        0,
-        0,
-        0
-    );
-    TEST_NUM_INSERT_LIST(2,
-        0,
-        1, 2,
-        1, 2
-    );
-    TEST_NUM_INSERT_LIST(3,
-        1, 1,
-        0,
-        1, 1
-    );
-    TEST_NUM_INSERT_LIST(4,
-        1, 1,
-        1, 2,
-        2, 2, 1
-    );
-    TEST_NUM_INSERT_LIST(5,
-        2, 1, 2,
-        2, 3, 4,
-        4, 3, 4, 1, 2
-    );
-
-    #undef TEST_NUM_INSERT_LIST
-
-    chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_num_denormalize(bool show)
@@ -442,7 +403,7 @@ void test_num_denormalize(bool show)
     assert(num_immed(num, 1, 1));
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_num_normalize(bool show)
@@ -483,7 +444,7 @@ void test_num_normalize(bool show)
     #undef TEST_NUM_NORMALIZE
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_num_break(bool show)
@@ -559,7 +520,7 @@ void test_num_break(bool show)
     #undef TEST_NUM_BREAK
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 
@@ -582,7 +543,7 @@ void test_num_wrap(bool show)
     #undef TEST_NUM_WRAP
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_num_wrap_dec(bool show)
@@ -609,7 +570,7 @@ void test_num_wrap_dec(bool show)
     #undef TEST_NUM_WRAP_DEC
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_num_wrap_hex(bool show)
@@ -637,8 +598,23 @@ void test_num_wrap_hex(bool show)
 
     #undef TEST_NUM_WRAP_HEX
 
+    #define TEST_NUM_WRAP_HEX(TAG, STR)                 \
+    {                                                   \
+        if(show) printf("\n\t\t%s %2d", __func__, TAG); \
+        TEST_REVERT_OPEN                                \
+        num_wrap_hex(STR);                              \
+        TEST_REVERT_CLOSE                               \
+    }
+
+    TEST_NUM_WRAP_HEX(12, "");
+    TEST_NUM_WRAP_HEX(13, "0");
+    TEST_NUM_WRAP_HEX(14, "ab");
+    TEST_NUM_WRAP_HEX(14, "0b");
+
+    #undef TEST_NUM_WRAP_HEX
+
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_num_wrap_str(bool show)
@@ -674,7 +650,7 @@ void test_num_wrap_str(bool show)
     #undef TEST_NUM_WRAP_STR
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_num_read_dec(bool show)
@@ -683,7 +659,7 @@ void test_num_read_dec(bool show)
 
     #define TEST_NUM_READ_DEC(TAG, ...)                         \
     {                                                           \
-        if(show) printf("\n\t\t%s " #TAG "", __func__);         \
+        if(show) printf("\n\t\t%s %d", __func__, TAG);         \
         num_t num = num_read_dec("numbers/num_" #TAG ".txt");   \
         assert(num_immed(num, __VA_ARGS__));                    \
     }
@@ -698,8 +674,38 @@ void test_num_read_dec(bool show)
 
     #undef TEST_NUM_READ_DEC
 
+    if(show) printf("\n\t\t%s 8", __func__);
+    TEST_REVERT_OPEN
+    num_read_dec("numbers/num_8.txt");
+    TEST_REVERT_CLOSE
+
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
+}
+
+void test_num_unwrap(bool show)
+{
+    printf("\n\t%s", __func__);
+
+    if(show) printf("\n\t\t%s 1", __func__);
+    num_t num = num_create_immed(0);
+    uint64_t res = num_unwrap(num);
+    assert(res == 0);
+
+    if(show) printf("\n\t\t%s 2", __func__);
+    num = num_create_immed(1, 1);
+    res = num_unwrap(num);
+    assert(res == 1);
+
+    if(show) printf("\n\t\t%s 3", __func__);
+    num = num_create_immed(2, 3, 4);
+    TEST_REVERT_OPEN
+    num_unwrap(num);
+    TEST_REVERT_CLOSE
+    num_free(num);
+
+    chunk_pool_clean();
+    assert(clu_mem_is_empty());
 }
 
 void test_num_copy(bool show)
@@ -721,7 +727,7 @@ void test_num_copy(bool show)
     #undef TEST_NUM_COPY
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 
@@ -771,7 +777,7 @@ void test_num_base_to(bool show)
     #undef TEST_NUM_BASE_TO
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_num_base_from(bool show)
@@ -811,7 +817,7 @@ void test_num_base_from(bool show)
     #undef TEST_NUM_BASE_FROM
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 
@@ -823,7 +829,7 @@ void test_num_sub_uint_offset(bool show)
     #define TEST_NUM_SUB_UINT_OFFSET(TAG, OFFSET, VALUE, RES, ...)  \
     {                                                               \
         num_t num[2];                                               \
-        if(show) printf("\n\t\t%s %d\t\t", __func__, TAG);          \
+        if(show) printf("\n\t\t%s %2d\t\t", __func__, TAG);         \
         num_create_immed_vec(num, 2, __VA_ARGS__);                  \
         chunk_p chunk = num_get_chunk(num[0], OFFSET);              \
         bool res = num_sub_uint_offset(&num[0], chunk, VALUE);      \
@@ -831,39 +837,60 @@ void test_num_sub_uint_offset(bool show)
         assert(res == RES);                                         \
     }
 
-    TEST_NUM_SUB_UINT_OFFSET(1, 0, 1, false,
+    TEST_NUM_SUB_UINT_OFFSET( 1, 0, 1, false,
         2, 2, 3,
         2, 2, 2
     );
-    TEST_NUM_SUB_UINT_OFFSET(2, 1, 1, false,
+    TEST_NUM_SUB_UINT_OFFSET( 2, 1, 1, false,
         2, 2, 3,
         2, 1, 3
     );
-    TEST_NUM_SUB_UINT_OFFSET(3, 1, 1, true,
+    TEST_NUM_SUB_UINT_OFFSET( 3, 1, 1, true,
         2, 1, 3,
         1, 3
     )
-    TEST_NUM_SUB_UINT_OFFSET(4, 1, 1, true,
+    TEST_NUM_SUB_UINT_OFFSET( 4, 1, 1, true,
         2, 1, 0,
         1, 0
     );
-    TEST_NUM_SUB_UINT_OFFSET(5, 2, 1, true,
+    TEST_NUM_SUB_UINT_OFFSET( 5, 2, 1, true,
         3, 1, 0, 1,
         2, 0, 1
     );
-    TEST_NUM_SUB_UINT_OFFSET(6, 1, 1, false,
+    TEST_NUM_SUB_UINT_OFFSET( 6, 1, 1, false,
         3, 1, 0, 1,
         2, UINT64_MAX, 1
     );
-    TEST_NUM_SUB_UINT_OFFSET(6, 1, 1, true,
+    TEST_NUM_SUB_UINT_OFFSET( 7, 1, 1, true,
         2, 1, 0,
         1, 0
+    );
+    TEST_NUM_SUB_UINT_OFFSET( 8, 0, 0, false,
+        0,
+        0
     );
 
     #undef TEST_NUM_SUB_UINT_OFFSET
 
+    #define TEST_NUM_SUB_UINT_OFFSET(TAG, OFFSET, VALUE, ...)   \
+    {                                                           \
+        if(show) printf("\n\t\t%s %2d\t\t", __func__, TAG);     \
+        num_t num = num_create_immed(__VA_ARGS__);              \
+        chunk_p chunk = num_get_chunk(num, OFFSET);             \
+        TEST_REVERT_OPEN                                        \
+        num_sub_uint_offset(&num, chunk, VALUE);                \
+        TEST_REVERT_CLOSE                                       \
+        num_free(num);                                          \
+    }
+
+    TEST_NUM_SUB_UINT_OFFSET( 9, 0, 1, 0);
+    TEST_NUM_SUB_UINT_OFFSET(10, 0, 3, 1, 2);
+    TEST_NUM_SUB_UINT_OFFSET(11, 1, 1, 1, 2);
+
+    #undef TEST_NUM_SUB_UINT_OFFSET
+
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 
@@ -913,7 +940,7 @@ void test_num_shl_uint(bool show)
     #undef TEST_NUM_SHL_UINT
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_num_shr_uint(bool show)
@@ -925,7 +952,7 @@ void test_num_shr_uint(bool show)
         num_t num[2];                                   \
         if(show) printf("\n\t\t%s %d", __func__, TAG);  \
         num_create_immed_vec(num, 2, __VA_ARGS__);      \
-        num[0] = num_shr(num[0], BITS);                 \
+        num[0] = num_shr_uint(num[0], BITS);            \
         assert(num_str(num[0], num[1]));                \
     }
 
@@ -953,11 +980,15 @@ void test_num_shr_uint(bool show)
         2, 1, 0x8000000000000000,
         1, 3
     );
+    TEST_NUM_SHR_UINT(7, 0,
+        4, 4, UINT64_MAX, UINT64_MAX, UINT64_MAX - 3,
+        4, 4, UINT64_MAX, UINT64_MAX, UINT64_MAX - 3
+    );
 
     #undef TEST_NUM_SHR_UINT
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_num_add_uint(bool show)
@@ -993,7 +1024,7 @@ void test_num_add_uint(bool show)
     #undef TEST_NUM_ADD_UINT
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_num_sub_uint(bool show)
@@ -1029,11 +1060,34 @@ void test_num_sub_uint(bool show)
         2, 1, 0,
         1, UINT64_MAX
     );
+    TEST_NUM_SUB_UINT(6, 0x8000000000000000,
+        5, 1, 0, 0, 0, 0,
+        4, UINT64_MAX, UINT64_MAX, UINT64_MAX, 0x8000000000000000
+    );
+
+    #undef TEST_NUM_SUB_UINT
+
+    #define TEST_NUM_SUB_UINT(TAG, VALUE, ...)              \
+    {                                                       \
+        if(show) printf("\n\t\t%s %d\t\t", __func__, TAG);  \
+        num_t num = num_create_immed(__VA_ARGS__);          \
+        TEST_REVERT_OPEN                                    \
+        num_sub_uint(num, VALUE);                           \
+        TEST_REVERT_CLOSE                                   \
+        num_free(num);                                      \
+    }
+
+    TEST_NUM_SUB_UINT(7, 1,
+        0
+    );
+    TEST_NUM_SUB_UINT(8, 2,
+        1, 1
+    );
 
     #undef TEST_NUM_SUB_UINT
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_num_mul_uint(bool show)
@@ -1090,7 +1144,7 @@ void test_num_mul_uint(bool show)
     #undef TEST_NUM_MUL_UINT
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_num_add_mul_uint(bool show)
@@ -1148,7 +1202,208 @@ void test_num_add_mul_uint(bool show)
     #undef TEST_NUM_ADD_MUL_UINT
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
+}
+
+
+
+void test_num_sub_offset(bool show)
+{
+    printf("\n\t%s\t\t", __func__);
+
+    #define TEST_NUM_SUB_OFFSET(TAG, OFFSET, ELIMINATE, ...)            \
+    {                                                                   \
+        num_t num[3];                                                   \
+        if(show) printf("\n\t\t%s %d\t\t", __func__, TAG);              \
+        num_create_immed_vec(num, 3, __VA_ARGS__);                      \
+        chunk_p chunk_bef = num_get_chunk(num[0], OFFSET);              \
+        chunk_p chunk_aft = num_sub_offset(&num[0], chunk_bef, num[1]); \
+        CLU_IS_SAFE(chunk_aft);                                       \
+        assert(num_str(num[0], num[2]));                                \
+        if(ELIMINATE) {assert(chunk_aft == NULL);}                      \
+        else          {assert(chunk_aft == chunk_bef);}                 \
+    }
+
+    TEST_NUM_SUB_OFFSET(1, 0, true,
+        0,
+        0,
+        0
+    );
+    TEST_NUM_SUB_OFFSET(2, 0, false,
+        0,
+        0,
+        0
+    );
+    TEST_NUM_SUB_OFFSET(3, 1, true,
+        2, 1, 2,
+        1, 1,
+        1, 2
+    );
+    TEST_NUM_SUB_OFFSET(4, 1, true,
+        2, 1, 0,
+        1, 1,
+        1, 0
+    );
+    TEST_NUM_SUB_OFFSET(5, 1, true,
+        3, 1, 2, 3,
+        2, 1, 2,
+        1, 3
+    );
+    TEST_NUM_SUB_OFFSET(6, 1, false,
+        3, 1, 2, 3,
+        2, 1, 1,
+        2, 1, 3
+    );
+
+    #undef TEST_NUM_SUB_OFFSET
+
+    #define TEST_NUM_SUB_OFFSET(TAG, OFFSET, ...)           \
+    {                                                       \
+        num_t num[3];                                       \
+        if(show) printf("\n\t\t%s %d\t\t", __func__, TAG);  \
+        num_create_immed_vec(num, 2, __VA_ARGS__);          \
+        chunk_p chunk = num_get_chunk(num[0], OFFSET);      \
+        TEST_REVERT_OPEN                                    \
+        num_sub_offset(&num[0], chunk, num[1]);             \
+        TEST_REVERT_CLOSE                                   \
+        num_free(num[0]);                                   \
+        num_free(num[1]);                                   \
+    }
+
+    TEST_NUM_SUB_OFFSET(7, 0,
+        0,
+        1, 1
+    );
+    TEST_NUM_SUB_OFFSET(8, 1,
+        2, 2, 1,
+        1, 3
+    );
+    TEST_NUM_SUB_OFFSET(9, 1,
+        2, 2, 1,
+        2, 1, 2
+    );
+
+    #undef TEST_NUM_SUB_OFFSET
+
+    chunk_pool_clean();
+    assert(clu_mem_is_empty());
+}
+
+void test_num_cmp_mul_uint(bool show)
+{
+    printf("\n\t%s\t\t", __func__);
+
+    #define TEST_NUM_CMP_MUL_UINT_OFFSET(TAG, VALUE, OFFSET, ...)               \
+    {                                                                           \
+        num_t num[3];                                                           \
+        if(show) printf("\n\t\t%s %2d\t\t", __func__, TAG);                     \
+        num_create_immed_vec(num, 3, __VA_ARGS__);                              \
+        num_t num_res = num_cmp_mul_uint_offset(num[0], num[1], VALUE, OFFSET); \
+        assert(num_str(num_res, num[2]));                                       \
+        num_free(num[0]);                                                       \
+        num_free(num[1]);                                                       \
+    }
+
+    TEST_NUM_CMP_MUL_UINT_OFFSET( 1, 2, 0,
+        1, 7,
+        1, 3,
+        1, 6
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET( 2, 2, 0,
+        1, 6,
+        1, 3,
+        1, 6
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET( 3, 2, 0,
+        1, 5,
+        1, 3,
+        0
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET( 4, 5, 0,
+        2, 16, 20,
+        2, 3, 4,
+        2, 15, 20
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET( 5, 5, 0,
+        2, 15, 20,
+        2, 3, 4,
+        2, 15, 20
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET( 6, 5, 0,
+        2, 14, 20,
+        2, 3, 4,
+        0
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET( 7, 5, 0,
+        2, 15, 21,
+        2, 3, 4,
+        2, 15, 20
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET( 8, 5, 0,
+        2, 15, 20,
+        2, 3, 4,
+        2, 15, 20
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET( 9, 5, 0,
+        2, 15, 19,
+        2, 3, 4,
+        0
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET(10, UINT64_MAX, 0,
+        2, UINT64_MAX, 1,
+        1, UINT64_MAX,
+        2, UINT64_MAX - 1, 1
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET(11, UINT64_MAX, 0,
+        2, UINT64_MAX - 1, 1,
+        1, UINT64_MAX,
+        2, UINT64_MAX - 1, 1
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET(12, UINT64_MAX, 0,
+        2, UINT64_MAX - 2, 1,
+        1, UINT64_MAX,
+        0
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET(13, UINT64_MAX, 0,
+        2, UINT64_MAX - 1, 2,
+        1, UINT64_MAX,
+        2, UINT64_MAX - 1, 1
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET(14, UINT64_MAX, 0,
+        2, UINT64_MAX - 1, 1,
+        1, UINT64_MAX,
+        2, UINT64_MAX - 1, 1
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET(15, UINT64_MAX, 0,
+        2, UINT64_MAX - 1, 0,
+        1, UINT64_MAX,
+        0
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET(16, 2, 0,
+        2, 1, 0,
+        1, 3,
+        1, 6
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET(17, UINT64_MAX, 0,
+        4, UINT64_MAX - 1, UINT64_MAX, UINT64_MAX, 2,
+        3, UINT64_MAX, UINT64_MAX, UINT64_MAX,
+        4, UINT64_MAX - 1, UINT64_MAX, UINT64_MAX, 1
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET(18, UINT64_MAX, 0,
+        4, UINT64_MAX - 1, UINT64_MAX, UINT64_MAX, 1,
+        3, UINT64_MAX, UINT64_MAX, UINT64_MAX,
+        4, UINT64_MAX - 1, UINT64_MAX, UINT64_MAX, 1
+    );
+    TEST_NUM_CMP_MUL_UINT_OFFSET(18, UINT64_MAX, 0,
+        4, UINT64_MAX - 1, UINT64_MAX, UINT64_MAX, 0,
+        3, UINT64_MAX, UINT64_MAX, UINT64_MAX,
+        0
+    );
+
+    #undef TEST_NUM_CMP_MUL_UINT_OFFSET
+
+    chunk_pool_clean();
+    assert(clu_mem_is_empty());
 }
 
 
@@ -1173,7 +1428,7 @@ void test_num_is_zero(bool show)
     #undef TEST_NUM_IS_ZERO
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_num_cmp(bool show)
@@ -1191,7 +1446,7 @@ void test_num_cmp(bool show)
         num_free(num[1]);                                   \
     }
 
-    TEST_NUM_CMP( 1, ==,   
+    TEST_NUM_CMP( 1, ==,
         0,
         0
     );
@@ -1229,17 +1484,17 @@ void test_num_cmp(bool show)
     );
     TEST_NUM_CMP(10, <,
         2, 0x8000000000000000, 0,
-        2, 0x8000000000000000, 0x7fffffffffffffff
+        2, 0x8000000000000000, UINT64_MAX >> 1
     );
     TEST_NUM_CMP(11, <,
         3, 0x8000000000000000, 0, 0,
-        3, 0x8000000000000000, 0x7fffffffffffffff, 0x8000000000000000
+        3, 0x8000000000000000, UINT64_MAX >> 1, 0x8000000000000000
     );
 
     #undef TEST_NUM_CMP
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 
@@ -1281,7 +1536,7 @@ void test_num_shl(bool show)
     #undef TEST_NUM_SHL
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_num_shr(bool show)
@@ -1317,11 +1572,19 @@ void test_num_shr(bool show)
         2, 1, 0,
         1, 1
     );
+    TEST_NUM_SHR(6, 65,
+        2, 1, 0,
+        0
+    );
+    TEST_NUM_SHR(7, 65,
+        2, 2, 0,
+        1, 1
+    );
 
     #undef TEST_NUM_SHR
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 
@@ -1384,7 +1647,7 @@ void test_num_add(bool show)
     #undef TEST_NUM_ADD
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_num_sub(bool show)
@@ -1435,11 +1698,16 @@ void test_num_sub(bool show)
         2, 1, 0,
         0
     );
+    TEST_NUM_SUB(8,
+        5, 1, 0, 0, 0, 0,
+        4, 0x8000000000000000, 0, 0, 0x8000000000000000,
+        4, UINT64_MAX >> 1, UINT64_MAX, UINT64_MAX, 0x8000000000000000
+    );
 
     #undef TEST_NUM_SUB
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_num_mul(bool show)
@@ -1534,7 +1802,7 @@ void test_num_mul(bool show)
     #undef TEST_NUM_MUL
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_num_sqr(bool show)
@@ -1586,7 +1854,7 @@ void test_num_sqr(bool show)
     #undef TEST_NUM_SQR
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 void test_num_div_mod(bool show)
@@ -1602,7 +1870,7 @@ void test_num_div_mod(bool show)
         assert(num_str(num_q, num[2]));                     \
         assert(num_str(num_r, num[3]));                     \
         chunk_pool_clean();                                 \
-        assert(clu_mem_empty());                            \
+        assert(clu_mem_is_empty());                            \
     }
 
     TEST_NUM_DIV_MOD( 1,
@@ -1668,8 +1936,8 @@ void test_num_div_mod(bool show)
     TEST_NUM_DIV_MOD(11,
         2, UINT64_MAX, 0,
         2, 1, UINT64_MAX,
-        1, 0x7fffffffffffffff,
-        2, 1, 0x7fffffffffffffff
+        1, UINT64_MAX >> 1,
+        2, 1, UINT64_MAX >> 1
     );
     TEST_NUM_DIV_MOD(12,
         2, 0xc929d7d593, 0xb7090a859117cfa4,
@@ -1731,11 +1999,45 @@ void test_num_div_mod(bool show)
         1, UINT64_MAX,
         3, 1, UINT64_MAX - 1, UINT64_MAX
     );
+    TEST_NUM_DIV_MOD(22,
+        3, UINT64_MAX, 0, 0,
+        2, UINT64_MAX, UINT64_MAX,
+        1, UINT64_MAX,
+        1, UINT64_MAX
+    );
+    TEST_NUM_DIV_MOD(23,
+        3, 2, 0, 0,
+        2, 2, UINT64_MAX,
+        1, 0xAAAAAAAAAAAAAAAA,
+        2, 2, 0xAAAAAAAAAAAAAAAA
+    );
+    TEST_NUM_DIV_MOD(24,
+        5, 1, 0, 0, 0, 0,
+        4, 0x8000000000000000, 0, 0, 0x8000000000000000,
+        1, 1,
+        4, UINT64_MAX >> 1, UINT64_MAX, UINT64_MAX, 0x8000000000000000
+    );
+    TEST_NUM_DIV_MOD(25,
+        6, 0x8000000000000000, 1, 0, 0x8000000000000000, 0, 0,
+        4, 0x8000000000000000, 0, 0, 0x8000000000000000,
+        3, 1, 0, 1,
+        4, UINT64_MAX >> 1, UINT64_MAX, UINT64_MAX, 0x8000000000000000
+    );
 
     #undef TEST_NUM_DIV_MOD
 
+    if(show) printf("\n\t\t%s 26\t\t", __func__);
+    num_t num_1 = num_create_immed(1, 1);
+    num_t num_2 = num_create_immed(0);
+    num_t num_q, num_r;
+    TEST_REVERT_OPEN
+    num_div_mod(&num_q, &num_r, num_1, num_2);
+    TEST_REVERT_CLOSE
+    num_free(num_1);
+    num_free(num_2);
+
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 
@@ -1757,7 +2059,6 @@ void test_num()
     test_num_insert(show);
     test_num_insert_head(show);
     test_num_remove_head(show);
-    test_num_insert_list(show);
     test_num_denormalize(show);
     test_num_normalize(show);
     test_num_break(show);
@@ -1767,6 +2068,7 @@ void test_num()
     test_num_wrap_hex(show);
     test_num_wrap_str(show);
     test_num_read_dec(show);
+    test_num_unwrap(show);
     test_num_copy(show);
 
     test_num_sub_uint_offset(show);
@@ -1777,6 +2079,9 @@ void test_num()
     test_num_sub_uint(show);
     test_num_mul_uint(show);
     test_num_add_mul_uint(show);
+
+    test_num_sub_offset(show);
+    test_num_cmp_mul_uint(show);
 
     test_num_is_zero(show);
     test_num_cmp(show);
@@ -1794,7 +2099,7 @@ void test_num()
     test_num_base_from(show);
 
     chunk_pool_clean();
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 

@@ -1,4 +1,4 @@
-FLAGS = -Wall -Werror -Wfatal-errors
+FLAGS = -Wall -Wextra -Werror -Wfatal-errors
 DEBUG_FILE = $(LIB_ROOT)/debug.o
 
 test: test.o

@@ -8,7 +8,7 @@ void test_example()
 {
     printf("\n%s\t\t", __func__);
 
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 

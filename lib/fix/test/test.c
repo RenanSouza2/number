@@ -10,7 +10,7 @@ void test_fixed_fn(bool show)
 
     if(show) printf("\n\t\t%s 1\t\t", __func__);
 
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 
@@ -23,7 +23,7 @@ void test_fixed()
 
     test_fixed_fn(show);
 
-    assert(clu_mem_empty());
+    assert(clu_mem_is_empty());
 }
 
 
