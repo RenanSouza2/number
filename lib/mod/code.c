@@ -129,8 +129,6 @@ mod_t mod_div(mod_t mod_1, mod_t mod_2)
     num_div_mod(&num_q, &num_r, num_copy(mod_1.num), num_copy(mod_2.num));
     if(num_is_zero(num_r))
     {
-        num_free(num_r);
-
         num_t num_t = mod_1.max;
         mod_free(mod_1);
         mod_free(mod_2);

@@ -1,6 +1,7 @@
 #include "../../num/debug.h"
 
 #include "../debug.h"
+#include "../../../utils/test.h"
 #include "../../../utils/assert.h"
 #include "../../../utils/clu/header.h"
 
@@ -209,6 +210,14 @@ void test_mod_div(bool show)
     mod_res = mod_div(mod_1, mod_2);
     assert(mod_immed(mod_res, 1, 5));
 
+    if(show) printf("\n%s\t%s 4", offset, __func__);
+    num_free(p);
+    p = num_wrap(29);
+    mod_1 = mod_wrap(1, p);
+    mod_2 = mod_wrap(9, p);
+    mod_res = mod_div(mod_1, mod_2);
+    assert(mod_immed(mod_res, 1, 13));
+
     num_free(p);
 
     chunk_pool_clean();
@@ -221,7 +230,7 @@ void test_mod()
 {
     printf("\n%s", __func__);
 
-    bool show = false;
+    bool show = true;
 
     test_mod_create(show);
     test_mod_wrap(show);
@@ -240,7 +249,9 @@ void test_mod()
 int main()
 {
     setbuf(stdout, NULL);
+    TEST_TIMEOUT_OPEN(5)
     test_mod();
+    TEST_REVERT_OPEN
     printf("\n\n\tTest successful\n\n");
     return 0;
 }

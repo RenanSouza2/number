@@ -1,5 +1,7 @@
 #include "../debug.h"
 #include "../../num/debug.h"
+
+#include "../../../utils/test.h"
 #include "../../../utils/assert.h"
 #include "../../../utils/clu/header.h"
 
@@ -594,7 +596,9 @@ void test_snum()
 int main()
 {
     setbuf(stdout, NULL);
+    TEST_TIMEOUT_OPEN(5)
     test_snum();
+    TEST_TIMEOUT_CLOSE
     printf("\n\n\tTest successful\n\n");
     return 0;
 }

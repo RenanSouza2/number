@@ -401,11 +401,11 @@ int main()
     srand(time(NULL));
 
     // num_generate(21, 2);
-    // time_1(14, 21);
+    // time_1(14, 22);
     // time_2(argc, argv, 19);
     // fibonacci_2(16, 23);
     // fibonacci();
-    sqrt_2();
+    // sqrt_2();
 
     // uint64_t pos = 1e1;
     // fix_t fix = fix_wrap(1, pos);
@@ -422,6 +422,12 @@ int main()
     // num_t num = num_sub(num_wrap(2), num_wrap(3));
     // printf("\nb");
     // num_display(num);
+
+    num_t num = num_wrap(9);
+    mod_t mod_1 = mod_wrap(1, num);
+    mod_t mod_2 = mod_wrap(9, num);
+    mod_1 = mod_div(mod_1, mod_2);
+    mod_display("mod", mod_1);
 
     printf("\n");
     return 0;

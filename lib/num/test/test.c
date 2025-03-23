@@ -1,7 +1,7 @@
 #include "../debug.h"
 #include "../../../utils/U64.h"
 #include "../../../utils/assert.h"
-#include "../../../utils/test_revert.h"
+#include "../../../utils/test.h"
 #include "../../../utils/clu/header.h"
 
 
@@ -2107,7 +2107,9 @@ void test_num()
 int main()
 {
     setbuf(stdout, NULL);
+    TEST_TIMEOUT_OPEN(5)
     test_num();
+    TEST_TIMEOUT_CLOSE
     printf("\n\n\tTest successful\n\n");
     return 0;
 }

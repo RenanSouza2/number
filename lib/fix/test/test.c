@@ -1,4 +1,5 @@
 #include "../debug.h"
+#include "../../../utils/test.h"
 #include "../../../utils/assert.h"
 #include "../../../utils/clu/header.h"
 
@@ -30,7 +31,9 @@ void test_fixed()
 int main()
 {
     setbuf(stdout, NULL);
+    TEST_TIMEOUT_OPEN(5)
     test_fixed();
+    TEST_TIMEOUT_CLOSE
     printf("\n\n\tTest successful\n\n");
     return 0;
 }
