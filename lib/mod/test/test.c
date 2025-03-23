@@ -230,7 +230,7 @@ void test_mod()
 {
     printf("\n%s", __func__);
 
-    bool show = true;
+    bool show = false;
 
     test_mod_create(show);
     test_mod_wrap(show);
@@ -251,7 +251,7 @@ int main()
     setbuf(stdout, NULL);
     TEST_TIMEOUT_OPEN(5)
     test_mod();
-    TEST_REVERT_OPEN
+    TEST_TIMEOUT_CLOSE
     printf("\n\n\tTest successful\n\n");
     return 0;
 }
