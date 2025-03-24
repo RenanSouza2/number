@@ -56,13 +56,13 @@
         {                                           \
             kill(pid_test, SIGKILL);                \
             printf("\n\n\tTest timeout\n\n");       \
-            return 1;                               \
+            exit(EXIT_FAILURE);                     \
         }                                           \
         kill(pid_timeout, SIGKILL);                 \
         if(status)                                  \
         {                                           \
             printf("\n\n\tTest faillure\n\n");      \
-            return 1;                               \
+            exit(EXIT_FAILURE);                     \
         }                                           \
     }
 
