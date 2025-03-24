@@ -401,7 +401,7 @@ int main()
     srand(time(NULL));
 
     // num_generate(21, 2);
-    // time_1(14, 22);
+    time_1(14, 17);
     // time_2(argc, argv, 19);
     // fibonacci_2(16, 23);
     // fibonacci();
@@ -423,11 +423,13 @@ int main()
     // printf("\nb");
     // num_display(num);
 
-    num_t num = num_wrap(29);
-    mod_t mod_1 = mod_wrap(1, num);
-    mod_t mod_2 = mod_wrap(9, num);
-    mod_1 = mod_div(mod_1, mod_2);
-    mod_display("mod", mod_1);
+    // num_t num = num_wrap(29);
+    // mod_t mod_1 = mod_wrap(1, num);
+    // mod_t mod_2 = mod_wrap(9, num);
+    // mod_1 = mod_div(mod_1, mod_2);
+    // mod_display("mod", mod_1);
+
+    // assert(clu_mem_is_empty());
 
     printf("\n");
     return 0;

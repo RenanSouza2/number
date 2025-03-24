@@ -67,6 +67,7 @@ mod_t mod_adjust(mod_t mod) // TODO test
 }
 
 
+
 bool mod_cmp(mod_t mod_1, mod_t mod_2) // TODO test
 {
     return num_cmp(mod_1.num, mod_2.num) == 0;
@@ -121,6 +122,7 @@ mod_t mod_exp(mod_t mod, uint64_t value) // TODO test
     mod_free(mod);
     return mod_res;
 }
+
 mod_t mod_div(mod_t mod_1, mod_t mod_2)
 {
     assert(!num_is_zero(mod_2.num));
