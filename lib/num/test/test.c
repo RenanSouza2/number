@@ -17,15 +17,15 @@ void test_uint_from_char(bool show)
         assert(uint64(res, UINT));                          \
     }
 
-    TEST_UINT_FROM_CHAR( 1, '0',  0);
-    TEST_UINT_FROM_CHAR( 2, '1',  1);
-    TEST_UINT_FROM_CHAR( 3, '9',  9);
-    TEST_UINT_FROM_CHAR( 4, 'a', 10);
-    TEST_UINT_FROM_CHAR( 5, 'b', 11);
-    TEST_UINT_FROM_CHAR( 6, 'f', 15);
-    TEST_UINT_FROM_CHAR( 7, 'A', 10);
-    TEST_UINT_FROM_CHAR( 8, 'B', 11);
-    TEST_UINT_FROM_CHAR( 9, 'F', 15);
+    TEST_UINT_FROM_CHAR(1, '0',  0);
+    TEST_UINT_FROM_CHAR(2, '1',  1);
+    TEST_UINT_FROM_CHAR(3, '9',  9);
+    TEST_UINT_FROM_CHAR(4, 'a', 10);
+    TEST_UINT_FROM_CHAR(5, 'b', 11);
+    TEST_UINT_FROM_CHAR(6, 'f', 15);
+    TEST_UINT_FROM_CHAR(7, 'A', 10);
+    TEST_UINT_FROM_CHAR(8, 'B', 11);
+    TEST_UINT_FROM_CHAR(9, 'F', 15);
 
     #undef TEST_UINT_FROM_CHAR
 
@@ -461,47 +461,47 @@ void test_num_break(bool show)
         assert(num_str(num_l, num[2]));                     \
     }
 
-    TEST_NUM_BREAK( 1, 0,
+    TEST_NUM_BREAK(1, 0,
         0,
         0,
         0
     );
-    TEST_NUM_BREAK( 2, 1,
+    TEST_NUM_BREAK(2, 1,
         0,
         0,
         0
     );
-    TEST_NUM_BREAK( 3, 0,
+    TEST_NUM_BREAK(3, 0,
         1, 1,
         1, 1,
         0
     );
-    TEST_NUM_BREAK( 4, 1,
-        1, 1,
-        0,
-        1, 1
-    );
-    TEST_NUM_BREAK( 5, 2,
+    TEST_NUM_BREAK(4, 1,
         1, 1,
         0,
         1, 1
     );
-    TEST_NUM_BREAK( 6, 0,
+    TEST_NUM_BREAK(5, 2,
+        1, 1,
+        0,
+        1, 1
+    );
+    TEST_NUM_BREAK(6, 0,
         2, 1, 2,
         2, 1, 2,
         0
     );
-    TEST_NUM_BREAK( 7, 1,
+    TEST_NUM_BREAK(7, 1,
         2, 1, 2,
         1, 1,
         1, 2
     );
-    TEST_NUM_BREAK( 8, 2,
+    TEST_NUM_BREAK(8, 2,
         2, 1, 2,
         0,
         2, 1, 2
     );
-    TEST_NUM_BREAK( 9, 3,
+    TEST_NUM_BREAK(9, 3,
         2, 1, 2,
         0,
         2, 1, 2
@@ -837,35 +837,35 @@ void test_num_sub_uint_offset(bool show)
         assert(res == RES);                                         \
     }
 
-    TEST_NUM_SUB_UINT_OFFSET( 1, 0, 1, false,
+    TEST_NUM_SUB_UINT_OFFSET(1, 0, 1, false,
         2, 2, 3,
         2, 2, 2
     );
-    TEST_NUM_SUB_UINT_OFFSET( 2, 1, 1, false,
+    TEST_NUM_SUB_UINT_OFFSET(2, 1, 1, false,
         2, 2, 3,
         2, 1, 3
     );
-    TEST_NUM_SUB_UINT_OFFSET( 3, 1, 1, true,
+    TEST_NUM_SUB_UINT_OFFSET(3, 1, 1, true,
         2, 1, 3,
         1, 3
     )
-    TEST_NUM_SUB_UINT_OFFSET( 4, 1, 1, true,
+    TEST_NUM_SUB_UINT_OFFSET(4, 1, 1, true,
         2, 1, 0,
         1, 0
     );
-    TEST_NUM_SUB_UINT_OFFSET( 5, 2, 1, true,
+    TEST_NUM_SUB_UINT_OFFSET(5, 2, 1, true,
         3, 1, 0, 1,
         2, 0, 1
     );
-    TEST_NUM_SUB_UINT_OFFSET( 6, 1, 1, false,
+    TEST_NUM_SUB_UINT_OFFSET(6, 1, 1, false,
         3, 1, 0, 1,
         2, UINT64_MAX, 1
     );
-    TEST_NUM_SUB_UINT_OFFSET( 7, 1, 1, true,
+    TEST_NUM_SUB_UINT_OFFSET(7, 1, 1, true,
         2, 1, 0,
         1, 0
     );
-    TEST_NUM_SUB_UINT_OFFSET( 8, 0, 0, false,
+    TEST_NUM_SUB_UINT_OFFSET(8, 0, 0, false,
         0,
         0
     );
@@ -883,9 +883,15 @@ void test_num_sub_uint_offset(bool show)
         num_free(num);                                          \
     }
 
-    TEST_NUM_SUB_UINT_OFFSET( 9, 0, 1, 0);
-    TEST_NUM_SUB_UINT_OFFSET(10, 0, 3, 1, 2);
-    TEST_NUM_SUB_UINT_OFFSET(11, 1, 1, 1, 2);
+    TEST_NUM_SUB_UINT_OFFSET(9, 0, 1, 
+        0
+    );
+    TEST_NUM_SUB_UINT_OFFSET(10, 0, 3, 
+        1, 2
+    );
+    TEST_NUM_SUB_UINT_OFFSET(11, 1, 1, 
+        1, 2
+    );
 
     #undef TEST_NUM_SUB_UINT_OFFSET
 
@@ -1304,47 +1310,47 @@ void test_num_cmp_mul_uint(bool show)
         num_free(num[1]);                                                       \
     }
 
-    TEST_NUM_CMP_MUL_UINT_OFFSET( 1, 2, 0,
+    TEST_NUM_CMP_MUL_UINT_OFFSET(1, 2, 0,
         1, 7,
         1, 3,
         1, 6
     );
-    TEST_NUM_CMP_MUL_UINT_OFFSET( 2, 2, 0,
+    TEST_NUM_CMP_MUL_UINT_OFFSET(2, 2, 0,
         1, 6,
         1, 3,
         1, 6
     );
-    TEST_NUM_CMP_MUL_UINT_OFFSET( 3, 2, 0,
+    TEST_NUM_CMP_MUL_UINT_OFFSET(3, 2, 0,
         1, 5,
         1, 3,
         0
     );
-    TEST_NUM_CMP_MUL_UINT_OFFSET( 4, 5, 0,
+    TEST_NUM_CMP_MUL_UINT_OFFSET(4, 5, 0,
         2, 16, 20,
         2, 3, 4,
         2, 15, 20
     );
-    TEST_NUM_CMP_MUL_UINT_OFFSET( 5, 5, 0,
+    TEST_NUM_CMP_MUL_UINT_OFFSET(5, 5, 0,
         2, 15, 20,
         2, 3, 4,
         2, 15, 20
     );
-    TEST_NUM_CMP_MUL_UINT_OFFSET( 6, 5, 0,
+    TEST_NUM_CMP_MUL_UINT_OFFSET(6, 5, 0,
         2, 14, 20,
         2, 3, 4,
         0
     );
-    TEST_NUM_CMP_MUL_UINT_OFFSET( 7, 5, 0,
+    TEST_NUM_CMP_MUL_UINT_OFFSET(7, 5, 0,
         2, 15, 21,
         2, 3, 4,
         2, 15, 20
     );
-    TEST_NUM_CMP_MUL_UINT_OFFSET( 8, 5, 0,
+    TEST_NUM_CMP_MUL_UINT_OFFSET(8, 5, 0,
         2, 15, 20,
         2, 3, 4,
         2, 15, 20
     );
-    TEST_NUM_CMP_MUL_UINT_OFFSET( 9, 5, 0,
+    TEST_NUM_CMP_MUL_UINT_OFFSET(9, 5, 0,
         2, 15, 19,
         2, 3, 4,
         0
@@ -1446,39 +1452,39 @@ void test_num_cmp(bool show)
         num_free(num[1]);                                   \
     }
 
-    TEST_NUM_CMP( 1, ==,
+    TEST_NUM_CMP(1, ==,
         0,
         0
     );
-    TEST_NUM_CMP( 2, >,
+    TEST_NUM_CMP(2, >,
         1, 1,
         0
     );
-    TEST_NUM_CMP( 3, <,
+    TEST_NUM_CMP(3, <,
         0,
         1, 1
     );
-    TEST_NUM_CMP( 4, <,
+    TEST_NUM_CMP(4, <,
         1, 1,
         1, 2
     );
-    TEST_NUM_CMP( 5, ==,
+    TEST_NUM_CMP(5, ==,
         1, 2,
         1, 2
     );
-    TEST_NUM_CMP( 6, >,
+    TEST_NUM_CMP(6, >,
         1, 3,
         1, 2
     );
-    TEST_NUM_CMP( 7, >,
+    TEST_NUM_CMP(7, >,
         2, 2, 0,
         2, 1, 0
     );
-    TEST_NUM_CMP( 8, ==,
+    TEST_NUM_CMP(8, ==,
         2, 2, 0,
         2, 2, 0
     );
-    TEST_NUM_CMP( 9, <,
+    TEST_NUM_CMP(9, <,
         2, 2, 0,
         2, 3, 0
     );
@@ -1520,15 +1526,19 @@ void test_num_shl(bool show)
         0,
         0
     );
-    TEST_NUM_SHL(3, 1,
+    TEST_NUM_SHL(3, 64,
+        0,
+        0
+    );
+    TEST_NUM_SHL(4, 1,
         1, 1,
         1, 2
     );
-    TEST_NUM_SHL(4, 64,
+    TEST_NUM_SHL(5, 64,
         1, 1,
         2, 1, 0
     );
-    TEST_NUM_SHL(5, 65,
+    TEST_NUM_SHL(6, 65,
         1, 1,
         2, 2, 0
     );
@@ -1723,47 +1733,47 @@ void test_num_mul(bool show)
         assert(num_str(num[0], num[2]));                \
     }
 
-    TEST_NUM_MUL( 1,
+    TEST_NUM_MUL(1,
         0,
         0,
         0
     );
-    TEST_NUM_MUL( 2,
+    TEST_NUM_MUL(2,
         1, 1,
         0,
         0
     );
-    TEST_NUM_MUL( 3,
+    TEST_NUM_MUL(3,
         0,
         1, 1,
         0
     );
-    TEST_NUM_MUL( 4,
+    TEST_NUM_MUL(4,
         1, 2,
         1, 3,
         1, 6
     );
-    TEST_NUM_MUL( 5,
+    TEST_NUM_MUL(5,
         1, UINT64_MAX,
         1, UINT64_MAX,
         2, UINT64_MAX - 1, 1
     );
-    TEST_NUM_MUL( 6,
+    TEST_NUM_MUL(6,
         2, 2, 3,
         1, 4,
         2, 8, 12
     );
-    TEST_NUM_MUL( 7,
+    TEST_NUM_MUL(7,
         1, 2,
         2, 3, 4,
         2, 6, 8
     );
-    TEST_NUM_MUL( 8,
+    TEST_NUM_MUL(8,
         2, 2, 3,
         2, 4, 5,
         3, 8, 22, 15
     );
-    TEST_NUM_MUL( 9,
+    TEST_NUM_MUL(9,
         2, 1, 0,
         1, 1,
         2, 1, 0
@@ -1873,55 +1883,55 @@ void test_num_div_mod(bool show)
         assert(clu_mem_is_empty());                            \
     }
 
-    TEST_NUM_DIV_MOD( 1,
+    TEST_NUM_DIV_MOD(1,
         0,
         1, 1,
         0,
         0
     );
-    TEST_NUM_DIV_MOD( 2,
+    TEST_NUM_DIV_MOD(2,
         1, 4,
         1, 2,
         1, 2,
         0
     );
-    TEST_NUM_DIV_MOD( 3,
+    TEST_NUM_DIV_MOD(3,
         1, 5,
         1, 2,
         1, 2,
         1, 1
     );
-    TEST_NUM_DIV_MOD( 4,
+    TEST_NUM_DIV_MOD(4,
         1, 5,
         1, 5,
         1, 1,
         0
     );
-    TEST_NUM_DIV_MOD( 5,
+    TEST_NUM_DIV_MOD(5,
         1, 9,
         1, 3,
         1, 3,
         0
     );
-    TEST_NUM_DIV_MOD( 6,
+    TEST_NUM_DIV_MOD(6,
         3, 1, 0, 0,
         2, 1, 0,
         2, 1, 0,
         0
     );
-    TEST_NUM_DIV_MOD( 7,
+    TEST_NUM_DIV_MOD(7,
         1, 1,
         2, 1, 0,
         0,
         1, 1
     );
-    TEST_NUM_DIV_MOD( 8,
+    TEST_NUM_DIV_MOD(8,
         2, 4, UINT64_MAX,
         2, 2, 0,
         1, 2,
         1, UINT64_MAX
     );
-    TEST_NUM_DIV_MOD( 9,
+    TEST_NUM_DIV_MOD(9,
         2, 4, 0,
         2, 2, UINT64_MAX,
         1, 1,

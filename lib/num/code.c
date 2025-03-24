@@ -1046,6 +1046,9 @@ num_t num_shl(num_t num, uint64_t bits)
 {
     CLU_IS_SAFE(num.head);
 
+    if(num.count == 0)
+        return num;
+
     for(; bits > 63; bits -= 64)
         num_insert_head(&num, 0);
 
@@ -1055,6 +1058,9 @@ num_t num_shl(num_t num, uint64_t bits)
 num_t num_shr(num_t num, uint64_t bits)
 {
     CLU_IS_SAFE(num.head);
+
+    if(num.count == 0)
+        return num;
 
     for(; bits > 63 && num.count; bits -= 64)
         num = num_remove_head(num);

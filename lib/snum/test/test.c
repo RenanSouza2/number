@@ -99,25 +99,20 @@ void test_snum_wrap(bool show)
 {
     printf("\n\t%s\t\t", __func__);
 
-    if(show) printf("\n\t\t%s 1\t\t", __func__);
-    snum_t snum = snum_wrap(0);
-    assert(snum_immed(snum, ZERO, 0));
+    #define TEST_SNUM_WRAP(TAG, VALUE, ...)                 \
+    {                                                       \
+        if(show) printf("\n\t\t%s %d\t\t", __func__, TAG);  \
+        snum_t snum = snum_wrap(VALUE);                     \
+        assert(snum_immed(snum, __VA_ARGS__));              \
+    }
 
-    if(show) printf("\n\t\t%s 2\t\t", __func__);
-    snum = snum_wrap(1);
-    assert(snum_immed(snum, POSITIVE, 1, 1));
+    TEST_SNUM_WRAP(1,  0, ZERO, 0);
+    TEST_SNUM_WRAP(2,  1, POSITIVE, 1, 1);
+    TEST_SNUM_WRAP(3, -1, NEGATIVE, 1, 1);
+    TEST_SNUM_WRAP(4, INT64_MAX, POSITIVE, 1, INT64_MAX);
+    TEST_SNUM_WRAP(5, INT64_MIN, NEGATIVE, 1, INT64_MIN);
 
-    if(show) printf("\n\t\t%s 3\t\t", __func__);
-    snum = snum_wrap(-1);
-    assert(snum_immed(snum, NEGATIVE, 1, 1));
-
-    if(show) printf("\n\t\t%s 4\t\t", __func__);
-    snum = snum_wrap(INT64_MAX);
-    assert(snum_immed(snum, POSITIVE, 1, INT64_MAX));
-
-    if(show) printf("\n\t\t%s 5\t\t", __func__);
-    snum = snum_wrap(INT64_MIN);
-    assert(snum_immed(snum, NEGATIVE, 1, INT64_MIN));
+    #undef TEST_SNUM_WRAP
 
     chunk_pool_clean();
     assert(clu_mem_is_empty());
@@ -169,14 +164,14 @@ void test_snum_copy(bool show)
 {
     printf("\n\t%s\t\t", __func__);
 
-    #define TEST_SIG_COPY(TAG, ...)                                 \
-        {                                                           \
-            if(show) printf("\n\t\t%s  " #TAG "\t\t", __func__);    \
-            snum_t snum = snum_create_immed(__VA_ARGS__);              \
-            snum_t snum_res = snum_copy(snum);                          \
-            assert(snum_immed(snum_res, __VA_ARGS__))                 \
-            snum_free(snum);                                          \
-        }
+    #define TEST_SIG_COPY(TAG, ...)                             \
+    {                                                           \
+        if(show) printf("\n\t\t%s  " #TAG "\t\t", __func__);    \
+        snum_t snum = snum_create_immed(__VA_ARGS__);           \
+        snum_t snum_res = snum_copy(snum);                      \
+        assert(snum_immed(snum_res, __VA_ARGS__))               \
+        snum_free(snum);                                        \
+    }
 
     TEST_SIG_COPY(1, POSITIVE, 0);
 
@@ -198,14 +193,14 @@ void test_snum_is_zero(bool show)
 {
     printf("\n\t%s\t\t", __func__);
 
-    #define TEST_SIG_IS_ZERO(TAG, NUM, RES)                     \
-        {                                                       \
-            if(show) printf("\n\t\t%s %d\t\t", __func__, TAG); \
-            snum_t snum = snum_wrap(NUM);                          \
-            int64_t res = snum_is_zero(snum);                     \
-            assert(uint64(res, RES));                           \
-            snum_free(snum);                                      \
-        }
+    #define TEST_SIG_IS_ZERO(TAG, NUM, RES)                 \
+    {                                                       \
+        if(show) printf("\n\t\t%s %d\t\t", __func__, TAG);  \
+        snum_t snum = snum_wrap(NUM);                       \
+        int64_t res = snum_is_zero(snum);                   \
+        assert(uint64(res, RES));                           \
+        snum_free(snum);                                    \
+    }
 
     TEST_SIG_IS_ZERO(1,  1, false);
     TEST_SIG_IS_ZERO(2,  0, true);
@@ -221,16 +216,16 @@ void test_snum_cmp(bool show)
 {
     printf("\n\t%s\t\t", __func__);
 
-    #define TEST_SIG_CMP(TAG, NUM_1, NUM_2, RES)                    \
-        {                                                           \
-            if(show) printf("\n\t\t%s %2d\t\t", __func__, TAG);     \
-            snum_t snum_1 = snum_wrap(NUM_1);                          \
-            snum_t snum_2 = snum_wrap(NUM_2);                          \
-            int64_t res = snum_cmp(snum_1, snum_2);                    \
-            assert(int64(res, RES));                                \
-            snum_free(snum_1);                                        \
-            snum_free(snum_2);                                        \
-        }
+    #define TEST_SIG_CMP(TAG, NUM_1, NUM_2, RES)            \
+    {                                                       \
+        if(show) printf("\n\t\t%s %2d\t\t", __func__, TAG); \
+        snum_t snum_1 = snum_wrap(NUM_1);                   \
+        snum_t snum_2 = snum_wrap(NUM_2);                   \
+        int64_t res = snum_cmp(snum_1, snum_2);             \
+        assert(int64(res, RES));                            \
+        snum_free(snum_1);                                  \
+        snum_free(snum_2);                                  \
+    }
 
     TEST_SIG_CMP( 1,  2,  3, -1);
     TEST_SIG_CMP( 2,  2,  2,  0);
@@ -264,40 +259,53 @@ void test_snum_shl(bool show)
 {
     printf("\n\t%s\t\t", __func__);
 
-    if(show) printf("\n\t\t%s 1\t\t", __func__);
-    snum_t snum = snum_create_immed(ZERO, 0);
-    snum = snum_shl(snum, 1);
-    assert(snum_immed(snum, ZERO, 0));
+    #define TEST_SNUM_SHL(TAG, BITS, ...)                   \
+    {                                                       \
+        snum_t snum[2];                                     \
+        if(show) printf("\n\t\t%s %2d\t\t", __func__, TAG); \
+        snum_create_vec_immed(snum, 2, __VA_ARGS__);        \
+        snum[0] = snum_shl(snum[0], BITS);                  \
+        assert(snum_str(snum[0], snum[1]));                 \
+    }
 
-    if(show) printf("\n\t\t%s 2\t\t", __func__);
-    snum = snum_create_immed(POSITIVE, 1, 1);
-    snum = snum_shl(snum, 1);
-    assert(snum_immed(snum, POSITIVE, 1, 2));
+    TEST_SNUM_SHL(1, 0,
+        ZERO, 0,
+        ZERO, 0
+    );
+    TEST_SNUM_SHL(2, 1,
+        ZERO, 0,
+        ZERO, 0
+    );
+    TEST_SNUM_SHL(3, 64,
+        ZERO, 0,
+        ZERO, 0
+    );
+    TEST_SNUM_SHL(4, 65,
+        ZERO, 0,
+        ZERO, 0
+    );
+    TEST_SNUM_SHL(5, 0,
+        POSITIVE, 1, 1,
+        POSITIVE, 1, 1
+    );
+    TEST_SNUM_SHL(6, 1,
+        POSITIVE, 1, 1,
+        POSITIVE, 1, 2
+    );
+    TEST_SNUM_SHL(7, 63,
+        POSITIVE, 1, 1,
+        POSITIVE, 1, 0x8000000000000000
+    );
+    TEST_SNUM_SHL(8, 64,
+        POSITIVE, 1, 1,
+        POSITIVE, 2, 1, 0
+    );
+    TEST_SNUM_SHL(9, 65,
+        POSITIVE, 1, 1,
+        POSITIVE, 2, 2, 0
+    );
 
-    if(show) printf("\n\t\t%s 3\t\t", __func__);
-    snum = snum_create_immed(POSITIVE, 1, 1);
-    snum = snum_shl(snum, 64);
-    assert(snum_immed(snum, POSITIVE, 2, 1, 0));
-
-    if(show) printf("\n\t\t%s 4\t\t", __func__);
-    snum = snum_create_immed(POSITIVE, 1, 1);
-    snum = snum_shl(snum, 65);
-    assert(snum_immed(snum, POSITIVE, 2, 2, 0));
-
-    if(show) printf("\n\t\t%s 5\t\t", __func__);
-    snum = snum_create_immed(NEGATIVE, 1, 1);
-    snum = snum_shl(snum, 1);
-    assert(snum_immed(snum, NEGATIVE, 1, 2));
-
-    if(show) printf("\n\t\t%s 6\t\t", __func__);
-    snum = snum_create_immed(NEGATIVE, 1, 1);
-    snum = snum_shl(snum, 64);
-    assert(snum_immed(snum, NEGATIVE, 2, 1, 0));
-
-    if(show) printf("\n\t\t%s 7\t\t", __func__);
-    snum = snum_create_immed(NEGATIVE, 1, 1);
-    snum = snum_shl(snum, 65);
-    assert(snum_immed(snum, NEGATIVE, 2, 2, 0));
+    #undef TEST_SNUM_SHL
 
     chunk_pool_clean();
     assert(clu_mem_is_empty());
@@ -307,50 +315,65 @@ void test_snum_shr(bool show)
 {
     printf("\n\t%s\t\t", __func__);
 
-    if(show) printf("\n\t\t%s 1\t\t", __func__);
-    snum_t snum = snum_create_immed(ZERO, 0);
-    snum = snum_shr(snum, 1);
-    assert(snum_immed(snum, ZERO, 0));
+    #define TEST_SNUM_SHR(TAG, BITS, ...)                   \
+    {                                                       \
+        snum_t snum[2];                                     \
+        if(show) printf("\n\t\t%s %2d\t\t", __func__, TAG); \
+        snum_create_vec_immed(snum, 2, __VA_ARGS__);        \
+        snum[0] = snum_shr(snum[0], 1);                     \
+        assert(snum_str(snum[0], snum[1]));                 \
+    }
 
-    if(show) printf("\n\t\t%s 2\t\t", __func__);
-    snum = snum_create_immed(POSITIVE, 1, 1);
-    snum = snum_shr(snum, 1);
-    assert(snum_immed(snum, ZERO, 0));
+    TEST_SNUM_SHR(1, 0,
+        ZERO, 0,
+        ZERO, 0
+    );
+    TEST_SNUM_SHR(2, 1,
+        ZERO, 0,
+        ZERO, 0
+    );
+    TEST_SNUM_SHR(3, 63,
+        ZERO, 0,
+        ZERO, 0
+    );
+    TEST_SNUM_SHR(4, 64,
+        ZERO, 0,
+        ZERO, 0
+    );
+    TEST_SNUM_SHR(5, 65,
+        ZERO, 0,
+        ZERO, 0
+    );
+    TEST_SNUM_SHR(6, 0,
+        POSITIVE, 1, 1,
+        POSITIVE, 1, 1
+    );
+    TEST_SNUM_SHR(7, 1,
+        POSITIVE, 1, 1,
+        ZERO, 0
+    );
+    TEST_SNUM_SHR(8, 0,
+        POSITIVE, 2, 2, 0,
+        POSITIVE, 2, 2, 0
+    );
+    TEST_SNUM_SHR(9, 1,
+        POSITIVE, 2, 2, 0,
+        POSITIVE, 2, 1, 0
+    );
+    TEST_SNUM_SHR(10, 2,
+        POSITIVE, 2, 2, 0,
+        POSITIVE, 1, 0x8000000000000000
+    );
+    TEST_SNUM_SHR(11, 64,
+        POSITIVE, 2, 2, 0,
+        POSITIVE, 1, 2
+    );
+    TEST_SNUM_SHR(11, 65,
+        POSITIVE, 2, 2, 0,
+        POSITIVE, 1, 1
+    );
 
-    if(show) printf("\n\t\t%s 3\t\t", __func__);
-    snum = snum_create_immed(POSITIVE, 2, 2, 0);
-    snum = snum_shr(snum, 1);
-    assert(snum_immed(snum, POSITIVE, 2, 1, 0));
-
-    if(show) printf("\n\t\t%s 4\t\t", __func__);
-    snum = snum_create_immed(POSITIVE, 2, 2, 0);
-    snum = snum_shr(snum, 64);
-    assert(snum_immed(snum, POSITIVE, 1, 2));
-
-    if(show) printf("\n\t\t%s 5\t\t", __func__);
-    snum = snum_create_immed(POSITIVE, 2, 2, 0);
-    snum = snum_shr(snum, 65);
-    assert(snum_immed(snum, POSITIVE, 1, 1));
-
-    if(show) printf("\n\t\t%s 6\t\t", __func__);
-    snum = snum_create_immed(NEGATIVE, 1, 1);
-    snum = snum_shr(snum, 1);
-    assert(snum_immed(snum, ZERO, 0));
-
-    if(show) printf("\n\t\t%s 7\t\t", __func__);
-    snum = snum_create_immed(NEGATIVE, 2, 2, 0);
-    snum = snum_shr(snum, 1);
-    assert(snum_immed(snum, NEGATIVE, 2, 1, 0));
-
-    if(show) printf("\n\t\t%s 8\t\t", __func__);
-    snum = snum_create_immed(NEGATIVE, 2, 2, 0);
-    snum = snum_shr(snum, 64);
-    assert(snum_immed(snum, NEGATIVE, 1, 2));
-
-    if(show) printf("\n\t\t%s 9\t\t", __func__);
-    snum = snum_create_immed(NEGATIVE, 2, 2, 0);
-    snum = snum_shr(snum, 65);
-    assert(snum_immed(snum, NEGATIVE, 1, 1));
+    #undef TEST_SNUM_SHR
 
     chunk_pool_clean();
     assert(clu_mem_is_empty());
@@ -363,12 +386,12 @@ void test_snum_opposite(bool show)
     printf("\n\t%s\t\t", __func__);
 
     #define TEST_SIG_OPPOSITE(TAG, SIGNAL_IN, SIGNAL_OUT, ...)      \
-        {                                                           \
-            if(show) printf("\n\t\t%s %d\t\t", __func__, TAG);      \
-            snum_t snum = snum_create_immed(SIGNAL_IN, __VA_ARGS__);   \
-            snum = snum_opposite(snum);                                \
-            assert(snum_immed(snum, SIGNAL_OUT, __VA_ARGS__));        \
-        }
+    {                                                               \
+        if(show) printf("\n\t\t%s %d\t\t", __func__, TAG);          \
+        snum_t snum = snum_create_immed(SIGNAL_IN, __VA_ARGS__);    \
+        snum = snum_opposite(snum);                                 \
+        assert(snum_immed(snum, SIGNAL_OUT, __VA_ARGS__));          \
+    }
 
     TEST_SIG_OPPOSITE(1, ZERO, ZERO, 0);
     TEST_SIG_OPPOSITE(2, POSITIVE, NEGATIVE, 1, 1);
@@ -566,7 +589,7 @@ void test_snum()
 {
     printf("\n%s\t\t", __func__);
 
-    bool show = false;
+    bool show = true;
 
     test_snum_create(show);
     test_snum_create_immed(show);
