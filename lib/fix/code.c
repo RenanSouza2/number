@@ -28,12 +28,12 @@ fix_t fix_create_immed(uint64_t pos, ...)
 void fix_display_dec(char tag[], fix_t fix)
 {
     CLU_IS_SAFE(fix.snum.num.head);
-    
+
     printf("\n%s: %c\t", tag, fix.snum.signal == NEGATIVE ? '-' : '+');
 
     num_t num_hi, num_lo;
     num_break(&num_hi, &num_lo, num_copy(fix.snum.num), fix.pos);
-    
+
     num_display_dec(num_hi);
     num_free(num_hi);
 
@@ -148,7 +148,7 @@ fix_t fix_base_to(fix_t fix, uint64_t base) // TODO test
     num_break(&num_hi, &num_lo, fix.snum.num, fix.pos);
 
     num_hi = num_base_to(num_hi, base);
-    
+
     uint64_t pos = fix.pos;
     fix.pos = 0;
     num_t num_u = num_wrap(1);

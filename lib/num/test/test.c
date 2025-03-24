@@ -883,13 +883,13 @@ void test_num_sub_uint_offset(bool show)
         num_free(num);                                          \
     }
 
-    TEST_NUM_SUB_UINT_OFFSET(9, 0, 1, 
+    TEST_NUM_SUB_UINT_OFFSET(9, 0, 1,
         0
     );
-    TEST_NUM_SUB_UINT_OFFSET(10, 0, 3, 
+    TEST_NUM_SUB_UINT_OFFSET(10, 0, 3,
         1, 2
     );
-    TEST_NUM_SUB_UINT_OFFSET(11, 1, 1, 
+    TEST_NUM_SUB_UINT_OFFSET(11, 1, 1,
         1, 2
     );
 

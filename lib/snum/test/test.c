@@ -499,17 +499,17 @@ void test_snum_sub(bool show)
         assert(snum_str(snum[0], snum[2]));                 \
     }
 
-    TESTS_SNUM_SUB(1, 
+    TESTS_SNUM_SUB(1,
         POSITIVE, 1, 3,
         POSITIVE, 1, 1,
         POSITIVE, 1, 2
     );
-    TESTS_SNUM_SUB(2, 
+    TESTS_SNUM_SUB(2,
         POSITIVE, 1, 3,
         ZERO, 0,
         POSITIVE, 1, 3
     );
-    TESTS_SNUM_SUB(1, 
+    TESTS_SNUM_SUB(1,
         POSITIVE, 1, 3,
         NEGATIVE, 1, 1,
         POSITIVE, 1, 4
@@ -534,7 +534,7 @@ void test_snum_mul(bool show)
         assert(snum_str(snum[0], snum[2]));                 \
     }
 
-    TEST_SNUM_MUL(1, 
+    TEST_SNUM_MUL(1,
         POSITIVE, 1, 2,
         POSITIVE, 1, 3,
         POSITIVE, 1, 6
@@ -559,17 +559,17 @@ void test_snum_mul(bool show)
         NEGATIVE, 1, 2,
         ZERO, 0
     );
-    TEST_SNUM_MUL(6, 
+    TEST_SNUM_MUL(6,
         POSITIVE, 1, 2,
         NEGATIVE, 1, 3,
         NEGATIVE, 1, 6
     );
-    TEST_SNUM_MUL(7, 
+    TEST_SNUM_MUL(7,
         NEGATIVE, 1, 2,
         POSITIVE, 1, 3,
         NEGATIVE, 1, 6
     );
-    TEST_SNUM_MUL(8, 
+    TEST_SNUM_MUL(8,
         NEGATIVE, 1, 2,
         NEGATIVE, 1, 3,
         POSITIVE, 1, 6
@@ -584,7 +584,7 @@ void test_snum_mul(bool show)
 void test_snum_div(bool show)
 {
     printf("\n\t%s\t\t", __func__);
-    
+
     #define TEST_SNUM_DIV(TAG, ...)                         \
     {                                                       \
         snum_t snum[3];                                     \
