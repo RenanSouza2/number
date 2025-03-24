@@ -8,20 +8,25 @@
 
 #include "./assert.h"
 
-#define TEST_REVERT_OPEN                            \
-    {                                               \
-        int pid = fork();                           \
-        assert(pid >= 0);                           \
-        if(pid)                                     \
-        {                                           \
-            int status;                             \
-            assert(waitpid(pid, &status, 0) >= 0);  \
-            assert(status != EXIT_SUCCESS);         \
-        }                                           \
-        else                                        \
-        {                                           \
-            freopen("/dev/null", "w", stdout);      \
-            freopen("/dev/null", "w", stderr);      \
+#define TEST_REVERT_OPEN                                        \
+    {                                                           \
+        int pid = fork();                                       \
+        assert(pid >= 0);                                       \
+        if(pid)                                                 \
+        {                                                       \
+            int status;                                         \
+            assert(waitpid(pid, &status, 0) >= 0);              \
+            assert(status != EXIT_SUCCESS);                     \
+        }                                                       \
+        else                                                    \
+        {                                                       \
+            if(                                                 \
+                freopen("/dev/null", "w", stdout) == NULL ||    \
+                freopen("/dev/null", "w", stderr) == NULL       \
+            )                                                   \
+            {                                                   \
+                exit(EXIT_SUCCESS);                             \
+            }
 
 #define TEST_REVERT_CLOSE       \
             exit(EXIT_SUCCESS); \
@@ -51,13 +56,13 @@
         {                                           \
             kill(pid_test, SIGKILL);                \
             printf("\n\n\tTest timeout\n\n");       \
-            return 1;                               \
+            exit(EXIT_FAILURE);                     \
         }                                           \
         kill(pid_timeout, SIGKILL);                 \
         if(status)                                  \
         {                                           \
             printf("\n\n\tTest faillure\n\n");      \
-            return 1;                               \
+            exit(EXIT_FAILURE);                     \
         }                                           \
     }
 
