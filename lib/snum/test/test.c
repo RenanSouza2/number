@@ -320,7 +320,7 @@ void test_snum_shr(bool show)
         snum_t snum[2];                                     \
         if(show) printf("\n\t\t%s %2d\t\t", __func__, TAG); \
         snum_create_vec_immed(snum, 2, __VA_ARGS__);        \
-        snum[0] = snum_shr(snum[0], 1);                     \
+        snum[0] = snum_shr(snum[0], BITS);                  \
         assert(snum_str(snum[0], snum[1]));                 \
     }
 
