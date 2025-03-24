@@ -357,7 +357,7 @@ void sqrt_2()
 
     for(uint64_t i=0; ; i++)
     {
-        printf("\ni: %lu", i);
+        printf("\ni: " U64P() "", i);
         // fprintf(stderr, "\ni: %lu", i);
 
         fix_x = fix_step(fix_x, 1);
@@ -381,7 +381,7 @@ void sqrt_2()
         printf("\n\n");
         fix_display_full("hex", fix_x);
         fix_display_dec("res", fix_x);
-        printf("\n\npos: %lu", pos * 2);
+        printf("\n\npos: " U64P() "", pos * 2);
 
         exit(EXIT_SUCCESS);
     }
@@ -423,7 +423,7 @@ int main()
     // printf("\nb");
     // num_display(num);
 
-    num_t num = num_wrap(9);
+    num_t num = num_wrap(29);
     mod_t mod_1 = mod_wrap(1, num);
     mod_t mod_2 = mod_wrap(9, num);
     mod_1 = mod_div(mod_1, mod_2);

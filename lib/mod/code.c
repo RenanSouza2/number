@@ -36,7 +36,7 @@ mod_t mod_create(num_t num, num_t max)
 {
     return (mod_t)
     {
-        .num = num,
+        .num = num_mod(num, num_copy(max)),
         .max = max
     };
 }

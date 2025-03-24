@@ -24,6 +24,16 @@ void test_mod_create(bool show)
     mod = mod_create(num, p);
     assert(mod_immed(mod, 1, 1));
 
+    if(show) printf("\n%s\t%s 3\t\t", offset, __func__);
+    num = num_create_immed(1, 7);
+    mod = mod_create(num, p);
+    assert(mod_immed(mod, 0));
+
+    if(show) printf("\n%s\t%s 4\t\t", offset, __func__);
+    num = num_create_immed(1, 8);
+    mod = mod_create(num, p);
+    assert(mod_immed(mod, 1, 1));
+
     num_free(p);
 
     chunk_pool_clean();
