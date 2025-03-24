@@ -1831,7 +1831,7 @@ void test_num_sqr(bool show)
         1, 4
     );
     TEST_NUM_SQR(4,
-        1, UINT32_MAX,
+        1, (uint64_t)(UINT32_MAX),
         1, 0xfffffffe00000001
     );
     TEST_NUM_SQR(5,

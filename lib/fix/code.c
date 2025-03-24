@@ -47,7 +47,7 @@ void fix_display_dec(char tag[], fix_t fix)
 
     uint64_t pos = fix.pos;
     num_t num_u = num_wrap(1);
-    for(uint64_t i=0; ; i++)
+    for(;;)
     {
         num_lo = num_mul(num_lo, num_wrap(1000000000000000000));
         num_u = num_mul(num_u, num_wrap(1000000000000000000));
@@ -72,7 +72,7 @@ void fix_display_dec(char tag[], fix_t fix)
 
 void fix_display(fix_t fix)
 {
-    printf("%lu\t", fix.pos);
+    printf("" U64P() "\t", fix.pos);
     snum_display(fix.snum, false);
 }
 
@@ -152,7 +152,7 @@ fix_t fix_base_to(fix_t fix, uint64_t base) // TODO test
     uint64_t pos = fix.pos;
     fix.pos = 0;
     num_t num_u = num_wrap(1);
-    for(uint64_t i=0; ; i++)
+    for(;;)
     {
         num_lo = num_mul(num_lo, num_wrap(base));
         num_u = num_mul(num_u, num_wrap(base));
