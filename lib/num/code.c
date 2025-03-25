@@ -3,9 +3,9 @@
 #include <string.h>
 
 #include "debug.h"
-#include "../../utils/assert.h"
-#include "../../utils/U64.h"
-#include "../../utils/clu/header.h"
+#include "../macros/assert.h"
+#include "../macros/U64.h"
+#include "../../submodules/clu/header.h"
 
 
 

@@ -2,8 +2,8 @@
 #include <stdlib.h>
 
 #include "debug.h"
-#include "../../utils/assert.h"
-#include "../../utils/clu/header.h"
+#include "../macros/assert.h"
+#include "../../submodules/clu/header.h"
 
 
 

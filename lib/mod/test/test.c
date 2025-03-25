@@ -1,9 +1,9 @@
 #include "../../num/debug.h"
 
 #include "../debug.h"
-#include "../../../utils/test.h"
-#include "../../../utils/assert.h"
-#include "../../../utils/clu/header.h"
+#include "../../macros/test.h"
+#include "../../macros/assert.h"
+#include "../../../submodules/clu/header.h"
 
 
 

@@ -4,14 +4,14 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "../utils/assert.h"
-#include "../utils/U64.h"
+#include "../lib/macros/assert.h"
+#include "../lib/macros/U64.h"
 
 #include "../lib/num/struct.h"
 #include "../lib/mod/struct.h"
 #include "../lib/fix/struct.h"
 
-#include "../utils/clu/header.h"
+#include "../submodules/clu/header.h"
 
 
 

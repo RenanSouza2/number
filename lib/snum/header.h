@@ -4,6 +4,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "../../utils/struct.h"
+#include "../macros/struct.h"
 
 #endif

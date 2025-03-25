@@ -2,6 +2,6 @@
 #define __MOD_H__
 
 #include "../num/struct.h"
-#include "../../utils/struct.h"
+#include "../macros/struct.h"
 
 #endif
