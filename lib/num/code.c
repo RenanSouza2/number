@@ -5,7 +5,7 @@
 #include "debug.h"
 #include "../macros/assert.h"
 #include "../macros/U64.h"
-#include "../../submodules/clu/header.h"
+#include "../../mods/clu/header.h"
 
 
 

@@ -11,7 +11,7 @@
 #include "../lib/mod/struct.h"
 #include "../lib/fix/struct.h"
 
-#include "../submodules/clu/header.h"
+#include "../mods/clu/header.h"
 
 
 
