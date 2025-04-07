@@ -27,7 +27,7 @@ fix_t fix_create_immed(uint64_t pos, ...)
 
 void fix_display_dec(char tag[], fix_t fix)
 {
-    CLU_IS_SAFE(fix.snum.num.head);
+    CLU_HANDLER_IS_SAFE(fix.snum.num.head);
 
     printf("\n%s: %c\t", tag, fix.snum.signal == NEGATIVE ? '-' : '+');
 

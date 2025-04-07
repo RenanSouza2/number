@@ -632,7 +632,7 @@ void test_snum()
 {
     printf("\n%s\t\t", __func__);
 
-    bool show = true;
+    bool show = false;
 
     test_snum_create(show);
     test_snum_create_immed(show);

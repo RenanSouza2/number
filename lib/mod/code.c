@@ -104,7 +104,7 @@ mod_t mod_sqr(mod_t mod)
 
 mod_t mod_exp(mod_t mod, uint64_t value) // TODO test
 {
-    CLU_IS_SAFE(mod.num.head);
+    CLU_HANDLER_IS_SAFE(mod.num.head);
 
     if(mod.num.count == 0)
     {
