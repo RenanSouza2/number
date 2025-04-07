@@ -434,11 +434,11 @@ int main()
     srand(time(NULL));
 
     // num_generate(21, 2);
-    // time_1(14, 17);
+    time_1(14, 21);
     // time_2(argc, argv, 19);
     // fibonacci();
-    fibonacci_2(16, 23);
-    fibonacci_3(16, 23);
+    // fibonacci_2(16, 23);
+    // fibonacci_3(16, 23);
     // sqrt_2();
 
     // uint64_t pos = 1e1;
