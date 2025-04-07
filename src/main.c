@@ -164,6 +164,7 @@ void fibonacci_2(uint64_t min, uint64_t max)
     num_t num_b = num_wrap(1);
     num_t num_c = num_wrap(1);
 
+    printf("\n");
     for(uint64_t i=0; i < max; i++)
     {
         if(i > min)
@@ -179,6 +180,38 @@ void fibonacci_2(uint64_t min, uint64_t max)
 
         num_a = num_add(num_a_2, num_copy(num_b_2));
         num_c = num_add(num_b_2, num_c_2);
+        uint64_t end = altutime();
+
+        if(i > min)
+            printf("\t%10.3f", (end - begin) / 1e3);
+    }
+}
+
+void fibonacci_3(uint64_t min, uint64_t max)
+{
+    num_t num_a = num_wrap(0);
+    num_t num_b = num_wrap(1);
+    
+    printf("\n");
+    for(uint64_t i=0; i < max; i++)
+    {
+        if(i > min)
+            printf("\n" U64P() "", i);
+
+        uint64_t begin = altutime();
+
+        num_t num_c = num_add(num_copy(num_a), num_copy(num_b));
+    
+        num_a = num_sqr(num_a);
+        num_b = num_sqr(num_b);
+        num_c = num_sqr(num_c);
+        
+        num_t num_a_new = num_add(num_copy(num_a), num_b);
+        num_t num_b_new = num_sub(num_c, num_a);
+
+        num_a = num_a_new;
+        num_b = num_b_new;
+
         uint64_t end = altutime();
 
         if(i > min)
@@ -401,10 +434,11 @@ int main()
     srand(time(NULL));
 
     // num_generate(21, 2);
-    time_1(14, 17);
+    // time_1(14, 17);
     // time_2(argc, argv, 19);
-    // fibonacci_2(16, 23);
     // fibonacci();
+    fibonacci_2(16, 23);
+    fibonacci_3(16, 23);
     // sqrt_2();
 
     // uint64_t pos = 1e1;

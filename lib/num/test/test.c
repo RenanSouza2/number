@@ -1224,7 +1224,7 @@ void test_num_sub_offset(bool show)
         num_create_immed_vec(num, 3, __VA_ARGS__);                      \
         chunk_p chunk_bef = num_get_chunk(num[0], OFFSET);              \
         chunk_p chunk_aft = num_sub_offset(&num[0], chunk_bef, num[1]); \
-        CLU_HANDLER_IS_SAFE(chunk_aft);                                       \
+        CLU_HANDLER_VALIDATE(chunk_aft);                                       \
         assert(num_str(num[0], num[2]));                                \
         if(ELIMINATE) {assert(chunk_aft == NULL);}                      \
         else          {assert(chunk_aft == chunk_bef);}                 \

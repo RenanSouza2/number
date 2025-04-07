@@ -1,4 +1,4 @@
-FLAGS = -Wall -Wextra -Werror -Wfatal-errors -O3
+FLAGS = -Wall -Werror -Wfatal-errors -O3
 
 LIB = ../lib/lib.o
 DGB = ../lib/debug.o
@@ -29,3 +29,4 @@ $(DGB):
 
 clean:
 	rm -rf *.o
+	$(MAKE) clean --directory=$(dir $(LIB))

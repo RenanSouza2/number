@@ -9,7 +9,6 @@ dbg d:
 
 clean c:
 	$(MAKE) clean --directory=$(SRC) -s
-	$(MAKE) clean --directory=$(LIB) -s
 
 test t:
 	$(MAKE) test --directory=$(LIB) -s
