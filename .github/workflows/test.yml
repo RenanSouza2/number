@@ -7,14 +7,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - run: git submodule init
-    - run: git submodule update
-    - run: make test
+    - run: git submodule update --init --recursive
+    - run: make test -s
 
   build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - run: git submodule init
-    - run: git submodule update
-    - run: make build
+    - run: git submodule update --init --recursive
+    - run: make build -s
