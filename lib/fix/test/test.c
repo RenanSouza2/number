@@ -5,27 +5,34 @@
 
 
 
+#define TEST_ASSERT_EMPTY assert(clu_mem_is_empty());
+
 void test_fixed_fn(bool show)
 {
-    printf("\n\t%s\t\t", __func__);
+    TEST_FN_OPEN
 
-    if(show) printf("\n\t\t%s 1\t\t", __func__);
+    TEST_CASE_OPEN(1)
+    {
 
-    assert(clu_mem_is_empty());
+    }
+    TEST_CASE_CLOSE
+
+    TEST_FN_CLOSE
 }
 
 
 
 void test_fixed()
 {
-    printf("\n%s\t\t", __func__);
+    TEST_LIB
 
     bool show = false;
 
     test_fixed_fn(show);
 
-    assert(clu_mem_is_empty());
+    TEST_ASSERT_EMPTY
 }
+
 
 
 int main()
