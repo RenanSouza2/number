@@ -3,8 +3,8 @@
 
 #include "debug.h"
 
-#include "../macros/assert.h"
-#include "../macros/U64.h"
+#include "../../mods/macros/assert.h"
+#include "../../mods/macros/U64.h"
 #include "../../mods/clu/header.h"
 
 

@@ -3,6 +3,6 @@
 
 #include <stdint.h>
 
-#include "../macros/struct.h"
+#include "../../mods/macros/struct.h"
 
 #endif

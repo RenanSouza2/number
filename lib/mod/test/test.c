@@ -1,8 +1,8 @@
 #include "../../num/debug.h"
 
 #include "../debug.h"
-#include "../../macros/test.h"
-#include "../../macros/assert.h"
+#include "../../../mods/macros/test.h"
+#include "../../../mods/macros/assert.h"
 #include "../../../mods/clu/header.h"
 
 

@@ -1,7 +1,7 @@
 #include "../debug.h"
-#include "../../macros/U64.h"
-#include "../../macros/assert.h"
-#include "../../macros/test.h"
+#include "../../../mods/macros/U64.h"
+#include "../../../mods/macros/assert.h"
+#include "../../../mods/macros/test.h"
 #include "../../../mods/clu/header.h"
 
 
