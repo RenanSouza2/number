@@ -2,12 +2,11 @@
 #include "../../num/debug.h"
 
 #include "../../../mods/macros/test.h"
+#include "../../../testrc.h"
 #include "../../../mods/macros/assert.h"
 #include "../../../mods/clu/header.h"
 
 
-
-#define TEST_ASSERT_EMPTY assert(clu_mem_is_empty());
 
 void test_mod_create(bool show)
 {
@@ -318,7 +317,7 @@ void test_mod()
     test_mod_mul(show);
     test_mod_div(show);
 
-    TEST_ASSERT_EMPTY
+    TEST_ASSERT_MEM_EMPTY
 }
 
 

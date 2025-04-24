@@ -1,11 +1,8 @@
 #include "../debug.h"
 #include "../../../mods/macros/test.h"
-#include "../../../mods/macros/assert.h"
-#include "../../../mods/clu/header.h"
+#include "../../../testrc.h"
 
 
-
-#define TEST_ASSERT_EMPTY assert(clu_mem_is_empty());
 
 void test_fixed_fn(bool show)
 {
@@ -30,7 +27,7 @@ void test_fixed()
 
     test_fixed_fn(show);
 
-    TEST_ASSERT_EMPTY
+    TEST_ASSERT_MEM_EMPTY
 }
 
 

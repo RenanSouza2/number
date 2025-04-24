@@ -1,11 +1,10 @@
 #include "../debug.h"
-
-#include "../../../mods/clu/header.h"
+#include "../../../testrc.h"
 #include "../../../mods/macros/test.h"
 
 
 
-#define TEST_ASSERT_EMPTY assert(clu_mem_is_empty());
+#define TEST_ASSERT_MEM_EMPTY assert(clu_mem_is_empty());
 
 void test_example()
 {

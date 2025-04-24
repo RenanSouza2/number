@@ -6,15 +6,20 @@
 
 
 
+#define TEST_ASSERT_MEM_EMPTY assert(clu_mem_is_empty());
+
 void test_uint_from_char(bool show)
 {
-    printf("\n\t%s", __func__);
+    TEST_FN_OPEN
 
-    #define TEST_UINT_FROM_CHAR(TAG, CHAR, UINT)            \
-    {                                                       \
-        if(show) printf("\n\t\t%s %2d\t\t", __func__, TAG); \
-        uint64_t res = uint_from_char(CHAR);                \
-        assert(uint64(res, UINT));                          \
+    #define TEST_UINT_FROM_CHAR(TAG, CHAR, UINT)    \
+    {                                               \
+        TEST_CASE_OPEN(TAG)                         \
+        {                                           \
+            uint64_t res = uint_from_char(CHAR);    \
+            assert(uint64(res, UINT));              \
+        }                                           \
+        TEST_CASE_CLOSE                             \
     }
 
     TEST_UINT_FROM_CHAR(1, '0',  0);
@@ -29,13 +34,17 @@ void test_uint_from_char(bool show)
 
     #undef TEST_UINT_FROM_CHAR
 
-    if(show) printf("\n\t\t%s 10\t\t", __func__);
-    TEST_REVERT_OPEN
-    uint_from_char('g');
-    TEST_REVERT_CLOSE
+    TEST_CASE_OPEN(10)
+    {
+        TEST_REVERT_OPEN
+        {
+            uint_from_char('g');
+        }
+        TEST_REVERT_CLOSE
+    }
+    TEST_CASE_CLOSE
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 void test_uint128(bool show)
@@ -1224,7 +1233,7 @@ void test_num_sub_offset(bool show)
         num_create_immed_vec(num, 3, __VA_ARGS__);                      \
         chunk_p chunk_bef = num_get_chunk(num[0], OFFSET);              \
         chunk_p chunk_aft = num_sub_offset(&num[0], chunk_bef, num[1]); \
-        CLU_HANDLER_VALIDATE(chunk_aft);                                       \
+        CLU_HANDLER_IS_SAFE(chunk_aft);                                       \
         assert(num_str(num[0], num[2]));                                \
         if(ELIMINATE) {assert(chunk_aft == NULL);}                      \
         else          {assert(chunk_aft == chunk_bef);}                 \
