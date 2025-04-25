@@ -1,10 +1,8 @@
 #include "../debug.h"
 #include "../../num/debug.h"
 
-#include "../../../mods/macros/test.h"
 #include "../../../testrc.h"
-#include "../../../mods/macros/assert.h"
-#include "../../../mods/clu/header.h"
+#include "../../../mods/macros/test.h"
 
 
 
@@ -22,14 +20,22 @@ void test_mod_create(bool show)
     }
     TEST_CASE_CLOSE
 
+    printf("\nOOOOOOOOO CACETA %d", __is_main_process);
+    
     TEST_CASE_OPEN(2)
     {
+        CLU_HANDLER_IS_SAFE(p.head);
+        printf("\nAAA a");
         num_t num = num_create_immed(1, 1);
+        printf("\nAAA b");
         mod_t mod = mod_create(num, p);
+        printf("\nAAA c");
         assert(mod_immed(mod, 1, 1));
+        printf("\nAAA d");
     }
     TEST_CASE_CLOSE
-
+    
+    printf("\nOOOOOOOOO VAI SE FUDE");
     TEST_CASE_OPEN(3)
     {
         num_t num = num_create_immed(1, 7);
@@ -46,9 +52,14 @@ void test_mod_create(bool show)
     }
     TEST_CASE_CLOSE
 
+    if(!__is_main_process)
+        printf("\nOPORRRAAAAAAA\n\n");
+
     num_free(p);
     
     TEST_FN_CLOSE
+
+    printf("\nSHOULD ONLY BE ONCE");
 }
 
 void test_mod_wrap(bool show)
@@ -325,9 +336,7 @@ void test_mod()
 int main()
 {
     setbuf(stdout, NULL);
-    TEST_TIMEOUT_OPEN_DEFAULT
     test_mod();
-    TEST_TIMEOUT_CLOSE
     printf("\n\n\tTest successful\n\n");
     return 0;
 }
