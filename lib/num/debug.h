@@ -9,16 +9,14 @@ typedef __uint128_t uint128_t;
 
 #include <stdarg.h>
 
-num_t num_create_variadic_n(uint64_t n, va_list *args);
-num_t num_create_variadic(va_list *args);
+num_t num_create_variadic(uint64_t n, va_list *args);
 num_t num_create_immed(uint64_t n, ...);
-void num_create_immed_vec(num_t out_num[], uint64_t n, ...);
 
 bool int64(int64_t u1, int64_t u2);
 bool uint64(uint64_t u1, uint64_t u2);
 bool uint128_immed(uint128_t u1, uint64_t v2h, uint64_t v2l);
 
-bool num_str(num_t num_1, num_t num_2);
+bool num_eq_dbg(num_t num_1, num_t num_2);
 bool num_immed(num_t num, uint64_t n, ...);
 
 chunk_p num_get_chunk(num_t num, uint64_t count);

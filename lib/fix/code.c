@@ -13,11 +13,11 @@
 
 #include "../snum/debug.h"
 
-fix_t fix_create_immed(uint64_t pos, ...)
+fix_t fix_create_immed(uint64_t pos, uint64_t signal, uint64_t n, ...)
 {
     va_list args;
-    va_start(args, pos);
-    snum_t snum = snum_create_variadic(&args);
+    va_start(args, n);
+    snum_t snum = snum_create_variadic(signal, n, &args);
     return fix_create(snum, pos);
 }
 

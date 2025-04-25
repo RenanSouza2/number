@@ -304,40 +304,50 @@ void test_num_create_immed(bool show)
 
 
 
-void test_num_insert(bool show)
+void test_num_insert_tail(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_NUM_INSERT(TAG, VALUE, IS_HEAD, ...)       \
-    {                                                       \
-        num_t num[2];                                       \
-        if(show) printf("\n\t\t%s %d", __func__, TAG);      \
-        num_create_immed_vec(num, 2, __VA_ARGS__);          \
-        chunk_p chunk = num_insert_tail(&num[0], VALUE);    \
-        assert(uint64(chunk->value, VALUE));                \
-        assert((num[0].head == chunk) == IS_HEAD);          \
-        assert(num[0].tail == chunk);                       \
-        assert(num_str(num[0], num[1]));                    \
+    #define TEST_NUM_INSERT_TAIL(TAG, NUM_BEF, VALUE, IS_HEAD, NUM_AFT) \
+    {                                                                   \
+        TEST_CASE_OPEN(TAG)                                             \
+        {                                                               \
+            num_t num = num_create_immed(ARG_OPEN NUM_BEF);             \
+            chunk_p chunk = num_insert_tail(&num, VALUE);               \
+            assert(uint64(chunk->value, VALUE));                        \
+            assert((num.head == chunk) == IS_HEAD);                     \
+            assert(num.tail == chunk);                                  \
+            assert(num_immed(num, ARG_OPEN NUM_AFT));                   \
+        }                                                               \
+        TEST_CASE_CLOSE                                                 \
     }
 
-    TEST_NUM_INSERT(1, 0, true,
+    TEST_NUM_INSERT_TAIL(1,
+        (0),
         0,
-        1, 0
+        true,
+        (1, 0)
     );
-    TEST_NUM_INSERT(2, 1, true,
+    TEST_NUM_INSERT_TAIL(2,
+        (0),
+        1,
+        true,
+        (1, 1)
+    );
+    TEST_NUM_INSERT_TAIL(3,
+        (1, 2),
         0,
-        1, 1
+        false,
+        (2, 0, 2)
     );
-    TEST_NUM_INSERT(3, 0, false,
-        1, 2,
-        2, 0, 2
-    );
-    TEST_NUM_INSERT(4, 1, false,
-        1, 2,
-        2, 1, 2
+    TEST_NUM_INSERT_TAIL(4,
+        (1, 2),
+        1,
+        false,
+        (2, 1, 2)
     );
 
-    #undef TEST_NUM_INSERT
+    #undef TEST_NUM_INSERT_TAIL
 
     TEST_FN_CLOSE
 }
@@ -346,33 +356,43 @@ void test_num_insert_head(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_NUM_INSERT_HEAD(TAG, VALUE, IS_TAIL, ...)  \
+    #define TEST_NUM_INSERT_HEAD(TAG, NUM_BEF, VALUE, IS_HEAD, NUM_AFT) \
     {                                                       \
-        num_t num[2];                                       \
-        if(show) printf("\n\t\t%s %d\t\t", __func__, TAG);  \
-        num_create_immed_vec(num, 2, __VA_ARGS__);          \
-        chunk_p chunk = num_insert_head(&num[0], VALUE);    \
-        assert(uint64(chunk->value, VALUE));                \
-        assert(num[0].head == chunk);                       \
-        assert((num[0].tail == chunk) == IS_TAIL);          \
-        assert(num_str(num[0], num[1]));                    \
+        TEST_CASE_OPEN(TAG) \
+        {   \
+            num_t num = num_create_immed(ARG_OPEN NUM_BEF);             \
+            chunk_p chunk = num_insert_head(&num, VALUE);               \
+            assert(uint64(chunk->value, VALUE));                        \
+            assert((num.head == chunk) == IS_HEAD);                     \
+            assert(num.tail == chunk);                                  \
+            assert(num_immed(num, ARG_OPEN NUM_AFT));                   \
+        }   \
+        TEST_CASE_CLOSE \
     }
 
-    TEST_NUM_INSERT_HEAD(1, 0, true,
+    TEST_NUM_INSERT_HEAD(1,
+        (0),
         0,
-        1, 0
+        true,
+        (1, 0)
     );
-    TEST_NUM_INSERT_HEAD(2, 1, true,
+    TEST_NUM_INSERT_HEAD(2,
+        (0),
+        1,
+        false,
+        (1, 1)
+    );
+    TEST_NUM_INSERT_HEAD(3,
+        (1, 2),
         0,
-        1, 1
+        false,
+        (2, 2, 0)
     );
-    TEST_NUM_INSERT_HEAD(3, 0, false,
-        1, 2,
-        2, 2, 0
-    );
-    TEST_NUM_INSERT_HEAD(4, 1, false,
-        1, 2,
-        2, 2, 1
+    TEST_NUM_INSERT_HEAD(4,
+        (1, 2),
+        0,
+        false,
+        (2, 2, 1)
     );
 
     #undef TEST_NUM_INSERT_HEAD
@@ -2074,9 +2094,8 @@ void test_num()
     test_chunk_create(show);
 
     test_num_create_immed(show);
-    test_num_create_immed_vec(show);
 
-    test_num_insert(show);
+    test_num_insert_tail(show);
     test_num_insert_head(show);
     test_num_remove_head(show);
     test_num_denormalize(show);

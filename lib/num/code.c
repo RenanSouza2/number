@@ -11,7 +11,7 @@
 
 #ifdef DEBUG
 
-num_t num_create_variadic_n(uint64_t n, va_list *args)
+num_t num_create_variadic(uint64_t n, va_list *args)
 {
     if(n == 0)
         return num_create(0, NULL, NULL);
@@ -28,25 +28,11 @@ num_t num_create_variadic_n(uint64_t n, va_list *args)
     return num_create(n, chunk, tail);
 }
 
-num_t num_create_variadic(va_list *args)
-{
-    uint64_t n = va_arg(*args, uint64_t);
-    return num_create_variadic_n(n, args);
-}
-
 num_t num_create_immed(uint64_t n, ...)
 {
     va_list args;
     va_start(args, n);
-    return num_create_variadic_n(n, &args);
-}
-
-void num_create_immed_vec(num_t out_num[], uint64_t n, ...)
-{
-    va_list args;
-    va_start(args, n);
-    for(uint64_t i=0; i<n; i++)
-        out_num[i] = num_create_variadic(&args);
+    return num_create_variadic(n, &args);
 }
 
 
@@ -92,7 +78,7 @@ bool uint128_immed(uint128_t u1, uint64_t v2h, uint64_t v2l)
 
 
 
-bool num_str_inner(num_t num_1, num_t num_2)
+bool num_inner(num_t num_1, num_t num_2)
 {
     if(!uint64(num_1.count, num_2.count))
     {
@@ -190,12 +176,12 @@ bool num_str_inner(num_t num_1, num_t num_2)
     return true;
 }
 
-bool num_str(num_t num_1, num_t num_2)
+bool num_eq_dbg(num_t num_1, num_t num_2)
 {
     CLU_HANDLER_IS_SAFE(num_1.head);
     CLU_HANDLER_IS_SAFE(num_2.head);
 
-    if(!num_str_inner(num_1, num_2))
+    if(!num_inner(num_1, num_2))
     {
         printf("\n");
         num_display_full("\tnum_1", num_1);
@@ -212,8 +198,8 @@ bool num_immed(num_t num, uint64_t n, ...)
 {
     va_list args;
     va_start(args, n);
-    num_t num_2 = num_create_variadic_n(n, &args);
-    return num_str(num, num_2);
+    num_t num_2 = num_create_variadic(n, &args);
+    return num_eq_dbg(num, num_2);
 }
 
 

@@ -13,8 +13,8 @@ bool mod_immed(mod_t mod, uint64_t n, ...)
 {
     va_list args;
     va_start(args, n);
-    num_t num = num_create_variadic_n(n, &args);
-    return num_str(mod.num, num);
+    num_t num = num_create_variadic(n, &args);
+    return num_eq_dbg(mod.num, num);
 }
 
 #endif
