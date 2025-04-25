@@ -1,6 +1,6 @@
 #include "../debug.h"
-#include "../../../mods/macros/test.h"
 #include "../../../testrc.h"
+#include "../../../mods/macros/test.h"
 
 
 
@@ -35,9 +35,7 @@ void test_fixed()
 int main()
 {
     setbuf(stdout, NULL);
-    TEST_TIMEOUT_OPEN(5)
     test_fixed();
-    TEST_TIMEOUT_CLOSE
     printf("\n\n\tTest successful\n\n");
     return 0;
 }

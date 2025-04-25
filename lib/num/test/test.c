@@ -1,8 +1,6 @@
 #include "../debug.h"
-#include "../../../mods/macros/U64.h"
-#include "../../../mods/macros/assert.h"
+#include "../../../testrc.h"
 #include "../../../mods/macros/test.h"
-#include "../../../mods/clu/header.h"
 
 
 
@@ -2126,9 +2124,7 @@ void test_num()
 int main()
 {
     setbuf(stdout, NULL);
-    TEST_TIMEOUT_OPEN(5)
     test_num();
-    TEST_TIMEOUT_CLOSE
     printf("\n\n\tTest successful\n\n");
     return 0;
 }

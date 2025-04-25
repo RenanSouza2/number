@@ -1,8 +1,8 @@
 #include "../debug.h"
-#include "../../num/debug.h"
-
 #include "../../../testrc.h"
 #include "../../../mods/macros/test.h"
+
+#include "../../num/debug.h"
 
 
 
@@ -19,23 +19,16 @@ void test_mod_create(bool show)
         assert(mod_immed(mod, 0));
     }
     TEST_CASE_CLOSE
-
-    printf("\nOOOOOOOOO CACETA %d", __is_main_process);
     
     TEST_CASE_OPEN(2)
     {
         CLU_HANDLER_IS_SAFE(p.head);
-        printf("\nAAA a");
         num_t num = num_create_immed(1, 1);
-        printf("\nAAA b");
         mod_t mod = mod_create(num, p);
-        printf("\nAAA c");
         assert(mod_immed(mod, 1, 1));
-        printf("\nAAA d");
     }
     TEST_CASE_CLOSE
     
-    printf("\nOOOOOOOOO VAI SE FUDE");
     TEST_CASE_OPEN(3)
     {
         num_t num = num_create_immed(1, 7);
@@ -52,14 +45,9 @@ void test_mod_create(bool show)
     }
     TEST_CASE_CLOSE
 
-    if(!__is_main_process)
-        printf("\nOPORRRAAAAAAA\n\n");
-
     num_free(p);
     
     TEST_FN_CLOSE
-
-    printf("\nSHOULD ONLY BE ONCE");
 }
 
 void test_mod_wrap(bool show)
@@ -318,7 +306,7 @@ void test_mod()
 {
     TEST_LIB
 
-    bool show = true;
+    bool show = false;
 
     test_mod_create(show);
     test_mod_wrap(show);
