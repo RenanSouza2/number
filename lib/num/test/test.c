@@ -47,230 +47,266 @@ void test_uint_from_char(bool show)
 
 void test_uint128(bool show)
 {
-    printf("\n\t%s", __func__);
+    TEST_FN_OPEN
 
-    if(show) printf("\n\t\t%s  1", __func__);
-    uint128_t u = 1;
-    assert(uint128_immed(u, 0, 1));
+    TEST_CASE_OPEN(1)
+    {
+        uint128_t u = 1;
+        assert(uint128_immed(u, 0, 1));
+    }
+    TEST_CASE_CLOSE
 
-    if(show) printf("\n\t\t%s  2", __func__);
-    u = UINT64_MAX;
-    assert(uint128_immed(u, 0, UINT64_MAX));
+    TEST_CASE_OPEN(2)
+    {
+        uint128_t u = UINT64_MAX;
+        assert(uint128_immed(u, 0, UINT64_MAX));
+    }
+    TEST_CASE_CLOSE
 
-    if(show) printf("\n\t\t%s  3", __func__);
-    u = U128_IMMED(1, 0);
-    assert(uint128_immed(u, 1, 0));
+    TEST_CASE_OPEN(3)
+    {
+        uint128_t u = U128_IMMED(1, 0);
+        assert(uint128_immed(u, 1, 0));
+    }
+    TEST_CASE_CLOSE
 
-    if(show) printf("\n\t\t%s  4", __func__);
-    u = U128_IMMED(1, 2);
-    assert(uint128_immed(u, 1, 2));
+    TEST_CASE_OPEN(4)
+    {
+        uint128_t u = U128_IMMED(1, 2);
+        assert(uint128_immed(u, 1, 2));
+    }
+    TEST_CASE_CLOSE
 
-    if(show) printf("\n\t\t%s  5", __func__);
-    u = U128_IMMED(UINT64_MAX, UINT64_MAX);
-    assert(uint128_immed(u, UINT64_MAX, UINT64_MAX));
+    TEST_CASE_OPEN(5)
+    {
+        uint128_t u = U128_IMMED(UINT64_MAX, UINT64_MAX);
+        assert(uint128_immed(u, UINT64_MAX, UINT64_MAX));
+    }
+    TEST_CASE_CLOSE
 
-    if(show) printf("\n\t\t%s  6", __func__);
-    u = UINT64_MAX;
-    u += 1;
-    assert(uint128_immed(u, 1, 0));
+    TEST_CASE_OPEN(6)
+    {
+        uint128_t u = UINT64_MAX;
+        u += 1;
+        assert(uint128_immed(u, 1, 0));
+    }
+    TEST_CASE_CLOSE
 
-    if(show) printf("\n\t\t%s  7", __func__);
-    u = U128_IMMED(1, 0);
-    u -= 1;
-    assert(uint128_immed(u, 0, UINT64_MAX));
+    TEST_CASE_OPEN(7)
+    {
+        uint128_t u = U128_IMMED(1, 0);
+        u -= 1;
+        assert(uint128_immed(u, 0, UINT64_MAX));
+    }
+    TEST_CASE_CLOSE
 
-    if(show) printf("\n\t\t%s  8", __func__);
-    u = UINT64_MAX;
-    u *= UINT64_MAX;
-    assert(uint128_immed(u, UINT64_MAX - 1, 1));
+    TEST_CASE_OPEN(8)
+    {
+        uint128_t u = UINT64_MAX;
+        u *= UINT64_MAX;
+        assert(uint128_immed(u, UINT64_MAX - 1, 1));
+    }
+    TEST_CASE_CLOSE
 
-    if(show) printf("\n\t\t%s  9", __func__);
-    u = U128_IMMED(1, 0);
-    u <<= 1;
-    assert(uint128_immed(u, 2, 0));
+    TEST_CASE_OPEN(9)
+    {
+        uint128_t u = U128_IMMED(1, 0);
+        u <<= 1;
+        assert(uint128_immed(u, 2, 0));
+    }
+    TEST_CASE_CLOSE
 
-    if(show) printf("\n\t\t%s 10", __func__);
-    u = U128_IMMED(1, 0);
-    u >>= 1;
-    assert(uint128_immed(u, 0, 0x8000000000000000));
+    TEST_CASE_OPEN(10)
+    {
+        uint128_t u = U128_IMMED(1, 0);
+        u >>= 1;
+        assert(uint128_immed(u, 0, 0x8000000000000000));
+    }
+    TEST_CASE_CLOSE
 
-    if(show) printf("\n\t\t%s 11", __func__);
-    u = U128_IMMED(1, 0);
-    u /= 1;
-    assert(uint128_immed(u, 1, 0));
+    TEST_CASE_OPEN(11)
+    {
+        uint128_t u = U128_IMMED(1, 0);
+        u /= 1;
+        assert(uint128_immed(u, 1, 0));
+    }
+    TEST_CASE_CLOSE
 
-    if(show) printf("\n\t\t%s 12", __func__);
-    u = U128_IMMED(1, 0);
-    u /= 2;
-    assert(uint128_immed(u, 0, 0x8000000000000000));
+    TEST_CASE_OPEN(12)
+    {
+        uint128_t u = U128_IMMED(1, 0);
+        u /= 2;
+        assert(uint128_immed(u, 0, 0x8000000000000000));
+    }
+    TEST_CASE_CLOSE
 
-    if(show) printf("\n\t\t%s 13", __func__);
-    u = U128_IMMED(UINT64_MAX, UINT64_MAX);
-    u /= 1;
-    assert(uint128_immed(u, UINT64_MAX, UINT64_MAX));
+    TEST_CASE_OPEN(13)
+    {
+        uint128_t u = U128_IMMED(UINT64_MAX, UINT64_MAX);
+        u /= 1;
+        assert(uint128_immed(u, UINT64_MAX, UINT64_MAX));
+    }
+    TEST_CASE_CLOSE
 
-    if(show) printf("\n\t\t%s 14", __func__);
-    u = U128_IMMED(UINT64_MAX / 2, UINT64_MAX);
-    u /= 2;
-    assert(uint128_immed(u, UINT64_MAX >> 2, UINT64_MAX));
+    TEST_CASE_OPEN(14)
+    {
+        uint128_t u = U128_IMMED(UINT64_MAX / 2, UINT64_MAX);
+        u /= 2;
+        assert(uint128_immed(u, UINT64_MAX >> 2, UINT64_MAX));
+    }
+    TEST_CASE_CLOSE
 
-    if(show) printf("\n\t\t%s 15", __func__);
-    u = U128_IMMED(UINT64_MAX, UINT64_MAX - 1);
-    u /= 2;
-    assert(uint128_immed(u, UINT64_MAX >> 1, UINT64_MAX));
+    TEST_CASE_OPEN(15)
+    {
+        uint128_t u = U128_IMMED(UINT64_MAX, UINT64_MAX - 1);
+        u /= 2;
+        assert(uint128_immed(u, UINT64_MAX >> 1, UINT64_MAX));
+    }
+    TEST_CASE_CLOSE
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 
 
 void test_chunk_create(bool show)
 {
-    printf("\n\t%s", __func__);
+    TEST_FN_OPEN
 
-    if(show) printf("\n\t\t%s 1", __func__);
-    chunk_p chunk = chunk_create(0, NULL, NULL);
-    assert(chunk->value == 0);
-    assert(chunk->next == NULL);
-    assert(chunk->prev == NULL);
-    free(chunk);
+    TEST_CASE_OPEN(1)
+    {
+        chunk_p chunk = chunk_create(0, NULL, NULL);
+        assert(chunk->value == 0);
+        assert(chunk->next == NULL);
+        assert(chunk->prev == NULL);
+        free(chunk);
+    }
+    TEST_CASE_CLOSE
 
-    if(show) printf("\n\t\t%s 2", __func__);
-    chunk = chunk_create(1, NULL, NULL);
-    assert(chunk->value == 1);
-    assert(chunk->next == NULL);
-    assert(chunk->prev == NULL);
-    free(chunk);
+    TEST_CASE_OPEN(2)
+    {
+        chunk_p chunk = chunk_create(1, NULL, NULL);
+        assert(chunk->value == 1);
+        assert(chunk->next == NULL);
+        assert(chunk->prev == NULL);
+        free(chunk);
+    }
+    TEST_CASE_CLOSE
 
-    if(show) printf("\n\t\t%s 3", __func__);
-    chunk_p chunk_next = chunk_create(0, NULL, NULL);
-    chunk = chunk_create(1, chunk_next, NULL);
-    assert(chunk->value == 1);
-    assert(chunk->next == chunk_next);
-    assert(chunk->next->prev == chunk);
-    assert(chunk->prev  == NULL);
-    free(chunk);
-    free(chunk_next);
+    TEST_CASE_OPEN(3)
+    {
+        chunk_p chunk_next = chunk_create(0, NULL, NULL);
+        chunk_p chunk = chunk_create(1, chunk_next, NULL);
+        assert(chunk->value == 1);
+        assert(chunk->next == chunk_next);
+        assert(chunk->next->prev == chunk);
+        assert(chunk->prev  == NULL);
+        free(chunk);
+        free(chunk_next);
+    }
+    TEST_CASE_CLOSE
 
-    if(show) printf("\n\t\t%s 4", __func__);
-    chunk_p chunk_prev = chunk_create(0, NULL, NULL);
-    chunk = chunk_create(1, NULL, chunk_prev);
-    assert(chunk->value == 1);
-    assert(chunk->next == NULL);
-    assert(chunk->prev == chunk_prev);
-    assert(chunk->prev->next == chunk);
-    free(chunk);
-    free(chunk_prev);
+    TEST_CASE_OPEN(4)
+    {
+        chunk_p chunk_prev = chunk_create(0, NULL, NULL);
+        chunk_p chunk = chunk_create(1, NULL, chunk_prev);
+        assert(chunk->value == 1);
+        assert(chunk->next == NULL);
+        assert(chunk->prev == chunk_prev);
+        assert(chunk->prev->next == chunk);
+        free(chunk);
+        free(chunk_prev);
+    }
+    TEST_CASE_CLOSE
 
-    if(show) printf("\n\t\t%s 5", __func__);
-    chunk_next = chunk_create(0, NULL, NULL);
-    chunk_prev = chunk_create(0, NULL, NULL);
-    chunk = chunk_create(1, chunk_next, chunk_prev);
-    assert(chunk->value == 1);
-    assert(chunk->next == chunk_next);
-    assert(chunk->next->prev == chunk);
-    assert(chunk->prev == chunk_prev);
-    assert(chunk->prev->next == chunk);
-    free(chunk);
-    free(chunk_next);
-    free(chunk_prev);
+    TEST_CASE_OPEN(5)
+    {
+        chunk_p chunk_next = chunk_create(0, NULL, NULL);
+        chunk_p chunk_prev = chunk_create(0, NULL, NULL);
+        chunk_p chunk = chunk_create(1, chunk_next, chunk_prev);
+        assert(chunk->value == 1);
+        assert(chunk->next == chunk_next);
+        assert(chunk->next->prev == chunk);
+        assert(chunk->prev == chunk_prev);
+        assert(chunk->prev->next == chunk);
+        free(chunk);
+        free(chunk_next);
+        free(chunk_prev);
+    }
+    TEST_CASE_CLOSE
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 
 
 void test_num_create_immed(bool show)
 {
-    printf("\n\t%s\t\t", __func__);
+    TEST_FN_OPEN
 
-    if(show) printf("\n\t\t%s 1\t\t", __func__);
-    num_t num = num_create_immed(0);
-    assert(num.count == 0);
-    assert(num.head == NULL);
-    assert(num.tail == NULL);
-    num_free(num);
+    TEST_CASE_OPEN(1)
+    {
+        num_t num = num_create_immed(0);
+        assert(num.count == 0);
+        assert(num.head == NULL);
+        assert(num.tail == NULL);
+        num_free(num);
+    }
+    TEST_CASE_CLOSE
 
-    if(show) printf("\n\t\t%s 2\t\t", __func__);
-    num = num_create_immed(1, 2);
-    assert(num.count == 1);
-    assert(num.head != NULL);
-    assert(num.head->value == 2);
-    assert(num.head->next == NULL);
-    assert(num.head->prev == NULL);
-    assert(num.tail == num.head);
-    num_free(num);
+    TEST_CASE_OPEN(1)
+    {
+        num_t num = num_create_immed(1, 2);
+        assert(num.count == 1);
+        assert(num.head != NULL);
+        assert(num.head->value == 2);
+        assert(num.head->next == NULL);
+        assert(num.head->prev == NULL);
+        assert(num.tail == num.head);
+        num_free(num);
+    }
+    TEST_CASE_CLOSE
 
-    if(show) printf("\n\t\t%s 3\t\t", __func__);
-    num = num_create_immed(2, 2, 1);
-    assert(num.count == 2);
-    assert(num.head != NULL)
-    assert(num.head->value == 1);
-    assert(num.head->next != NULL);
-    assert(num.head->prev == NULL);
-    assert(num.head->next->value == 2);
-    assert(num.head->next->next == NULL);
-    assert(num.head->next->prev == num.head);
-    assert(num.tail == num.head->next);
-    num_free(num);
+    TEST_CASE_OPEN(1)
+    {
+        num_t num = num_create_immed(2, 2, 1);
+        assert(num.count == 2);
+        assert(num.head != NULL)
+        assert(num.head->value == 1);
+        assert(num.head->next != NULL);
+        assert(num.head->prev == NULL);
+        assert(num.head->next->value == 2);
+        assert(num.head->next->next == NULL);
+        assert(num.head->next->prev == num.head);
+        assert(num.tail == num.head->next);
+        num_free(num);
+    }
+    TEST_CASE_CLOSE
 
-    if(show) printf("\n\t\t%s 4\t\t", __func__);
-    num = num_create_immed(2, 2, 0);
-    assert(num.count == 2);
-    assert(num.head != NULL)
-    assert(num.head->value == 0);
-    assert(num.head->next != NULL);
-    assert(num.head->prev == NULL);
-    assert(num.head->next->value == 2);
-    assert(num.head->next->next == NULL);
-    assert(num.head->next->prev == num.head);
-    assert(num.tail == num.head->next);
-    num_free(num);
+    TEST_CASE_OPEN(1)
+    {
+        num_t num = num_create_immed(2, 2, 0);
+        assert(num.count == 2);
+        assert(num.head != NULL)
+        assert(num.head->value == 0);
+        assert(num.head->next != NULL);
+        assert(num.head->prev == NULL);
+        assert(num.head->next->value == 2);
+        assert(num.head->next->next == NULL);
+        assert(num.head->next->prev == num.head);
+        assert(num.tail == num.head->next);
+        num_free(num);
+    }
+    TEST_CASE_CLOSE
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
-}
-
-void test_num_create_immed_vec(bool show)
-{
-    printf("\n\t%s", __func__);
-
-    if(show) printf("\n\t\t%s 1", __func__);
-    num_t num[2];
-    num_create_immed_vec(num, 1, 0);
-    assert(num_immed(num[0], 0));
-
-    if(show) printf("\n\t\t%s 2", __func__);
-    num_create_immed_vec(num, 1, 1, 1);
-    assert(num_immed(num[0], 1, 1));
-
-    if(show) printf("\n\t\t%s 3", __func__);
-    num_create_immed_vec(num, 2, 1, 1, 1, 2);
-    assert(num_immed(num[0], 1, 1));
-    assert(num_immed(num[1], 1, 2));
-
-    if(show) printf("\n\t\t%s 4", __func__);
-    num_create_immed_vec(num, 2, 0, 1, 2);
-    assert(num_immed(num[0], 0));
-    assert(num_immed(num[1], 1, 2));
-
-
-    if(show) printf("\n\t\t%s 3", __func__);
-    num_create_immed_vec(num, 2, 1, 1, 0);
-    assert(num_immed(num[0], 1, 1));
-    assert(num_immed(num[1], 0));
-
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 
 
 void test_num_insert(bool show)
 {
-    printf("\n\t%s", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_INSERT(TAG, VALUE, IS_HEAD, ...)       \
     {                                                       \
@@ -303,13 +339,12 @@ void test_num_insert(bool show)
 
     #undef TEST_NUM_INSERT
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 void test_num_insert_head(bool show)
 {
-    printf("\n\t%s\t\t", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_INSERT_HEAD(TAG, VALUE, IS_TAIL, ...)  \
     {                                                       \
@@ -342,13 +377,12 @@ void test_num_insert_head(bool show)
 
     #undef TEST_NUM_INSERT_HEAD
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 void test_num_remove_head(bool show)
 {
-    printf("\n\t%s\t\t", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_REMOVE_HEAD(TAG, ...)                  \
     {                                                       \
@@ -374,13 +408,12 @@ void test_num_remove_head(bool show)
 
     #undef TEST_NUM_REMOVE_HEAD
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 void test_num_denormalize(bool show)
 {
-    printf("\n\t%s", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_DENORMALIZE(TAG, ...)                  \
     {                                                       \
@@ -409,13 +442,12 @@ void test_num_denormalize(bool show)
     assert(num.head == chunk);
     assert(num_immed(num, 1, 1));
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 void test_num_normalize(bool show)
 {
-    printf("\n\t%s", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_NORMALIZE(TAG, RES, ...)               \
     {                                                       \
@@ -450,13 +482,12 @@ void test_num_normalize(bool show)
 
     #undef TEST_NUM_NORMALIZE
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 void test_num_break(bool show)
 {
-    printf("\n\t%s", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_BREAK(TAG, COUNT, ...)                 \
     {                                                       \
@@ -526,15 +557,14 @@ void test_num_break(bool show)
 
     #undef TEST_NUM_BREAK
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 
 
 void test_num_wrap(bool show)
 {
-    printf("\n\t%s", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_WRAP(TAG, NUM, ...)                \
     {                                                   \
@@ -549,13 +579,12 @@ void test_num_wrap(bool show)
 
     #undef TEST_NUM_WRAP
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 void test_num_wrap_dec(bool show)
 {
-    printf("\n\t%s", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_WRAP_DEC(TAG, STR, ...)            \
     {                                                   \
@@ -576,13 +605,12 @@ void test_num_wrap_dec(bool show)
 
     #undef TEST_NUM_WRAP_DEC
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 void test_num_wrap_hex(bool show)
 {
-    printf("\n\t%s", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_WRAP_HEX(TAG, STR, ...)            \
     {                                                   \
@@ -620,13 +648,12 @@ void test_num_wrap_hex(bool show)
 
     #undef TEST_NUM_WRAP_HEX
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 void test_num_wrap_str(bool show)
 {
-    printf("\n\t%s", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_WRAP_STR(TAG, STR, ...)            \
     {                                                   \
@@ -656,13 +683,12 @@ void test_num_wrap_str(bool show)
 
     #undef TEST_NUM_WRAP_STR
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 void test_num_read_dec(bool show)
 {
-    printf("\n\t%s", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_READ_DEC(TAG, ...)                         \
     {                                                           \
@@ -686,13 +712,12 @@ void test_num_read_dec(bool show)
     num_read_dec("numbers/num_8.txt");
     TEST_REVERT_CLOSE
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 void test_num_unwrap(bool show)
 {
-    printf("\n\t%s", __func__);
+    TEST_FN_OPEN
 
     if(show) printf("\n\t\t%s 1", __func__);
     num_t num = num_create_immed(0);
@@ -711,13 +736,12 @@ void test_num_unwrap(bool show)
     TEST_REVERT_CLOSE
     num_free(num);
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 void test_num_copy(bool show)
 {
-    printf("\n\t%s", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_COPY(TAG, ...)                     \
     {                                                   \
@@ -733,15 +757,14 @@ void test_num_copy(bool show)
 
     #undef TEST_NUM_COPY
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 
 
 void test_num_base_to(bool show)
 {
-    printf("\n\t%s", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_BASE_TO(TAG, ...)                      \
     {                                                       \
@@ -783,13 +806,12 @@ void test_num_base_to(bool show)
 
     #undef TEST_NUM_BASE_TO
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 void test_num_base_from(bool show)
 {
-    printf("\n\t%s", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_BASE_FROM(TAG, ...)                    \
     {                                                       \
@@ -823,15 +845,14 @@ void test_num_base_from(bool show)
 
     #undef TEST_NUM_BASE_FROM
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 
 
 void test_num_sub_uint_offset(bool show)
 {
-    printf("\n\t%s\t\t", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_SUB_UINT_OFFSET(TAG, OFFSET, VALUE, RES, ...)  \
     {                                                               \
@@ -902,15 +923,14 @@ void test_num_sub_uint_offset(bool show)
 
     #undef TEST_NUM_SUB_UINT_OFFSET
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 
 
 void test_num_shl_uint(bool show)
 {
-    printf("\n\t%s", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_SHL_UINT(TAG, VALUE, ...)          \
     {                                                   \
@@ -952,13 +972,12 @@ void test_num_shl_uint(bool show)
 
     #undef TEST_NUM_SHL_UINT
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 void test_num_shr_uint(bool show)
 {
-    printf("\n\t%s", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_SHR_UINT(TAG, BITS, ...)           \
     {                                                   \
@@ -1000,13 +1019,12 @@ void test_num_shr_uint(bool show)
 
     #undef TEST_NUM_SHR_UINT
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 void test_num_add_uint(bool show)
 {
-    printf("\n\t%s", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_ADD_UINT(TAG, VALUE, ...)          \
     {                                                   \
@@ -1036,13 +1054,12 @@ void test_num_add_uint(bool show)
 
     #undef TEST_NUM_ADD_UINT
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 void test_num_sub_uint(bool show)
 {
-    printf("\n\t%s\t\t", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_SUB_UINT(TAG, VALUE, ...)              \
     {                                                       \
@@ -1099,13 +1116,12 @@ void test_num_sub_uint(bool show)
 
     #undef TEST_NUM_SUB_UINT
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 void test_num_mul_uint(bool show)
 {
-    printf("\n\t%s\t\t", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_MUL_UINT(TAG, VALUE, ...)              \
     {                                                       \
@@ -1156,13 +1172,12 @@ void test_num_mul_uint(bool show)
 
     #undef TEST_NUM_MUL_UINT
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 void test_num_add_mul_uint(bool show)
 {
-    printf("\n\t%s\t\t", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_ADD_MUL_UINT(TAG, VALUE, ...)          \
     {                                                       \
@@ -1214,15 +1229,14 @@ void test_num_add_mul_uint(bool show)
 
     #undef TEST_NUM_ADD_MUL_UINT
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 
 
 void test_num_sub_offset(bool show)
 {
-    printf("\n\t%s\t\t", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_SUB_OFFSET(TAG, OFFSET, ELIMINATE, ...)            \
     {                                                                   \
@@ -1298,13 +1312,12 @@ void test_num_sub_offset(bool show)
 
     #undef TEST_NUM_SUB_OFFSET
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 void test_num_cmp_mul_uint(bool show)
 {
-    printf("\n\t%s\t\t", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_CMP_MUL_UINT_OFFSET(TAG, VALUE, OFFSET, ...)               \
     {                                                                           \
@@ -1415,15 +1428,14 @@ void test_num_cmp_mul_uint(bool show)
 
     #undef TEST_NUM_CMP_MUL_UINT_OFFSET
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 
 
 void test_num_is_zero(bool show)
 {
-    printf("\n\t%s", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_IS_ZERO(TAG, IS_ZERO, ...)             \
     {                                                       \
@@ -1440,13 +1452,12 @@ void test_num_is_zero(bool show)
 
     #undef TEST_NUM_IS_ZERO
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 void test_num_cmp(bool show)
 {
-    printf("\n\t%s\t\t", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_CMP(TAG, RELATION, ...)                \
     {                                                       \
@@ -1506,15 +1517,14 @@ void test_num_cmp(bool show)
 
     #undef TEST_NUM_CMP
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 
 
 void test_num_shl(bool show)
 {
-    printf("\n\t%s", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_SHL(TAG, BITS, ...)                \
     {                                                   \
@@ -1552,13 +1562,12 @@ void test_num_shl(bool show)
 
     #undef TEST_NUM_SHL
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 void test_num_shr(bool show)
 {
-    printf("\n\t%s\t\t", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_SHR(TAG, BITS, ...)                \
     {                                                   \
@@ -1600,8 +1609,7 @@ void test_num_shr(bool show)
 
     #undef TEST_NUM_SHR
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 
@@ -1609,7 +1617,7 @@ void test_num_shr(bool show)
 
 void test_num_add(bool show)
 {
-    printf("\n\t%s", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_ADD(TAG, ...)                      \
     {                                                   \
@@ -1663,13 +1671,12 @@ void test_num_add(bool show)
 
     #undef TEST_NUM_ADD
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 void test_num_sub(bool show)
 {
-    printf("\n\t%s", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_SUB(TAG, ...)                          \
     {                                                       \
@@ -1723,13 +1730,12 @@ void test_num_sub(bool show)
 
     #undef TEST_NUM_SUB
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 void test_num_mul(bool show)
 {
-    printf("\n\t%s", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_MUL(TAG, ...)                      \
     {                                                   \
@@ -1818,13 +1824,12 @@ void test_num_mul(bool show)
 
     #undef TEST_NUM_MUL
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 void test_num_sqr(bool show)
 {
-    printf("\n\t%s\t\t", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_SQR(TAG, ...)                          \
     {                                                       \
@@ -1870,13 +1875,12 @@ void test_num_sqr(bool show)
 
     #undef TEST_NUM_SQR
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 void test_num_div_mod(bool show)
 {
-    printf("\n\t%s", __func__);
+    TEST_FN_OPEN
 
     #define TEST_NUM_DIV_MOD(TAG, ...)                      \
     {                                                       \
@@ -2053,8 +2057,7 @@ void test_num_div_mod(bool show)
     num_free(num_1);
     num_free(num_2);
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_FN_CLOSE
 }
 
 
@@ -2063,7 +2066,7 @@ void test_num()
 {
     printf("\n%s", __func__);
 
-    bool show = false;
+    bool show = true;
 
     test_uint_from_char(show);
     test_uint128(show);
@@ -2115,8 +2118,7 @@ void test_num()
     test_num_base_to(show);
     test_num_base_from(show);
 
-    chunk_pool_clean();
-    assert(clu_mem_is_empty());
+    TEST_ASSERT_MEM_EMPTY
 }
 
 
