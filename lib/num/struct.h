@@ -9,6 +9,8 @@ STRUCT(chunk)
     chunk_p next, prev;
 };
 
+// HEAD is the least significant chunk
+// if TAIL is not null, is never zero
 STRUCT(num)
 {
     uint64_t count;

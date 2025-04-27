@@ -356,18 +356,18 @@ void test_num_insert_head(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_NUM_INSERT_HEAD(TAG, NUM_BEF, VALUE, IS_HEAD, NUM_AFT) \
-    {                                                       \
-        TEST_CASE_OPEN(TAG) \
-        {   \
+    #define TEST_NUM_INSERT_HEAD(TAG, NUM_BEF, VALUE, IS_TAIL, NUM_AFT) \
+    {                                                                   \
+        TEST_CASE_OPEN(TAG)                                             \
+        {                                                               \
             num_t num = num_create_immed(ARG_OPEN NUM_BEF);             \
             chunk_p chunk = num_insert_head(&num, VALUE);               \
             assert(uint64(chunk->value, VALUE));                        \
-            assert((num.head == chunk) == IS_HEAD);                     \
-            assert(num.tail == chunk);                                  \
+            assert(num.head == chunk);                                  \
+            assert((num.tail == chunk) == IS_TAIL);                     \
             assert(num_immed(num, ARG_OPEN NUM_AFT));                   \
-        }   \
-        TEST_CASE_CLOSE \
+        }                                                               \
+        TEST_CASE_CLOSE                                                 \
     }
 
     TEST_NUM_INSERT_HEAD(1,
@@ -379,7 +379,7 @@ void test_num_insert_head(bool show)
     TEST_NUM_INSERT_HEAD(2,
         (0),
         1,
-        false,
+        true,
         (1, 1)
     );
     TEST_NUM_INSERT_HEAD(3,
@@ -390,7 +390,7 @@ void test_num_insert_head(bool show)
     );
     TEST_NUM_INSERT_HEAD(4,
         (1, 2),
-        0,
+        1,
         false,
         (2, 2, 1)
     );
@@ -416,8 +416,8 @@ void test_num_remove_head(bool show)
     }
 
     TEST_NUM_REMOVE_HEAD(1,
-        (9),
-        (9)
+        (0),
+        (0)
     );
     TEST_NUM_REMOVE_HEAD(2,
         (1, 1),
@@ -1212,6 +1212,7 @@ void test_num_add_mul_uint(bool show)
             assert(num_immed(num_res, ARG_OPEN NUM_AFT));       \
             num_free(num_res);                                  \
         }                                                       \
+        TEST_CASE_CLOSE                                         \
     }
 
     TEST_NUM_ADD_MUL_UINT(1, (0), 0, (1, 1));
@@ -1500,39 +1501,23 @@ void test_num_shl(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_NUM_SHL(TAG, BITS, ...)                \
-    {                                                   \
-        num_t num[2];                                   \
-        if(show) printf("\n\t\t%s %d", __func__, TAG);  \
-        num_create_immed_vec(num, 2, __VA_ARGS__);      \
-        num[0] = num_shl(num[0], BITS);                 \
-        assert(num_str(num[0], num[1]));                \
+    #define TEST_NUM_SHL(TAG, NUM_IN, BITS, NUM_OUT)        \
+    {                                                       \
+        TEST_CASE_OPEN(TAG)                                 \
+        {                                                   \
+            num_t num = num_create_immed(ARG_OPEN NUM_IN);  \
+            num = num_shl(num, BITS);                       \
+            assert(num_immed(num, ARG_OPEN NUM_OUT));       \
+        }                                                   \
+        TEST_CASE_CLOSE                                     \
     }
 
-    TEST_NUM_SHL(1, 0,
-        0,
-        0
-    );
-    TEST_NUM_SHL(2, 1,
-        0,
-        0
-    );
-    TEST_NUM_SHL(3, 64,
-        0,
-        0
-    );
-    TEST_NUM_SHL(4, 1,
-        1, 1,
-        1, 2
-    );
-    TEST_NUM_SHL(5, 64,
-        1, 1,
-        2, 1, 0
-    );
-    TEST_NUM_SHL(6, 65,
-        1, 1,
-        2, 2, 0
-    );
+    TEST_NUM_SHL(1, (0), 0, (0));
+    TEST_NUM_SHL(2, (0), 1, (0));
+    TEST_NUM_SHL(3, (0), 64, (0));
+    TEST_NUM_SHL(4, (1, 1), 1, (1, 2));
+    TEST_NUM_SHL(5, (1, 1), 64, (2, 1, 0));
+    TEST_NUM_SHL(6, (1, 1), 65, (2, 2, 0));
 
     #undef TEST_NUM_SHL
 
@@ -1543,43 +1528,24 @@ void test_num_shr(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_NUM_SHR(TAG, BITS, ...)                \
-    {                                                   \
-        num_t num[2];                                   \
-        if(show) printf("\n\t\t%s %d", __func__, TAG);  \
-        num_create_immed_vec(num, 2, __VA_ARGS__);      \
-        num[0] = num_shr(num[0], BITS);                 \
-        assert(num_str(num[0], num[1]));                \
+    #define TEST_NUM_SHR(TAG, NUM_IN, BITS, NUM_OUT)        \
+    {                                                       \
+        TEST_CASE_OPEN(TAG)                                 \
+        {                                                   \
+            num_t num = num_create_immed(ARG_OPEN NUM_IN);  \
+            num = num_shr(num, BITS);                       \
+            assert(num_immed(num, ARG_OPEN NUM_OUT));       \
+        }                                                   \
+        TEST_CASE_CLOSE                                     \
     }
 
-    TEST_NUM_SHR(1, 0,
-        0,
-        0
-    );
-    TEST_NUM_SHR(2, 1,
-        0,
-        0
-    );
-    TEST_NUM_SHR(3, 1,
-        1, 1,
-        0
-    );
-    TEST_NUM_SHR(4, 1,
-        1, 2,
-        1, 1
-    );
-    TEST_NUM_SHR(5, 64,
-        2, 1, 0,
-        1, 1
-    );
-    TEST_NUM_SHR(6, 65,
-        2, 1, 0,
-        0
-    );
-    TEST_NUM_SHR(7, 65,
-        2, 2, 0,
-        1, 1
-    );
+    TEST_NUM_SHR(1, (0), 0, (0));
+    TEST_NUM_SHR(2, (0), 1, (0));
+    TEST_NUM_SHR(3, (1, 1), 1, (0));
+    TEST_NUM_SHR(4, (1, 2), 1, (1, 1));
+    TEST_NUM_SHR(5, (2, 1, 0), 64, (1, 1));
+    TEST_NUM_SHR(6, (2, 1, 0), 65, (0));
+    TEST_NUM_SHR(7, (2, 2, 0), 65, (1, 1));
 
     #undef TEST_NUM_SHR
 
@@ -1593,54 +1559,57 @@ void test_num_add(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_NUM_ADD(TAG, ...)                      \
-    {                                                   \
-        num_t num[3];                                   \
-        if(show) printf("\n\t\t%s %d", __func__, TAG);  \
-        num_create_immed_vec(num, 3, __VA_ARGS__);      \
-        num[0] = num_add(num[0], num[1]);               \
-        assert(num_str(num[0], num[2]));                \
+    #define TEST_NUM_ADD(TAG, NUM_1, NUM_2, NUM_OUT)        \
+    {                                                       \
+        TEST_CASE_OPEN(TAG)                                 \
+        {                                                   \
+            num_t num_1 = num_create_immed(ARG_OPEN NUM_1); \
+            num_t num_2 = num_create_immed(ARG_OPEN NUM_2); \
+            num_1 = num_add(num_1, num_2);                  \
+            assert(num_immed(num_1, ARG_OPEN NUM_OUT));     \
+        }                                                   \
+        TEST_CASE_CLOSE                                     \
     }
 
     TEST_NUM_ADD(1,
-        0,
-        0,
-        0
+        (0),
+        (0),
+        (0)
     )
     TEST_NUM_ADD(2,
-        1, 1,
-        0,
-        1, 1
+        (1, 1),
+        (0),
+        (1, 1)
     );
     TEST_NUM_ADD(3,
-        0,
-        1, 1,
-        1, 1
+        (0),
+        (1, 1),
+        (1, 1)
     );
     TEST_NUM_ADD(4,
-        1, 1,
-        1, 2,
-        1, 3
+        (1, 1),
+        (1, 2),
+        (1, 3)
     );
     TEST_NUM_ADD(5,
-        2, 2, 1,
-        1, 2,
-        2, 2, 3
+        (2, 2, 1),
+        (1, 2),
+        (2, 2, 3)
     );
     TEST_NUM_ADD(6,
-        1, 1,
-        2, 2, 3,
-        2, 2, 4
+        (1, 1),
+        (2, 2, 3),
+        (2, 2, 4)
     );
     TEST_NUM_ADD(7,
-        2, UINT64_MAX, UINT64_MAX,
-        1, 1,
-        3, 1, 0, 0
+        (2, UINT64_MAX, UINT64_MAX),
+        (1, 1),
+        (3, 1, 0, 0)
     );
     TEST_NUM_ADD(8,
-        1, 1,
-        2, UINT64_MAX, UINT64_MAX,
-        3, 1, 0, 0
+        (1, 1),
+        (2, UINT64_MAX, UINT64_MAX),
+        (3, 1, 0, 0)
     );
 
     #undef TEST_NUM_ADD
@@ -1652,54 +1621,57 @@ void test_num_sub(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_NUM_SUB(TAG, ...)                          \
+    #define TEST_NUM_SUB(TAG, NUM_1, NUM_2, NUM_OUT)        \
     {                                                       \
-        num_t num[3];                                       \
-        if(show) printf("\n\t\t%s %d\t\t", __func__, TAG);  \
-        num_create_immed_vec(num, 3, __VA_ARGS__);          \
-        num[0] = num_sub(num[0], num[1]);                   \
-        assert(num_str(num[0], num[2]));                    \
+        TEST_CASE_OPEN(TAG)                                 \
+        {                                                   \
+            num_t num_1 = num_create_immed(ARG_OPEN NUM_1); \
+            num_t num_2 = num_create_immed(ARG_OPEN NUM_2); \
+            num_1 = num_sub(num_1, num_2);                  \
+            assert(num_immed(num_1, ARG_OPEN NUM_OUT));     \
+        }                                                   \
+        TEST_CASE_CLOSE                                     \
     }
 
     TEST_NUM_SUB(1,
-        0,
-        0,
-        0
+        (0),
+        (0),
+        (0)
     );
     TEST_NUM_SUB(2,
-        1, 1,
-        0,
-        1, 1
+        (1, 1),
+        (0),
+        (1, 1)
     );
     TEST_NUM_SUB(3,
-        1, 2,
-        1, 1,
-        1, 1
+        (1, 2),
+        (1, 1),
+        (1, 1)
     );
     TEST_NUM_SUB(4,
-        1, 2,
-        1, 2,
-        0
+        (1, 2),
+        (1, 2),
+        (0)
     );
     TEST_NUM_SUB(5,
-        2, 1, 0,
-        1, 1,
-        1, UINT64_MAX
+        (2, 1, 0),
+        (1, 1),
+        (1, UINT64_MAX)
     );
     TEST_NUM_SUB(6,
-        2, 4, 3,
-        2, 1, 2,
-        2, 3, 1
+        (2, 4, 3),
+        (2, 1, 2),
+        (2, 3, 1)
     );
     TEST_NUM_SUB(7,
-        2, 1, 0,
-        2, 1, 0,
-        0
+        (2, 1, 0),
+        (2, 1, 0),
+        (0)
     );
     TEST_NUM_SUB(8,
-        5, 1, 0, 0, 0, 0,
-        4, 0x8000000000000000, 0, 0, 0x8000000000000000,
-        4, UINT64_MAX >> 1, UINT64_MAX, UINT64_MAX, 0x8000000000000000
+        (5, 1, 0, 0, 0, 0),
+        (4, 0x8000000000000000, 0, 0, 0x8000000000000000),
+        (4, UINT64_MAX >> 1, UINT64_MAX, UINT64_MAX, 0x8000000000000000)
     );
 
     #undef TEST_NUM_SUB
@@ -1711,89 +1683,92 @@ void test_num_mul(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_NUM_MUL(TAG, ...)                      \
-    {                                                   \
-        num_t num[3];                                   \
-        if(show) printf("\n\t\t%s %2d", __func__, TAG); \
-        num_create_immed_vec(num, 3, __VA_ARGS__);      \
-        num[0] = num_mul(num[0], num[1]);               \
-        assert(num_str(num[0], num[2]));                \
+    #define TEST_NUM_MUL(TAG, NUM_1, NUM_2, NUM_OUT)        \
+    {                                                       \
+        TEST_CASE_OPEN(TAG)                                 \
+        {                                                   \
+            num_t num_1 = num_create_immed(ARG_OPEN NUM_1); \
+            num_t num_2 = num_create_immed(ARG_OPEN NUM_2); \
+            num_1 = num_mul(num_1, num_2);                  \
+            assert(num_immed(num_1, ARG_OPEN NUM_OUT));     \
+        }                                                   \
+        TEST_CASE_CLOSE                                     \
     }
 
     TEST_NUM_MUL(1,
-        0,
-        0,
-        0
+        (0),
+        (0),
+        (0)
     );
     TEST_NUM_MUL(2,
-        1, 1,
-        0,
-        0
+        (1, 1),
+        (0),
+        (0)
     );
     TEST_NUM_MUL(3,
-        0,
-        1, 1,
-        0
+        (0),
+        (1, 1),
+        (0)
     );
     TEST_NUM_MUL(4,
-        1, 2,
-        1, 3,
-        1, 6
+        (1, 2),
+        (1, 3),
+        (1, 6)
     );
     TEST_NUM_MUL(5,
-        1, UINT64_MAX,
-        1, UINT64_MAX,
-        2, UINT64_MAX - 1, 1
+        (1, UINT64_MAX),
+        (1, UINT64_MAX),
+        (2, UINT64_MAX - 1, 1)
     );
     TEST_NUM_MUL(6,
-        2, 2, 3,
-        1, 4,
-        2, 8, 12
+        (2, 2, 3),
+        (1, 4),
+        (2, 8, 12)
     );
     TEST_NUM_MUL(7,
-        1, 2,
-        2, 3, 4,
-        2, 6, 8
+        (1, 2),
+        (2, 3, 4),
+        (2, 6, 8)
     );
     TEST_NUM_MUL(8,
-        2, 2, 3,
-        2, 4, 5,
-        3, 8, 22, 15
+        (2, 2, 3),
+        (2, 4, 5),
+        (3, 8, 22, 15)
     );
     TEST_NUM_MUL(9,
-        2, 1, 0,
-        1, 1,
-        2, 1, 0
+        (2, 1, 0),
+        (1, 1),
+        (2, 1, 0)
     );
     TEST_NUM_MUL(10,
-        1, 1,
-        2, 1, 0,
-        2, 1, 0
+        (1, 1),
+        (2, 1, 0),
+        (2, 1, 0)
     );
     TEST_NUM_MUL(11,
-        2, 1, 0,
-        2, 1, 0,
-        3, 1, 0, 0
+        (2, 1, 0),
+        (2, 1, 0),
+        (3, 1, 0, 0)
     );
     TEST_NUM_MUL(12,
-        1, 2,
-        2, 2, UINT64_MAX,
-        2, 5, UINT64_MAX - 1
+        (1, 2),
+        (2, 2, UINT64_MAX),
+        (2, 5, UINT64_MAX - 1)
     );
     TEST_NUM_MUL(13,
-        2, UINT64_MAX, UINT64_MAX,
-        2, UINT64_MAX, UINT64_MAX,
-        4, UINT64_MAX, UINT64_MAX - 1, 0, 1
+        (2, UINT64_MAX, UINT64_MAX),
+        (2, UINT64_MAX, UINT64_MAX),
+        (4, UINT64_MAX, UINT64_MAX - 1, 0, 1)
     );
     TEST_NUM_MUL(14,
-        3, 2, 3, 4,
-        3, 5, 6, 7,
-        5, 10, 27, 52, 45, 28
+        (3, 2, 3, 4),
+        (3, 5, 6, 7),
+        (5, 10, 27, 52, 45, 28)
     );
     TEST_NUM_MUL(14,
-        3, 2, 3, 4,
-        3, 5, 6, 7,
-        5, 10, 27, 52, 45, 28
+        (3, 2, 3, 4),
+        (3, 5, 6, 7),
+        (5, 10, 27, 52, 45, 28)
     );
 
     #undef TEST_NUM_MUL
@@ -1805,46 +1780,48 @@ void test_num_sqr(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_NUM_SQR(TAG, ...)                          \
+    #define TEST_NUM_SQR(TAG, NUM_IN, NUM_OUT)              \
     {                                                       \
-        num_t num[2];                                       \
-        if(show) printf("\n\t\t%s %d\t\t", __func__, TAG);  \
-        num_create_immed_vec(num, 2, __VA_ARGS__);          \
-        num[0] = num_sqr(num[0]);                           \
-        assert(num_str(num[0], num[1]));                    \
+        TEST_CASE_OPEN(TAG)                                 \
+        {                                                   \
+            num_t num = num_create_immed(ARG_OPEN NUM_IN);  \
+            num = num_sqr(num);                             \
+            assert(num_immed(num, ARG_OPEN NUM_OUT));       \
+        }                                                   \
+        TEST_CASE_CLOSE                                     \
     }
 
     TEST_NUM_SQR(1,
-        0,
-        0
+        (0),
+        (0)
     );
     TEST_NUM_SQR(2,
-        1, 1,
-        1, 1
+        (1, 1),
+        (1, 1)
     );
     TEST_NUM_SQR(3,
-        1, 2,
-        1, 4
+        (1, 2),
+        (1, 4)
     );
     TEST_NUM_SQR(4,
-        1, (uint64_t)(UINT32_MAX),
-        1, 0xfffffffe00000001
+        (1, (uint64_t)(UINT32_MAX)),
+        (1, 0xfffffffe00000001)
     );
     TEST_NUM_SQR(5,
-        1, (uint64_t)1 << 32,
-        2, 1, 0
+        (1, (uint64_t)1 << 32),
+        (2, 1, 0)
     );
     TEST_NUM_SQR(6,
-        2, 1, 0,
-        3, 1, 0, 0
+        (2, 1, 0),
+        (3, 1, 0, 0)
     );
     TEST_NUM_SQR(7,
-        2, 2, 3,
-        3, 4, 12, 9
+        (2, 2, 3),
+        (3, 4, 12, 9)
     );
     TEST_NUM_SQR(8,
-        2, UINT64_MAX, UINT64_MAX,
-        4, UINT64_MAX, UINT64_MAX - 1, 0, 1
+        (2, UINT64_MAX, UINT64_MAX),
+        (4, UINT64_MAX, UINT64_MAX - 1, 0, 1)
     );
 
     #undef TEST_NUM_SQR
@@ -1856,180 +1833,187 @@ void test_num_div_mod(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_NUM_DIV_MOD(TAG, ...)                      \
-    {                                                       \
-        num_t num_q, num_r, num[4];                         \
-        if(show) printf("\n\t\t%s %2d\t\t", __func__, TAG); \
-        num_create_immed_vec(num, 4, __VA_ARGS__);          \
-        num_div_mod(&num_q, &num_r, num[0], num[1]);        \
-        assert(num_str(num_q, num[2]));                     \
-        assert(num_str(num_r, num[3]));                     \
-        chunk_pool_clean();                                 \
-        assert(clu_mem_is_empty());                            \
+    #define TEST_NUM_DIV_MOD(TAG, NUM_1, NUM_2, NUM_Q, NUM_R)   \
+    {                                                           \
+        TEST_CASE_OPEN(TAG)                                     \
+        {                                                       \
+            num_t num_q, num_r;                                 \
+            num_t num_1 = num_create_immed(ARG_OPEN NUM_1);     \
+            num_t num_2 = num_create_immed(ARG_OPEN NUM_2);     \
+            num_div_mod(&num_q, &num_r, num_1, num_2);          \
+            assert(num_immed(num_q, ARG_OPEN NUM_Q));           \
+            assert(num_immed(num_r, ARG_OPEN NUM_R));           \
+        }                                                       \
+        TEST_CASE_CLOSE                                         \
     }
 
     TEST_NUM_DIV_MOD(1,
-        0,
-        1, 1,
-        0,
-        0
+        (0),
+        (1, 1),
+        (0),
+        (0)
     );
     TEST_NUM_DIV_MOD(2,
-        1, 4,
-        1, 2,
-        1, 2,
-        0
+        (1, 4),
+        (1, 2),
+        (1, 2),
+        (0)
     );
     TEST_NUM_DIV_MOD(3,
-        1, 5,
-        1, 2,
-        1, 2,
-        1, 1
+        (1, 5),
+        (1, 2),
+        (1, 2),
+        (1, 1)
     );
     TEST_NUM_DIV_MOD(4,
-        1, 5,
-        1, 5,
-        1, 1,
-        0
+        (1, 5),
+        (1, 5),
+        (1, 1),
+        (0)
     );
     TEST_NUM_DIV_MOD(5,
-        1, 9,
-        1, 3,
-        1, 3,
-        0
+        (1, 9),
+        (1, 3),
+        (1, 3),
+        (0)
     );
     TEST_NUM_DIV_MOD(6,
-        3, 1, 0, 0,
-        2, 1, 0,
-        2, 1, 0,
-        0
+        (3, 1, 0, 0),
+        (2, 1, 0),
+        (2, 1, 0),
+        (0)
     );
     TEST_NUM_DIV_MOD(7,
-        1, 1,
-        2, 1, 0,
-        0,
-        1, 1
+        (1, 1),
+        (2, 1, 0),
+        (0),
+        (1, 1)
     );
     TEST_NUM_DIV_MOD(8,
-        2, 4, UINT64_MAX,
-        2, 2, 0,
-        1, 2,
-        1, UINT64_MAX
+        (2, 4, UINT64_MAX),
+        (2, 2, 0),
+        (1, 2),
+        (1, UINT64_MAX)
     );
     TEST_NUM_DIV_MOD(9,
-        2, 4, 0,
-        2, 2, UINT64_MAX,
-        1, 1,
-        2, 1, 1
+        (2, 4, 0),
+        (2, 2, UINT64_MAX),
+        (1, 1),
+        (2, 1, 1)
     );
     TEST_NUM_DIV_MOD(10,
-        2, 1, 0,
-        1, UINT64_MAX,
-        1, 1,
-        1, 1
+        (2, 1, 0),
+        (1, UINT64_MAX),
+        (1, 1),
+        (1, 1)
     );
     TEST_NUM_DIV_MOD(11,
-        2, UINT64_MAX, 0,
-        2, 1, UINT64_MAX,
-        1, UINT64_MAX >> 1,
-        2, 1, UINT64_MAX >> 1
+        (2, UINT64_MAX, 0),
+        (2, 1, UINT64_MAX),
+        (1, UINT64_MAX >> 1),
+        (2, 1, UINT64_MAX >> 1)
     );
     TEST_NUM_DIV_MOD(12,
-        2, 0xc929d7d593, 0xb7090a859117cfa4,
-        2, 6, 0xea7db545decb57a4,
-        1, 0x0000001d1635b735,
-        1, 0x88c80995d8646eb0
+        (2, 0xc929d7d593, 0xb7090a859117cfa4),
+        (2, 6, 0xea7db545decb57a4),
+        (1, 0x0000001d1635b735),
+        (1, 0x88c80995d8646eb0)
     );
     TEST_NUM_DIV_MOD(13,
-        3, UINT64_MAX, 0, UINT64_MAX,
-        1, UINT64_MAX,
-        3, 1, 0, 1,
-        0
+        (3, UINT64_MAX, 0, UINT64_MAX),
+        (1, UINT64_MAX),
+        (3, 1, 0, 1),
+        (0)
     );
     TEST_NUM_DIV_MOD(14,
-        5, UINT64_MAX, 0, 0, 0, UINT64_MAX,
-        1, UINT64_MAX,
-        5, 1, 0, 0, 0, 1,
-        0
+        (5, UINT64_MAX, 0, 0, 0, UINT64_MAX),
+        (1, UINT64_MAX),
+        (5, 1, 0, 0, 0, 1),
+        (0)
     );
     TEST_NUM_DIV_MOD(15,
-        6, 4, 0, 8, 4, 0, 0,
-        4, 4, 0, 0, 4,
-        3, 1, 0, 1,
-        4, 3, UINT64_MAX, UINT64_MAX, UINT64_MAX - 3
+        (6, 4, 0, 8, 4, 0, 0),
+        (4, 4, 0, 0, 4),
+        (3, 1, 0, 1),
+        (4, 3, UINT64_MAX, UINT64_MAX, UINT64_MAX - 3)
     );
     TEST_NUM_DIV_MOD(16,
-        3, 1, 1, 0,
-        2, 1, 2,
-        1, UINT64_MAX,
-        1, 2
+        (3, 1, 1, 0),
+        (2, 1, 2),
+        (1, UINT64_MAX),
+        (1, 2)
     );
     TEST_NUM_DIV_MOD(17,
-        3, UINT64_MAX, UINT64_MAX, UINT64_MAX,
-        2, UINT64_MAX, UINT64_MAX,
-        2, 1, 0,
-        1, UINT64_MAX
+        (3, UINT64_MAX, UINT64_MAX, UINT64_MAX),
+        (2, UINT64_MAX, UINT64_MAX),
+        (2, 1, 0),
+        (1, UINT64_MAX)
     );
     TEST_NUM_DIV_MOD(18,
-        3, 1, 0, 0,
-        2, 1, UINT64_MAX,
-        1, 0x8000000000000000,
-        1, 0x8000000000000000
+        (3, 1, 0, 0),
+        (2, 1, UINT64_MAX),
+        (1, 0x8000000000000000),
+        (1, 0x8000000000000000)
     );
     TEST_NUM_DIV_MOD(19,
-        4, 1, 0, 0, 0,
-        3, 1, 0, UINT64_MAX,
-        1, UINT64_MAX,
-        2, 1, UINT64_MAX
+        (4, 1, 0, 0, 0),
+        (3, 1, 0, UINT64_MAX),
+        (1, UINT64_MAX),
+        (2, 1, UINT64_MAX)
     );
     TEST_NUM_DIV_MOD(20,
-        3, 1, UINT64_MAX - 1, 0,
-        2, 1, UINT64_MAX,
-        1, UINT64_MAX,
-        1, UINT64_MAX
+        (3, 1, UINT64_MAX - 1, 0),
+        (2, 1, UINT64_MAX),
+        (1, UINT64_MAX),
+        (1, UINT64_MAX)
     );
     TEST_NUM_DIV_MOD(21,
-        4, 1, UINT64_MAX, UINT64_MAX - 1, 0,
-        3, 1, UINT64_MAX, UINT64_MAX,
-        1, UINT64_MAX,
-        3, 1, UINT64_MAX - 1, UINT64_MAX
+        (4, 1, UINT64_MAX, UINT64_MAX - 1, 0),
+        (3, 1, UINT64_MAX, UINT64_MAX),
+        (1, UINT64_MAX),
+        (3, 1, UINT64_MAX - 1, UINT64_MAX)
     );
     TEST_NUM_DIV_MOD(22,
-        3, UINT64_MAX, 0, 0,
-        2, UINT64_MAX, UINT64_MAX,
-        1, UINT64_MAX,
-        1, UINT64_MAX
+        (3, UINT64_MAX, 0, 0),
+        (2, UINT64_MAX, UINT64_MAX),
+        (1, UINT64_MAX),
+        (1, UINT64_MAX)
     );
     TEST_NUM_DIV_MOD(23,
-        3, 2, 0, 0,
-        2, 2, UINT64_MAX,
-        1, 0xAAAAAAAAAAAAAAAA,
-        2, 2, 0xAAAAAAAAAAAAAAAA
+        (3, 2, 0, 0),
+        (2, 2, UINT64_MAX),
+        (1, 0xAAAAAAAAAAAAAAAA),
+        (2, 2, 0xAAAAAAAAAAAAAAAA)
     );
     TEST_NUM_DIV_MOD(24,
-        5, 1, 0, 0, 0, 0,
-        4, 0x8000000000000000, 0, 0, 0x8000000000000000,
-        1, 1,
-        4, UINT64_MAX >> 1, UINT64_MAX, UINT64_MAX, 0x8000000000000000
+        (5, 1, 0, 0, 0, 0),
+        (4, 0x8000000000000000, 0, 0, 0x8000000000000000),
+        (1, 1),
+        (4, UINT64_MAX >> 1, UINT64_MAX, UINT64_MAX, 0x8000000000000000)
     );
     TEST_NUM_DIV_MOD(25,
-        6, 0x8000000000000000, 1, 0, 0x8000000000000000, 0, 0,
-        4, 0x8000000000000000, 0, 0, 0x8000000000000000,
-        3, 1, 0, 1,
-        4, UINT64_MAX >> 1, UINT64_MAX, UINT64_MAX, 0x8000000000000000
+        (6, 0x8000000000000000, 1, 0, 0x8000000000000000, 0, 0),
+        (4, 0x8000000000000000, 0, 0, 0x8000000000000000),
+        (3, 1, 0, 1),
+        (4, UINT64_MAX >> 1, UINT64_MAX, UINT64_MAX, 0x8000000000000000)
     );
 
     #undef TEST_NUM_DIV_MOD
 
-    if(show) printf("\n\t\t%s 26\t\t", __func__);
-    num_t num_1 = num_create_immed(1, 1);
-    num_t num_2 = num_create_immed(0);
-    num_t num_q, num_r;
-    TEST_REVERT_OPEN
-    num_div_mod(&num_q, &num_r, num_1, num_2);
-    TEST_REVERT_CLOSE
-    num_free(num_1);
-    num_free(num_2);
+    TEST_CASE_OPEN(25)
+    {
+        num_t num_1 = num_create_immed(1, 1);
+        num_t num_2 = num_create_immed(0);
+        num_t num_q, num_r;
+        TEST_REVERT_OPEN
+        {
+            num_div_mod(&num_q, &num_r, num_1, num_2);
+        }
+        TEST_REVERT_CLOSE
+        num_free(num_1);
+        num_free(num_2);
+    }
+    TEST_CASE_CLOSE
 
     TEST_FN_CLOSE
 }
@@ -2038,7 +2022,7 @@ void test_num_div_mod(bool show)
 
 void test_num()
 {
-    printf("\n%s", __func__);
+    TEST_LIB
 
     bool show = true;
 
