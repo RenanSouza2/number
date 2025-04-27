@@ -944,7 +944,7 @@ void test_num_sub_uint_offset(bool show)
     {                                                                           \
         TEST_CASE_OPEN(TAG)                                                     \
         {                                                                       \
-            num_t num = num_create_immed(ARG_OPEN NUM_AFT);                     \
+            num_t num = num_create_immed(ARG_OPEN NUM_BEF);                     \
             chunk_p chunk = num_get_chunk(num, OFFSET);                         \
             bool res = num_sub_uint_offset(&num, chunk, VALUE);                 \
             assert(num_immed(num, ARG_OPEN NUM_AFT));                           \
@@ -1178,7 +1178,7 @@ void test_num_mul_uint(bool show)
             num_t num = num_create_immed(ARG_OPEN NUM_BEF); \
             num_t num_res = num_mul_uint(num, VALUE);       \
             assert(num_immed(num_res, ARG_OPEN NUM_AFT));   \
-            num_free(num_res);                              \
+            num_free(num);                                  \
         }                                                   \
         TEST_CASE_CLOSE                                     \
     }
@@ -1210,7 +1210,7 @@ void test_num_add_mul_uint(bool show)
             num_t num_res = num_create_immed(1, 1);             \
             num_res = num_add_mul_uint(num_res, num, VALUE);    \
             assert(num_immed(num_res, ARG_OPEN NUM_AFT));       \
-            num_free(num_res);                                  \
+            num_free(num);                                      \
         }                                                       \
         TEST_CASE_CLOSE                                         \
     }
@@ -1241,10 +1241,10 @@ void test_num_sub_offset(bool show)
         TEST_CASE_OPEN(TAG)                                                     \
         {                                                                       \
             num_t num_1 = num_create_immed(ARG_OPEN NUM_1);                     \
-            num_t num_2 = num_create_immed(ARG_OPEN NUM_1);                     \
+            num_t num_2 = num_create_immed(ARG_OPEN NUM_2);                     \
             chunk_p chunk_bef = num_get_chunk(num_1, OFFSET);                   \
             chunk_p chunk_aft = num_sub_offset(&num_1, chunk_bef, num_2);       \
-            assert(num_immed(num_1, ARG_OPEN NUM_1));                           \
+            assert(num_immed(num_1, ARG_OPEN NUM_RES));                         \
             if(ELIMINATE) {assert(chunk_aft == NULL);}                          \
             else          {assert(chunk_aft == chunk_bef);}                     \
         }                                                                       \
