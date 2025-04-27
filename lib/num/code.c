@@ -465,6 +465,7 @@ chunk_p num_denormalize(num_p num, chunk_p chunk)
     return COALESCE(chunk, num_insert_tail(num, 0));
 }
 
+// returns true if NUM was not normalized
 bool num_normalize(num_p num)
 {
     CLU_HANDLER_IS_SAFE(num->head);
@@ -859,8 +860,9 @@ chunk_p num_sub_offset(num_p num_1, chunk_p chunk_1, num_t num_2)
 }
 
 /*
-R cannot be zero
 returns NUM_2 * R if less then NUM_1,
+returns 0 otherwise
+R cannot be zero
 keeps NUM_1 and NUM_2
 */
 num_t num_cmp_mul_uint_offset(num_t num_1, num_t num_2, uint64_t r, uint64_t offset)

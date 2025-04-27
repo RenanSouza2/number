@@ -191,7 +191,7 @@ void fibonacci_3(uint64_t min, uint64_t max)
 {
     num_t num_a = num_wrap(0);
     num_t num_b = num_wrap(1);
-    
+
     printf("\n");
     for(uint64_t i=0; i < max; i++)
     {
@@ -201,11 +201,11 @@ void fibonacci_3(uint64_t min, uint64_t max)
         uint64_t begin = altutime();
 
         num_t num_c = num_add(num_copy(num_a), num_copy(num_b));
-    
+
         num_a = num_sqr(num_a);
         num_b = num_sqr(num_b);
         num_c = num_sqr(num_c);
-        
+
         num_t num_a_new = num_add(num_copy(num_a), num_b);
         num_t num_b_new = num_sub(num_c, num_a);
 

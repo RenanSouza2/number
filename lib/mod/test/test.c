@@ -19,7 +19,7 @@ void test_mod_create(bool show)
         assert(mod_immed(mod, 0));
     }
     TEST_CASE_CLOSE
-    
+
     TEST_CASE_OPEN(2)
     {
         CLU_HANDLER_IS_SAFE(p.head);
@@ -28,7 +28,7 @@ void test_mod_create(bool show)
         assert(mod_immed(mod, 1, 1));
     }
     TEST_CASE_CLOSE
-    
+
     TEST_CASE_OPEN(3)
     {
         num_t num = num_create_immed(1, 7);
@@ -46,7 +46,7 @@ void test_mod_create(bool show)
     TEST_CASE_CLOSE
 
     num_free(p);
-    
+
     TEST_FN_CLOSE
 }
 
