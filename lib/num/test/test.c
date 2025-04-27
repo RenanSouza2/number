@@ -811,7 +811,6 @@ void test_num_unwrap(bool show)
             num_unwrap(num);
         }
         TEST_REVERT_CLOSE
-        num_free(num);
     }
     TEST_CASE_CLOSE
 
@@ -1015,7 +1014,6 @@ void test_num_sub_uint_offset(bool show)
                 num_sub_uint_offset(&num, chunk, VALUE);        \
             }                                                   \
             TEST_REVERT_CLOSE                                   \
-            num_free(num);                                      \
         }                                                       \
         TEST_CASE_CLOSE                                         \
     }
@@ -1154,7 +1152,6 @@ void test_num_sub_uint(bool show)
                 num_sub_uint(num, VALUE);               \
             }                                           \
             TEST_REVERT_CLOSE                           \
-            num_free(num);                              \
         }                                               \
         TEST_CASE_CLOSE                                 \
     }
@@ -1272,8 +1269,6 @@ void test_num_sub_offset(bool show)
                 num_sub_offset(&num_1, chunk, num_2);       \
             }                                               \
             TEST_REVERT_CLOSE                               \
-            num_free(num_1);                                \
-            num_free(num_2);                                \
         }                                                   \
         TEST_CASE_CLOSE                                     \
     }
@@ -2010,8 +2005,6 @@ void test_num_div_mod(bool show)
             num_div_mod(&num_q, &num_r, num_1, num_2);
         }
         TEST_REVERT_CLOSE
-        num_free(num_1);
-        num_free(num_2);
     }
     TEST_CASE_CLOSE
 
