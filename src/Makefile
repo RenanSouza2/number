@@ -27,6 +27,8 @@ $(LIB):
 $(DGB):
 	$(MAKE) debug.o --directory=$(dir $@)
 
+
+
 clean:
 	rm -rf *.o
 	$(MAKE) clean --directory=$(dir $(LIB))
