@@ -968,9 +968,7 @@ num_t num_div_mod_general(num_p num_1, chunk_p chunk_1, num_t num_2)
     return num_q;
 }
 
-/*
-NUM_R has to be shifted RES bites to the right
-*/
+/* NUM_R has to be shifted RES bites to the right */
 uint64_t num_div_mod_unajusted(num_p out_num_q, num_p out_num_r, num_t num_1, num_t num_2)
 {
     CLU_HANDLER_IS_SAFE(num_1.head);
@@ -1035,10 +1033,11 @@ num_t num_shl(num_t num, uint64_t bits)
     if(num.count == 0)
         return num;
 
+    num = num_shl_uint(num, bits & 0x3f);
     for(; bits > 63; bits -= 64)
         num_insert_head(&num, 0);
 
-    return num_shl_uint(num, bits);
+    return num;
 }
 
 num_t num_shr(num_t num, uint64_t bits)
