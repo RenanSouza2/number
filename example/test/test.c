@@ -12,7 +12,7 @@ void test_example()
 
     bool show = true;
 
-    TEST_ASSERT_EMPTY
+    TEST_ASSERT_MEM_EMPTY
 }
 
 
@@ -20,9 +20,7 @@ void test_example()
 int main()
 {
     setbuf(stdout, NULL);
-    TEST_TIMEOUT_OPEN_DEFAULT
     test_example();
-    TEST_TIMEOUT_CLOSE
     printf("\n\n\tTest successful\n\n");
     return 0;
 }
