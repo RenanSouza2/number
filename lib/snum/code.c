@@ -11,30 +11,30 @@
 
 #include "../num/debug.h"
 
-snum_t snum_create_variadic(uint64_t signal, uint64_t n, va_list *args)
+sig_num_t sig_num_create_variadic(uint64_t signal, uint64_t n, va_list *args)
 {
     num_t num = num_create_variadic(n, args);
-    return snum_create(signal, num);
+    return sig_num_create(signal, num);
 }
 
-snum_t snum_create_immed(uint64_t signal, uint64_t n, ...)
+sig_num_t sig_num_create_immed(uint64_t signal, uint64_t n, ...)
 {
     va_list args;
     va_start(args, n);
-    return snum_create_variadic(signal, n, &args);
+    return sig_num_create_variadic(signal, n, &args);
 }
 
 
 
-bool snum_inner(snum_t snum_1, snum_t snum_2)
+bool sig_num_inner(sig_num_t sig_1, sig_num_t sig_2)
 {
-    if(!uint64(snum_1.signal, snum_2.signal))
+    if(!uint64(sig_1.signal, sig_2.signal))
     {
         printf("\n\tSIG ASSERT ERROR\t| DIFFERENT SIGNAL");
         return false;
     }
 
-    if(!num_eq_dbg(snum_1.num, snum_2.num))
+    if(!num_eq_dbg(sig_1.num, sig_2.num))
     {
         printf("\n\tSIG ASSERT ERROR\t| DIFFERENT NUMBER");
         return false;
@@ -43,69 +43,69 @@ bool snum_inner(snum_t snum_1, snum_t snum_2)
     return true;
 }
 
-bool snum_eq_dbg(snum_t snum_1, snum_t snum_2)
+bool sig_num_eq_dbg(sig_num_t sig_1, sig_num_t sig_2)
 {
-    if(!snum_inner(snum_1, snum_2))
+    if(!sig_num_inner(sig_1, sig_2))
     {
         printf("\n");
-        snum_display_tag("\tsnum_1", snum_1);
-        snum_display_tag("\tsnum_2", snum_2);
+        sig_num_display_tag("\tsig_1", sig_1);
+        sig_num_display_tag("\tsig_2", sig_2);
         return false;
     }
 
     return true;
 }
 
-bool snum_immed(snum_t snum, uint64_t signal, uint64_t n, ...)
+bool sig_num_immed(sig_num_t sig, uint64_t signal, uint64_t n, ...)
 {
     va_list args;
     va_start(args, n);
-    snum_t snum_2 = snum_create_variadic(signal, n, &args);
+    sig_num_t sig_2 = sig_num_create_variadic(signal, n, &args);
 
-    return snum_eq_dbg(snum, snum_2);
+    return sig_num_eq_dbg(sig, sig_2);
 }
 
 #endif
 
 
 
-void snum_display(snum_t snum, bool full)
+void sig_num_display(sig_num_t sig, bool full)
 {
-    if(snum.signal == ZERO)
+    if(sig.signal == ZERO)
     {
         printf("  0");
         return;
     }
 
-    printf("%c ", snum.signal & POSITIVE ? '+': '-');
+    printf("%c ", sig.signal & POSITIVE ? '+': '-');
 
     printf("[");
-    num_display_opts(snum.num, NULL, true, full);
+    num_display_opts(sig.num, NULL, true, full);
     printf("]");
 }
 
-void snum_display_tag(char tag[], snum_t snum)
+void sig_num_display_tag(char tag[], sig_num_t sig)
 {
     printf("\n%s:\t", tag);
-    snum_display(snum, false);
+    sig_num_display(sig, false);
 }
 
-void snum_display_full(char tag[], snum_t snum)
+void sig_num_display_full(char tag[], sig_num_t sig)
 {
     printf("\n%s:\t", tag);
-    snum_display(snum, true);
+    sig_num_display(sig, true);
 }
 
 
 
-snum_t snum_create(uint64_t signal, num_t num)
+sig_num_t sig_num_create(uint64_t signal, num_t num)
 {
     if(num_is_zero(num))
         signal = ZERO;
     else
         assert(signal != ZERO)
 
-    return (snum_t)
+    return (sig_num_t)
     {
         .num = num,
         .signal = signal
@@ -114,138 +114,135 @@ snum_t snum_create(uint64_t signal, num_t num)
 
 
 
-snum_t snum_wrap(int64_t value)
+sig_num_t sig_num_wrap(int64_t value)
 {
     if(value == 0)
     {
         num_t num = num_wrap(0);
-        return snum_create(ZERO, num);
+        return sig_num_create(ZERO, num);
     }
 
     if(value < 0)
     {
         num_t num = num_wrap(-value);
-        return snum_create(NEGATIVE, num);
+        return sig_num_create(NEGATIVE, num);
     }
 
     num_t num = num_wrap(value);
-    return snum_create(POSITIVE, num);
+    return sig_num_create(POSITIVE, num);
 }
 
-snum_t snum_wrap_str(char str[])
+sig_num_t sig_num_wrap_str(char str[])
 {
     uint64_t signal = str[0] == '-' ? NEGATIVE : POSITIVE;
     uint64_t offset = str[0] == '-' || str[0] == '+' ? 1 : 0;
     num_t num = num_wrap_str(&str[offset]);
-    return snum_create(signal, num);
+    return sig_num_create(signal, num);
 }
 
-snum_t snum_copy(snum_t snum)
+sig_num_t sig_num_copy(sig_num_t sig)
 {
-    num_t num = num_copy(snum.num);
-    return snum_create(snum.signal, num);
+    num_t num = num_copy(sig.num);
+    return sig_num_create(sig.signal, num);
 }
 
-void snum_free(snum_t snum)
+void sig_num_free(sig_num_t sig)
 {
-    num_free(snum.num);
+    num_free(sig.num);
 }
 
 
 
-bool snum_is_zero(snum_t snum)
+bool sig_num_is_zero(sig_num_t sig)
 {
-    return snum.signal == ZERO;
+    return sig.signal == ZERO;
 }
 
-int64_t snum_cmp(snum_t snum_1, snum_t snum_2)
+int64_t sig_num_cmp(sig_num_t sig_1, sig_num_t sig_2)
 {
-    if(snum_1.signal & POSITIVE)
+    if(sig_1.signal & POSITIVE)
     {
-        if(snum_2.signal & POSITIVE)
-            return num_cmp(snum_1.num, snum_2.num);
+        if(sig_2.signal & POSITIVE)
+            return num_cmp(sig_1.num, sig_2.num);
 
         return 1;
     }
 
-    if(snum_2.signal & POSITIVE)
+    if(sig_2.signal & POSITIVE)
         return -1;
 
-    return -num_cmp(snum_1.num, snum_2.num);
+    return -num_cmp(sig_1.num, sig_2.num);
 }
 
 
 
-snum_t snum_shl(snum_t snum, uint64_t bits)
+sig_num_t sig_num_shl(sig_num_t sig, uint64_t bits)
 {
-    snum.num = num_shl(snum.num, bits);
-    return snum;
+    sig.num = num_shl(sig.num, bits);
+    return sig;
 }
 
-snum_t snum_shr(snum_t snum, uint64_t bits)
+sig_num_t sig_num_shr(sig_num_t sig, uint64_t bits)
 {
-    snum.num = num_shr(snum.num, bits);
-    if(num_is_zero(snum.num))
-        snum.signal = ZERO;
-
-    return snum;
+    num_t num = num_shr(sig.num, bits);
+    return sig_num_create(sig.signal, num);
 }
 
 
 
-snum_t snum_opposite(snum_t snum)
+sig_num_t sig_num_opposite(sig_num_t sig)
 {
-    snum.signal = snum.signal >> 1 | (snum.signal & POSITIVE) << 1;
-    return snum;
+    sig.signal = sig.signal >> 1 | (sig.signal & POSITIVE) << 1;
+    return sig;
 }
 
-snum_t snum_add(snum_t snum_1, snum_t snum_2)
+sig_num_t sig_num_add(sig_num_t sig_1, sig_num_t sig_2)
 {
-    uint64_t signal_res = snum_1.signal & snum_2.signal;
+    uint64_t signal_res = sig_1.signal & sig_2.signal;
     if(signal_res)
     {
-        num_t num_res = num_add(snum_1.num, snum_2.num);
-        return snum_create(signal_res, num_res);
+        num_t num_res = num_add(sig_1.num, sig_2.num);
+        return sig_num_create(signal_res, num_res);
     }
 
-    if(num_cmp(snum_1.num, snum_2.num) > 0)
+    if(num_cmp(sig_1.num, sig_2.num) > 0)
     {
-        num_t num_res = num_sub(snum_1.num, snum_2.num);
-        signal_res = snum_1.signal;
-        return snum_create(signal_res, num_res);
+        num_t num_res = num_sub(sig_1.num, sig_2.num);
+        signal_res = sig_1.signal;
+        return sig_num_create(signal_res, num_res);
     }
 
-    num_t num_res = num_sub(snum_2.num, snum_1.num);
-    signal_res = snum_2.signal;
-    return snum_create(signal_res, num_res);
+    num_t num_res = num_sub(sig_2.num, sig_1.num);
+    signal_res = sig_2.signal;
+    return sig_num_create(signal_res, num_res);
 }
 
-snum_t snum_sub(snum_t snum_1, snum_t snum_2)
+sig_num_t sig_num_sub(sig_num_t sig_1, sig_num_t sig_2)
 {
-    snum_2 = snum_opposite(snum_2);
-    return snum_add(snum_1, snum_2);
+    sig_2 = sig_num_opposite(sig_2);
+    return sig_num_add(sig_1, sig_2);
 }
 
-snum_t snum_mul(snum_t snum_1, snum_t snum_2)
+sig_num_t sig_num_mul(sig_num_t sig_1, sig_num_t sig_2)
 {
-    uint64_t signal_res = snum_1.signal & snum_2.signal ?
+    uint64_t signal_res = sig_1.signal & sig_2.signal ?
         POSITIVE : NEGATIVE;
 
-    num_t num_res = num_mul(snum_1.num, snum_2.num);
-    return snum_create(signal_res, num_res);
+    num_t num_res = num_mul(sig_1.num, sig_2.num);
+    return sig_num_create(signal_res, num_res);
 }
 
-snum_t snum_sqr(snum_t snum) // TODO test
+sig_num_t sig_num_sqr(sig_num_t sig) // TODO test
 {
-    num_t num = num_sqr(snum.num);
-    return snum_create(POSITIVE, num);
+    num_t num = num_sqr(sig.num);
+    return sig_num_create(POSITIVE, num);
 }
 
-snum_t snum_div(snum_t snum_1, snum_t snum_2)
+sig_num_t sig_num_div(sig_num_t sig_1, sig_num_t sig_2)
 {
-    uint64_t signal_res = snum_1.signal & snum_2.signal ?
+    uint64_t signal_res = sig_1.signal & sig_2.signal ?
         POSITIVE : NEGATIVE;
 
-    num_t num_res = num_div(snum_1.num, snum_2.num);
-    return snum_create(signal_res, num_res);
+    num_t num_res = num_div(sig_1.num, sig_2.num);
+    return sig_num_create(signal_res, num_res);
 }

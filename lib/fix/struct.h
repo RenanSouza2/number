@@ -5,7 +5,7 @@
 
 STRUCT(fix)
 {
-    snum_t snum;
+    sig_num_t sig;
     uint64_t pos;
 };
 

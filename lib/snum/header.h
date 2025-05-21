@@ -5,26 +5,26 @@
 
 #include "struct.h"
 
-void snum_display(snum_t snum, bool full);
-void snum_display_tag(char tag[], snum_t snum);
-void snum_display_full(char tag[], snum_t snum);
+void sig_num_display(sig_num_t sig, bool full);
+void sig_num_display_tag(char tag[], sig_num_t sig);
+void sig_num_display_full(char tag[], sig_num_t sig);
 
-snum_t snum_wrap(int64_t value);
-snum_t snum_wrap_str(char str[]);
-snum_t snum_copy(snum_t snum);
-void snum_free(snum_t snum);
+sig_num_t sig_num_wrap(int64_t value);
+sig_num_t sig_num_wrap_str(char str[]);
+sig_num_t sig_num_copy(sig_num_t sig);
+void sig_num_free(sig_num_t sig);
 
-bool snum_is_zero(snum_t snum);
-int64_t snum_cmp(snum_t snum_1, snum_t snum_2);
+bool sig_num_is_zero(sig_num_t sig);
+int64_t sig_num_cmp(sig_num_t sig_1, sig_num_t sig_2);
 
-snum_t snum_shl(snum_t snum, uint64_t bits);
-snum_t snum_shr(snum_t snum, uint64_t bits);
+sig_num_t sig_num_shl(sig_num_t sig, uint64_t bits);
+sig_num_t sig_num_shr(sig_num_t sig, uint64_t bits);
 
-snum_t snum_opposite(snum_t snum);
-snum_t snum_add(snum_t snum_1, snum_t snum_2);
-snum_t snum_sub(snum_t snum_1, snum_t snum_2);
-snum_t snum_mul(snum_t snum_1, snum_t snum_2);
-snum_t snum_sqr(snum_t snum);
-snum_t snum_div(snum_t snum_1, snum_t snum_2);
+sig_num_t sig_num_opposite(sig_num_t sig);
+sig_num_t sig_num_add(sig_num_t sig_1, sig_num_t sig_2);
+sig_num_t sig_num_sub(sig_num_t sig_1, sig_num_t sig_2);
+sig_num_t sig_num_mul(sig_num_t sig_1, sig_num_t sig_2);
+sig_num_t sig_num_sqr(sig_num_t sig);
+sig_num_t sig_num_div(sig_num_t sig_1, sig_num_t sig_2);
 
 #endif

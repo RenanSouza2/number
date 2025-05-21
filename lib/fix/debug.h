@@ -7,6 +7,6 @@
 
 #endif
 
-fix_t fix_create(snum_t snum, uint64_t pos);
+fix_t fix_create(sig_num_t sig, uint64_t pos);
 
 #endif

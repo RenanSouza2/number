@@ -6,67 +6,67 @@
 
 
 
-void test_snum_create(bool show)
+void test_sig_num_create(bool show)
 {
     TEST_FN_OPEN
 
     TEST_CASE_OPEN(1)
     {
         num_t num = num_create_immed(1, 1);
-        snum_t snum = snum_create(POSITIVE, num);
-        assert(snum.signal == POSITIVE);
-        assert(snum.num.count == num.count);
-        assert(snum.num.head == num.head);
-        assert(snum.num.tail == num.tail);
-        snum_free(snum);
+        sig_num_t sig = sig_num_create(POSITIVE, num);
+        assert(sig.signal == POSITIVE);
+        assert(sig.num.count == num.count);
+        assert(sig.num.head == num.head);
+        assert(sig.num.tail == num.tail);
+        sig_num_free(sig);
     }
     TEST_CASE_CLOSE
 
     TEST_CASE_OPEN(2)
     {
         num_t num = num_create_immed(1, 1);
-        snum_t snum = snum_create(NEGATIVE, num);
-        assert(snum.signal == NEGATIVE);
-        assert(snum.num.count == num.count);
-        assert(snum.num.head == num.head);
-        assert(snum.num.tail == num.tail);
-        snum_free(snum);
+        sig_num_t sig = sig_num_create(NEGATIVE, num);
+        assert(sig.signal == NEGATIVE);
+        assert(sig.num.count == num.count);
+        assert(sig.num.head == num.head);
+        assert(sig.num.tail == num.tail);
+        sig_num_free(sig);
     }
     TEST_CASE_CLOSE
 
     TEST_CASE_OPEN(3)
     {
         num_t num = num_create_immed(0);
-        snum_t snum = snum_create(POSITIVE, num);
-        assert(snum.signal == ZERO);
-        assert(snum.num.count == num.count);
-        assert(snum.num.head == num.head);
-        assert(snum.num.tail == num.tail);
-        snum_free(snum);
+        sig_num_t sig = sig_num_create(POSITIVE, num);
+        assert(sig.signal == ZERO);
+        assert(sig.num.count == num.count);
+        assert(sig.num.head == num.head);
+        assert(sig.num.tail == num.tail);
+        sig_num_free(sig);
     }
     TEST_CASE_CLOSE
         
     TEST_CASE_OPEN(4)
     {
         num_t num = num_create_immed(0);
-        snum_t snum = snum_create(ZERO, num);
-        assert(snum.signal == ZERO);
-        assert(snum.num.count == num.count);
-        assert(snum.num.head == num.head);
-        assert(snum.num.tail == num.tail);
-        snum_free(snum);
+        sig_num_t sig = sig_num_create(ZERO, num);
+        assert(sig.signal == ZERO);
+        assert(sig.num.count == num.count);
+        assert(sig.num.head == num.head);
+        assert(sig.num.tail == num.tail);
+        sig_num_free(sig);
     }
     TEST_CASE_CLOSE
 
     TEST_CASE_OPEN(5)
     {
         num_t num = num_create_immed(0);
-        snum_t snum = snum_create(NEGATIVE, num);
-        assert(snum.signal == ZERO);
-        assert(snum.num.count == num.count);
-        assert(snum.num.head == num.head);
-        assert(snum.num.tail == num.tail);
-        snum_free(snum);
+        sig_num_t sig = sig_num_create(NEGATIVE, num);
+        assert(sig.signal == ZERO);
+        assert(sig.num.count == num.count);
+        assert(sig.num.head == num.head);
+        assert(sig.num.tail == num.tail);
+        sig_num_free(sig);
     }
     TEST_CASE_CLOSE
 
@@ -75,7 +75,7 @@ void test_snum_create(bool show)
         num_t num = num_create_immed(1, 5);
         TEST_REVERT_OPEN
         {
-            snum_create(ZERO, num);
+            sig_num_create(ZERO, num);
         }
         TEST_REVERT_CLOSE
     }
@@ -84,47 +84,47 @@ void test_snum_create(bool show)
     TEST_FN_CLOSE
 }
 
-void test_snum_create_immed(bool show)
+void test_sig_num_create_immed(bool show)
 {
     TEST_FN_OPEN
 
     TEST_CASE_OPEN(1)
     {
-        snum_t snum = snum_create_immed(POSITIVE, 1, 1);
-        assert(snum.signal == POSITIVE);
-        assert(num_immed(snum.num, 1, 1));
+        sig_num_t sig = sig_num_create_immed(POSITIVE, 1, 1);
+        assert(sig.signal == POSITIVE);
+        assert(num_immed(sig.num, 1, 1));
     }
     TEST_CASE_CLOSE
 
     TEST_CASE_OPEN(2)
     {
-        snum_t snum = snum_create_immed(NEGATIVE, 1, 1);
-        assert(snum.signal == NEGATIVE);
-        assert(num_immed(snum.num, 1, 1));
+        sig_num_t sig = sig_num_create_immed(NEGATIVE, 1, 1);
+        assert(sig.signal == NEGATIVE);
+        assert(num_immed(sig.num, 1, 1));
     }
     TEST_CASE_CLOSE
 
     TEST_CASE_OPEN(3)
     {
-        snum_t snum = snum_create_immed(POSITIVE, 0);
-        assert(snum.signal == ZERO);
-        assert(num_immed(snum.num, 0));
+        sig_num_t sig = sig_num_create_immed(POSITIVE, 0);
+        assert(sig.signal == ZERO);
+        assert(num_immed(sig.num, 0));
     }
     TEST_CASE_CLOSE
 
     TEST_CASE_OPEN(4)
     {
-        snum_t snum = snum_create_immed(ZERO, 0);
-        assert(snum.signal == ZERO);
-        assert(num_immed(snum.num, 0));
+        sig_num_t sig = sig_num_create_immed(ZERO, 0);
+        assert(sig.signal == ZERO);
+        assert(num_immed(sig.num, 0));
     }
     TEST_CASE_CLOSE
 
     TEST_CASE_OPEN(5)
     {
-        snum_t snum = snum_create_immed(NEGATIVE, 0);
-        assert(snum.signal == ZERO);
-        assert(num_immed(snum.num, 0));
+        sig_num_t sig = sig_num_create_immed(NEGATIVE, 0);
+        assert(sig.signal == ZERO);
+        assert(num_immed(sig.num, 0));
     }
     TEST_CASE_CLOSE
 
@@ -133,32 +133,32 @@ void test_snum_create_immed(bool show)
 
 
 
-void test_snum_wrap(bool show)
+void test_sig_num_wrap(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_SNUM_WRAP(TAG, VALUE, ...)         \
+    #define TEST_SIG_NUM_WRAP(TAG, VALUE, ...)         \
     {                                               \
         TEST_CASE_OPEN(TAG)                         \
         {                                           \
-            snum_t snum = snum_wrap(VALUE);         \
-            assert(snum_immed(snum, __VA_ARGS__));  \
+            sig_num_t sig = sig_num_wrap(VALUE);         \
+            assert(sig_num_immed(sig, __VA_ARGS__));  \
         }                                           \
         TEST_CASE_CLOSE                             \
     }
 
-    TEST_SNUM_WRAP(1,  0, ZERO, 0);
-    TEST_SNUM_WRAP(2,  1, POSITIVE, 1, 1);
-    TEST_SNUM_WRAP(3, -1, NEGATIVE, 1, 1);
-    TEST_SNUM_WRAP(4, INT64_MAX, POSITIVE, 1, INT64_MAX);
-    TEST_SNUM_WRAP(5, INT64_MIN, NEGATIVE, 1, INT64_MIN);
+    TEST_SIG_NUM_WRAP(1,  0, ZERO, 0);
+    TEST_SIG_NUM_WRAP(2,  1, POSITIVE, 1, 1);
+    TEST_SIG_NUM_WRAP(3, -1, NEGATIVE, 1, 1);
+    TEST_SIG_NUM_WRAP(4, INT64_MAX, POSITIVE, 1, INT64_MAX);
+    TEST_SIG_NUM_WRAP(5, INT64_MIN, NEGATIVE, 1, INT64_MIN);
 
-    #undef TEST_SNUM_WRAP
+    #undef TEST_SIG_NUM_WRAP
 
     TEST_FN_CLOSE
 }
 
-void test_snum_wrap_str(bool show)
+void test_sig_num_wrap_str(bool show)
 {
     TEST_FN_OPEN
 
@@ -166,8 +166,8 @@ void test_snum_wrap_str(bool show)
     {                                               \
         TEST_CASE_OPEN(TAG)                         \
         {                                           \
-            snum_t snum = snum_wrap_str(STR);       \
-            assert(snum_immed(snum, __VA_ARGS__));  \
+            sig_num_t sig = sig_num_wrap_str(STR);       \
+            assert(sig_num_immed(sig, __VA_ARGS__));  \
         }                                           \
         TEST_CASE_CLOSE                             \
     }
@@ -202,7 +202,7 @@ void test_snum_wrap_str(bool show)
     TEST_FN_CLOSE
 }
 
-void test_snum_copy(bool show)
+void test_sig_num_copy(bool show)
 {
     TEST_FN_OPEN
 
@@ -210,10 +210,10 @@ void test_snum_copy(bool show)
     {                                                       \
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
-            snum_t snum = snum_create_immed(__VA_ARGS__);   \
-            snum_t snum_res = snum_copy(snum);              \
-            assert(snum_immed(snum_res, __VA_ARGS__))       \
-            snum_free(snum);                                \
+            sig_num_t sig = sig_num_create_immed(__VA_ARGS__);   \
+            sig_num_t sig_num_res = sig_num_copy(sig);              \
+            assert(sig_num_immed(sig_num_res, __VA_ARGS__))       \
+            sig_num_free(sig);                                \
         }                                                   \
         TEST_CASE_CLOSE                                     \
     }
@@ -233,7 +233,7 @@ void test_snum_copy(bool show)
 
 
 
-void test_snum_is_zero(bool show)
+void test_sig_num_is_zero(bool show)
 {
     TEST_FN_OPEN
 
@@ -241,10 +241,10 @@ void test_snum_is_zero(bool show)
     {                                                       \
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
-            snum_t snum = snum_wrap(NUM);                   \
-            int64_t res = snum_is_zero(snum);               \
+            sig_num_t sig = sig_num_wrap(NUM);                   \
+            int64_t res = sig_num_is_zero(sig);               \
             assert(uint64(res, RES));                       \
-            snum_free(snum);                                \
+            sig_num_free(sig);                                \
         }                                                   \
         TEST_CASE_CLOSE                                     \
     }
@@ -258,7 +258,7 @@ void test_snum_is_zero(bool show)
     TEST_FN_CLOSE
 }
 
-void test_snum_cmp(bool show)
+void test_sig_num_cmp(bool show)
 {
     TEST_FN_OPEN
 
@@ -266,12 +266,12 @@ void test_snum_cmp(bool show)
     {                                               \
         TEST_CASE_OPEN(TAG)                         \
         {                                           \
-            snum_t snum_1 = snum_wrap(NUM_1);       \
-            snum_t snum_2 = snum_wrap(NUM_2);       \
-            int64_t res = snum_cmp(snum_1, snum_2); \
+            sig_num_t sig_1 = sig_num_wrap(NUM_1);       \
+            sig_num_t sig_2 = sig_num_wrap(NUM_2);       \
+            int64_t res = sig_num_cmp(sig_1, sig_2); \
             assert(int64(res, RES));                \
-            snum_free(snum_1);                      \
-            snum_free(snum_2);                      \
+            sig_num_free(sig_1);                      \
+            sig_num_free(sig_2);                      \
         }                                           \
         TEST_CASE_CLOSE                             \
     }
@@ -303,72 +303,72 @@ void test_snum_cmp(bool show)
 
 
 
-void test_snum_shl(bool show)
+void test_sig_num_shl(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_SNUM_SHL(TAG, SNUM_BEF, BITS, SNUM_AFT)        \
+    #define TEST_SIG_NUM_SHL(TAG, SIG_NUM_BEF, BITS, SIG_NUM_AFT)        \
     {                                                           \
         TEST_CASE_OPEN(TAG)                                     \
         {                                                       \
-            snum_t snum = snum_create_immed(ARG_OPEN SNUM_BEF); \
-            snum = snum_shl(snum, BITS);                        \
-            assert(snum_immed(snum, ARG_OPEN SNUM_AFT));        \
+            sig_num_t sig = sig_num_create_immed(ARG_OPEN SIG_NUM_BEF); \
+            sig = sig_num_shl(sig, BITS);                        \
+            assert(sig_num_immed(sig, ARG_OPEN SIG_NUM_AFT));        \
         }                                                       \
         TEST_CASE_CLOSE                                         \
     }
 
-    TEST_SNUM_SHL(1, (ZERO, 0), 0, (ZERO, 0));
-    TEST_SNUM_SHL(2, (ZERO, 0), 1, (ZERO, 0));
-    TEST_SNUM_SHL(3, (ZERO, 0), 64, (ZERO, 0));
-    TEST_SNUM_SHL(4, (ZERO, 0), 65, (ZERO, 0));
-    TEST_SNUM_SHL(5, (POSITIVE, 1, 1), 0, (POSITIVE, 1, 1));
-    TEST_SNUM_SHL(6, (POSITIVE, 1, 1), 1, (POSITIVE, 1, 2));
-    TEST_SNUM_SHL(7, (POSITIVE, 1, 1), 63, (POSITIVE, 1, 0x8000000000000000));
-    TEST_SNUM_SHL(8, (POSITIVE, 1, 1), 64, (POSITIVE, 2, 1, 0));
-    TEST_SNUM_SHL(9, (POSITIVE, 1, 1), 65, (POSITIVE, 2, 2, 0));
+    TEST_SIG_NUM_SHL(1, (ZERO, 0), 0, (ZERO, 0));
+    TEST_SIG_NUM_SHL(2, (ZERO, 0), 1, (ZERO, 0));
+    TEST_SIG_NUM_SHL(3, (ZERO, 0), 64, (ZERO, 0));
+    TEST_SIG_NUM_SHL(4, (ZERO, 0), 65, (ZERO, 0));
+    TEST_SIG_NUM_SHL(5, (POSITIVE, 1, 1), 0, (POSITIVE, 1, 1));
+    TEST_SIG_NUM_SHL(6, (POSITIVE, 1, 1), 1, (POSITIVE, 1, 2));
+    TEST_SIG_NUM_SHL(7, (POSITIVE, 1, 1), 63, (POSITIVE, 1, 0x8000000000000000));
+    TEST_SIG_NUM_SHL(8, (POSITIVE, 1, 1), 64, (POSITIVE, 2, 1, 0));
+    TEST_SIG_NUM_SHL(9, (POSITIVE, 1, 1), 65, (POSITIVE, 2, 2, 0));
 
-    #undef TEST_SNUM_SHL
+    #undef TEST_SIG_NUM_SHL
 
     TEST_FN_CLOSE
 }
 
-void test_snum_shr(bool show)
+void test_sig_num_shr(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_SNUM_SHR(TAG, SNUM_BEF, BITS, SNUM_AFT)        \
+    #define TEST_SIG_NUM_SHR(TAG, SIG_NUM_BEF, BITS, SIG_NUM_AFT)        \
     {                                                           \
         TEST_CASE_OPEN(TAG)                                     \
         {                                                       \
-            snum_t snum = snum_create_immed(ARG_OPEN SNUM_BEF); \
-            snum = snum_shr(snum, BITS);                        \
-            assert(snum_immed(snum, ARG_OPEN SNUM_AFT));        \
+            sig_num_t sig = sig_num_create_immed(ARG_OPEN SIG_NUM_BEF); \
+            sig = sig_num_shr(sig, BITS);                        \
+            assert(sig_num_immed(sig, ARG_OPEN SIG_NUM_AFT));        \
         }                                                       \
         TEST_CASE_CLOSE                                         \
     }
 
-    TEST_SNUM_SHR(1, (ZERO, 0), 0, (ZERO, 0));
-    TEST_SNUM_SHR(2, (ZERO, 0), 1, (ZERO, 0));
-    TEST_SNUM_SHR(3, (ZERO, 0), 63, (ZERO, 0));
-    TEST_SNUM_SHR(4, (ZERO, 0), 64, (ZERO, 0));
-    TEST_SNUM_SHR(5, (ZERO, 0), 65, (ZERO, 0));
-    TEST_SNUM_SHR(6, (POSITIVE, 1, 1), 0, (POSITIVE, 1, 1));
-    TEST_SNUM_SHR(7, (POSITIVE, 1, 1), 1, (ZERO, 0));
-    TEST_SNUM_SHR(8, (POSITIVE, 2, 2, 0), 0, (POSITIVE, 2, 2, 0));
-    TEST_SNUM_SHR(9, (POSITIVE, 2, 2, 0), 1, (POSITIVE, 2, 1, 0));
-    TEST_SNUM_SHR(10, (POSITIVE, 2, 2, 0), 2, (POSITIVE, 1, 0x8000000000000000));
-    TEST_SNUM_SHR(11, (POSITIVE, 2, 2, 0), 64, (POSITIVE, 1, 2));
-    TEST_SNUM_SHR(11, (POSITIVE, 2, 2, 0), 65, (POSITIVE, 1, 1));
+    TEST_SIG_NUM_SHR(1, (ZERO, 0), 0, (ZERO, 0));
+    TEST_SIG_NUM_SHR(2, (ZERO, 0), 1, (ZERO, 0));
+    TEST_SIG_NUM_SHR(3, (ZERO, 0), 63, (ZERO, 0));
+    TEST_SIG_NUM_SHR(4, (ZERO, 0), 64, (ZERO, 0));
+    TEST_SIG_NUM_SHR(5, (ZERO, 0), 65, (ZERO, 0));
+    TEST_SIG_NUM_SHR(6, (POSITIVE, 1, 1), 0, (POSITIVE, 1, 1));
+    TEST_SIG_NUM_SHR(7, (POSITIVE, 1, 1), 1, (ZERO, 0));
+    TEST_SIG_NUM_SHR(8, (POSITIVE, 2, 2, 0), 0, (POSITIVE, 2, 2, 0));
+    TEST_SIG_NUM_SHR(9, (POSITIVE, 2, 2, 0), 1, (POSITIVE, 2, 1, 0));
+    TEST_SIG_NUM_SHR(10, (POSITIVE, 2, 2, 0), 2, (POSITIVE, 1, 0x8000000000000000));
+    TEST_SIG_NUM_SHR(11, (POSITIVE, 2, 2, 0), 64, (POSITIVE, 1, 2));
+    TEST_SIG_NUM_SHR(11, (POSITIVE, 2, 2, 0), 65, (POSITIVE, 1, 1));
 
-    #undef TEST_SNUM_SHR
+    #undef TEST_SIG_NUM_SHR
 
     TEST_FN_CLOSE
 }
 
 
 
-void test_snum_opposite(bool show)
+void test_sig_num_opposite(bool show)
 {
     TEST_FN_OPEN
 
@@ -376,9 +376,9 @@ void test_snum_opposite(bool show)
     {                                                                   \
         TEST_CASE_OPEN(TAG)                                             \
         {                                                               \
-            snum_t snum = snum_create_immed(SIGNAL_IN, __VA_ARGS__);    \
-            snum = snum_opposite(snum);                                 \
-            assert(snum_immed(snum, SIGNAL_OUT, __VA_ARGS__));          \
+            sig_num_t sig = sig_num_create_immed(SIGNAL_IN, __VA_ARGS__);    \
+            sig = sig_num_opposite(sig);                                 \
+            assert(sig_num_immed(sig, SIGNAL_OUT, __VA_ARGS__));          \
         }                                                               \
         TEST_CASE_CLOSE                                                 \
     }
@@ -390,235 +390,235 @@ void test_snum_opposite(bool show)
     TEST_FN_CLOSE
 }
 
-void test_snum_add(bool show)
+void test_sig_num_add(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_SNUM_ADD(TAG, SNUM_1, SNUM_2, SNUM_OUT)        \
+    #define TEST_SIG_NUM_ADD(TAG, SIG_NUM_1, SIG_NUM_2, SIG_NUM_OUT)        \
     {                                                           \
         TEST_CASE_OPEN(TAG)                                     \
         {                                                       \
-            snum_t snum_1 = snum_create_immed(ARG_OPEN SNUM_1); \
-            snum_t snum_2 = snum_create_immed(ARG_OPEN SNUM_2); \
-            snum_1 = snum_add(snum_1, snum_2);                  \
-            assert(snum_immed(snum_1, ARG_OPEN SNUM_OUT));      \
+            sig_num_t sig_1 = sig_num_create_immed(ARG_OPEN SIG_NUM_1); \
+            sig_num_t sig_2 = sig_num_create_immed(ARG_OPEN SIG_NUM_2); \
+            sig_1 = sig_num_add(sig_1, sig_2);                  \
+            assert(sig_num_immed(sig_1, ARG_OPEN SIG_NUM_OUT));      \
         }                                                       \
         TEST_CASE_CLOSE                                         \
     }
 
-    TEST_SNUM_ADD(1,
+    TEST_SIG_NUM_ADD(1,
         (ZERO, 0),
         (ZERO, 0),
         (ZERO, 0)
     );
-    TEST_SNUM_ADD(2,
+    TEST_SIG_NUM_ADD(2,
         (ZERO, 0),
         (POSITIVE, 1, 1),
         (POSITIVE, 1, 1)
     );
-    TEST_SNUM_ADD(3,
+    TEST_SIG_NUM_ADD(3,
         (ZERO, 0),
         (NEGATIVE, 1, 1),
         (NEGATIVE, 1, 1)
     );
-    TEST_SNUM_ADD(4,
+    TEST_SIG_NUM_ADD(4,
         (POSITIVE, 1, 2),
         (POSITIVE, 1, 1),
         (POSITIVE, 1, 3)
     );
-    TEST_SNUM_ADD(5,
+    TEST_SIG_NUM_ADD(5,
         (POSITIVE, 1, 2),
         (ZERO, 0),
         (POSITIVE, 1, 2)
     );
-    TEST_SNUM_ADD(6,
+    TEST_SIG_NUM_ADD(6,
         (POSITIVE, 1, 2),
         (NEGATIVE, 1, 1),
         (POSITIVE, 1, 1)
     );
-    TEST_SNUM_ADD(7,
+    TEST_SIG_NUM_ADD(7,
         (POSITIVE, 1, 2),
         (NEGATIVE, 1, 2),
         (ZERO, 0)
     );
-    TEST_SNUM_ADD(8,
+    TEST_SIG_NUM_ADD(8,
         (POSITIVE, 1, 2),
         (NEGATIVE, 1, 3),
         (NEGATIVE, 1, 1)
     );
-    TEST_SNUM_ADD(9,
+    TEST_SIG_NUM_ADD(9,
         (NEGATIVE, 1, 2),
         (NEGATIVE, 1, 1),
         (NEGATIVE, 1, 3)
     );
-    TEST_SNUM_ADD(10,
+    TEST_SIG_NUM_ADD(10,
         (NEGATIVE, 1, 2),
         (ZERO, 0),
         (NEGATIVE, 1, 2)
     );
-    TEST_SNUM_ADD(11,
+    TEST_SIG_NUM_ADD(11,
         (NEGATIVE, 1, 2),
         (POSITIVE, 1, 1),
         (NEGATIVE, 1, 1)
     );
-    TEST_SNUM_ADD(12,
+    TEST_SIG_NUM_ADD(12,
         (NEGATIVE, 1, 2),
         (POSITIVE, 1, 2),
         (ZERO, 0)
     );
-    TEST_SNUM_ADD(13,
+    TEST_SIG_NUM_ADD(13,
         (NEGATIVE, 1, 2),
         (POSITIVE, 1, 3),
         (POSITIVE, 1, 1)
     );
 
-    #undef TEST_SNUM_ADD
+    #undef TEST_SIG_NUM_ADD
 
     TEST_FN_CLOSE
 }
 
-void test_snum_sub(bool show)
+void test_sig_num_sub(bool show)
 {
     TEST_FN_OPEN
 
-    #define TESTS_SNUM_SUB(TAG, SNUM_1, SNUM_2, SNUM_OUT)       \
+    #define TESTS_SIG_NUM_SUB(TAG, SIG_NUM_1, SIG_NUM_2, SIG_NUM_OUT)       \
     {                                                           \
         TEST_CASE_OPEN(TAG)                                     \
         {                                                       \
-            snum_t snum_1 = snum_create_immed(ARG_OPEN SNUM_1); \
-            snum_t snum_2 = snum_create_immed(ARG_OPEN SNUM_2); \
-            snum_1 = snum_sub(snum_1, snum_2);                  \
-            assert(snum_immed(snum_1, ARG_OPEN SNUM_OUT));      \
+            sig_num_t sig_1 = sig_num_create_immed(ARG_OPEN SIG_NUM_1); \
+            sig_num_t sig_2 = sig_num_create_immed(ARG_OPEN SIG_NUM_2); \
+            sig_1 = sig_num_sub(sig_1, sig_2);                  \
+            assert(sig_num_immed(sig_1, ARG_OPEN SIG_NUM_OUT));      \
         }                                                       \
         TEST_CASE_CLOSE                                         \
     }
 
-    TESTS_SNUM_SUB(1,
+    TESTS_SIG_NUM_SUB(1,
         (POSITIVE, 1, 3),
         (POSITIVE, 1, 1),
         (POSITIVE, 1, 2)
     );
-    TESTS_SNUM_SUB(2,
+    TESTS_SIG_NUM_SUB(2,
         (POSITIVE, 1, 3),
         (ZERO, 0),
         (POSITIVE, 1, 3)
     );
-    TESTS_SNUM_SUB(1,
+    TESTS_SIG_NUM_SUB(1,
         (POSITIVE, 1, 3),
         (NEGATIVE, 1, 1),
         (POSITIVE, 1, 4)
     );
 
-    #undef TESTS_SNUM_SUB
+    #undef TESTS_SIG_NUM_SUB
 
     TEST_FN_CLOSE
 }
 
-void test_snum_mul(bool show)
+void test_sig_num_mul(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_SNUM_MUL(TAG, SNUM_1, SNUM_2, SNUM_OUT)        \
+    #define TEST_SIG_NUM_MUL(TAG, SIG_NUM_1, SIG_NUM_2, SIG_NUM_OUT)        \
     {                                                           \
         TEST_CASE_OPEN(TAG)                                     \
         {                                                       \
-            snum_t snum_1 = snum_create_immed(ARG_OPEN SNUM_1); \
-            snum_t snum_2 = snum_create_immed(ARG_OPEN SNUM_2); \
-            snum_1 = snum_mul(snum_1, snum_2);                  \
-            assert(snum_immed(snum_1, ARG_OPEN SNUM_OUT));      \
+            sig_num_t sig_1 = sig_num_create_immed(ARG_OPEN SIG_NUM_1); \
+            sig_num_t sig_2 = sig_num_create_immed(ARG_OPEN SIG_NUM_2); \
+            sig_1 = sig_num_mul(sig_1, sig_2);                  \
+            assert(sig_num_immed(sig_1, ARG_OPEN SIG_NUM_OUT));      \
         }                                                       \
         TEST_CASE_CLOSE                                         \
     }
 
-    TEST_SNUM_MUL(1,
+    TEST_SIG_NUM_MUL(1,
         (POSITIVE, 1, 2),
         (POSITIVE, 1, 3),
         (POSITIVE, 1, 6)
     );
-    TEST_SNUM_MUL(2,
+    TEST_SIG_NUM_MUL(2,
         (POSITIVE, 1, 2),
         (ZERO, 0),
         (ZERO, 0)
     );
-    TEST_SNUM_MUL(3,
+    TEST_SIG_NUM_MUL(3,
         (NEGATIVE, 1, 2),
         (ZERO, 0),
         (ZERO, 0)
     );
-    TEST_SNUM_MUL(4,
+    TEST_SIG_NUM_MUL(4,
         (ZERO, 0),
         (POSITIVE, 1, 2),
         (ZERO, 0)
     );
-    TEST_SNUM_MUL(5,
+    TEST_SIG_NUM_MUL(5,
         (ZERO, 0),
         (NEGATIVE, 1, 2),
         (ZERO, 0)
     );
-    TEST_SNUM_MUL(6,
+    TEST_SIG_NUM_MUL(6,
         (POSITIVE, 1, 2),
         (NEGATIVE, 1, 3),
         (NEGATIVE, 1, 6)
     );
-    TEST_SNUM_MUL(7,
+    TEST_SIG_NUM_MUL(7,
         (NEGATIVE, 1, 2),
         (POSITIVE, 1, 3),
         (NEGATIVE, 1, 6)
     );
-    TEST_SNUM_MUL(8,
+    TEST_SIG_NUM_MUL(8,
         (NEGATIVE, 1, 2),
         (NEGATIVE, 1, 3),
         (POSITIVE, 1, 6)
     );
 
-    #undef TEST_SNUM_MUL
+    #undef TEST_SIG_NUM_MUL
 
     TEST_FN_CLOSE
 }
 
-void test_snum_div(bool show)
+void test_sig_num_div(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_SNUM_DIV(TAG, SNUM_1, SNUM_2, SNUM_OUT)        \
-    {                                                           \
-        TEST_CASE_OPEN(TAG)                                     \
-        {                                                       \
-            snum_t snum_1 = snum_create_immed(ARG_OPEN SNUM_1); \
-            snum_t snum_2 = snum_create_immed(ARG_OPEN SNUM_2); \
-            snum_1 = snum_div(snum_1, snum_2);                  \
-            assert(snum_immed(snum_1, ARG_OPEN SNUM_OUT));      \
-        }                                                       \
-        TEST_CASE_CLOSE                                         \
+    #define TEST_SIG_NUM_DIV(TAG, SIG_NUM_1, SIG_NUM_2, SIG_NUM_OUT)    \
+    {                                                                   \
+        TEST_CASE_OPEN(TAG)                                             \
+        {                                                               \
+            sig_num_t sig_1 = sig_num_create_immed(ARG_OPEN SIG_NUM_1); \
+            sig_num_t sig_2 = sig_num_create_immed(ARG_OPEN SIG_NUM_2); \
+            sig_1 = sig_num_div(sig_1, sig_2);                          \
+            assert(sig_num_immed(sig_1, ARG_OPEN SIG_NUM_OUT));         \
+        }                                                               \
+        TEST_CASE_CLOSE                                                 \
     }
 
-    TEST_SNUM_DIV(1,
+    TEST_SIG_NUM_DIV(1,
         (POSITIVE, 1, 2),
         (POSITIVE, 1, 3),
         (ZERO, 0)
     );
-    TEST_SNUM_DIV(2,
+    TEST_SIG_NUM_DIV(2,
         (POSITIVE, 1, 2),
         (NEGATIVE, 1, 3),
         (ZERO, 0)
     );
-    TEST_SNUM_DIV(3,
+    TEST_SIG_NUM_DIV(3,
         (POSITIVE, 1, 3),
         (POSITIVE, 1, 2),
         (POSITIVE, 1, 1)
     );
-    TEST_SNUM_DIV(4,
+    TEST_SIG_NUM_DIV(4,
         (ZERO, 0),
         (POSITIVE, 1, 2),
         (ZERO, 0)
     );
-    TEST_SNUM_DIV(5,
+    TEST_SIG_NUM_DIV(5,
         (NEGATIVE, 1, 3),
         (POSITIVE, 1, 2),
         (NEGATIVE, 1, 1)
     );
 
-    #undef TEST_SNUM_DIV
+    #undef TEST_SIG_NUM_DIV
 
     TEST_FN_CLOSE
 }
@@ -631,24 +631,24 @@ void test_snum()
 
     bool show = false;
 
-    test_snum_create(show);
-    test_snum_create_immed(show);
+    test_sig_num_create(show);
+    test_sig_num_create_immed(show);
 
-    test_snum_wrap(show);
-    test_snum_wrap_str(show);
-    test_snum_copy(show);
+    test_sig_num_wrap(show);
+    test_sig_num_wrap_str(show);
+    test_sig_num_copy(show);
 
-    test_snum_is_zero(show);
-    test_snum_cmp(show);
+    test_sig_num_is_zero(show);
+    test_sig_num_cmp(show);
 
-    test_snum_shl(show);
-    test_snum_shr(show);
+    test_sig_num_shl(show);
+    test_sig_num_shr(show);
 
-    test_snum_opposite(show);
-    test_snum_add(show);
-    test_snum_sub(show);
-    test_snum_mul(show);
-    test_snum_div(show);
+    test_sig_num_opposite(show);
+    test_sig_num_add(show);
+    test_sig_num_sub(show);
+    test_sig_num_mul(show);
+    test_sig_num_div(show);
 
     TEST_ASSERT_MEM_EMPTY
 }

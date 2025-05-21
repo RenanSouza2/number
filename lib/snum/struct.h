@@ -7,7 +7,7 @@
 #define NEGATIVE 2
 #define ZERO 3
 
-STRUCT(snum)
+STRUCT(sig_num)
 {
     uint64_t signal;
     num_t num;
