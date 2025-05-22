@@ -3,7 +3,7 @@
 
 #include "../sig/struct.h"
 
-STRUCT(fix)
+STRUCT(fix_num)
 {
     sig_num_t sig;
     uint64_t pos;

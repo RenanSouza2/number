@@ -310,14 +310,14 @@ void time_dec()
 void pi_1()
 {
     uint64_t pos = 3;
-    fix_t fix = fix_wrap(0, pos);
+    fix_num_t fix = fix_num_wrap(0, pos);
     for(uint64_t i=1; ; i++)
     {
         int64_t base = 16 * i * i - 16 * i + 3;
-        fix_t fix_1 = fix_wrap(8, pos);
-        fix_t fix_2 = fix_wrap(base, pos);
-        fix_1 = fix_div(fix_1, fix_2);
-        fix = fix_add(fix, fix_copy(fix_1));
+        fix_num_t fix_1 = fix_num_wrap(8, pos);
+        fix_num_t fix_2 = fix_num_wrap(base, pos);
+        fix_1 = fix_num_div(fix_1, fix_2);
+        fix = fix_num_add(fix, fix_num_copy(fix_1));
 
         if(i%1000000 == 0)
         {
@@ -333,13 +333,13 @@ void pi_1()
 void e()
 {
     uint64_t pos = 1000;
-    fix_t fix = fix_wrap(0, pos);
-    fix_t base = fix_wrap(1, pos);
+    fix_num_t fix = fix_num_wrap(0, pos);
+    fix_num_t base = fix_num_wrap(1, pos);
     for(uint64_t i=1; ; i++)
     {
-        fix_t fix_2 = fix_wrap(i, pos);
-        base = fix_div(base, fix_2);
-        fix = fix_add(fix, fix_copy(base));
+        fix_num_t fix_2 = fix_num_wrap(i, pos);
+        base = fix_num_div(base, fix_2);
+        fix = fix_num_add(fix, fix_num_copy(base));
 
         if(i%1000 == 0)
         {
@@ -352,12 +352,12 @@ void e()
 void pi_2()
 {
     uint64_t pos = 2;
-    fix_t fix = fix_wrap(2, pos);
+    fix_num_t fix = fix_num_wrap(2, pos);
     for(uint64_t i=1; ; i++)
     {
         uint64_t base = 4 * i * i;
-        fix = fix_mul(fix, fix_wrap(base, pos));
-        fix = fix_div(fix, fix_wrap(base - 1, pos));
+        fix = fix_num_mul(fix, fix_num_wrap(base, pos));
+        fix = fix_num_div(fix, fix_num_wrap(base - 1, pos));
 
         if(i%1000000 == 0)
             fix_display_dec("fix", fix);
@@ -376,16 +376,16 @@ void display_bit(uint64_t value)
 }
 
 
-fix_t fix_step(fix_t fix, uint64_t pos)
+fix_num_t fix_step(fix_num_t fix, uint64_t pos)
 {
-    fix_t fix_a = fix_shr(fix_copy(fix), 1);
-    fix = fix_div(fix_wrap(1, pos), fix);
-    return fix_add(fix, fix_a);
+    fix_num_t fix_a = fix_num_shr(fix_num_copy(fix), 1);
+    fix = fix_num_div(fix_num_wrap(1, pos), fix);
+    return fix_num_add(fix, fix_a);
 }
 
 void sqrt_2()
 {
-    fix_t fix_x = fix_wrap(1, 1);
+    fix_num_t fix_x = fix_num_wrap(1, 1);
     num_t num = num_wrap(10);
 
     for(uint64_t i=0; ; i++)
@@ -395,8 +395,8 @@ void sqrt_2()
 
         fix_x = fix_step(fix_x, 1);
 
-        fix_t fix_2 = fix_sqr(fix_copy(fix_x));
-        fix_2 = fix_sub(fix_2, fix_wrap(2, 1));
+        fix_num_t fix_2 = fix_num_sqr(fix_num_copy(fix_x));
+        fix_2 = fix_num_sub(fix_2, fix_num_wrap(2, 1));
         bool res = num_cmp(fix_2.sig.num, num) < 0;
         fix_free(fix_2);
         if(res)
@@ -405,7 +405,7 @@ void sqrt_2()
 
     for(uint64_t pos = 2; ; pos *= 2)
     {
-        fix_x = fix_reposition(fix_x, pos);
+        fix_x = fix_num_reposition(fix_x, pos);
         fix_x = fix_step(fix_x, pos);
 
         if(fork())
@@ -442,10 +442,10 @@ int main()
     // sqrt_2();
 
     // uint64_t pos = 1e1;
-    // fix_t fix = fix_wrap(1, pos);
-    // fix = fix_div(fix, fix_wrap(10, pos));
-    // fix = fix_mul(fix, fix_wrap(10, pos));
-    // fix = fix_sub(fix, fix_wrap(1, pos));
+    // fix_num_t fix = fix_num_wrap(1, pos);
+    // fix = fix_num_div(fix, fix_num_wrap(10, pos));
+    // fix = fix_num_mul(fix, fix_num_wrap(10, pos));
+    // fix = fix_num_sub(fix, fix_num_wrap(1, pos));
     //
     // uint64_t begin = altutime();
     // fix_display_tag("res", fix);
