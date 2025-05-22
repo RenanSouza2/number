@@ -322,10 +322,10 @@ void pi_1()
         if(i%1000000 == 0)
         {
             printf("\ni: " U64P() "\t", i);
-            fix_display_dec("fix", fix);
+            fix_num_display_dec("fix", fix);
             printf("\t");
-            fix_display_dec("fix_1", fix_1);
-            fix_free(fix_1);
+            fix_num_display_dec("fix_1", fix_1);
+            fix_num_free(fix_1);
         }
     }
 }
@@ -344,7 +344,7 @@ void e()
         if(i%1000 == 0)
         {
             fprintf(stderr, "\ni: " U64P() "", i);
-            fix_display_dec("fix", fix);
+            fix_num_display_dec("fix", fix);
         }
     }
 }
@@ -360,7 +360,7 @@ void pi_2()
         fix = fix_num_div(fix, fix_num_wrap(base - 1, pos));
 
         if(i%1000000 == 0)
-            fix_display_dec("fix", fix);
+            fix_num_display_dec("fix", fix);
     }
 }
 
@@ -398,7 +398,7 @@ void sqrt_2()
         fix_num_t fix_2 = fix_num_sqr(fix_num_copy(fix_x));
         fix_2 = fix_num_sub(fix_2, fix_num_wrap(2, 1));
         bool res = num_cmp(fix_2.sig.num, num) < 0;
-        fix_free(fix_2);
+        fix_num_free(fix_2);
         if(res)
             break;
     }
@@ -412,16 +412,16 @@ void sqrt_2()
             continue;
 
         printf("\n\n");
-        fix_display_full("hex", fix_x);
-        fix_display_dec("res", fix_x);
+        fix_num_display_full("hex", fix_x);
+        fix_num_display_dec("res", fix_x);
         printf("\n\npos: " U64P() "", pos * 2);
 
         exit(EXIT_SUCCESS);
     }
 
-    fix_display_dec("res", fix_x);
+    fix_num_display_dec("res", fix_x);
 
-    fix_free(fix_x);
+    fix_num_free(fix_x);
     num_free(num);
 }
 
