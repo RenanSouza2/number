@@ -5,17 +5,17 @@
 
 #include "struct.h"
 
-void mod_display(char tag[], mod_t mod);
+void mod_num_display(char tag[], mod_num_t mod);
 
-mod_t mod_wrap(uint64_t value, num_t p);
-mod_t mod_copy(mod_t mod);
-void mod_free(mod_t mod);
+mod_num_t mod_num_wrap(uint64_t value, num_t p);
+mod_num_t mod_num_copy(mod_num_t mod);
+void mod_num_free(mod_num_t mod);
 
-bool mod_cmp(mod_t mod_a, mod_t mod_b);
+bool mod_num_cmp(mod_num_t mod_a, mod_num_t mod_b);
 
-mod_t mod_add(mod_t mod_1, mod_t mod_2);
-mod_t mod_sub(mod_t mod_1, mod_t mod_2);
-mod_t mod_mul(mod_t mod_1, mod_t mod_2);
-mod_t mod_div(mod_t mod_1, mod_t mod_2);
+mod_num_t mod_num_add(mod_num_t mod_1, mod_num_t mod_2);
+mod_num_t mod_num_sub(mod_num_t mod_1, mod_num_t mod_2);
+mod_num_t mod_num_mul(mod_num_t mod_1, mod_num_t mod_2);
+mod_num_t mod_num_div(mod_num_t mod_1, mod_num_t mod_2);
 
 #endif

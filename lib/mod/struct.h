@@ -3,7 +3,7 @@
 
 #include "../num/struct.h"
 
-STRUCT(mod)
+STRUCT(mod_num)
 {
     num_t num;
     num_t max;

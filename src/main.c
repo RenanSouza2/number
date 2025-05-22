@@ -284,9 +284,9 @@ num_t fib_2(uint64_t index)
 
 
 
-void mod_fib(mod_p mod_a, mod_p mod_b)
+void mod_num_fib(mod_num_p mod_a, mod_num_p mod_b)
 {
-    mod_t mod_c = mod_add(*mod_a, mod_copy(*mod_b));
+    mod_num_t mod_c = mod_num_add(*mod_a, mod_num_copy(*mod_b));
 
     *mod_a = *mod_b;
     *mod_b = mod_c;
@@ -458,9 +458,9 @@ int main()
     // num_display(num);
 
     // num_t num = num_wrap(29);
-    // mod_t mod_1 = mod_wrap(1, num);
-    // mod_t mod_2 = mod_wrap(9, num);
-    // mod_1 = mod_div(mod_1, mod_2);
+    // mod_num_t mod_1 = mod_num_wrap(1, num);
+    // mod_num_t mod_2 = mod_num_wrap(9, num);
+    // mod_1 = mod_num_div(mod_1, mod_2);
     // mod_display("mod", mod_1);
 
     // assert(clu_mem_is_empty());
