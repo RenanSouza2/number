@@ -625,7 +625,7 @@ void test_sig_num_div(bool show)
 
 
 
-void test_snum()
+void test_sig_num()
 {
     TEST_LIB
 
@@ -658,7 +658,7 @@ void test_snum()
 int main()
 {
     setbuf(stdout, NULL);
-    test_snum();
+    test_sig_num();
     printf("\n\n\tTest successful\n\n");
     return 0;
 }

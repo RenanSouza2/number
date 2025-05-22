@@ -1,7 +1,7 @@
 #ifndef __FIX_STRUCT_H__
 #define __FIX_STRUCT_H__
 
-#include "../snum/struct.h"
+#include "../sig/struct.h"
 
 STRUCT(fix)
 {

@@ -13,7 +13,7 @@
 
 #ifdef DEBUG
 
-#include "../snum/debug.h"
+#include "../sig/debug.h"
 
 fix_t fix_create_immed(uint64_t pos, uint64_t signal, uint64_t n, ...)
 {

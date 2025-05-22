@@ -10,7 +10,7 @@ void test_example()
 {
     TEST_LIB
 
-    bool show = true;
+    bool show = false;
 
     TEST_ASSERT_MEM_EMPTY
 }

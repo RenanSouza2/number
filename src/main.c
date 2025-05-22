@@ -397,7 +397,7 @@ void sqrt_2()
 
         fix_t fix_2 = fix_sqr(fix_copy(fix_x));
         fix_2 = fix_sub(fix_2, fix_wrap(2, 1));
-        bool res = num_cmp(fix_2.snum.num, num) < 0;
+        bool res = num_cmp(fix_2.sig.num, num) < 0;
         fix_free(fix_2);
         if(res)
             break;
