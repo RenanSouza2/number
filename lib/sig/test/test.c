@@ -45,7 +45,7 @@ void test_sig_num_create(bool show)
         sig_num_free(sig);
     }
     TEST_CASE_CLOSE
-        
+
     TEST_CASE_OPEN(4)
     {
         num_t num = num_create_immed(0);
