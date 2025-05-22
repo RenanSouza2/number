@@ -2,9 +2,7 @@
 #include <stdlib.h>
 
 #include "debug.h"
-
-#ifdef DEBUG
-
 #include "../../mods/clu/header.h"
 
+#ifdef DEBUG
 #endif

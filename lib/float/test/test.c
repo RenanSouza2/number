@@ -4,7 +4,7 @@
 
 
 
-void test_flt_fn(bool show)
+void test_float_fn(bool show)
 {
     TEST_FN_OPEN
 
@@ -19,13 +19,13 @@ void test_flt_fn(bool show)
 
 
 
-void test_flt()
+void test_float()
 {
     TEST_LIB
 
     bool show = false;
 
-    test_flt_fn(show);
+    test_float_fn(show);
 
     TEST_ASSERT_MEM_EMPTY
 }
@@ -35,7 +35,7 @@ void test_flt()
 int main()
 {
     setbuf(stdout, NULL);
-    test_flt();
+    test_float();
     printf("\n\n\tTest successful\n\n");
     return 0;
 }
