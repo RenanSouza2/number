@@ -1,15 +1,20 @@
 #include "../debug.h"
-#include "../../../utils/assert.h"
-#include "../../../utils/clu/header.h"
+#include "../../../testrc.h"
+#include "../../../mods/macros/test.h"
 
 
+
+#define TEST_ASSERT_MEM_EMPTY assert(clu_mem_is_empty());
 
 void test_example()
 {
-    printf("\n%s\t\t", __func__);
+    TEST_LIB
 
-    assert(clu_mem_empty());
+    bool show = false;
+
+    TEST_ASSERT_MEM_EMPTY
 }
+
 
 
 int main()

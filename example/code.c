@@ -5,6 +5,6 @@
 
 #ifdef DEBUG
 
-#include "../../utils/clu/header.h"
+#include "../../mods/clu/header.h"
 
 #endif

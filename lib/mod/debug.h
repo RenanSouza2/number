@@ -1,14 +1,14 @@
 #ifndef __MOD_DEBUG_H__
 #define __MOD_DEBUG_H__
 
-#include "struct.h"
+#include "header.h"
 
 #ifdef DEBUG
 
-bool mod_immed(mod_t mod, uint64_t n, ...);
+bool mod_num_immed(mod_num_t mod, uint64_t n, ...);
 
 #endif
 
-mod_t mod_create(num_t num, num_t p);
+mod_num_t mod_num_create(num_t num, num_t p);
 
 #endif
