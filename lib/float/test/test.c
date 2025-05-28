@@ -3,6 +3,7 @@
 #include "../../../mods/macros/test.h"
 
 
+#define FLOAT_NUM_ZERO (0, 0, 0, 0, 0)
 
 void test_float_num_is_zero(bool show)
 {
@@ -20,7 +21,7 @@ void test_float_num_is_zero(bool show)
         TEST_CASE_CLOSE \
     }
 
-    TEST_FLOAT_NUM_IS_ZERO(1, (0), true);
+    TEST_FLOAT_NUM_IS_ZERO(1, FLOAT_NUM_ZERO, true);
 
     #undef TEST_FLOAT_NUM_IS_ZERO
 

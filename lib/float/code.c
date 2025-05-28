@@ -9,11 +9,29 @@
 
 
 #ifdef DEBUG
+
+#include "../sig/debug.h"
+
+
+
+float_num_t float_num_create_immed(
+    uint64_t exponent,
+    uint64_t size_cap,
+    uint64_t signal,
+    uint64_t n,
+    ...
+){
+    va_list args;
+    va_start(args, n);
+    sig_num_t sig = sig_num_create_variadic(signal, n, &args);
+    return float_num_create(exponent, size_cap, sig);
+}
+
 #endif
 
 
 
-float_num_t float_num_create( uint64_t exponent, uint64_t size_cap, sig_num_t sig)
+float_num_t float_num_create(uint64_t exponent, uint64_t size_cap, sig_num_t sig)
 {
     return (float_num_t)
     {
@@ -21,6 +39,11 @@ float_num_t float_num_create( uint64_t exponent, uint64_t size_cap, sig_num_t si
         .size_cap = size_cap,
         .sig = sig
     }; 
+}
+
+void float_num_free(float_num_t flt)
+{
+    sig_num_free(flt.sig);
 }
 
 
