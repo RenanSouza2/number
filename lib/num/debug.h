@@ -46,12 +46,7 @@ num_t num_wrap_hex(char str[]);
 chunk_p num_sub_offset(num_p num_1, chunk_p chunk_1, num_t num_2);
 
 bool num_sub_uint_offset(num_p num, chunk_p chunk, uint64_t value);
-num_t num_cmp_mul_uint_offset(
-    num_t num_1,
-    num_t num_2,
-    uint64_t r,
-    uint64_t offset
-);
+num_t num_cmp_mul_uint_offset(num_t num_1,num_t num_2,uint64_t r,uint64_t offset);
 
 num_t num_shl_uint(num_t num, uint64_t bits);
 num_t num_shr_uint(num_t num, uint64_t bits);
