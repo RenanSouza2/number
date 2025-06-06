@@ -41,7 +41,7 @@ bool int64(int64_t u1, int64_t u2)
 {
     if(u1 != u2)
     {
-        printf("\n\n\tINT64 ASSERT ERROR\t| (" U64PX ") (" U64PX ")", u1, u2);
+        printf("\n\n\tINT64 ASSERT ERROR\t| (" D64P() ") (" D64P() ")", u1, u2);
         return false;
     }
 
@@ -489,6 +489,28 @@ bool num_normalize(num_p num)
     return true;
 }
 
+num_t num_head_grow(num_t num, uint64_t count) // TODO test
+{
+    if(num.count == 0)
+        return num;
+
+    for(uint64_t i=0; i<count; i++)
+        num_insert_head(&num, 0);
+
+    return num;
+}
+
+num_t num_head_trim(num_t num, uint64_t count) // TODO test
+{
+    if(num.count == 0)
+        return num;
+
+    for(uint64_t i=0; i<count && num.count; i++)
+        num = num_remove_head(num);
+
+    return num;
+}
+
 void num_break(num_p out_num_hi, num_p out_num_lo, num_t num, uint64_t count)
 {
     CLU_HANDLER_IS_SAFE(num.head);
@@ -699,6 +721,7 @@ chunk_p num_add_mul_uint_offset(num_p num_res, chunk_p chunk_res, chunk_p chunk,
 num_t num_shl_uint(num_t num, uint64_t bits)
 {
     CLU_HANDLER_IS_SAFE(num.head);
+    assert(bits < 64); // TODO test
 
     if(bits == 0)
         return num;
@@ -720,6 +743,7 @@ num_t num_shl_uint(num_t num, uint64_t bits)
 num_t num_shr_uint(num_t num, uint64_t bits)
 {
     CLU_HANDLER_IS_SAFE(num.head);
+    assert(bits < 64); // TODO test
 
     if(bits == 0)
         return num;
@@ -1034,10 +1058,7 @@ num_t num_shl(num_t num, uint64_t bits)
         return num;
 
     num = num_shl_uint(num, bits & 0x3f);
-    for(; bits > 63; bits -= 64)
-        num_insert_head(&num, 0);
-
-    return num;
+    return num_head_grow(num, bits >> 6);
 }
 
 num_t num_shr(num_t num, uint64_t bits)
@@ -1047,10 +1068,8 @@ num_t num_shr(num_t num, uint64_t bits)
     if(num.count == 0)
         return num;
 
-    for(; bits > 63 && num.count; bits -= 64)
-        num = num_remove_head(num);
-
-    return num_shr_uint(num, bits);;
+    num = num_head_trim(num, bits >> 6);
+    return num_shr_uint(num, bits & 0x3f);
 }
 
 

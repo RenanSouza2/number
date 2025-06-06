@@ -8,7 +8,7 @@
 #ifdef DEBUG
 
 float_num_t float_num_create_immed(
-    uint64_t exponent,
+    int64_t exponent,
     uint64_t size_cap,
     uint64_t signal,
     uint64_t n,
@@ -17,7 +17,7 @@ float_num_t float_num_create_immed(
 
 #endif
 
-float_num_t float_num_create(uint64_t exponent, uint64_t size_cap, sig_num_t sig);
+float_num_t float_num_create(int64_t exponent, uint64_t size_cap, sig_num_t sig);
 void float_num_free(float_num_t flt);
 
 bool float_num_is_zero(float_num_t flt);

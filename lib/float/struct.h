@@ -5,8 +5,8 @@
 
 STRUCT(float_num)
 {
-    uint64_t exponent;
-    uint64_t size_cap;
+    int64_t exponent;
+    uint64_t size;
     sig_num_t sig;
 };
 

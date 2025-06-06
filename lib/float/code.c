@@ -15,8 +15,8 @@
 
 
 float_num_t float_num_create_immed(
-    uint64_t exponent,
-    uint64_t size_cap,
+    int64_t exponent,
+    uint64_t size,
     uint64_t signal,
     uint64_t n,
     ...
@@ -24,19 +24,44 @@ float_num_t float_num_create_immed(
     va_list args;
     va_start(args, n);
     sig_num_t sig = sig_num_create_variadic(signal, n, &args);
-    return float_num_create(exponent, size_cap, sig);
+    return float_num_create(exponent, size, sig);
 }
 
 #endif
 
 
 
-float_num_t float_num_create(uint64_t exponent, uint64_t size_cap, sig_num_t sig)
+float_num_t float_num_create(int64_t exponent, uint64_t size, sig_num_t sig)
 {
+    if(sig_num_is_zero(sig))
+    {
+        return (float_num_t)
+        {
+            .exponent = exponent,
+            .size = size,
+            .sig = sig
+        }; 
+    }
+
+    if(sig.num.count < size)
+    {
+        uint64_t diff = size - sig.num.count;
+        printf("\ndiff: %lu", diff);
+        exponent -= diff;
+        sig_num_shl(sig, diff << 6);
+    }
+
+    if(sig.num.count > size)
+    {
+        uint64_t diff = size - sig.num.count;
+        exponent += diff;
+        sig_num_shr(sig, diff << 6);
+    }
+
     return (float_num_t)
     {
         .exponent = exponent,
-        .size_cap = size_cap,
+        .size = size,
         .sig = sig
     }; 
 }
@@ -56,7 +81,7 @@ bool float_num_is_zero(float_num_t flt) // TODO TEST
 
 
 
-float_num_t float_num_set_exponent(float_num_t flt, uint64_t exponent) // TODO TEST
+float_num_t float_num_set_exponent(float_num_t flt, int64_t exponent) // TODO TEST
 {
     if(flt.exponent == exponent)
         return flt;
@@ -65,20 +90,20 @@ float_num_t float_num_set_exponent(float_num_t flt, uint64_t exponent) // TODO T
     {
         uint64_t shift = (exponent - flt.exponent) << 6;
         sig_num_t sig = sig_num_shr(flt.sig, shift);
-        return float_num_create(exponent, flt.size_cap, sig);
+        return float_num_create(exponent, flt.size, sig);
     }
     
     uint64_t shift = (flt.exponent - exponent) << 6;
     sig_num_t sig = sig_num_shl(flt.sig, shift);
-    return float_num_create(exponent, flt.size_cap, sig);
+    return float_num_create(exponent, flt.size, sig);
 }
 
 float_num_t float_num_normalize(float_num_t flt) // TODO TEST
 {
-    if(flt.sig.num.count <= flt.size_cap)
+    if(flt.sig.num.count <= flt.size)
         return flt;
 
-    return float_num_set_exponent(flt, flt.sig.num.count - flt.size_cap);
+    return float_num_set_exponent(flt, flt.sig.num.count - flt.size);
 }
 
 

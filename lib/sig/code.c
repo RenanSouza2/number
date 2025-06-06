@@ -114,6 +114,11 @@ sig_num_t sig_num_create(uint64_t signal, num_t num)
     };
 }
 
+void sig_num_free(sig_num_t sig)
+{
+    num_free(sig.num);
+}
+
 
 
 sig_num_t sig_num_wrap(int64_t value)
@@ -148,9 +153,15 @@ sig_num_t sig_num_copy(sig_num_t sig)
     return sig_num_create(sig.signal, num);
 }
 
-void sig_num_free(sig_num_t sig)
+sig_num_t sig_num_head_grow(sig_num_t sig, uint64_t count)
 {
-    num_free(sig.num);
+    sig.num = num_head_grow(sig.num, count);
+    return sig;
+}
+sig_num_t sig_num_head_trim(sig_num_t sig, uint64_t count)
+{
+    sig.num = num_head_trim(sig.num, count);
+    return sig;
 }
 
 
