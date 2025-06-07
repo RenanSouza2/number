@@ -26,7 +26,27 @@ void test_float_num_create(bool show)
 
     TEST_FLOAT_NUM_CREATE(1, FLOAT_NUM_ZERO(1), 0, 1, (ZERO, 0));
     TEST_FLOAT_NUM_CREATE(2, (0, 1, POSITIVE, 1, 1), 0, 1, (POSITIVE, 1, 1));
-    TEST_FLOAT_NUM_CREATE(3, (0, 3, POSITIVE, 1, 1), -1, 1, (POSITIVE, 2, 1, 0));
+    TEST_FLOAT_NUM_CREATE(2, (0, 1, NEGATIVE, 1, 1), 0, 1, (NEGATIVE, 1, 1));
+    TEST_FLOAT_NUM_CREATE(3, (0, 2, POSITIVE, 1, 1), -1, 2, (POSITIVE, 2, 1, 0));
+    TEST_FLOAT_NUM_CREATE(4, (0, 1, POSITIVE, 2, 1, 2), 1, 1, (POSITIVE, 1, 1));
+
+    #undef TEST_FLOAT_NUM_CREATE
+
+    #define TEST_FLOAT_NUM_CREATE(TAG, FLT)             \
+    {                                                   \
+        TEST_CASE_OPEN(TAG)                             \
+        {                                               \
+            TEST_REVERT_OPEN                            \
+            {                                           \
+                float_num_create_immed(ARG_OPEN FLT);   \
+            }                                           \
+            TEST_REVERT_CLOSE                           \
+        }                                               \
+        TEST_CASE_CLOSE                                 \
+    }
+
+    TEST_FLOAT_NUM_CREATE(5, (INT64_MIN, 2, POSITIVE, 1, 1));
+    TEST_FLOAT_NUM_CREATE(6, (INT64_MAX, 1, POSITIVE, 2, 1, 0));
 
     #undef TEST_FLOAT_NUM_CREATE
 

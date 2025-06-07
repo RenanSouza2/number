@@ -3,4 +3,6 @@
 
 #include "struct.h"
 
+void float_num_display(float_num_t flt);
+
 #endif
