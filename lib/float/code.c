@@ -14,19 +14,16 @@
 #include "../sig/debug.h"
 
 
-uint64_t int64_get_sign(int64_t i) // TODO TEST
+uint64_t int64_get_sign(int64_t i)
 {
     if(i == 0)  return ZERO;
     return i > 0 ? POSITIVE : NEGATIVE;
 }
 
 
-int int64_add(int64_t a, int64_t b) // TODO TEST
+int64_t int64_add(int64_t a, int64_t b) // TODO TEST
 {
-    printf("\nint64_add");
-    printf("\na: %ld\tb: %ld", a, b);
     int64_t res = a + b;
-    printf("\nres a: %ld", res);
     if(a != 0 && b != 0)
     {
         uint64_t sign_a = int64_get_sign(a);
@@ -79,14 +76,14 @@ float_num_t float_num_create(int64_t exponent, uint64_t size, sig_num_t sig)
     {
         uint64_t diff = size - sig.num.count;
         exponent = int64_add(exponent, -diff);
-        sig_num_head_grow(sig, diff);
+        sig = sig_num_head_grow(sig, diff);
     }
 
     if(sig.num.count > size)
     {
         uint64_t diff = sig.num.count - size;
         exponent = int64_add(exponent, diff);
-        sig_num_head_trim(sig, diff);
+        sig = sig_num_head_trim(sig, diff);
     }
 
     return (float_num_t)

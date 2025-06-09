@@ -38,15 +38,13 @@ void test_int64_add(bool show)
     TEST_FN_OPEN
 
     #define TEST_INT64_ADD(TAG, A, B, RES)  \
-    {                                               \
-        TEST_CASE_OPEN(TAG)                         \
-        {                                           \
-            printf("\na: %ld\tb: %ld", (int64_t)(A), (int64_t)(B)); \
-            int64_t res = int64_add((int64_t)(A), (int64_t)(B));    \
-            printf("\nres b: %ld", res); \
-            assert(int64(res, RES));                \
-        }                                           \
-        TEST_CASE_CLOSE                             \
+    {                                       \
+        TEST_CASE_OPEN(TAG)                 \
+        {                                   \
+            int64_t res = int64_add(A, B);  \
+            assert(int64(res, RES));        \
+        }                                   \
+        TEST_CASE_CLOSE                     \
     }
 
     for(int64_t a=-2; a<3; a++)
@@ -56,25 +54,27 @@ void test_int64_add(bool show)
     }
 
     TEST_INT64_ADD(26, INT64_MIN, 0, INT64_MIN);
-    TEST_INT64_ADD(27, INT64_MAX, 0, INT64_MAX);
+    TEST_INT64_ADD(27, INT64_MIN + 1, -1, INT64_MIN);
+    TEST_INT64_ADD(28, INT64_MAX, 0, INT64_MAX);
+    TEST_INT64_ADD(29, INT64_MAX - 1, 1, INT64_MAX);
 
     #undef TEST_INT64_ADD
 
-    #define TEST_INT64_ADD(TAG, FLT)                    \
-    {                                                   \
-        TEST_CASE_OPEN(TAG)                             \
-        {                                               \
-            TEST_REVERT_OPEN                            \
-            {                                           \
-                float_num_create_immed(ARG_OPEN FLT);   \
-            }                                           \
-            TEST_REVERT_CLOSE                           \
-        }                                               \
-        TEST_CASE_CLOSE                                 \
+    #define TEST_INT64_ADD(TAG, A, B)   \
+    {                                   \
+        TEST_CASE_OPEN(TAG)             \
+        {                               \
+            TEST_REVERT_OPEN            \
+            {                           \
+                int64_add(A, B);        \
+            }                           \
+            TEST_REVERT_CLOSE           \
+        }                               \
+        TEST_CASE_CLOSE                 \
     }
 
-    TEST_INT64_ADD(6, (INT64_MAX, 1, POSITIVE, 2, 1, 0));
-    TEST_INT64_ADD(5, (INT64_MIN, 2, POSITIVE, 1, 1));
+    TEST_INT64_ADD(30, INT64_MIN, -1);
+    TEST_INT64_ADD(31, INT64_MAX, 1);
 
     #undef TEST_INT64_ADD
 

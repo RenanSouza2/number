@@ -17,7 +17,7 @@ float_num_t float_num_create_immed(
 #endif
 
 uint64_t int64_get_sign(int64_t i);
-int int64_add(int64_t a, int64_t b);
+int64_t int64_add(int64_t a, int64_t b);
 
 float_num_t float_num_create(int64_t exponent, uint64_t size_cap, sig_num_t sig);
 void float_num_free(float_num_t flt);
