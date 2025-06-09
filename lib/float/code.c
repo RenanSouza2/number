@@ -46,16 +46,15 @@ float_num_t float_num_create(int64_t exponent, uint64_t size, sig_num_t sig)
     if(sig.num.count < size)
     {
         uint64_t diff = size - sig.num.count;
-        printf("\ndiff: %lu", diff);
         exponent -= diff;
-        sig_num_shl(sig, diff << 6);
+        sig_num_head_grow(sig, diff);
     }
 
     if(sig.num.count > size)
     {
         uint64_t diff = size - sig.num.count;
         exponent += diff;
-        sig_num_shr(sig, diff << 6);
+        sig_num_head_trim(sig, diff);
     }
 
     return (float_num_t)
@@ -88,13 +87,11 @@ float_num_t float_num_set_exponent(float_num_t flt, int64_t exponent) // TODO TE
 
     if(flt.exponent < exponent)
     {
-        uint64_t shift = (exponent - flt.exponent) << 6;
-        sig_num_t sig = sig_num_shr(flt.sig, shift);
+        sig_num_t sig = sig_num_head_trim(flt.sig, exponent - flt.exponent);
         return float_num_create(exponent, flt.size, sig);
     }
     
-    uint64_t shift = (flt.exponent - exponent) << 6;
-    sig_num_t sig = sig_num_shl(flt.sig, shift);
+    sig_num_t sig = sig_num_head_grow(flt.sig, flt.exponent - exponent);
     return float_num_create(exponent, flt.size, sig);
 }
 

@@ -103,7 +103,7 @@ fix_num_t fix_num_create(sig_num_t sig, uint64_t pos) // TODO test
 fix_num_t fix_num_wrap(int64_t value, uint64_t pos) // TODO test
 {
     sig_num_t sig = sig_num_wrap(value);
-    if(value) sig = sig_num_shl(sig, pos << 6);
+    if(value) sig = sig_num_head_grow(sig, pos);
     return fix_num_create(sig, pos);
 }
 
@@ -132,13 +132,13 @@ fix_num_t fix_num_reposition(fix_num_t fix, uint64_t pos) // TODO test
     if(pos > fix.pos)
         return (fix_num_t)
         {
-            .sig = sig_num_shl(fix.sig, (pos - fix.pos) << 6),
+            .sig = sig_num_head_grow(fix.sig, pos - fix.pos),
             .pos = pos
         };
 
     return (fix_num_t)
     {
-        .sig = sig_num_shr(fix.sig, (fix.pos - pos) << 6),
+        .sig = sig_num_head_trim(fix.sig, fix.pos - pos),
         .pos = pos
     };
 }
@@ -211,20 +211,20 @@ fix_num_t fix_num_sub(fix_num_t fix_1, fix_num_t fix_2) // TODO test
 fix_num_t fix_num_mul(fix_num_t fix_1, fix_num_t fix_2) // TODO test
 {
     fix_1.sig = sig_num_mul(fix_1.sig, fix_2.sig);
-    fix_1.sig = sig_num_shr(fix_1.sig, fix_1.pos << 6);
+    fix_1.sig = sig_num_head_trim(fix_1.sig, fix_1.pos);
     return fix_1;
 }
 
 fix_num_t fix_num_sqr(fix_num_t fix) // TODO test
 {
     fix.sig = sig_num_sqr(fix.sig);
-    fix.sig = sig_num_shr(fix.sig, fix.pos << 6);
+    fix.sig = sig_num_head_trim(fix.sig, fix.pos);
     return fix;
 }
 
 fix_num_t fix_num_div(fix_num_t fix_1, fix_num_t fix_2) // TODO test
 {
-    fix_1.sig = sig_num_shl(fix_1.sig, fix_1.pos << 6);
+    fix_1.sig = sig_num_head_grow(fix_1.sig, fix_1.pos);
     fix_1.sig = sig_num_div(fix_1.sig, fix_2.sig);
     return fix_1;
 }

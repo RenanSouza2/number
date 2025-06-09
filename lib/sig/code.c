@@ -153,12 +153,12 @@ sig_num_t sig_num_copy(sig_num_t sig)
     return sig_num_create(sig.signal, num);
 }
 
-sig_num_t sig_num_head_grow(sig_num_t sig, uint64_t count)
+sig_num_t sig_num_head_grow(sig_num_t sig, uint64_t count) // TODO test
 {
     sig.num = num_head_grow(sig.num, count);
     return sig;
 }
-sig_num_t sig_num_head_trim(sig_num_t sig, uint64_t count)
+sig_num_t sig_num_head_trim(sig_num_t sig, uint64_t count) // TODO test
 {
     sig.num = num_head_trim(sig.num, count);
     return sig;
