@@ -6,6 +6,7 @@
 #include "../../sig/debug.h"
 
 
+
 #define FLOAT_NUM_ZERO(SIZE) (0, SIZE, ZERO, 0)
 
 void test_int64_get_sign(bool show)
@@ -83,15 +84,16 @@ void test_int64_add(bool show)
 
 
 
-void test_float_num_create(bool show)
+void test_float_num_normalize(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_FLOAT_NUM_CREATE(TAG, FLT, EXPONENT, SIZE, SIG)    \
+    #define TEST_FLOAT_NUM_NORMALIZE(TAG, FLT, EXPONENT, SIZE, SIG) \
     {                                                               \
         TEST_CASE_OPEN(TAG)                                         \
         {                                                           \
             float_num_t flt = float_num_create_immed(ARG_OPEN FLT); \
+            flt = float_num_normalize(flt);                         \
             assert(int64(flt.exponent, EXPONENT));                  \
             assert(uint64(flt.size, SIZE));                         \
             assert(sig_num_immed(flt.sig, ARG_OPEN SIG));           \
@@ -99,49 +101,77 @@ void test_float_num_create(bool show)
         TEST_CASE_CLOSE                                             \
     }
 
-    TEST_FLOAT_NUM_CREATE(1, FLOAT_NUM_ZERO(1), 0, 1, (ZERO, 0));
-    TEST_FLOAT_NUM_CREATE(2, (0, 1, POSITIVE, 1, 1), 0, 1, (POSITIVE, 1, 1));
-    TEST_FLOAT_NUM_CREATE(3, (0, 1, NEGATIVE, 1, 1), 0, 1, (NEGATIVE, 1, 1));
-    TEST_FLOAT_NUM_CREATE(4, (0, 2, POSITIVE, 1, 1), -1, 2, (POSITIVE, 2, 1, 0));
-    TEST_FLOAT_NUM_CREATE(5, (0, 1, POSITIVE, 2, 1, 2), 1, 1, (POSITIVE, 1, 1));
+    TEST_FLOAT_NUM_NORMALIZE(1, FLOAT_NUM_ZERO(1), 0, 1, (ZERO, 0));
+    TEST_FLOAT_NUM_NORMALIZE(2, (0, 1, POSITIVE, 1, 1), 0, 1, (POSITIVE, 1, 1));
+    TEST_FLOAT_NUM_NORMALIZE(3, (0, 1, NEGATIVE, 1, 1), 0, 1, (NEGATIVE, 1, 1));
+    TEST_FLOAT_NUM_NORMALIZE(4, (0, 2, POSITIVE, 1, 1), -1, 2, (POSITIVE, 2, 1, 0));
+    TEST_FLOAT_NUM_NORMALIZE(5, (0, 1, POSITIVE, 2, 1, 2), 1, 1, (POSITIVE, 1, 1));
 
-    #undef TEST_FLOAT_NUM_CREATE
+    #undef TEST_FLOAT_NUM_NORMALIZE
 
-    #define TEST_FLOAT_NUM_CREATE(TAG, FLT)             \
-    {                                                   \
-        TEST_CASE_OPEN(TAG)                             \
-        {                                               \
-            TEST_REVERT_OPEN                            \
-            {                                           \
-                float_num_create_immed(ARG_OPEN FLT);   \
-            }                                           \
-            TEST_REVERT_CLOSE                           \
-        }                                               \
-        TEST_CASE_CLOSE                                 \
+    #define TEST_FLOAT_NUM_NORMALIZE(TAG, FLT)                      \
+    {                                                               \
+        TEST_CASE_OPEN(TAG)                                         \
+        {                                                           \
+            float_num_t flt = float_num_create_immed(ARG_OPEN FLT); \
+            TEST_REVERT_OPEN                                        \
+            {                                                       \
+                float_num_normalize(flt);                           \
+            }                                                       \
+            TEST_REVERT_CLOSE                                       \
+        }                                                           \
+        TEST_CASE_CLOSE                                             \
     }
 
-    TEST_FLOAT_NUM_CREATE(5, (INT64_MIN, 2, POSITIVE, 1, 1));
-    TEST_FLOAT_NUM_CREATE(6, (INT64_MAX, 1, POSITIVE, 2, 1, 0));
+    TEST_FLOAT_NUM_NORMALIZE(6, (INT64_MIN, 2, POSITIVE, 1, 1));
+    TEST_FLOAT_NUM_NORMALIZE(7, (INT64_MAX, 1, POSITIVE, 2, 1, 0));
 
-    #undef TEST_FLOAT_NUM_CREATE
+    #undef TEST_FLOAT_NUM_NORMALIZE
 
     TEST_FN_CLOSE
 }
+
+
+
+void test_float_num_set_exponent(bool show)
+{
+    TEST_FN_OPEN
+
+    #define TEST_FLOAT_NUM_SET_EXPONENT(TAG, FLT, EXPONENT, RES)    \
+    {                                                               \
+        TEST_CASE_OPEN(TAG)                                         \
+        {                                                           \
+            float_num_t flt = float_num_create_immed(ARG_OPEN FLT); \
+            flt = float_num_set_exponent(flt, EXPONENT);            \
+            assert(float_num_immed(flt, ARG_OPEN RES));             \
+        }                                                           \
+        TEST_CASE_CLOSE                                             \
+    }
+
+    TEST_FLOAT_NUM_SET_EXPONENT(1, FLOAT_NUM_ZERO(1), 0, FLOAT_NUM_ZERO(1));
+    TEST_FLOAT_NUM_SET_EXPONENT(2, FLOAT_NUM_ZERO(1), 1, (1, 1, ZERO, 0));
+
+    #undef TEST_FLOAT_NUM_SET_EXPONENT
+
+    TEST_FN_CLOSE
+}
+
+
 
 void test_float_num_is_zero(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_FLOAT_NUM_IS_ZERO(TAG, FLOAT, RES)                     \
-    {                                                                   \
-        TEST_CASE_OPEN(TAG)                                             \
-        {                                                               \
-            float_num_t flt = float_num_create_immed(ARG_OPEN FLOAT);   \
-            bool res = float_num_is_zero(flt);                          \
-            assert(res == RES);                                         \
-            float_num_free(flt);                                        \
-        }                                                               \
-        TEST_CASE_CLOSE                                                 \
+    #define TEST_FLOAT_NUM_IS_ZERO(TAG, FLT, RES)                   \
+    {                                                               \
+        TEST_CASE_OPEN(TAG)                                         \
+        {                                                           \
+            float_num_t flt = float_num_create_immed(ARG_OPEN FLT); \
+            bool res = float_num_is_zero(flt);                      \
+            assert(res == RES);                                     \
+            float_num_free(flt);                                    \
+        }                                                           \
+        TEST_CASE_CLOSE                                             \
     }
 
     TEST_FLOAT_NUM_IS_ZERO(1, FLOAT_NUM_ZERO(1), true);
@@ -163,7 +193,8 @@ void test_float()
     test_int64_get_sign(show);
     test_int64_add(show);
 
-    test_float_num_create(show);
+    test_float_num_normalize(show);
+
     test_float_num_is_zero(show);
 
     TEST_ASSERT_MEM_EMPTY
