@@ -14,10 +14,16 @@ float_num_t float_num_create_immed(
     uint64_t n,
     ...
 );
-
 #endif
 
+<<<<<<< HEAD
 float_num_t float_num_create(int64_t exponent, uint64_t size, sig_num_t sig);
+=======
+uint64_t int64_get_sign(int64_t i);
+int int64_add(int64_t a, int64_t b);
+
+float_num_t float_num_create(int64_t exponent, uint64_t size_cap, sig_num_t sig);
+>>>>>>> origin/flt
 void float_num_free(float_num_t flt);
 
 bool float_num_is_zero(float_num_t flt);

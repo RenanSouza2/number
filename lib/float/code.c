@@ -3,6 +3,7 @@
 
 #include "debug.h"
 #include "../../mods/clu/header.h"
+#include "../../mods/macros/assert.h"
 
 #include "../sig/header.h"
 
@@ -11,6 +12,29 @@
 #ifdef DEBUG
 
 #include "../sig/debug.h"
+
+
+uint64_t int64_get_sign(int64_t i) // TODO TEST
+{
+    if(i == 0)  return ZERO;
+    return i > 0 ? POSITIVE : NEGATIVE;
+}
+
+
+int int64_add(int64_t a, int64_t b) // TODO TEST
+{
+    printf("\nint64_add");
+    printf("\na: %lld\tb: %lld", a, b);
+    int64_t res = a + b;
+    printf("\nres: %lld", res);
+    if(a != 0 && b != 0)
+    {
+        uint64_t sign_a = int64_get_sign(a);
+        if(sign_a == int64_get_sign(b))
+            assert(sign_a == int64_get_sign(res));
+    }
+    return res;
+}
 
 
 
@@ -31,6 +55,14 @@ float_num_t float_num_create_immed(
 
 
 
+void float_num_display(float_num_t flt)
+{
+    printf("\nexponent: " U64P() "\n", flt.exponent);
+    sig_num_display(flt.sig, false);
+}
+
+
+
 float_num_t float_num_create(int64_t exponent, uint64_t size, sig_num_t sig)
 {
     if(sig_num_is_zero(sig))
@@ -46,15 +78,26 @@ float_num_t float_num_create(int64_t exponent, uint64_t size, sig_num_t sig)
     if(sig.num.count < size)
     {
         uint64_t diff = size - sig.num.count;
+<<<<<<< HEAD
         exponent -= diff;
         sig_num_head_grow(sig, diff);
+=======
+        exponent = int64_add(exponent, -diff);
+        sig = sig_num_shl(sig, diff << 6);
+>>>>>>> origin/flt
     }
 
     if(sig.num.count > size)
     {
+<<<<<<< HEAD
         uint64_t diff = size - sig.num.count;
         exponent += diff;
         sig_num_head_trim(sig, diff);
+=======
+        uint64_t diff = sig.num.count - size;
+        exponent = int64_add(exponent, diff);
+        sig = sig_num_shr(sig, diff << 6);
+>>>>>>> origin/flt
     }
 
     return (float_num_t)

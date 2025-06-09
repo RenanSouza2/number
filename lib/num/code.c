@@ -37,11 +37,11 @@ num_t num_create_immed(uint64_t n, ...)
 
 
 
-bool int64(int64_t u1, int64_t u2)
+bool int64(int64_t i1, int64_t i2)
 {
-    if(u1 != u2)
+    if(i1 != i2)
     {
-        printf("\n\n\tINT64 ASSERT ERROR\t| (" D64P() ") (" D64P() ")", u1, u2);
+        printf("\n\n\tINT64 ASSERT ERROR\t| (" D64P() ") (" D64P() ")", i1, i2);
         return false;
     }
 
