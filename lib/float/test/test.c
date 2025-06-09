@@ -41,9 +41,9 @@ void test_int64_add(bool show)
     {                                               \
         TEST_CASE_OPEN(TAG)                         \
         {                                           \
-            printf("\na: %lld\tb: %lld", (int64_t)(A), (int64_t)(B)); \
-            int64_t res = int64_add((int64_t)(A), (int64_t)(B));          \
-            printf("\nres: %lld", res); \
+            printf("\na: %ld\tb: %ld", (int64_t)(A), (int64_t)(B)); \
+            int64_t res = int64_add((int64_t)(A), (int64_t)(B));    \
+            printf("\nres b: %ld", res); \
             assert(int64(res, RES));                \
         }                                           \
         TEST_CASE_CLOSE                             \
@@ -101,12 +101,9 @@ void test_float_num_create(bool show)
 
     TEST_FLOAT_NUM_CREATE(1, FLOAT_NUM_ZERO(1), 0, 1, (ZERO, 0));
     TEST_FLOAT_NUM_CREATE(2, (0, 1, POSITIVE, 1, 1), 0, 1, (POSITIVE, 1, 1));
-<<<<<<< HEAD
-    TEST_FLOAT_NUM_CREATE(3, (0, 2, POSITIVE, 1, 1), -1, 2, (POSITIVE, 2, 1, 0));
-=======
-    TEST_FLOAT_NUM_CREATE(2, (0, 1, NEGATIVE, 1, 1), 0, 1, (NEGATIVE, 1, 1));
-    TEST_FLOAT_NUM_CREATE(3, (0, 2, POSITIVE, 1, 1), -1, 2, (POSITIVE, 2, 1, 0));
-    TEST_FLOAT_NUM_CREATE(4, (0, 1, POSITIVE, 2, 1, 2), 1, 1, (POSITIVE, 1, 1));
+    TEST_FLOAT_NUM_CREATE(3, (0, 1, NEGATIVE, 1, 1), 0, 1, (NEGATIVE, 1, 1));
+    TEST_FLOAT_NUM_CREATE(4, (0, 2, POSITIVE, 1, 1), -1, 2, (POSITIVE, 2, 1, 0));
+    TEST_FLOAT_NUM_CREATE(5, (0, 1, POSITIVE, 2, 1, 2), 1, 1, (POSITIVE, 1, 1));
 
     #undef TEST_FLOAT_NUM_CREATE
 
@@ -125,7 +122,6 @@ void test_float_num_create(bool show)
 
     TEST_FLOAT_NUM_CREATE(5, (INT64_MIN, 2, POSITIVE, 1, 1));
     TEST_FLOAT_NUM_CREATE(6, (INT64_MAX, 1, POSITIVE, 2, 1, 0));
->>>>>>> origin/flt
 
     #undef TEST_FLOAT_NUM_CREATE
 

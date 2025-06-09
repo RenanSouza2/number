@@ -24,9 +24,9 @@ uint64_t int64_get_sign(int64_t i) // TODO TEST
 int int64_add(int64_t a, int64_t b) // TODO TEST
 {
     printf("\nint64_add");
-    printf("\na: %lld\tb: %lld", a, b);
+    printf("\na: %ld\tb: %ld", a, b);
     int64_t res = a + b;
-    printf("\nres: %lld", res);
+    printf("\nres a: %ld", res);
     if(a != 0 && b != 0)
     {
         uint64_t sign_a = int64_get_sign(a);
@@ -78,26 +78,15 @@ float_num_t float_num_create(int64_t exponent, uint64_t size, sig_num_t sig)
     if(sig.num.count < size)
     {
         uint64_t diff = size - sig.num.count;
-<<<<<<< HEAD
-        exponent -= diff;
-        sig_num_head_grow(sig, diff);
-=======
         exponent = int64_add(exponent, -diff);
-        sig = sig_num_shl(sig, diff << 6);
->>>>>>> origin/flt
+        sig_num_head_grow(sig, diff);
     }
 
     if(sig.num.count > size)
     {
-<<<<<<< HEAD
-        uint64_t diff = size - sig.num.count;
-        exponent += diff;
-        sig_num_head_trim(sig, diff);
-=======
         uint64_t diff = sig.num.count - size;
         exponent = int64_add(exponent, diff);
-        sig = sig_num_shr(sig, diff << 6);
->>>>>>> origin/flt
+        sig_num_head_trim(sig, diff);
     }
 
     return (float_num_t)
