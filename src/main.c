@@ -8,9 +8,10 @@
 #include "../mods/macros/assert.h"
 #include "../mods/macros/U64.h"
 
-#include "../lib/num/header.h"
-#include "../lib/mod/header.h"
 #include "../lib/fix/header.h"
+#include "../lib/float/header.h"
+#include "../lib/mod/header.h"
+#include "../lib/num/header.h"
 
 
 
@@ -83,13 +84,13 @@ void time_1(uint64_t begin, uint64_t end)
         num_1 = num_add(num_1, num_wrap(1));
         num_1 = num_sqr(num_1);
         uint64_t end = altutime();
-        // printf("\t%10.3f", (end - begin) / 1e3);
+        printf("\t%10.3f", (end - begin) / 1e3);
 
         begin = altutime();
         num_2 = num_add(num_2, num_wrap(2));
         num_2 = num_sqr(num_2);
         end = altutime();
-        // printf("\t%10.3f", (end - begin) / 1e3);
+        printf("\t%10.3f", (end - begin) / 1e3);
 
         num_t num_1_copy = num_copy(num_1);
         num_t num_2_copy = num_copy(num_2);
@@ -438,32 +439,14 @@ int main()
     // time_2(argc, argv, 19);
     // fibonacci();
     // fibonacci_2(16, 23);
-    fibonacci_3(16, 23);
+    // fibonacci_3(16, 23);
     // sqrt_2();
 
-    // uint64_t pos = 1e1;
-    // fix_num_t fix = fix_num_wrap(1, pos);
-    // fix = fix_num_div(fix, fix_num_wrap(10, pos));
-    // fix = fix_num_mul(fix, fix_num_wrap(10, pos));
-    // fix = fix_num_sub(fix, fix_num_wrap(1, pos));
-    //
-    // uint64_t begin = altutime();
-    // fix_display_tag("res", fix);
-    // uint64_t end = altutime();
-    // printf("\n%10.3f", (end - begin) / 1e3);
-    //
-    // printf("\na");
-    // num_t num = num_sub(num_wrap(2), num_wrap(3));
-    // printf("\nb");
-    // num_display(num);
+    float_num_t flt = float_num_wrap(5, 1);
+    float_num_display_dec(flt);
 
-    // num_t num = num_wrap(29);
-    // mod_num_t mod_1 = mod_num_wrap(1, num);
-    // mod_num_t mod_2 = mod_num_wrap(9, num);
-    // mod_1 = mod_num_div(mod_1, mod_2);
-    // mod_display("mod", mod_1);
-
-    // assert(clu_mem_is_empty());
+    // float_num_free(flt);
+    assert(clu_mem_is_empty());
 
     printf("\n");
     return 0;

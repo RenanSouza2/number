@@ -131,7 +131,7 @@ void test_mod_num_mul(bool show)
     TEST_FN_OPEN
 
     num_t p = num_wrap(7);
-    
+
     #define TEST_MOD_NUM_MUL(TAG, VALUE_1, VALUE_2, RES)    \
     {                                                       \
         TEST_CASE_OPEN(TAG)                                 \

@@ -16,6 +16,7 @@ bool int64(int64_t i1, int64_t i2);
 bool uint64(uint64_t u1, uint64_t u2);
 bool uint128_immed(uint128_t u1, uint64_t v2h, uint64_t v2l);
 
+bool num_inner(num_t num_1, num_t num_2);
 bool num_eq_dbg(num_t num_1, num_t num_2);
 bool num_immed(num_t num, uint64_t n, ...);
 

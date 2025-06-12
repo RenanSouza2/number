@@ -36,7 +36,7 @@ bool sig_num_inner(sig_num_t sig_1, sig_num_t sig_2)
         return false;
     }
 
-    if(!num_eq_dbg(sig_1.num, sig_2.num))
+    if(!num_inner(sig_1.num, sig_2.num))
     {
         printf("\n\tSIG ASSERT ERROR\t| DIFFERENT NUMBER");
         return false;
@@ -55,6 +55,8 @@ bool sig_num_eq_dbg(sig_num_t sig_1, sig_num_t sig_2)
         return false;
     }
 
+    sig_num_free(sig_1);
+    sig_num_free(sig_2);
     return true;
 }
 
@@ -160,8 +162,8 @@ sig_num_t sig_num_head_grow(sig_num_t sig, uint64_t count) // TODO test
 }
 sig_num_t sig_num_head_trim(sig_num_t sig, uint64_t count) // TODO test
 {
-    sig.num = num_head_trim(sig.num, count);
-    return sig;
+    num_t num = num_head_trim(sig.num, count);
+    return sig_num_create(sig.signal, num);
 }
 
 
