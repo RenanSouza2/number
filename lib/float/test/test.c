@@ -307,6 +307,11 @@ void test_float_num_div(bool show)
         (0, 1, POSITIVE, 1, 3),
         (0, 1, POSITIVE, 1, 2)
     );
+    TEST_FLOAT_NUM_DIV(1,
+        (-1, 2, POSITIVE, 2, 6, 0),
+        (-1, 2, POSITIVE, 2, 3, 0),
+        (-1, 2, POSITIVE, 2, 2, 0)
+    );
 
     #undef TEST_FLOAT_NUM_DIV
 

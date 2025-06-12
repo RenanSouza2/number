@@ -5,6 +5,7 @@
 #include "../../mods/clu/header.h"
 #include "../../mods/macros/assert.h"
 
+#include "../fix/header.h"
 #include "../sig/header.h"
 
 
@@ -101,20 +102,22 @@ bool float_num_immed(
 
 
 
-#define CLU_FLT_IS_SAFE(FLT) CLU_HANDLER_IS_SAFE((FLT).sig.num.head)
+#define CLU_FLOAT_IS_SAFE(FLOAT) CLU_HANDLER_IS_SAFE((FLOAT).sig.num.head)
 
 void float_num_display(float_num_t flt)
 {
-    CLU_FLT_IS_SAFE(flt);
+    CLU_FLOAT_IS_SAFE(flt);
 
     printf("\n");
     sig_num_display(flt.sig, false);
-    printf("\t| exponent: " U64P() "", flt.exponent);
+    printf("\t| exponent: " D64P() "", flt.exponent);
 }
 
-void float_num_display_dec(float_num_t flt) // TODO TEST
+void float_num_display_dec(char tag[], float_num_t flt) // TODO TEST
 {
-    CLU_FLT_IS_SAFE(flt);
+    CLU_FLOAT_IS_SAFE(flt);
+
+    flt = float_num_copy(flt);
 
     if(float_num_is_zero(flt))
     {
@@ -130,6 +133,10 @@ void float_num_display_dec(float_num_t flt) // TODO TEST
 
     float_num_t flt_one = float_num_wrap(1, flt.size);
     float_num_t flt_ten = float_num_wrap(10, flt.size);
+
+    printf("\nfloat_num_display_dec\t| begin");
+    printf("\nfloat_num_display_dec\t| flt");
+    float_num_display(flt);
 
     int64_t base = 1;
     float_num_t flt_base = float_num_wrap(1, flt.size);
@@ -166,12 +173,25 @@ void float_num_display_dec(float_num_t flt) // TODO TEST
         }
     }
 
+    printf("\nfloat_num_display_dec\t| after step 1");
+
     while(true)
     {
+        printf("\nfloat_num_display_dec\t| loop 1");
+
+        printf("\nfloat_num_display_dec\t| base: %ld", base);
+        printf("\nfloat_num_display_dec\t| flt");
+        float_num_display(flt);
+        printf("\nfloat_num_display_dec\t| flt_base");
+        float_num_display(flt_base);
+
         float_num_t flt_tmp = float_num_div(
             float_num_copy(flt),
             float_num_copy(flt_base)
         );
+
+        printf("\nfloat_num_display_dec\t| flt_tmp");
+        float_num_display(flt_tmp);
 
         if(float_num_cmp(flt_tmp, flt_ten) < 0)
         {
@@ -183,8 +203,7 @@ void float_num_display_dec(float_num_t flt) // TODO TEST
         int64_t add = 1;
         while(true)
         {
-            CLU_FLT_IS_SAFE(flt_base);
-            CLU_FLT_IS_SAFE(flt_add);
+            printf("\nfloat_num_display_dec\t| loop 2");
 
             float_num_t flt_tmp = float_num_mul(
                 float_num_copy(flt_base),
@@ -200,8 +219,37 @@ void float_num_display_dec(float_num_t flt) // TODO TEST
             flt_add = float_num_sqr(flt_add);
             add *= 2;
         }
+        
+        flt_base = float_num_add(flt_base, flt_add);
+        base += add;
     }
+
+    flt = float_num_set_size(flt, flt.size + 1);
+    flt_base = float_num_set_size(flt_base, flt_base.size + 1);
+
+    printf("\nfloat_num_display_dec\t| flt");
+    float_num_display(flt);
+    printf("\nfloat_num_display_dec\t| flt_base");
+    float_num_display(flt_base);
+
+    flt = float_num_div(flt, flt_base);
+
+    printf("\nfloat_num_display_dec\t| flt");
+    CLU_FLOAT_IS_SAFE(flt);
+    float_num_display(flt);
+    CLU_FLOAT_IS_SAFE(flt);
+    fix_num_t fix = (fix_num_t)
+    {
+        .pos = flt.size - 1,
+        .sig = flt.sig
+    };
+    printf("\np1: %p", flt.sig.num.head);
+    printf("\np2: %p", fix.sig.num.head);
+    fix_num_display_dec(tag, fix);
+    printf(" * 10 ^ %lu", base);
 }
+
+
 
 uint64_t int64_get_sign(int64_t i)
 {
@@ -225,7 +273,7 @@ int64_t int64_add(int64_t a, int64_t b)
 
 float_num_t float_num_normalize(float_num_t flt)
 {
-    CLU_FLT_IS_SAFE(flt);
+    CLU_FLOAT_IS_SAFE(flt);
 
     if(sig_num_is_zero(flt.sig))
         return flt;
@@ -261,7 +309,7 @@ float_num_t float_num_create(int64_t exponent, uint64_t size, sig_num_t sig) // 
 
 float_num_t float_num_copy(float_num_t flt) // TODO TEST
 {
-    CLU_FLT_IS_SAFE(flt);
+    CLU_FLOAT_IS_SAFE(flt);
 
     sig_num_t sig = sig_num_copy(flt.sig);
     return float_num_create(flt.exponent, flt.size, sig);
@@ -282,7 +330,7 @@ void float_num_free(float_num_t flt)
 
 float_num_t float_num_set_exponent(float_num_t flt, int64_t exponent)
 {
-    CLU_FLT_IS_SAFE(flt);
+    CLU_FLOAT_IS_SAFE(flt);
 
     if(flt.exponent < exponent)
     {
@@ -299,11 +347,20 @@ float_num_t float_num_set_exponent(float_num_t flt, int64_t exponent)
     return flt;
 }
 
+float_num_t float_num_set_size(float_num_t flt, uint64_t size) // TODO TEST
+{
+    CLU_FLOAT_IS_SAFE(flt);
+
+    flt.size = size;
+    return float_num_normalize(flt);
+}
+
+
 
 
 bool float_num_is_zero(float_num_t flt)
 {
-    CLU_FLT_IS_SAFE(flt);
+    CLU_FLOAT_IS_SAFE(flt);
 
     return sig_num_is_zero(flt.sig);
 }
@@ -329,7 +386,7 @@ int64_t float_num_cmp(float_num_t flt_1, float_num_t flt_2) // TODO TEST
 
 float_num_t float_num_opposite(float_num_t flt) // TODO TEST
 {
-    CLU_FLT_IS_SAFE(flt);
+    CLU_FLOAT_IS_SAFE(flt);
 
     flt.sig = sig_num_opposite(flt.sig);
     return flt;
@@ -339,8 +396,8 @@ float_num_t float_num_opposite(float_num_t flt) // TODO TEST
 
 float_num_t float_num_add(float_num_t flt_1, float_num_t flt_2)
 {
-    CLU_FLT_IS_SAFE(flt_1);
-    CLU_FLT_IS_SAFE(flt_2);
+    CLU_FLOAT_IS_SAFE(flt_1);
+    CLU_FLOAT_IS_SAFE(flt_2);
 
     if(float_num_is_zero(flt_1))
         return flt_2;
@@ -360,8 +417,8 @@ float_num_t float_num_add(float_num_t flt_1, float_num_t flt_2)
 
 float_num_t float_num_sub(float_num_t flt_1, float_num_t flt_2) // TODO TEST
 {
-    CLU_FLT_IS_SAFE(flt_1);
-    CLU_FLT_IS_SAFE(flt_2);
+    CLU_FLOAT_IS_SAFE(flt_1);
+    CLU_FLOAT_IS_SAFE(flt_2);
 
     flt_2 = float_num_opposite(flt_2);
     return float_num_add(flt_1, flt_2);
@@ -369,8 +426,8 @@ float_num_t float_num_sub(float_num_t flt_1, float_num_t flt_2) // TODO TEST
 
 float_num_t float_num_mul(float_num_t flt_1, float_num_t flt_2) // TODO TEST
 {
-    CLU_FLT_IS_SAFE(flt_1);
-    CLU_FLT_IS_SAFE(flt_2);
+    CLU_FLOAT_IS_SAFE(flt_1);
+    CLU_FLOAT_IS_SAFE(flt_2);
 
     int64_t exponent = int64_add(flt_1.exponent, flt_2.exponent);
     sig_num_t sig = sig_num_mul(flt_1.sig, flt_2.sig);
@@ -379,7 +436,7 @@ float_num_t float_num_mul(float_num_t flt_1, float_num_t flt_2) // TODO TEST
 
 float_num_t float_num_sqr(float_num_t flt) // TODO TEST
 {
-    CLU_FLT_IS_SAFE(flt);
+    CLU_FLOAT_IS_SAFE(flt);
 
     int64_t exponent = int64_add(flt.exponent, flt.exponent);
     sig_num_t sig = sig_num_sqr(flt.sig);
@@ -388,11 +445,12 @@ float_num_t float_num_sqr(float_num_t flt) // TODO TEST
 
 float_num_t float_num_div(float_num_t flt_1, float_num_t flt_2) // TODO TEST
 {
-    CLU_FLT_IS_SAFE(flt_1);
-    CLU_FLT_IS_SAFE(flt_2);
+    CLU_FLOAT_IS_SAFE(flt_1);
+    CLU_FLOAT_IS_SAFE(flt_2);
 
-    int64_t exponent = int64_add(flt_1.exponent, -flt_2.exponent);
-    sig_num_t sig = sig_num_head_grow(flt_1.sig, flt_1.size - 1);
-    sig = sig_num_div(sig, flt_2.sig);
+    int64_t exponent = int64_add(flt_1.exponent, 1 - (int64_t)flt_1.size);
+    flt_1 = float_num_set_exponent(flt_1, exponent);
+    exponent = int64_add(flt_1.exponent, -flt_2.exponent);
+    sig_num_t sig = sig_num_div(flt_1.sig, flt_2.sig);
     return float_num_create(exponent, flt_1.size, sig);
 }

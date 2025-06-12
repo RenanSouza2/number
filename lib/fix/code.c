@@ -32,7 +32,7 @@ void fix_num_display_dec(char tag[], fix_num_t fix)
 {
     CLU_HANDLER_IS_SAFE(fix.sig.num.head);
 
-    printf("\n%s: %c\t", tag, fix.sig.signal == NEGATIVE ? '-' : '+');
+    printf("\n%s:\t%c ", tag, fix.sig.signal == NEGATIVE ? '-' : '+');
 
     num_t num_hi, num_lo;
     num_break(&num_hi, &num_lo, num_copy(fix.sig.num), fix.pos);

@@ -33,6 +33,7 @@ float_num_t float_num_normalize(float_num_t flt);
 float_num_t float_num_create(int64_t exponent, uint64_t size_cap, sig_num_t sig);
 
 float_num_t float_num_set_exponent(float_num_t flt, int64_t exponent);
+float_num_t float_num_set_size(float_num_t flt, uint64_t size);
 
 bool float_num_is_zero(float_num_t flt);
 

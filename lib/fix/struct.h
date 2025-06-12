@@ -5,8 +5,8 @@
 
 STRUCT(fix_num)
 {
-    sig_num_t sig;
     uint64_t pos;
+    sig_num_t sig;
 };
 
 #endif
