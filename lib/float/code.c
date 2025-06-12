@@ -134,16 +134,10 @@ void float_num_display_dec(char tag[], float_num_t flt) // TODO TEST
     float_num_t flt_one = float_num_wrap(1, flt.size);
     float_num_t flt_ten = float_num_wrap(10, flt.size);
 
-    printf("\nfloat_num_display_dec\t| begin");
-    printf("\nfloat_num_display_dec\t| flt");
-    float_num_display(flt);
-
     int64_t base = 1;
     float_num_t flt_base;
     if(float_num_cmp(flt, flt_one) < 0)
     {
-        printf("\nfloat_num_display_dec\t| smaller than one");
-
         flt_base = float_num_div(float_num_copy(flt_one), float_num_copy(flt_ten));
         base = -1;
         while(float_num_cmp(flt_base, flt) > 0)
@@ -159,26 +153,12 @@ void float_num_display_dec(char tag[], float_num_t flt) // TODO TEST
     }
     float_num_free(flt_one);
 
-    printf("\nfloat_num_display_dec\t| after step 1");
-
     while(true)
     {
-        printf("\n");
-        printf("\nfloat_num_display_dec\t| loop 1");
-
-        printf("\nfloat_num_display_dec\t| base: %ld", base);
-        printf("\nfloat_num_display_dec\t| flt");
-        float_num_display(flt);
-        printf("\nfloat_num_display_dec\t| flt_base");
-        float_num_display(flt_base);
-
         float_num_t flt_tmp = float_num_div(
             float_num_copy(flt),
             float_num_copy(flt_base)
         );
-
-        printf("\nfloat_num_display_dec\t| flt_tmp 1");
-        float_num_display(flt_tmp);
 
         if(float_num_cmp(flt_tmp, flt_ten) < 0)
         {
@@ -186,27 +166,16 @@ void float_num_display_dec(char tag[], float_num_t flt) // TODO TEST
             break;
         }
         float_num_free(flt_tmp);
-        printf("\nfloat_num_display_dec\t| needs other iteration");
 
         float_num_t flt_add = float_num_copy(flt_ten);
         int64_t add = 1;
         while(true)
         {
-            printf("\n");
-            printf("\nfloat_num_display_dec\t| loop 2");
-            printf("\nfloat_num_display_dec\t| add: %ld", add);
-            printf("\nfloat_num_display_dec\t| flt_add");
-            float_num_display(flt_add);
-
             float_num_t flt_add_2 = float_num_sqr(float_num_copy(flt_add));
-
             float_num_t flt_tmp = float_num_mul(
                 float_num_copy(flt_base),
                 float_num_copy(flt_add_2)
             );
-
-            printf("\nfloat_num_display_dec\t| flt_tmp 2");
-            float_num_display(flt_tmp);
 
             if(float_num_cmp(flt_tmp, flt) > 0)
             {
@@ -221,47 +190,21 @@ void float_num_display_dec(char tag[], float_num_t flt) // TODO TEST
             add *= 2;
         }
 
-        
-        printf("\nfloat_num_display_dec\t| flt_add");
-        float_num_display(flt_add);
-        printf("\nfloat_num_display_dec\t| add: %ld", add);
-        
         flt_base = float_num_mul(flt_base, flt_add);
         base += add;
-        
-        printf("\nfloat_num_display_dec\t| flt_base");
-        float_num_display(flt_base);
-        printf("\nfloat_num_display_dec\t| base: %ld", base);
     }
     float_num_free(flt_ten);
-
-    printf("\nfloat_num_display_dec\t| ended it all");
-    printf("\nfloat_num_display_dec\t| flt");
-    float_num_display(flt);
-    printf("\nfloat_num_display_dec\t| flt_base");
-    float_num_display(flt_base);
 
     flt = float_num_set_size(flt, flt.size + 1);
     flt_base = float_num_set_size(flt_base, flt_base.size + 1);
 
-    printf("\nfloat_num_display_dec\t| flt");
-    float_num_display(flt);
-    printf("\nfloat_num_display_dec\t| flt_base");
-    float_num_display(flt_base);
-
     flt = float_num_div(flt, flt_base);
 
-    printf("\nfloat_num_display_dec\t| flt");
-    CLU_FLOAT_IS_SAFE(flt);
-    float_num_display(flt);
-    CLU_FLOAT_IS_SAFE(flt);
     fix_num_t fix = (fix_num_t)
     {
         .pos = flt.size - 1,
         .sig = flt.sig
     };
-    printf("\np1: %p", flt.sig.num.head);
-    printf("\np2: %p", fix.sig.num.head);
     fix_num_display_dec(tag, fix);
     printf(" * 10 ^ " D64P() "", base);
     float_num_free(flt);
