@@ -442,12 +442,17 @@ int main()
     // fibonacci_3(16, 23);
     // sqrt_2();
 
-    uint64_t size = 2;
-    float_num_t flt = float_num_wrap(56, size);
-    float_num_display_dec("flt", flt);
+    uint64_t size = 1;
+    // float_num_t flt = float_num_wrap(56789012, size);
+    float_num_t flt = float_num_div(
+        float_num_wrap(1234, size),
+        float_num_wrap(100000000, size)
+    );
 
-    // float_num_free(flt);
-    // assert(clu_mem_is_empty());
+    float_num_display_dec("flt", flt);
+    float_num_free(flt);
+
+    assert(clu_mem_is_empty());
 
     printf("\n");
     return 0;
