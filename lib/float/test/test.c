@@ -205,16 +205,47 @@ void test_float_num_add(bool show)
         TEST_CASE_CLOSE                                                 \
     }
 
-    TEST_FLOAT_NUM_ADD(1, FLOAT_NUM_ZERO(1), FLOAT_NUM_ZERO(1), FLOAT_NUM_ZERO(1));
-    TEST_FLOAT_NUM_ADD(2, FLOAT_NUM_ZERO(1), (0, 1, POSITIVE, 1, 1), (0, 1, POSITIVE, 1, 1));
-    TEST_FLOAT_NUM_ADD(3, (0, 1, POSITIVE, 1, 1), FLOAT_NUM_ZERO(1), (0, 1, POSITIVE, 1, 1));
-    TEST_FLOAT_NUM_ADD(4, (0, 1, POSITIVE, 1, 1), (0, 1, POSITIVE, 1, 2), (0, 1, POSITIVE, 1, 3));
-    TEST_FLOAT_NUM_ADD(5, (0, 1, POSITIVE, 1, 1), (0, 1, NEGATIVE, 1, 1), (0, 1, ZERO, 0));
-    TEST_FLOAT_NUM_ADD(6, (1, 1, POSITIVE, 1, 1), (0, 1, POSITIVE, 1, 1), (1, 1, POSITIVE, 1, 1));
-    TEST_FLOAT_NUM_ADD(7, (1, 2, POSITIVE, 2, 1, 0), (0, 2, POSITIVE, 2, 1, 0), (1, 2, POSITIVE, 2, 1, 1));
-    TEST_FLOAT_NUM_ADD(8, (1, 2, POSITIVE, 2, 1, 1), (1, 2, NEGATIVE, 2, 1, 0), (0, 2, POSITIVE, 2, 1, 0));
-    TEST_FLOAT_NUM_ADD(9, (0, 1, POSITIVE, 1, 1), (1, 1, POSITIVE, 1, 1), (1, 1, POSITIVE, 1, 1));
-    TEST_FLOAT_NUM_ADD(10, (0, 2, POSITIVE, 2, 1, 0), (1, 2, POSITIVE, 2, 1, 0), (1, 2, POSITIVE, 2, 1, 1));
+    TEST_FLOAT_NUM_ADD(1,
+        FLOAT_NUM_ZERO(1),
+        FLOAT_NUM_ZERO(1),
+        FLOAT_NUM_ZERO(1)
+    );
+    TEST_FLOAT_NUM_ADD(2,
+        FLOAT_NUM_ZERO(1),
+        (0, 1, POSITIVE, 1, 1),
+        (0, 1, POSITIVE, 1, 1));
+    TEST_FLOAT_NUM_ADD(3,
+        (0, 1, POSITIVE, 1, 1), FLOAT_NUM_ZERO(1),
+        (0, 1, POSITIVE, 1, 1));
+    TEST_FLOAT_NUM_ADD(4,
+        (0, 1, POSITIVE, 1, 1),
+        (0, 1, POSITIVE, 1, 2),
+        (0, 1, POSITIVE, 1, 3));
+    TEST_FLOAT_NUM_ADD(5,
+        (0, 1, POSITIVE, 1, 1),
+        (0, 1, NEGATIVE, 1, 1),
+        (0, 1, ZERO, 0));
+    TEST_FLOAT_NUM_ADD(6,
+        (1, 1, POSITIVE, 1, 1),
+        (0, 1, POSITIVE, 1, 1),
+        (1, 1, POSITIVE, 1, 1));
+    TEST_FLOAT_NUM_ADD(7,
+        (1, 2, POSITIVE, 2, 1, 0),
+        (0, 2, POSITIVE, 2, 1, 0),
+        (1, 2, POSITIVE, 2, 1, 1));
+    TEST_FLOAT_NUM_ADD(8,
+        (1, 2, POSITIVE, 2, 1, 1),
+        (1, 2, NEGATIVE, 2, 1, 0),
+        (0, 2, POSITIVE, 2, 1, 0));
+    TEST_FLOAT_NUM_ADD(9,
+        (0, 1, POSITIVE, 1, 1),
+        (1, 1, POSITIVE, 1, 1),
+        (1, 1, POSITIVE, 1, 1));
+    TEST_FLOAT_NUM_ADD(10,
+        (0, 2, POSITIVE, 2, 1, 0),
+        (1, 2, POSITIVE, 2, 1, 0),
+        (1, 2, POSITIVE, 2, 1, 1)
+    );
 
     #undef TEST_FLOAT_NUM_ADD
 
@@ -237,10 +268,47 @@ void test_float_num_sub(bool show)
         TEST_CASE_CLOSE                                                 \
     }
 
-    TEST_FLOAT_NUM_SUB(1, FLOAT_NUM_ZERO(1), FLOAT_NUM_ZERO(1), FLOAT_NUM_ZERO(1));
-    TEST_FLOAT_NUM_SUB(2, FLOAT_NUM_ZERO(1), (0, 1, POSITIVE, 1, 1), (0, 1, NEGATIVE, 1, 1));
+    TEST_FLOAT_NUM_SUB(1,
+        FLOAT_NUM_ZERO(1),
+        FLOAT_NUM_ZERO(1),
+        FLOAT_NUM_ZERO(1)
+    );
+    TEST_FLOAT_NUM_SUB(2,
+        FLOAT_NUM_ZERO(1),
+        (0, 1, POSITIVE, 1, 1),
+        (0, 1, NEGATIVE, 1, 1)
+    );
     
     #undef TEST_FLOAT_NUM_SUB
+
+    TEST_FN_CLOSE
+}
+
+
+
+void test_float_num_div(bool show)
+{
+    TEST_FN_OPEN
+
+    #define TEST_FLOAT_NUM_DIV(TAG, FLT_1, FLT_2, RES)                  \
+    {                                                                   \
+        TEST_CASE_OPEN(TAG)                                             \
+        {                                                               \
+            float_num_t flt_1 = float_num_create_immed(ARG_OPEN FLT_1); \
+            float_num_t flt_2 = float_num_create_immed(ARG_OPEN FLT_2); \
+            flt_1 = float_num_div(flt_1, flt_2);                        \
+            assert(float_num_immed(flt_1, ARG_OPEN RES))                \
+        }                                                               \
+        TEST_CASE_CLOSE                                                 \
+    }
+
+    TEST_FLOAT_NUM_DIV(1,
+        (0, 1, POSITIVE, 1, 6),
+        (0, 1, POSITIVE, 1, 3),
+        (0, 1, POSITIVE, 1, 2)
+    );
+
+    #undef TEST_FLOAT_NUM_DIV
 
     TEST_FN_CLOSE
 }
@@ -264,6 +332,8 @@ void test_float()
 
     test_float_num_add(show);
     test_float_num_sub(show);
+
+    test_float_num_div(show);
 
     TEST_ASSERT_MEM_EMPTY
 }
