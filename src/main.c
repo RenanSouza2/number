@@ -443,11 +443,11 @@ int main()
     // sqrt_2();
 
     uint64_t size = 1;
-    // float_num_t flt = float_num_wrap(56789012, size);
-    float_num_t flt = float_num_div(
-        float_num_wrap(1234, size),
-        float_num_wrap(100000000, size)
-    );
+    float_num_t flt = float_num_wrap(56786789010, size);
+    // float_num_t flt = float_num_div(
+    //     float_num_wrap(1234, size),
+    //     float_num_wrap(100000000, size)
+    // );
 
     float_num_display_dec("flt", flt);
     float_num_free(flt);
