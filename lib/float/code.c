@@ -113,23 +113,21 @@ void float_num_display(float_num_t flt)
     printf(" | exponent: " D64P() "", flt.exponent);
 }
 
-void float_num_display_dec(char tag[], float_num_t flt) // TODO TEST
+void float_num_display_dec(float_num_t flt) // TODO TEST
 {
     CLU_FLOAT_IS_SAFE(flt);
 
-    flt = float_num_copy(flt);
+    // flt = float_num_copy(flt);
+    flt = float_num_set_size(float_num_copy(flt), flt.size + 2);
 
     if(float_num_is_zero(flt))
     {
-        printf("\n0");
+        printf("0");
         return;
     }
 
-    if(flt.sig.signal == NEGATIVE)
-    {
-        printf("\n-");
-        flt.sig.signal = POSITIVE;
-    }
+    uint64_t signal = flt.sig.signal;
+    flt.sig.signal = POSITIVE;
 
     float_num_t flt_one = float_num_wrap(1, flt.size);
     float_num_t flt_ten = float_num_wrap(10, flt.size);
@@ -195,17 +193,19 @@ void float_num_display_dec(char tag[], float_num_t flt) // TODO TEST
     }
     float_num_free(flt_ten);
 
-    flt = float_num_set_size(flt, flt.size + 1);
-    flt_base = float_num_set_size(flt_base, flt_base.size + 1);
-
     flt = float_num_div(flt, flt_base);
+    flt = float_num_set_size(flt, flt.size - 1);
 
     fix_num_t fix = (fix_num_t)
     {
         .pos = flt.size - 1,
-        .sig = flt.sig
+        .sig = (sig_num_t)
+        {
+            .signal = signal,
+            .num = flt.sig.num
+        }
     };
-    fix_num_display_dec(tag, fix);
+    fix_num_display_dec(fix);
     printf(" * 10 ^ " D64P() "", base);
     float_num_free(flt);
 }
@@ -343,6 +343,32 @@ int64_t float_num_cmp(float_num_t flt_1, float_num_t flt_2) // TODO TEST
     }
     
     exit(EXIT_FAILURE);
+}
+
+bool float_num_safe_add(float_num_t flt_1, float_num_t flt_2) // TODO TEST
+{
+    CLU_FLOAT_IS_SAFE(flt_1);
+    CLU_FLOAT_IS_SAFE(flt_2);
+
+    if(float_num_is_zero(flt_1))
+        return true;
+
+    if(float_num_is_zero(flt_2))
+        return true;
+
+    uint64_t exponent = flt_1.exponent > flt_2.exponent ?
+        flt_1.exponent : flt_2.exponent;
+
+    flt_1 = float_num_set_exponent(float_num_copy(flt_1), exponent);
+    flt_2 = float_num_set_exponent(float_num_copy(flt_2), exponent);
+
+    if(float_num_is_zero(flt_1))
+        return false;
+
+    if(float_num_is_zero(flt_2))
+        return false;
+
+    return true;
 }
 
 float_num_t float_num_opposite(float_num_t flt) // TODO TEST

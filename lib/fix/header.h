@@ -3,7 +3,7 @@
 
 #include "struct.h"
 
-void fix_num_display_dec(char tag[], fix_num_t fix);
+void fix_num_display_dec(fix_num_t fix);
 void fix_num_display(fix_num_t fix);
 void fix_num_display_tag(char tag[], fix_num_t fix);
 void fix_num_display_full(char tag[], fix_num_t fix);

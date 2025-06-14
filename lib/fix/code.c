@@ -28,11 +28,11 @@ fix_num_t fix_num_create_immed(uint64_t pos, uint64_t signal, uint64_t n, ...)
 
 
 
-void fix_num_display_dec(char tag[], fix_num_t fix)
+void fix_num_display_dec(fix_num_t fix)
 {
     CLU_HANDLER_IS_SAFE(fix.sig.num.head);
 
-    printf("\n%s:\t%c ", tag, fix.sig.signal == NEGATIVE ? '-' : '+');
+    printf("%c ", fix.sig.signal == NEGATIVE ? '-' : '+');
 
     num_t num_hi, num_lo;
     num_break(&num_hi, &num_lo, num_copy(fix.sig.num), fix.pos);
