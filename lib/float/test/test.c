@@ -213,35 +213,48 @@ void test_float_num_add(bool show)
     TEST_FLOAT_NUM_ADD(2,
         FLOAT_NUM_ZERO(1),
         (0, 1, POSITIVE, 1, 1),
-        (0, 1, POSITIVE, 1, 1));
+        (0, 1, POSITIVE, 1, 1)
+    );
     TEST_FLOAT_NUM_ADD(3,
         (0, 1, POSITIVE, 1, 1), FLOAT_NUM_ZERO(1),
-        (0, 1, POSITIVE, 1, 1));
+        (0, 1, POSITIVE, 1, 1)
+    );
     TEST_FLOAT_NUM_ADD(4,
         (0, 1, POSITIVE, 1, 1),
         (0, 1, POSITIVE, 1, 2),
-        (0, 1, POSITIVE, 1, 3));
+        (0, 1, POSITIVE, 1, 3)
+    );
     TEST_FLOAT_NUM_ADD(5,
         (0, 1, POSITIVE, 1, 1),
         (0, 1, NEGATIVE, 1, 1),
-        (0, 1, ZERO, 0));
+        (-1, 1, ZERO, 0)
+    );
     TEST_FLOAT_NUM_ADD(6,
         (1, 1, POSITIVE, 1, 1),
         (0, 1, POSITIVE, 1, 1),
-        (1, 1, POSITIVE, 1, 1));
+        (1, 1, POSITIVE, 1, 1)
+    );
     TEST_FLOAT_NUM_ADD(7,
         (1, 2, POSITIVE, 2, 1, 0),
         (0, 2, POSITIVE, 2, 1, 0),
-        (1, 2, POSITIVE, 2, 1, 1));
+        (1, 2, POSITIVE, 2, 1, 1)
+    );
     TEST_FLOAT_NUM_ADD(8,
         (1, 2, POSITIVE, 2, 1, 1),
         (1, 2, NEGATIVE, 2, 1, 0),
-        (0, 2, POSITIVE, 2, 1, 0));
+        (0, 2, POSITIVE, 2, 1, 0)
+    );
     TEST_FLOAT_NUM_ADD(9,
         (0, 1, POSITIVE, 1, 1),
         (1, 1, POSITIVE, 1, 1),
-        (1, 1, POSITIVE, 1, 1));
+        (1, 1, POSITIVE, 1, 1)
+    );
     TEST_FLOAT_NUM_ADD(10,
+        (0, 2, POSITIVE, 2, 1, 0),
+        (1, 2, POSITIVE, 2, 1, 0),
+        (1, 2, POSITIVE, 2, 1, 1)
+    );
+    TEST_FLOAT_NUM_ADD(11,
         (0, 2, POSITIVE, 2, 1, 0),
         (1, 2, POSITIVE, 2, 1, 0),
         (1, 2, POSITIVE, 2, 1, 1)

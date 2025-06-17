@@ -180,6 +180,11 @@ int64_t fix_num_cmp(fix_num_t fix_1, fix_num_t fix_2) // TODO test
     return sig_num_cmp(fix_1.sig, fix_2.sig);
 }
 
+bool fix_num_is_zero(fix_num_t fix)
+{
+    return sig_num_is_zero(fix.sig);
+}
+
 
 
 fix_num_t fix_num_shl(fix_num_t fix, uint64_t value) // TODO test

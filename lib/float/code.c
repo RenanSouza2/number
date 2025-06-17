@@ -108,7 +108,6 @@ void float_num_display(float_num_t flt)
 {
     CLU_FLOAT_IS_SAFE(flt);
 
-    printf("\n");
     sig_num_display(flt.sig, false);
     printf(" | exponent: " D64P() "", flt.exponent);
 }
@@ -359,8 +358,8 @@ bool float_num_safe_add(float_num_t flt_1, float_num_t flt_2) // TODO TEST
     uint64_t exponent = flt_1.exponent > flt_2.exponent ?
         flt_1.exponent : flt_2.exponent;
 
-    flt_1 = float_num_set_exponent(float_num_copy(flt_1), exponent);
-    flt_2 = float_num_set_exponent(float_num_copy(flt_2), exponent);
+    flt_1 = float_num_set_exponent(float_num_copy(flt_1), exponent - 1);
+    flt_2 = float_num_set_exponent(float_num_copy(flt_2), exponent - 1);
 
     if(float_num_is_zero(flt_1))
         return false;
@@ -395,8 +394,8 @@ float_num_t float_num_add(float_num_t flt_1, float_num_t flt_2)
     uint64_t exponent = flt_1.exponent > flt_2.exponent ?
         flt_1.exponent : flt_2.exponent;
 
-    flt_1 = float_num_set_exponent(flt_1, exponent);
-    flt_2 = float_num_set_exponent(flt_2, exponent);
+    flt_1 = float_num_set_exponent(flt_1, exponent - 1);
+    flt_2 = float_num_set_exponent(flt_2, exponent - 1);
 
     flt_1.sig = sig_num_add(flt_1.sig, flt_2.sig);
     return float_num_normalize(flt_1);
