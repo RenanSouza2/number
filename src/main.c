@@ -374,22 +374,22 @@ void float_num_pi_1()
     uint64_t size = 3;
     float_num_t flt = float_num_wrap(2, size);
 
-    float_num_t i_8 = float_num_wrap(0, size);
-    float_num_t i_2 = float_num_copy(i_2);
+    float_num_t i_m_8 = float_num_wrap(0, size);
+    float_num_t i_p_2 = float_num_copy(i_m_8);
     float_num_t float_1 = float_num_wrap(1, size);
     float_num_t float_4 = float_num_wrap(4, size);
     float_num_t float_8 = float_num_wrap(8, size);
     for(uint64_t i=0; ; i++)
     {
-        i_2 = float_num_add(i_2, float_num_copy(float_4));
-        i_2 = float_num_add(i_2, float_num_copy(i_8));
+        i_p_2 = float_num_add(i_p_2, float_num_copy(float_4));
+        i_p_2 = float_num_add(i_p_2, float_num_copy(i_m_8));
     
-        i_8 = float_num_add(i_8, float_num_copy(float_8));
+        i_m_8 = float_num_add(i_m_8, float_num_copy(float_8));
 
-        flt = float_num_mul(flt, float_num_copy(i_2));
+        flt = float_num_mul(flt, float_num_copy(i_p_2));
 
         float_num_t flt_base = float_num_sub(
-            float_num_copy(i_2),
+            float_num_copy(i_p_2),
             float_num_copy(float_1)
         );
         flt = float_num_div(flt, flt_base);
