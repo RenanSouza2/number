@@ -405,7 +405,7 @@ void float_num_pi_1()
 void float_num_pi_2(int argc, char** argv)
 {
     uint64_t size = get_arg(argc, argv);
-    
+ 
     float_num_t flt = float_num_wrap(3, size);
     float_num_t flt_a = float_num_wrap(6, size);
     float_num_t flt_1_4 = float_num_div(
@@ -421,22 +421,25 @@ void float_num_pi_2(int argc, char** argv)
         float_num_wrap(-1, size),
         float_num_wrap(2, size)
     );
+
     for(uint64_t i=1; ; i++)
     {
         float_num_t flt_tmp = float_num_wrap(i, size);
         flt_tmp = float_num_div(float_num_copy(flt_m_3_8), flt_tmp);
         flt_tmp = float_num_add(float_num_copy(flt_1_4), flt_tmp);
         flt_a = float_num_mul(flt_a, flt_tmp);
-
+        
         flt_tmp = float_num_wrap(2*i + 1, size);
         flt_tmp = float_num_div(float_num_copy(flt_1), flt_tmp);
         flt_tmp = float_num_add(flt_tmp, float_num_copy(flt_m_1_2));
-
+        
         flt_tmp = float_num_mul(flt_tmp, float_num_copy(flt_a));
-
         if(!float_num_safe_add(flt, flt_tmp))
+        {
+            float_num_free(flt_tmp);
             break;
-
+        }
+        
         flt = float_num_add(flt, flt_tmp);
 
         if(i%1000 == 0)
@@ -449,6 +452,13 @@ void float_num_pi_2(int argc, char** argv)
     printf("\n");
     printf("\n");
     float_num_display_dec(flt);
+    float_num_free(flt);
+
+    float_num_free(flt_a);
+    float_num_free(flt_1_4);
+    float_num_free(flt_m_3_8);
+    float_num_free(flt_1);
+    float_num_free(flt_m_1_2);
 }
 
 void fix_num_pi_2()
@@ -636,7 +646,7 @@ int main(int argc, char** argv)
     // float_num_display_dec("flt", flt);
     // float_num_free(flt);
 
-    // // assert(clu_mem_is_empty());
+    // assert(clu_mem_is_empty());
 
     printf("\n");
     return 0;
