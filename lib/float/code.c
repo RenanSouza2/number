@@ -116,8 +116,8 @@ void float_num_display_dec(float_num_t flt) // TODO TEST
 {
     CLU_FLOAT_IS_SAFE(flt);
 
-    // flt = float_num_copy(flt);
-    flt = float_num_set_size(float_num_copy(flt), flt.size + 2);
+    flt = float_num_copy(flt);
+    flt = float_num_set_size(flt, flt.size + 2);
 
     if(float_num_is_zero(flt))
     {
@@ -135,7 +135,10 @@ void float_num_display_dec(float_num_t flt) // TODO TEST
     float_num_t flt_base;
     if(float_num_cmp(flt, flt_one) < 0)
     {
-        flt_base = float_num_div(float_num_copy(flt_one), float_num_copy(flt_ten));
+        flt_base = float_num_div(
+            float_num_copy(flt_one),
+            float_num_copy(flt_ten)
+        );
         base = -1;
         while(float_num_cmp(flt_base, flt) > 0)
         {
@@ -156,7 +159,6 @@ void float_num_display_dec(float_num_t flt) // TODO TEST
             float_num_copy(flt),
             float_num_copy(flt_base)
         );
-
         if(float_num_cmp(flt_tmp, flt_ten) < 0)
         {
             float_num_free(flt_tmp);
