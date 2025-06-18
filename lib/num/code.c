@@ -432,29 +432,20 @@ num_t num_chunk_set(num_t num, uint64_t pos, uint64_t value)
 //     return COALESCE(chunk, num_insert_tail(num, 0));
 // }
 
-// // returns true if NUM was not normalized
-// bool num_normalize(num_p num)
-// {
-//     CLU_HANDLER_IS_SAFE(num->head);
-//
-//     if(num->count == 0)
-//         return false;
-//
-//     chunk_p chunk_tail = num->tail;
-//     if(chunk_tail->value != 0)
-//         return false;
-//
-//     num->tail = chunk_tail->prev;
-//     chunk_free(chunk_tail);
-//
-//     num->count--;
-//     if(num->count == 0)
-//         num->head = NULL;
-//     else
-//         num->tail->next = NULL;
-//
-//     return true;
-// }
+// returns true if NUM was not normalized
+bool num_normalize(num_p num)
+{
+    CLU_NUM_IS_SAFE(*num);
+
+    if(num->count == 0)
+        return false;
+
+    if(num->chunk[num->count-1] != 0)
+        return false;
+
+    num->count--;
+    return true;
+}
 
 // num_t num_head_grow(num_t num, uint64_t count) // TODO test
 // {
@@ -637,25 +628,21 @@ num_t num_add_uint_offset(num_t num, uint64_t pos, uint64_t value)
     return num;
 }
 
-// /* returns TRUE if passed offset is TAIL and ELIMINATED */
-// bool num_sub_uint_offset(num_p num, chunk_p chunk, uint64_t value)
-// {
-//     CLU_HANDLER_IS_SAFE(num->head);
-//     CLU_HANDLER_IS_SAFE(chunk);
-//
-//     bool is_tail = chunk == num->tail;
-//
-//     for(; value; chunk = chunk->next)
-//     {
-//         assert(chunk);
-//
-//         uint64_t next = chunk->value < value;
-//         chunk->value -= value;
-//         value = next;
-//     }
-//
-//     return num_normalize(num) && is_tail;
-// }
+num_t num_sub_uint_offset(num_t num, uint64_t pos, uint64_t value)
+{
+    CLU_NUM_IS_SAFE(num);
+
+    for(; value; pos++)
+    {
+        assert(pos < num.count);
+
+        uint64_t next = num.chunk[pos] < value;
+        num.chunk[pos] -= value;
+        value = next;
+    }
+
+    return num;
+}
 
 // /* keeps NUM_1 */
 // chunk_p num_add_mul_uint_offset(num_p num_res, chunk_p chunk_res, chunk_p chunk, uint64_t value)
@@ -778,48 +765,27 @@ num_t num_add_offset(num_t num_1, uint64_t pos_1, num_t num_2) // TODO TEST
     CLU_NUM_IS_SAFE(num_1);
     CLU_NUM_IS_SAFE(num_2);
 
-    for(uint64_t i=0; i<num_2.count; i++)
-        num_1 = num_add_uint_offset(num_1, pos_1 + i, num_2.chunk[i]);
+    for(uint64_t pos_2=0; pos_2<num_2.count; pos_2++)
+        num_1 = num_add_uint_offset(num_1, pos_1 + pos_2, num_2.chunk[pos_2]);
 
     return num_1;
 }
 
-// /* returns NUM_RES in num_1, may be unormal */
-// chunk_p num_sub_offset(num_p num_1, chunk_p chunk_1, num_t num_2)
-// {
-//     CLU_HANDLER_IS_SAFE(num_1->head);
-//     CLU_HANDLER_IS_SAFE(chunk_1);
-//     CLU_HANDLER_IS_SAFE(num_2.head);
-//
-//     if(num_2.count == 0)
-//         return chunk_1;
-//
-//     assert(chunk_1);
-//     chunk_p chunk_2 = num_2.head;
-//     chunk_p chunk_0 = chunk_1;
-//     chunk_p prev_0 = chunk_0->prev;
-//
-//     while(chunk_2)
-//     {
-//         if(num_sub_uint_offset(num_1, chunk_1, chunk_2->value))
-//         {
-//             assert(chunk_2->next == NULL);
-//             num_free(num_2);
-//
-//             while(num_1->tail != prev_0) // TODO  && num_normalize(&num_1)
-//                 if(!num_normalize(num_1))
-//                     break;
-//
-//             return num_1->tail == prev_0 ? NULL : chunk_0;
-//         }
-//
-//         chunk_1 = chunk_1->next;
-//         chunk_2 = chunk_2->next;
-//     }
-//     num_free(num_2);
-//
-//     return chunk_0;
-// }
+/* returns NUM_RES in num_1, may be unormal */
+num_t num_sub_offset(num_t num_1, uint64_t pos_1, num_t num_2)
+{
+    CLU_NUM_IS_SAFE(num_1);
+    CLU_NUM_IS_SAFE(num_2);
+
+    for(uint64_t pos_2 = 0; pos_2<num_2.count; pos_2++)
+        num_1 = num_sub_uint_offset(num_1, pos_1 + pos_2, num_2.chunk[pos_2]);
+
+    num_free(num_2);
+
+    while(num_1.count > pos_1 && num_normalize(&num_1));
+
+    return num_1;
+}
 
 // /*
 // returns NUM_2 * R if less then NUM_1,
@@ -1022,14 +988,13 @@ num_t num_add(num_t num_1, num_t num_2)
     return num_1;
 }
 
-// num_t num_sub(num_t num_1, num_t num_2)
-// {
-//     CLU_HANDLER_IS_SAFE(num_1.head);
-//     CLU_HANDLER_IS_SAFE(num_2.head);
-//
-//     num_sub_offset(&num_1, num_1.head, num_2);
-//     return num_1;
-// }
+num_t num_sub(num_t num_1, num_t num_2)
+{
+    CLU_NUM_IS_SAFE(num_1);
+    CLU_NUM_IS_SAFE(num_2);
+
+    return num_sub_offset(num_1, 0, num_2);
+}
 
 // num_t num_mul(num_t num_1, num_t num_2)
 // {

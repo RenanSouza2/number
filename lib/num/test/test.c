@@ -438,9 +438,9 @@ void test_num_chunk_set(bool show)
 //     TEST_FN_CLOSE
 // }
 
-// void test_num_normalize(bool show)
-// {
-//     TEST_FN_OPEN
+void test_num_normalize(bool show)
+{
+    TEST_FN_OPEN
 
     #define TEST_NUM_NORMALIZE(TAG, NUM_BEF, RES, NUM_AFT)  \
     {                                                       \
@@ -454,36 +454,36 @@ void test_num_chunk_set(bool show)
         TEST_CASE_CLOSE                                     \
     }
 
-//     TEST_NUM_NORMALIZE(1,
-//         (0),
-//         false,
-//         (0)
-//     );
-//     TEST_NUM_NORMALIZE(2,
-//         (1, 1),
-//         false,
-//         (1, 1)
-//     );
-//     TEST_NUM_NORMALIZE(3,
-//         (1, 0),
-//         true,
-//         (0)
-//     );
-//     TEST_NUM_NORMALIZE(4,
-//         (2, 0, 1),
-//         true,
-//         (1, 1)
-//     );
-//     TEST_NUM_NORMALIZE(5,
-//         (2, 0, 0),
-//         true,
-//         (1, 0)
-//     );
+    TEST_NUM_NORMALIZE(1,
+        (0),
+        false,
+        (0)
+    );
+    TEST_NUM_NORMALIZE(2,
+        (1, 1),
+        false,
+        (1, 1)
+    );
+    TEST_NUM_NORMALIZE(3,
+        (1, 0),
+        true,
+        (0)
+    );
+    TEST_NUM_NORMALIZE(4,
+        (2, 0, 1),
+        true,
+        (1, 1)
+    );
+    TEST_NUM_NORMALIZE(5,
+        (2, 0, 0),
+        true,
+        (1, 0)
+    );
 
-//     #undef TEST_NUM_NORMALIZE
+    #undef TEST_NUM_NORMALIZE
 
-//     TEST_FN_CLOSE
-// }
+    TEST_FN_CLOSE
+}
 
 // void test_num_break(bool show)
 // {
@@ -906,98 +906,6 @@ void test_num_chunk_set(bool show)
 
 
 
-// void test_num_sub_uint_offset(bool show)
-// {
-//     TEST_FN_OPEN
-
-    #define TEST_NUM_SUB_UINT_OFFSET(TAG, NUM_BEF, OFFSET, VALUE, NUM_AFT, RES) \
-    {                                                                           \
-        TEST_CASE_OPEN(TAG)                                                     \
-        {                                                                       \
-            num_t num = num_create_immed(ARG_OPEN NUM_BEF);                     \
-            chunk_p chunk = num_get_chunk(num, OFFSET);                         \
-            bool res = num_sub_uint_offset(&num, chunk, VALUE);                 \
-            assert(num_immed(num, ARG_OPEN NUM_AFT));                           \
-            assert(res == RES);                                                 \
-        }                                                                       \
-        TEST_CASE_CLOSE                                                         \
-    }
-
-//     TEST_NUM_SUB_UINT_OFFSET(1,
-//         (2, 2, 3),
-//         0, 1,
-//         (2, 2, 2),
-//         false
-//     );
-//     TEST_NUM_SUB_UINT_OFFSET(2,
-//         (2, 2, 3),
-//         1, 1,
-//         (2, 1, 3),
-//         false
-//     );
-//     TEST_NUM_SUB_UINT_OFFSET(3,
-//         (2, 1, 3),
-//         1, 1,
-//         (1, 3),
-//         true
-//     )
-//     TEST_NUM_SUB_UINT_OFFSET(4,
-//         (2, 1, 0),
-//         1, 1,
-//         (1, 0),
-//         true
-//     );
-//     TEST_NUM_SUB_UINT_OFFSET(5,
-//         (3, 1, 0, 1),
-//         2, 1,
-//         (2, 0, 1),
-//         true
-//     );
-//     TEST_NUM_SUB_UINT_OFFSET(6,
-//         (3, 1, 0, 1),
-//         1, 1,
-//         (2, UINT64_MAX, 1),
-//         false
-//     );
-//     TEST_NUM_SUB_UINT_OFFSET(7,
-//         (2, 1, 0),
-//         1, 1,
-//         (1, 0),
-//         true
-//     );
-//     TEST_NUM_SUB_UINT_OFFSET(8,
-//         (0),
-//         0, 0,
-//         (0),
-//         false
-//     );
-
-    #undef TEST_NUM_SUB_UINT_OFFSET
-
-    #define TEST_NUM_SUB_UINT_OFFSET(TAG, NUM, OFFSET, VALUE)   \
-    {                                                           \
-        TEST_CASE_OPEN(TAG)                                     \
-        {                                                       \
-            num_t num = num_create_immed(ARG_OPEN NUM);         \
-            chunk_p chunk = num_get_chunk(num, OFFSET);         \
-            TEST_REVERT_OPEN                                    \
-            {                                                   \
-                num_sub_uint_offset(&num, chunk, VALUE);        \
-            }                                                   \
-            TEST_REVERT_CLOSE                                   \
-        }                                                       \
-        TEST_CASE_CLOSE                                         \
-    }
-
-//     TEST_NUM_SUB_UINT_OFFSET(9, (0), 0, 1);
-//     TEST_NUM_SUB_UINT_OFFSET(10, (1, 2), 0, 3);
-//     TEST_NUM_SUB_UINT_OFFSET(11, (1, 2), 1, 1);
-
-//     #undef TEST_NUM_SUB_UINT_OFFSET
-
-//     TEST_FN_CLOSE
-// }
-
 
 
 // void test_num_shl_uint(bool show)
@@ -1204,58 +1112,103 @@ void test_num_add_uint_offset(bool show)
     TEST_FN_CLOSE
 }
 
-// void test_num_sub_offset(bool show)
-// {
-//     TEST_FN_OPEN
+void test_num_sub_uint_offset(bool show)
+{
+    TEST_FN_OPEN
 
-    #define TEST_NUM_SUB_OFFSET(TAG, NUM_1, NUM_2, OFFSET, ELIMINATE, NUM_RES)  \
-    {                                                                           \
-        TEST_CASE_OPEN(TAG)                                                     \
-        {                                                                       \
-            num_t num_1 = num_create_immed(ARG_OPEN NUM_1);                     \
-            num_t num_2 = num_create_immed(ARG_OPEN NUM_2);                     \
-            chunk_p chunk_bef = num_get_chunk(num_1, OFFSET);                   \
-            chunk_p chunk_aft = num_sub_offset(&num_1, chunk_bef, num_2);       \
-            assert(num_immed(num_1, ARG_OPEN NUM_RES));                         \
-            if(ELIMINATE) {assert(chunk_aft == NULL);}                          \
-            else          {assert(chunk_aft == chunk_bef);}                     \
-        }                                                                       \
-        TEST_CASE_CLOSE                                                         \
+    #define TEST_NUM_SUB_UINT_OFFSET(TAG, NUM, POS, VALUE, RES) \
+    {                                                           \
+        TEST_CASE_OPEN(TAG)                                     \
+        {                                                       \
+            num_t num = num_create_immed(ARG_OPEN NUM);         \
+            num = num_sub_uint_offset(num, POS, VALUE);         \
+            assert(num_immed(num, ARG_OPEN RES));               \
+        }                                                       \
+        TEST_CASE_CLOSE                                         \
     }
 
-//     TEST_NUM_SUB_OFFSET(1, (0), (0), 0, true, (0));
-//     TEST_NUM_SUB_OFFSET(2, (0), (0), 0, false, (0));
-//     TEST_NUM_SUB_OFFSET(3, (2, 1, 2), (1, 1), 1, true, (1, 2));
-//     TEST_NUM_SUB_OFFSET(4, (2, 1, 0), (1, 1), 1, true, (1, 0));
-//     TEST_NUM_SUB_OFFSET(5, (3, 1, 2, 3), (2, 1, 2), 1, true, (1, 3));
-//     TEST_NUM_SUB_OFFSET(6, (3, 1, 2, 3), (2, 1, 1), 1, false, (2, 1, 3));
+    TEST_NUM_SUB_UINT_OFFSET(1, (2, 2, 3), 0, 1, (2, 2, 2));
+    TEST_NUM_SUB_UINT_OFFSET(2, (2, 2, 3), 1, 1, (2, 1, 3));
+    TEST_NUM_SUB_UINT_OFFSET(3, (2, 1, 3), 1, 1, (2, 0, 3));
+    TEST_NUM_SUB_UINT_OFFSET(4, (2, 1, 0), 1, 1, (2, 0, 0));
+    TEST_NUM_SUB_UINT_OFFSET(5, (3, 1, 0, 1), 2, 1, (3, 0, 0, 1));
+    TEST_NUM_SUB_UINT_OFFSET(6, (3, 1, 0, 1), 1, 1, (3, 0, UINT64_MAX, 1));
+    TEST_NUM_SUB_UINT_OFFSET(7, (2, 1, 0), 1, 1, (2, 0, 0));
+    TEST_NUM_SUB_UINT_OFFSET(8, (0), 0, 0, (0));
 
-    #undef TEST_NUM_SUB_OFFSET
+    #undef TEST_NUM_SUB_UINT_OFFSET
 
-    #define TEST_NUM_SUB_OFFSET(TAG, NUM_1, NUM_2, OFFSET)  \
+    #define TEST_NUM_SUB_UINT_OFFSET(TAG, NUM, POS, VALUE)  \
     {                                                       \
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
-            num_t num_1 = num_create_immed(ARG_OPEN NUM_1); \
-            num_t num_2 = num_create_immed(ARG_OPEN NUM_2); \
-            chunk_p chunk = num_get_chunk(num_1, OFFSET);   \
+            num_t num = num_create_immed(ARG_OPEN NUM);     \
             TEST_REVERT_OPEN                                \
             {                                               \
-                num_sub_offset(&num_1, chunk, num_2);       \
+                num_sub_uint_offset(num, POS, VALUE);       \
             }                                               \
             TEST_REVERT_CLOSE                               \
         }                                                   \
         TEST_CASE_CLOSE                                     \
     }
 
-//     TEST_NUM_SUB_OFFSET(7, (0), (1, 1), 0);
-//     TEST_NUM_SUB_OFFSET(8, (2, 2, 1), (1, 3), 1);
-//     TEST_NUM_SUB_OFFSET(9, (2, 2, 1), (2, 1, 2), 1);
+    TEST_NUM_SUB_UINT_OFFSET(9, (0), 0, 1);
+    TEST_NUM_SUB_UINT_OFFSET(10, (1, 2), 0, 3);
+    TEST_NUM_SUB_UINT_OFFSET(11, (1, 2), 1, 1);
 
-//     #undef TEST_NUM_SUB_OFFSET
+    #undef TEST_NUM_SUB_UINT_OFFSET
 
-//     TEST_FN_CLOSE
-// }
+    TEST_FN_CLOSE
+}
+
+void test_num_sub_offset(bool show)
+{
+    TEST_FN_OPEN
+
+    #define TEST_NUM_SUB_OFFSET(TAG, NUM_1, POS, NUM_2, RES)    \
+    {                                                           \
+        TEST_CASE_OPEN(TAG)                                     \
+        {                                                       \
+            num_t num_1 = num_create_immed(ARG_OPEN NUM_1);     \
+            num_t num_2 = num_create_immed(ARG_OPEN NUM_2);     \
+            num_1 = num_sub_offset(num_1, POS, num_2);          \
+            assert(num_immed(num_1, ARG_OPEN RES));             \
+        }                                                       \
+        TEST_CASE_CLOSE                                         \
+    }
+
+    TEST_NUM_SUB_OFFSET(1, (0), 0, (0), (0));
+    TEST_NUM_SUB_OFFSET(2, (0), 0, (0), (0));
+    TEST_NUM_SUB_OFFSET(3, (2, 1, 2), 1, (1, 1), (1, 2));
+    TEST_NUM_SUB_OFFSET(4, (2, 1, 0), 1, (1, 1), (1, 0));
+    TEST_NUM_SUB_OFFSET(5, (3, 1, 2, 3), 1, (2, 1, 2), (1, 3));
+    TEST_NUM_SUB_OFFSET(6, (3, 1, 2, 3), 1, (2, 1, 1), (2, 1, 3));
+
+    #undef TEST_NUM_SUB_OFFSET
+
+    #define TEST_NUM_SUB_OFFSET(TAG, NUM_1, POS, NUM_2)     \
+    {                                                       \
+        TEST_CASE_OPEN(TAG)                                 \
+        {                                                   \
+            num_t num_1 = num_create_immed(ARG_OPEN NUM_1); \
+            num_t num_2 = num_create_immed(ARG_OPEN NUM_2); \
+            TEST_REVERT_OPEN                                \
+            {                                               \
+                num_sub_offset(num_1, POS, num_2);         \
+            }                                               \
+            TEST_REVERT_CLOSE                               \
+        }                                                   \
+        TEST_CASE_CLOSE                                     \
+    }
+
+    TEST_NUM_SUB_OFFSET(7, (0), 0, (1, 1));
+    TEST_NUM_SUB_OFFSET(8, (2, 2, 1), 1, (1, 3));
+    TEST_NUM_SUB_OFFSET(9, (2, 2, 1), 1, (2, 1, 2));
+
+    #undef TEST_NUM_SUB_OFFSET
+
+    TEST_FN_CLOSE
+}
 
 // void test_num_cmp_mul_uint(bool show)
 // {
@@ -1587,9 +1540,9 @@ void test_num_add(bool show)
     TEST_FN_CLOSE
 }
 
-// void test_num_sub(bool show)
-// {
-//     TEST_FN_OPEN
+void test_num_sub(bool show)
+{
+    TEST_FN_OPEN
 
     #define TEST_NUM_SUB(TAG, NUM_1, NUM_2, NUM_OUT)        \
     {                                                       \
@@ -1603,51 +1556,51 @@ void test_num_add(bool show)
         TEST_CASE_CLOSE                                     \
     }
 
-//     TEST_NUM_SUB(1,
-//         (0),
-//         (0),
-//         (0)
-//     );
-//     TEST_NUM_SUB(2,
-//         (1, 1),
-//         (0),
-//         (1, 1)
-//     );
-//     TEST_NUM_SUB(3,
-//         (1, 2),
-//         (1, 1),
-//         (1, 1)
-//     );
-//     TEST_NUM_SUB(4,
-//         (1, 2),
-//         (1, 2),
-//         (0)
-//     );
-//     TEST_NUM_SUB(5,
-//         (2, 1, 0),
-//         (1, 1),
-//         (1, UINT64_MAX)
-//     );
-//     TEST_NUM_SUB(6,
-//         (2, 4, 3),
-//         (2, 1, 2),
-//         (2, 3, 1)
-//     );
-//     TEST_NUM_SUB(7,
-//         (2, 1, 0),
-//         (2, 1, 0),
-//         (0)
-//     );
-//     TEST_NUM_SUB(8,
-//         (5, 1, 0, 0, 0, 0),
-//         (4, 0x8000000000000000, 0, 0, 0x8000000000000000),
-//         (4, UINT64_MAX >> 1, UINT64_MAX, UINT64_MAX, 0x8000000000000000)
-//     );
+    TEST_NUM_SUB(1,
+        (0),
+        (0),
+        (0)
+    );
+    TEST_NUM_SUB(2,
+        (1, 1),
+        (0),
+        (1, 1)
+    );
+    TEST_NUM_SUB(3,
+        (1, 2),
+        (1, 1),
+        (1, 1)
+    );
+    TEST_NUM_SUB(4,
+        (1, 2),
+        (1, 2),
+        (0)
+    );
+    TEST_NUM_SUB(5,
+        (2, 1, 0),
+        (1, 1),
+        (1, UINT64_MAX)
+    );
+    TEST_NUM_SUB(6,
+        (2, 4, 3),
+        (2, 1, 2),
+        (2, 3, 1)
+    );
+    TEST_NUM_SUB(7,
+        (2, 1, 0),
+        (2, 1, 0),
+        (0)
+    );
+    TEST_NUM_SUB(8,
+        (5, 1, 0, 0, 0, 0),
+        (4, 0x8000000000000000, 0, 0, 0x8000000000000000),
+        (4, UINT64_MAX >> 1, UINT64_MAX, UINT64_MAX, 0x8000000000000000)
+    );
 
-//     #undef TEST_NUM_SUB
+    #undef TEST_NUM_SUB
 
-//     TEST_FN_CLOSE
-// }
+    TEST_FN_CLOSE
+}
 
 // void test_num_mul(bool show)
 // {
@@ -2006,7 +1959,7 @@ void test_num()
 //     test_num_insert_head(show);
 //     test_num_remove_head(show);
 //     test_num_denormalize(show);
-//     test_num_normalize(show);
+    test_num_normalize(show);
 //     test_num_break(show);
 
 //     test_num_wrap(show);
@@ -2018,7 +1971,7 @@ void test_num()
 //     test_num_copy(show);
 
     test_num_add_uint_offset(show);
-//     test_num_sub_uint_offset(show);
+    test_num_sub_uint_offset(show);
 
 //     test_num_shl_uint(show);
 //     test_num_shr_uint(show);
@@ -2035,7 +1988,7 @@ void test_num()
 //     test_num_shr(show);
 
     test_num_add(show);
-//     test_num_sub(show);
+    test_num_sub(show);
 //     test_num_mul(show);
 //     test_num_sqr(show);
 //     test_num_div_mod(show);

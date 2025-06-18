@@ -20,8 +20,6 @@ bool num_inner(num_t num_1, num_t num_2);
 bool num_eq_dbg(num_t num_1, num_t num_2);
 bool num_immed(num_t num, uint64_t n, ...);
 
-chunk_p num_get_chunk(num_t num, uint64_t count);
-
 #endif
 
 #define U128(V) ((uint128_t)(V))
@@ -31,9 +29,6 @@ chunk_p num_get_chunk(num_t num, uint64_t count);
 #define HIGH(V) U64((V) >> 64)
 
 uint64_t uint_from_char(char c);
-
-chunk_p chunk_create(uint64_t value, chunk_p next, chunk_p prev);
-void chunk_free_list(chunk_p head, chunk_p tail);
 
 num_t num_create(uint64_t count);
 num_t num_expand_to(num_t num, uint64_t target);
@@ -50,7 +45,7 @@ num_t num_wrap_dec(char str[]);
 num_t num_wrap_hex(char str[]);
 
 num_t num_add_uint_offset(num_t num, uint64_t pos, uint64_t value);
-bool num_sub_uint_offset(num_p num, chunk_p chunk, uint64_t value);
+num_t num_sub_uint_offset(num_t num, uint64_t pos, uint64_t value);
 num_t num_cmp_mul_uint_offset(num_t num_1,num_t num_2,uint64_t r,uint64_t offset);
 
 num_t num_shl_uint(num_t num, uint64_t bits);
@@ -59,5 +54,7 @@ num_t num_add_uint(num_t num, uint64_t value);
 num_t num_sub_uint(num_t num, uint64_t value);
 num_t num_mul_uint(num_t num, uint64_t value);
 num_t num_add_mul_uint(num_t num_res, num_t num, uint64_t value);
+
+num_t num_sub_offset(num_t num_1, uint64_t pos_1, num_t num_2);
 
 #endif
