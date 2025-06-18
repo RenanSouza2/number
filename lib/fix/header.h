@@ -1,9 +1,11 @@
 #ifndef __FIX_H__
 #define __FIX_H__
 
+#include <stdbool.h>
+
 #include "struct.h"
 
-void fix_num_display_dec(char tag[], fix_num_t fix);
+void fix_num_display_dec(fix_num_t fix);
 void fix_num_display(fix_num_t fix);
 void fix_num_display_tag(char tag[], fix_num_t fix);
 void fix_num_display_full(char tag[], fix_num_t fix);
@@ -17,6 +19,7 @@ void fix_num_free(fix_num_t fix);
 fix_num_t fix_num_base_to(fix_num_t fix, uint64_t base);
 
 int64_t fix_num_cmp(fix_num_t fix_1, fix_num_t fix_2);
+bool fix_num_is_zero(fix_num_t fix);
 
 fix_num_t fix_num_shl(fix_num_t fix, uint64_t value);
 fix_num_t fix_num_shr(fix_num_t fix, uint64_t value);

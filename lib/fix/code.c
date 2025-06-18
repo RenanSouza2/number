@@ -28,11 +28,11 @@ fix_num_t fix_num_create_immed(uint64_t pos, uint64_t signal, uint64_t n, ...)
 
 
 
-void fix_num_display_dec(char tag[], fix_num_t fix)
+void fix_num_display_dec(fix_num_t fix)
 {
     CLU_HANDLER_IS_SAFE(fix.sig.num.head);
 
-    printf("\n%s: %c\t", tag, fix.sig.signal == NEGATIVE ? '-' : '+');
+    printf("%c ", fix.sig.signal == NEGATIVE ? '-' : '+');
 
     num_t num_hi, num_lo;
     num_break(&num_hi, &num_lo, num_copy(fix.sig.num), fix.pos);
@@ -103,7 +103,7 @@ fix_num_t fix_num_create(sig_num_t sig, uint64_t pos) // TODO test
 fix_num_t fix_num_wrap(int64_t value, uint64_t pos) // TODO test
 {
     sig_num_t sig = sig_num_wrap(value);
-    if(value) sig = sig_num_shl(sig, pos << 6);
+    if(value) sig = sig_num_head_grow(sig, pos);
     return fix_num_create(sig, pos);
 }
 
@@ -132,13 +132,13 @@ fix_num_t fix_num_reposition(fix_num_t fix, uint64_t pos) // TODO test
     if(pos > fix.pos)
         return (fix_num_t)
         {
-            .sig = sig_num_shl(fix.sig, (pos - fix.pos) << 6),
+            .sig = sig_num_head_grow(fix.sig, pos - fix.pos),
             .pos = pos
         };
 
     return (fix_num_t)
     {
-        .sig = sig_num_shr(fix.sig, (fix.pos - pos) << 6),
+        .sig = sig_num_head_trim(fix.sig, fix.pos - pos),
         .pos = pos
     };
 }
@@ -180,6 +180,11 @@ int64_t fix_num_cmp(fix_num_t fix_1, fix_num_t fix_2) // TODO test
     return sig_num_cmp(fix_1.sig, fix_2.sig);
 }
 
+bool fix_num_is_zero(fix_num_t fix)
+{
+    return sig_num_is_zero(fix.sig);
+}
+
 
 
 fix_num_t fix_num_shl(fix_num_t fix, uint64_t value) // TODO test
@@ -211,20 +216,20 @@ fix_num_t fix_num_sub(fix_num_t fix_1, fix_num_t fix_2) // TODO test
 fix_num_t fix_num_mul(fix_num_t fix_1, fix_num_t fix_2) // TODO test
 {
     fix_1.sig = sig_num_mul(fix_1.sig, fix_2.sig);
-    fix_1.sig = sig_num_shr(fix_1.sig, fix_1.pos << 6);
+    fix_1.sig = sig_num_head_trim(fix_1.sig, fix_1.pos);
     return fix_1;
 }
 
 fix_num_t fix_num_sqr(fix_num_t fix) // TODO test
 {
     fix.sig = sig_num_sqr(fix.sig);
-    fix.sig = sig_num_shr(fix.sig, fix.pos << 6);
+    fix.sig = sig_num_head_trim(fix.sig, fix.pos);
     return fix;
 }
 
 fix_num_t fix_num_div(fix_num_t fix_1, fix_num_t fix_2) // TODO test
 {
-    fix_1.sig = sig_num_shl(fix_1.sig, fix_1.pos << 6);
+    fix_1.sig = sig_num_head_grow(fix_1.sig, fix_1.pos);
     fix_1.sig = sig_num_div(fix_1.sig, fix_2.sig);
     return fix_1;
 }

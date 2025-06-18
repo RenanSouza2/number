@@ -1,3 +1,3 @@
-make clean
+set -e
 make build
-time ./src/main.o @
+time ./src/main.o $@

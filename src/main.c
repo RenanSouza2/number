@@ -8,9 +8,10 @@
 #include "../mods/macros/assert.h"
 #include "../mods/macros/U64.h"
 
-#include "../lib/num/header.h"
-#include "../lib/mod/header.h"
 #include "../lib/fix/header.h"
+#include "../lib/float/header.h"
+#include "../lib/mod/header.h"
+#include "../lib/num/header.h"
 
 
 
@@ -22,6 +23,11 @@ uint64_t altutime()
     return time.tv_sec * 1e3 + time.tv_nsec / 1e6;
 }
 
+int64_t get_arg(int argc, char** argv)
+{
+    assert(argc > 1);
+    return atoi(argv[1]);
+}
 
 
 num_t num_generate(uint64_t max, uint64_t salt)
@@ -83,13 +89,13 @@ void time_1(uint64_t begin, uint64_t end)
         num_1 = num_add(num_1, num_wrap(1));
         num_1 = num_sqr(num_1);
         uint64_t end = altutime();
-        // printf("\t%10.3f", (end - begin) / 1e3);
+        printf("\t%10.3f", (end - begin) / 1e3);
 
         begin = altutime();
         num_2 = num_add(num_2, num_wrap(2));
         num_2 = num_sqr(num_2);
         end = altutime();
-        // printf("\t%10.3f", (end - begin) / 1e3);
+        printf("\t%10.3f", (end - begin) / 1e3);
 
         num_t num_1_copy = num_copy(num_1);
         num_t num_2_copy = num_copy(num_2);
@@ -107,8 +113,7 @@ void time_1(uint64_t begin, uint64_t end)
 
 void time_2(int argc, char** argv, uint64_t max)
 {
-    assert(argc > 1);
-    uint64_t id = atoi(argv[1]);
+    uint64_t id = get_arg(argc, argv);
     printf("\nid: " U64P() "", id);
 
     num_t num_1 = num_generate(max, 2);
@@ -322,9 +327,9 @@ void pi_1()
         if(i%1000000 == 0)
         {
             printf("\ni: " U64P() "\t", i);
-            fix_num_display_dec("fix", fix);
+            fix_num_display_dec(fix);
             printf("\t");
-            fix_num_display_dec("fix_1", fix_1);
+            fix_num_display_dec(fix_1);
             fix_num_free(fix_1);
         }
     }
@@ -344,7 +349,7 @@ void e()
         if(i%1000 == 0)
         {
             fprintf(stderr, "\ni: " U64P() "", i);
-            fix_num_display_dec("fix", fix);
+            fix_num_display_dec(fix);
         }
     }
 }
@@ -360,8 +365,190 @@ void pi_2()
         fix = fix_num_div(fix, fix_num_wrap(base - 1, pos));
 
         if(i%1000000 == 0)
-            fix_num_display_dec("fix", fix);
+            fix_num_display_dec(fix);
     }
+}
+
+void float_num_pi_1()
+{
+    uint64_t size = 3;
+    float_num_t flt = float_num_wrap(2, size);
+
+    float_num_t i_m_8 = float_num_wrap(0, size);
+    float_num_t i_p_2 = float_num_copy(i_m_8);
+    float_num_t float_1 = float_num_wrap(1, size);
+    float_num_t float_4 = float_num_wrap(4, size);
+    float_num_t float_8 = float_num_wrap(8, size);
+    for(uint64_t i=0; ; i++)
+    {
+        i_p_2 = float_num_add(i_p_2, float_num_copy(float_4));
+        i_p_2 = float_num_add(i_p_2, float_num_copy(i_m_8));
+    
+        i_m_8 = float_num_add(i_m_8, float_num_copy(float_8));
+
+        flt = float_num_mul(flt, float_num_copy(i_p_2));
+
+        float_num_t flt_base = float_num_sub(
+            float_num_copy(i_p_2),
+            float_num_copy(float_1)
+        );
+        flt = float_num_div(flt, flt_base);
+
+        if(i%1000000 == 0)
+        {
+            printf("\n");
+            float_num_display_dec(flt);
+        }
+    }
+}
+
+void float_num_pi_2(int argc, char** argv)
+{
+    uint64_t size = get_arg(argc, argv);
+ 
+    float_num_t flt = float_num_wrap(3, size);
+    float_num_t flt_a = float_num_wrap(6, size);
+    float_num_t flt_1_4 = float_num_div(
+        float_num_wrap(1, size),
+        float_num_wrap(4, size)
+    );
+    float_num_t flt_m_3_8 = float_num_div(
+        float_num_wrap(-3, size),
+        float_num_wrap(8, size)
+    );
+    float_num_t flt_1 = float_num_wrap(1, size);
+    float_num_t flt_m_1_2 = float_num_div(
+        float_num_wrap(-1, size),
+        float_num_wrap(2, size)
+    );
+
+    for(uint64_t i=1; ; i++)
+    {
+        float_num_t flt_tmp = float_num_wrap(i, size);
+        flt_tmp = float_num_div(float_num_copy(flt_m_3_8), flt_tmp);
+        flt_tmp = float_num_add(float_num_copy(flt_1_4), flt_tmp);
+        flt_a = float_num_mul(flt_a, flt_tmp);
+        
+        flt_tmp = float_num_wrap(2*i + 1, size);
+        flt_tmp = float_num_div(float_num_copy(flt_1), flt_tmp);
+        flt_tmp = float_num_add(flt_tmp, float_num_copy(flt_m_1_2));
+        
+        flt_tmp = float_num_mul(flt_tmp, float_num_copy(flt_a));
+        if(!float_num_safe_add(flt, flt_tmp))
+        {
+            float_num_free(flt_tmp);
+            break;
+        }
+        
+        flt = float_num_add(flt, flt_tmp);
+
+        if(i%1000 == 0)
+        {
+            printf("\n");
+            float_num_display_dec(flt);
+        }
+    }
+
+    printf("\n");
+    printf("\n");
+    float_num_display_dec(flt);
+    float_num_free(flt);
+
+    float_num_free(flt_a);
+    float_num_free(flt_1_4);
+    float_num_free(flt_m_3_8);
+    float_num_free(flt_1);
+    float_num_free(flt_m_1_2);
+}
+
+void fix_num_pi_2()
+{
+    uint64_t size = 500;
+    
+    fix_num_t fix = fix_num_wrap(3, size);
+    fix_num_t fix_a = fix_num_wrap(6, size);
+    fix_num_t fix_1_4 = fix_num_div(
+        fix_num_wrap(1, size),
+        fix_num_wrap(4, size)
+    );
+    fix_num_t fix_3_8 = fix_num_div(
+        fix_num_wrap(-3, size),
+        fix_num_wrap(8, size)
+    );
+    fix_num_t fix_1 = fix_num_wrap(1, size);
+    fix_num_t fix_1_2 = fix_num_div(
+        fix_num_wrap(-1, size),
+        fix_num_wrap(2, size)
+    );
+    for(uint64_t i=1; ; i++)
+    {
+        fix_num_t fix_tmp = fix_num_wrap(i, size);
+        fix_tmp = fix_num_div(fix_num_copy(fix_3_8), fix_tmp);
+        fix_tmp = fix_num_add(fix_num_copy(fix_1_4), fix_tmp);
+        fix_a = fix_num_mul(fix_a, fix_tmp);
+
+        fix_tmp = fix_num_wrap(2*i + 1, size);
+        fix_tmp = fix_num_div(fix_num_copy(fix_1), fix_tmp);
+        fix_tmp = fix_num_add(fix_tmp, fix_num_copy(fix_1_2));
+
+        fix_tmp = fix_num_mul(fix_tmp, fix_num_copy(fix_a));
+
+        if(fix_num_is_zero(fix_tmp))
+            break;
+
+        fix = fix_num_add(fix, fix_tmp);
+
+        if(i%1000 == 0)
+        {
+            printf("\n");
+            fix_num_display_dec(fix);
+        }
+    }
+
+    printf("\n");
+    printf("\n");
+    fix_num_display_dec(fix);
+}
+
+void float_lim()
+{
+    uint64_t size = 2;
+    
+    float_num_t flt_a = float_num_wrap(1, size);
+    float_num_t flt_3_2 = float_num_div(
+        float_num_wrap(3, size),
+        float_num_wrap(2, size)
+    );
+    float_num_t flt_m_1 = float_num_wrap(-1, size);
+    float_num_t flt_1 = float_num_wrap(1, size);
+    for(uint64_t i=1; ; i++)
+    {
+        float_num_t flt_tmp = float_num_wrap(i, size);
+        flt_tmp = float_num_div(float_num_copy(flt_3_2), flt_tmp);
+        flt_tmp = float_num_add(float_num_copy(flt_m_1), flt_tmp);
+
+        if(!float_num_cmp(flt_tmp, flt_1))
+            break;
+
+        uint64_t tam = 1000000;
+        if(i%tam == 0)
+        {
+            printf("\ntmp: ");
+            float_num_display_dec(flt_tmp);
+        }
+
+        flt_a = float_num_mul(flt_a, flt_tmp);
+
+        if(i%tam == 0)
+        {
+            printf("\ta: ");
+            float_num_display_dec(flt_a);
+        }
+    }
+
+    printf("\n");
+    printf("\n");
+    float_num_display_dec(flt_a);
 }
 
 
@@ -374,6 +561,7 @@ void display_bit(uint64_t value)
         value <<= 1;
     }
 }
+
 
 
 fix_num_t fix_step(fix_num_t fix, uint64_t pos)
@@ -413,13 +601,13 @@ void sqrt_2()
 
         printf("\n\n");
         fix_num_display_full("hex", fix_x);
-        fix_num_display_dec("res", fix_x);
+        fix_num_display_dec(fix_x);
         printf("\n\npos: " U64P() "", pos * 2);
 
         exit(EXIT_SUCCESS);
     }
 
-    fix_num_display_dec("res", fix_x);
+    fix_num_display_dec(fix_x);
 
     fix_num_free(fix_x);
     num_free(num);
@@ -427,8 +615,8 @@ void sqrt_2()
 
 
 
-// int main(int argc, char** argv)
-int main()
+int main(int argc, char** argv)
+// int main()
 {
     setbuf(stdout, NULL);
     srand(time(NULL));
@@ -438,30 +626,25 @@ int main()
     // time_2(argc, argv, 19);
     // fibonacci();
     // fibonacci_2(16, 23);
-    fibonacci_3(16, 23);
+    // fibonacci_3(16, 23);
     // sqrt_2();
+    // float_num_pi_1();
+    float_num_pi_2(argc, argv);
+    // fix_num_pi_2();
+    // float_lim();
 
-    // uint64_t pos = 1e1;
-    // fix_num_t fix = fix_num_wrap(1, pos);
-    // fix = fix_num_div(fix, fix_num_wrap(10, pos));
-    // fix = fix_num_mul(fix, fix_num_wrap(10, pos));
-    // fix = fix_num_sub(fix, fix_num_wrap(1, pos));
-    //
-    // uint64_t begin = altutime();
-    // fix_display_tag("res", fix);
-    // uint64_t end = altutime();
-    // printf("\n%10.3f", (end - begin) / 1e3);
-    //
-    // printf("\na");
-    // num_t num = num_sub(num_wrap(2), num_wrap(3));
-    // printf("\nb");
-    // num_display(num);
-
-    // num_t num = num_wrap(29);
-    // mod_num_t mod_1 = mod_num_wrap(1, num);
-    // mod_num_t mod_2 = mod_num_wrap(9, num);
-    // mod_1 = mod_num_div(mod_1, mod_2);
-    // mod_display("mod", mod_1);
+    // uint64_t size = 1000;
+    // // float_num_t flt = float_num_wrap(56786789010, size);
+    // float_num_t flt = float_num_div(
+    //     float_num_wrap(1234, size),
+    //     float_num_wrap(100000000000000000, size)
+    // );
+    
+    // float_num_display_dec("flt", flt);
+    // flt = float_num_mul(flt, float_num_wrap(100000000000000000, size));
+    // flt = float_num_sub(flt, float_num_wrap(1234, size));
+    // float_num_display_dec("flt", flt);
+    // float_num_free(flt);
 
     // assert(clu_mem_is_empty());
 

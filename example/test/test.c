@@ -4,13 +4,28 @@
 
 
 
-#define TEST_ASSERT_MEM_EMPTY assert(clu_mem_is_empty());
+void test_example_fn(bool show)
+{
+    TEST_FN_OPEN
+
+    TEST_CASE_OPEN(1)
+    {
+
+    }
+    TEST_CASE_CLOSE
+
+    TEST_FN_CLOSE
+}
+
+
 
 void test_example()
 {
     TEST_LIB
 
     bool show = false;
+
+    test_example_fn(show);
 
     TEST_ASSERT_MEM_EMPTY
 }

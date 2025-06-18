@@ -1,4 +1,4 @@
-make clean
+set -e
 make build
 time ./src/main.o 0 > out_0.txt &
 time ./src/main.o 1 > out_1.txt &
