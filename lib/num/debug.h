@@ -35,7 +35,7 @@ uint64_t uint_from_char(char c);
 chunk_p chunk_create(uint64_t value, chunk_p next, chunk_p prev);
 void chunk_free_list(chunk_p head, chunk_p tail);
 
-num_t num_create(uint64_t count, chunk_p head, chunk_p tail);
+num_t num_create(uint64_t count);
 chunk_p num_insert_tail(num_p num, uint64_t value);
 num_t num_remove_head(num_t num);
 chunk_p num_denormalize(num_p num, chunk_p chunk);
@@ -44,8 +44,7 @@ bool num_normalize(num_p num);
 num_t num_wrap_dec(char str[]);
 num_t num_wrap_hex(char str[]);
 
-chunk_p num_sub_offset(num_p num_1, chunk_p chunk_1, num_t num_2);
-
+num_t num_add_uint_offset(num_t num, uint64_t pos, uint64_t value);
 bool num_sub_uint_offset(num_p num, chunk_p chunk, uint64_t value);
 num_t num_cmp_mul_uint_offset(num_t num_1,num_t num_2,uint64_t r,uint64_t offset);
 
