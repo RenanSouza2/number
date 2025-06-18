@@ -219,9 +219,9 @@ void num_display_opts(num_t num, char *tag, bool length, bool full)
         return;
     }
 
-    uint64_t max = full ? num.size : 4;
+    uint64_t max = full ? num.count : 4;
     for(uint64_t i=0; i<max; i++)
-        printf("" U64PX " ", num.chunk[num.size-1-i]);
+        printf("" U64PX " ", num.chunk[num.count-1-i]);
 
     if(!full && num.count > 4)
         printf("...");
@@ -322,7 +322,7 @@ void num_display_full(char *tag, num_t num)
 
 
 
-num_t num_create(uint64_t count) // TODO TEST
+num_t num_create(uint64_t count)
 {
     uint64_t size = count < 2 ? 2 : count;
     chunk_p chunk = calloc(size, sizeof(uint64_t));
@@ -336,8 +336,12 @@ num_t num_create(uint64_t count) // TODO TEST
     };
 }
 
-num_t num_expand_to(num_t num, uint64_t target) // TODO TEST
+num_t num_expand_to(num_t num, uint64_t target)
 {
+    CLU_NUM_IS_SAFE(num);
+
+    assert(target >= num.size);
+
     uint64_t size = target * 3 / 2;
     chunk_p chunk = realloc(num.chunk, size);
     assert(chunk);
@@ -351,22 +355,29 @@ num_t num_expand_to(num_t num, uint64_t target) // TODO TEST
     };
 }
 
-num_t num_expand(num_t num) // TODO TEST
+num_t num_expand(num_t num)
 {
+    CLU_NUM_IS_SAFE(num);
+
     return num_expand_to(num, num.size);
 }
 
-uint64_t num_chunk_get(num_t num, uint64_t pos) // TODO TEST
+uint64_t num_chunk_get(num_t num, uint64_t pos)
 {
+    CLU_NUM_IS_SAFE(num);
+
     return pos < num.count ? num.chunk[pos] : 0;
 }
 
-num_t num_chunk_set(num_t num, uint64_t pos, uint64_t value) // TODO TEST
+num_t num_chunk_set(num_t num, uint64_t pos, uint64_t value)
 {
-    if(pos >= num.count)
+    CLU_NUM_IS_SAFE(num);
+
+    if(pos >= num.size)
         num = num_expand_to(num, pos);
 
     num.chunk[pos] = value;
+    num.count = pos >= num.count ? pos + 1 : num.count;
     return num;
 }
 
@@ -611,7 +622,7 @@ void num_free(num_t num)
 
 
 
-num_t num_add_uint_offset(num_t num, uint64_t pos, uint64_t value) // TODO TEST
+num_t num_add_uint_offset(num_t num, uint64_t pos, uint64_t value)
 {
     CLU_NUM_IS_SAFE(num);
 
@@ -619,7 +630,7 @@ num_t num_add_uint_offset(num_t num, uint64_t pos, uint64_t value) // TODO TEST
     {
         uint64_t cur = num_chunk_get(num, pos);
         cur += value;
-        num_chunk_set(num, pos, cur);
+        num = num_chunk_set(num, pos, cur);
         value = cur < value;
     }
 
@@ -767,11 +778,8 @@ num_t num_add_offset(num_t num_1, uint64_t pos_1, num_t num_2) // TODO TEST
     CLU_NUM_IS_SAFE(num_1);
     CLU_NUM_IS_SAFE(num_2);
 
-    if(num_2.count == 0)
-        return num_1;
-
     for(uint64_t i=0; i<num_2.count; i++)
-        num_1 = num_add_uint_offset(num_1, pos_1, num_2.chunk[i]);
+        num_1 = num_add_uint_offset(num_1, pos_1 + i, num_2.chunk[i]);
 
     return num_1;
 }
@@ -1009,7 +1017,7 @@ num_t num_add(num_t num_1, num_t num_2)
     CLU_NUM_IS_SAFE(num_1);
     CLU_NUM_IS_SAFE(num_2);
 
-    num_add_offset(num_1, 0, num_2);
+    num_1 = num_add_offset(num_1, 0, num_2);
     num_free(num_2);
     return num_1;
 }

@@ -167,138 +167,111 @@ void test_uint128(bool show)
 
 
 
-// void test_chunk_create(bool show)
-// {
-//     TEST_FN_OPEN
-
-//     TEST_CASE_OPEN(1)
-//     {
-//         chunk_p chunk = chunk_create(0, NULL, NULL);
-//         assert(chunk->value == 0);
-//         assert(chunk->next == NULL);
-//         assert(chunk->prev == NULL);
-//         free(chunk);
-//     }
-//     TEST_CASE_CLOSE
-
-//     TEST_CASE_OPEN(2)
-//     {
-//         chunk_p chunk = chunk_create(1, NULL, NULL);
-//         assert(chunk->value == 1);
-//         assert(chunk->next == NULL);
-//         assert(chunk->prev == NULL);
-//         free(chunk);
-//     }
-//     TEST_CASE_CLOSE
-
-//     TEST_CASE_OPEN(3)
-//     {
-//         chunk_p chunk_next = chunk_create(0, NULL, NULL);
-//         chunk_p chunk = chunk_create(1, chunk_next, NULL);
-//         assert(chunk->value == 1);
-//         assert(chunk->next == chunk_next);
-//         assert(chunk->next->prev == chunk);
-//         assert(chunk->prev  == NULL);
-//         free(chunk);
-//         free(chunk_next);
-//     }
-//     TEST_CASE_CLOSE
-
-//     TEST_CASE_OPEN(4)
-//     {
-//         chunk_p chunk_prev = chunk_create(0, NULL, NULL);
-//         chunk_p chunk = chunk_create(1, NULL, chunk_prev);
-//         assert(chunk->value == 1);
-//         assert(chunk->next == NULL);
-//         assert(chunk->prev == chunk_prev);
-//         assert(chunk->prev->next == chunk);
-//         free(chunk);
-//         free(chunk_prev);
-//     }
-//     TEST_CASE_CLOSE
-
-//     TEST_CASE_OPEN(5)
-//     {
-//         chunk_p chunk_next = chunk_create(0, NULL, NULL);
-//         chunk_p chunk_prev = chunk_create(0, NULL, NULL);
-//         chunk_p chunk = chunk_create(1, chunk_next, chunk_prev);
-//         assert(chunk->value == 1);
-//         assert(chunk->next == chunk_next);
-//         assert(chunk->next->prev == chunk);
-//         assert(chunk->prev == chunk_prev);
-//         assert(chunk->prev->next == chunk);
-//         free(chunk);
-//         free(chunk_next);
-//         free(chunk_prev);
-//     }
-//     TEST_CASE_CLOSE
-
-//     TEST_FN_CLOSE
-// }
 
 
+void test_num_create(bool show)
+{
+    TEST_FN_OPEN
 
-// void test_num_create_immed(bool show)
-// {
-//     TEST_FN_OPEN
+    #define TEST_NUM_CREATE(TAG, IN, SIZE, COUNT)   \
+    {                                               \
+        TEST_CASE_OPEN(TAG)                         \
+        {                                           \
+            num_t num = num_create(IN);             \
+            assert(uint64(num.size, SIZE));         \
+            assert(uint64(num.count, COUNT));       \
+            assert(num.chunk != NULL);              \
+            num_free(num);                          \
+        }                                           \
+        TEST_CASE_CLOSE                             \
+    }
 
-//     TEST_CASE_OPEN(1)
-//     {
-//         num_t num = num_create_immed(0);
-//         assert(num.count == 0);
-//         assert(num.head == NULL);
-//         assert(num.tail == NULL);
-//         num_free(num);
-//     }
-//     TEST_CASE_CLOSE
+    TEST_NUM_CREATE(1, 0, 2, 0);
+    TEST_NUM_CREATE(2, 1, 2, 1);
+    TEST_NUM_CREATE(3, 2, 2, 2);
+    TEST_NUM_CREATE(4, 3, 3, 3);
 
-//     TEST_CASE_OPEN(1)
-//     {
-//         num_t num = num_create_immed(1, 2);
-//         assert(num.count == 1);
-//         assert(num.head != NULL);
-//         assert(num.head->value == 2);
-//         assert(num.head->next == NULL);
-//         assert(num.head->prev == NULL);
-//         assert(num.tail == num.head);
-//         num_free(num);
-//     }
-//     TEST_CASE_CLOSE
+    #undef TEST_NUM_CREATE
 
-//     TEST_CASE_OPEN(1)
-//     {
-//         num_t num = num_create_immed(2, 2, 1);
-//         assert(num.count == 2);
-//         assert(num.head != NULL)
-//         assert(num.head->value == 1);
-//         assert(num.head->next != NULL);
-//         assert(num.head->prev == NULL);
-//         assert(num.head->next->value == 2);
-//         assert(num.head->next->next == NULL);
-//         assert(num.head->next->prev == num.head);
-//         assert(num.tail == num.head->next);
-//         num_free(num);
-//     }
-//     TEST_CASE_CLOSE
+    TEST_FN_CLOSE
+}
 
-//     TEST_CASE_OPEN(1)
-//     {
-//         num_t num = num_create_immed(2, 2, 0);
-//         assert(num.count == 2);
-//         assert(num.head != NULL)
-//         assert(num.head->value == 0);
-//         assert(num.head->next != NULL);
-//         assert(num.head->prev == NULL);
-//         assert(num.head->next->value == 2);
-//         assert(num.head->next->next == NULL);
-//         assert(num.head->next->prev == num.head);
-//         assert(num.tail == num.head->next);
-//         num_free(num);
-//     }
-//     TEST_CASE_CLOSE
+void test_num_expand_to(bool show)
+{
+    TEST_FN_OPEN
 
-//     TEST_FN_CLOSE
-// }
+    #define TEST_NUM_EXPAND_TO(TAG, NUM, TARGET, SIZE, RES) \
+    {                                                       \
+        TEST_CASE_OPEN(TAG)                                 \
+        {                                                   \
+            num_t num = num_create_immed(ARG_OPEN NUM);     \
+            num = num_expand_to(num, TARGET);               \
+            assert(uint64(num.size, SIZE));                 \
+            assert(num_immed(num, ARG_OPEN RES));           \
+        }                                                   \
+        TEST_CASE_CLOSE                                     \
+    }
+
+    TEST_NUM_EXPAND_TO(1, (0), 2, 3, (0));
+    TEST_NUM_EXPAND_TO(1, (2, 1, 2), 2, 3, (2, 1, 2));
+    TEST_NUM_EXPAND_TO(1, (2, 1, 2), 10, 15, (2, 1, 2));
+
+    #undef TEST_NUM_EXPAND_TO
+
+    TEST_FN_CLOSE
+}
+
+void test_num_chunk_get(bool show)
+{
+    TEST_FN_OPEN
+
+    #define TEST_NUM_CHUNK_GET(TAG, NUM, POS, RES)      \
+    {                                                   \
+        TEST_CASE_OPEN(TAG)                             \
+        {                                               \
+            num_t num = num_create_immed(ARG_OPEN NUM); \
+            uint64_t value = num_chunk_get(num, POS);   \
+            assert(uint64(value, RES));                 \
+            num_free(num);                              \
+        }                                               \
+        TEST_CASE_CLOSE                                 \
+    }
+
+    TEST_NUM_CHUNK_GET(1, (0), 0, 0);
+    TEST_NUM_CHUNK_GET(2, (0), 1, 0);
+    TEST_NUM_CHUNK_GET(3, (2, 1, 2), 0, 2);
+    TEST_NUM_CHUNK_GET(4, (2, 1, 2), 1, 1);
+    TEST_NUM_CHUNK_GET(5, (2, 1, 2), 2, 0);
+
+    #undef TEST_NUM_CHUNK_GET
+
+    TEST_FN_CLOSE
+}
+
+void test_num_chunk_set(bool show)
+{
+    TEST_FN_OPEN
+
+    #define TEST_NUM_CHUNK_SET(TAG, NUM, POS, VALUE, RES)   \
+    {                                                       \
+        TEST_CASE_OPEN(TAG)                                 \
+        {                                                   \
+            num_t num = num_create_immed(ARG_OPEN NUM);     \
+            num = num_chunk_set(num, POS, VALUE);           \
+            assert(num_immed(num, ARG_OPEN RES));           \
+        }                                                   \
+        TEST_CASE_CLOSE                                     \
+    }
+
+    TEST_NUM_CHUNK_SET(1, (0), 0, 0, (1, 0));
+    TEST_NUM_CHUNK_SET(2, (0), 0, 1, (1, 1));
+    TEST_NUM_CHUNK_SET(3, (1, 1), 0, 2, (1, 2));
+    TEST_NUM_CHUNK_SET(4, (1, 1), 5, 2, (6, 2, 0, 0, 0, 0, 1));
+
+    #undef TEST_NUM_CHUNK_SET
+
+    TEST_FN_CLOSE
+}
 
 
 
@@ -1221,6 +1194,10 @@ void test_num_add_uint_offset(bool show)
     TEST_NUM_ADD_UINT_OFFSET(2, (0), 0, 1, (1, 1));
     TEST_NUM_ADD_UINT_OFFSET(3, (1, 1), 0, 2, (1, 3));
     TEST_NUM_ADD_UINT_OFFSET(4, (1, UINT64_MAX), 0, 3, (2, 1, 2));
+    TEST_NUM_ADD_UINT_OFFSET(5, (0), 1, 0, (0));
+    TEST_NUM_ADD_UINT_OFFSET(6, (0), 1, 1, (2, 1, 0));
+    TEST_NUM_ADD_UINT_OFFSET(7, (1, 1), 1, 2, (2, 2, 1));
+    TEST_NUM_ADD_UINT_OFFSET(8, (1, UINT64_MAX), 1, 3, (2, 3, UINT64_MAX));
 
     #undef TEST_NUM_ADD_UINT_OFFSET
 
@@ -2015,14 +1992,15 @@ void test_num()
 {
     TEST_LIB
 
-    bool show = false;
+    bool show = true;
 
     test_uint_from_char(show);
     test_uint128(show);
 
-//     test_chunk_create(show);
-
-//     test_num_create_immed(show);
+    test_num_create(show);
+    test_num_expand_to(show);
+    test_num_chunk_get(show);
+    test_num_chunk_set(show);
 
 //     test_num_insert_tail(show);
 //     test_num_insert_head(show);
@@ -2039,15 +2017,14 @@ void test_num()
 //     test_num_unwrap(show);
 //     test_num_copy(show);
 
+    test_num_add_uint_offset(show);
 //     test_num_sub_uint_offset(show);
 
 //     test_num_shl_uint(show);
 //     test_num_shr_uint(show);
-//     test_num_sub_uint(show);
 //     test_num_mul_uint(show);
 //     test_num_add_mul_uint(show);
 
-    test_num_add_uint_offset(show);
 //     test_num_sub_offset(show);
 //     test_num_cmp_mul_uint(show);
 

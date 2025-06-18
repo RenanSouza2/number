@@ -36,6 +36,11 @@ chunk_p chunk_create(uint64_t value, chunk_p next, chunk_p prev);
 void chunk_free_list(chunk_p head, chunk_p tail);
 
 num_t num_create(uint64_t count);
+num_t num_expand_to(num_t num, uint64_t target);
+num_t num_expand(num_t num);
+uint64_t num_chunk_get(num_t num, uint64_t pos);
+num_t num_chunk_set(num_t num, uint64_t pos, uint64_t value);
+
 chunk_p num_insert_tail(num_p num, uint64_t value);
 num_t num_remove_head(num_t num);
 chunk_p num_denormalize(num_p num, chunk_p chunk);
