@@ -747,7 +747,6 @@ void test_num_sub_uint_offset(bool show)
         TEST_CASE_CLOSE                                         \
     }
 
-    
     TEST_NUM_SUB_UINT_OFFSET(1, (0), 0, 0, (0));
     TEST_NUM_SUB_UINT_OFFSET(2, (1, 1), 0, 0, (1, 1));
     TEST_NUM_SUB_UINT_OFFSET(3, (1, 1), 0, 1, (1, 0));

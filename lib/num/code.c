@@ -143,9 +143,7 @@ uint64_t uint_from_char(char c)
         case 'a' ... 'f': return c - 'a' + 10;
         case 'A' ... 'F': return c - 'A' + 10;
     }
-
-    printf("\nc: (%d)", c);
-    assert(false);
+    exit(EXIT_FAILURE);
 }
 
 uint64_t uint_from_str(char str[], uint64_t size, uint64_t base) // TODO test
