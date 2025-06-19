@@ -274,6 +274,7 @@ num_p num_expand_to(num_p num, uint64_t target)
     uint64_t size = target * 2;
     num = realloc(num, sizeof(num_t) + size * sizeof(uint64_t));
     assert(num);
+    uint64_t size_old = num->size;
     *num = (num_t)
     {
         .size = size,
@@ -281,7 +282,7 @@ num_p num_expand_to(num_p num, uint64_t target)
         .chunk = (chunk_p)&num[1]
     };
 
-    memset(&num->chunk[num->size], 0, (size - num->size) * sizeof(uint64_t));
+    memset(&num->chunk[size_old], 0, (size - size_old) * sizeof(uint64_t));
     return num;
 }
 
@@ -766,7 +767,6 @@ num_p num_cmp_mul_uint_offset(
     for(uint64_t pos_2=num_2->count-1; pos_2!=UINT64_MAX; pos_2--)
     {
         uint128_t u = MUL(num_2->chunk[pos_2], r);
-
         num_res = num_add_uint_offset(num_res, pos_2 + 1, HIGH(u));
         num_res = num_add_uint_offset(num_res, pos_2, LOW(u));
 
@@ -1001,7 +1001,6 @@ num_p num_sqr(num_p num)
 
         free(num_tmp);
     }
-    num_normalize(num_res);
 
     num_free(num);
     return num_res;
