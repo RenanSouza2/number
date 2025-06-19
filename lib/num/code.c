@@ -219,7 +219,11 @@ void num_display_opts(num_t num, char *tag, bool length, bool full)
         return;
     }
 
-    uint64_t max = full ? num.count : 4;
+    uint64_t max = full ? 
+        num.count : 
+        num.count > 4 ? 
+            4 : num.count;
+
     for(uint64_t i=0; i<max; i++)
         printf("" U64PX " ", num.chunk[num.count-1-i]);
 
@@ -227,12 +231,12 @@ void num_display_opts(num_t num, char *tag, bool length, bool full)
         printf("...");
 }
 
-// void num_display(num_t num)
-// {
-//     CLU_HANDLER_IS_SAFE(num.head);
-//
-//     num_display_opts(num, NULL, true, false);
-// }
+void num_display(num_t num)
+{
+    CLU_NUM_IS_SAFE(num);
+
+    num_display_opts(num, NULL, true, false);
+}
 
 // void num_display_tag(char *tag, num_t num)
 // {
@@ -639,7 +643,7 @@ num_t num_shr_uint(num_t num, uint64_t bits) // TODO test
     for(uint64_t pos=num.count-1; pos!=UINT64_MAX; pos--)
     {
         uint64_t value = num.chunk[pos];
-        chunk->value = (value >> bits) | carry;
+        num.chunk[pos] = (value >> bits) | carry;
         carry = value << (64 - bits);
     }
     num_normalize(&num);
@@ -681,7 +685,8 @@ int64_t num_cmp_offset(num_t num_1, uint64_t pos_1, num_t num_2) // TODO TEST
     for(uint64_t pos_2=num_2.count-1; pos_2!=UINT64_MAX; pos_2--)
     {
         uint64_t value_1 = num_1.chunk[pos_1 + pos_2];
-        uint64_t value_2 = num_1.chunk[pos_2];
+        uint64_t value_2 = num_2.chunk[pos_2];
+
         if(value_1 > value_2)
             return 1;
 
@@ -735,8 +740,9 @@ num_t num_cmp_mul_uint_offset(num_t num_1, uint64_t pos_1, num_t num_2, uint64_t
     for(uint64_t pos_2=num_2.count-1; pos_2!=UINT64_MAX; pos_2--)
     {
         uint128_t u = MUL(num_2.chunk[pos_2], r);
-        num_aux = num_add_uint_offset(num_aux, HIGH(u), pos_2+1);
-        num_aux = num_add_uint_offset(num_aux, LOW(u), pos_2);
+
+        num_aux = num_add_uint_offset(num_aux, pos_2 + 1, HIGH(u));
+        num_aux = num_add_uint_offset(num_aux, pos_2, LOW(u));
 
         if(num_cmp_offset(num_1, pos_1, num_aux) < 0)
         {
@@ -809,6 +815,8 @@ num_t num_div_mod_general(num_p num_1, num_t num_2)
             num_t num_aux = num_cmp_mul_uint_offset(*num_1, pos_q, num_2, r_aux);
             if(num_aux.count == 0)
             {
+                num_free(num_aux);
+
                 r_aux = val_1 / (val_2 + 1);
                 num_aux = num_mul_uint(num_2, r_aux);
             }
