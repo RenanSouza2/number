@@ -177,10 +177,10 @@ void test_num_create(bool show)
     {                                                   \
         TEST_CASE_OPEN(TAG)                             \
         {                                               \
-            num_t num = num_create(SIZE, COUNT);        \
-            assert(uint64(num.size, SIZE_RES));         \
-            assert(uint64(num.count, COUNT));           \
-            assert(num.chunk != NULL);                  \
+            num_p num = num_create(SIZE, COUNT);        \
+            assert(uint64(num->size, SIZE_RES));        \
+            assert(uint64(num->count, COUNT));          \
+            assert(num->chunk != NULL);                 \
             num_free(num);                              \
         }                                               \
         TEST_CASE_CLOSE                                 \
@@ -214,9 +214,9 @@ void test_num_expand_to(bool show)
     {                                                       \
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
-            num_t num = num_create_immed(ARG_OPEN NUM);     \
+            num_p num = num_create_immed(ARG_OPEN NUM);     \
             num = num_expand_to(num, TARGET);               \
-            assert(uint64(num.size, SIZE));                 \
+            assert(uint64(num->size, SIZE));                \
             assert(num_immed(num, ARG_OPEN RES));           \
         }                                                   \
         TEST_CASE_CLOSE                                     \
@@ -239,7 +239,7 @@ void test_num_chunk_get(bool show)
     {                                                   \
         TEST_CASE_OPEN(TAG)                             \
         {                                               \
-            num_t num = num_create_immed(ARG_OPEN NUM); \
+            num_p num = num_create_immed(ARG_OPEN NUM); \
             num_display(num);   \
             uint64_t value = num_chunk_get(num, POS);   \
             assert(uint64(value, RES));                 \
@@ -267,7 +267,7 @@ void test_num_chunk_set(bool show)
     {                                                       \
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
-            num_t num = num_create_immed(ARG_OPEN NUM);     \
+            num_p num = num_create_immed(ARG_OPEN NUM);     \
             num = num_chunk_set(num, POS, VALUE);           \
             assert(num_immed(num, ARG_OPEN RES));           \
         }                                                   \
@@ -295,7 +295,7 @@ void test_num_chunk_set(bool show)
     {                                                                   \
         TEST_CASE_OPEN(TAG)                                             \
         {                                                               \
-            num_t num = num_create_immed(ARG_OPEN NUM_BEF);             \
+            num_p num = num_create_immed(ARG_OPEN NUM_BEF);             \
             chunk_p chunk = num_insert_tail(&num, VALUE);               \
             assert(uint64(chunk->value, VALUE));                        \
             assert((num.head == chunk) == IS_HEAD);                     \
@@ -343,7 +343,7 @@ void test_num_chunk_set(bool show)
     {                                                                   \
         TEST_CASE_OPEN(TAG)                                             \
         {                                                               \
-            num_t num = num_create_immed(ARG_OPEN NUM_BEF);             \
+            num_p num = num_create_immed(ARG_OPEN NUM_BEF);             \
             chunk_p chunk = num_insert_head(&num, VALUE);               \
             assert(uint64(chunk->value, VALUE));                        \
             assert(num.head == chunk);                                  \
@@ -391,7 +391,7 @@ void test_num_chunk_set(bool show)
     {                                                       \
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
-            num_t num = num_create_immed(ARG_OPEN NUM_BEF); \
+            num_p num = num_create_immed(ARG_OPEN NUM_BEF); \
             num = num_remove_head(num);                     \
             assert(num_immed(num, ARG_OPEN NUM_AFT));       \
         }                                                   \
@@ -424,7 +424,7 @@ void test_num_chunk_set(bool show)
     {                                                       \
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
-            num_t num = num_create_immed(ARG_OPEN NUM_BEF); \
+            num_p num = num_create_immed(ARG_OPEN NUM_BEF); \
             chunk_p chunk = num_denormalize(&num, NULL);    \
             assert(num.tail == chunk);                      \
             assert(num_immed(num, ARG_OPEN NUM_AFT));       \
@@ -458,8 +458,8 @@ void test_num_normalize(bool show)
     {                                                       \
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
-            num_t num = num_create_immed(ARG_OPEN NUM_BEF); \
-            bool res = num_normalize(&num);                 \
+            num_p num = num_create_immed(ARG_OPEN NUM_BEF); \
+            bool res = num_normalize(num);                  \
             assert(res == RES);                             \
             assert(num_immed(num, ARG_OPEN NUM_AFT));       \
         }                                                   \
@@ -505,7 +505,7 @@ void test_num_normalize(bool show)
     {                                                                   \
         TEST_CASE_OPEN(TAG)                                             \
         {                                                               \
-            num_t num_hi, num_lo, num = num_create_immed(ARG_OPEN NUM); \
+            num_p num_hi, num_lo, num = num_create_immed(ARG_OPEN NUM); \
             num_break(&num_hi, &num_lo, num, COUNT);                    \
             assert(num_immed(num_hi, ARG_OPEN NUM_HI));                 \
             assert(num_immed(num_lo, ARG_OPEN NUM_LO));                 \
@@ -595,7 +595,7 @@ void test_num_wrap(bool show)
     {                                               \
         TEST_CASE_OPEN(TAG)                         \
         {                                           \
-            num_t num = num_wrap(NUM);              \
+            num_p num = num_wrap(NUM);              \
             assert(num_immed(num, __VA_ARGS__));    \
         }                                           \
         TEST_CASE_CLOSE                             \
@@ -618,7 +618,7 @@ void test_num_wrap(bool show)
     {                                               \
         TEST_CASE_OPEN(TAG)                         \
         {                                           \
-            num_t num = num_wrap_dec(STR);          \
+            num_p num = num_wrap_dec(STR);          \
             assert(num_immed(num, __VA_ARGS__));    \
         }                                           \
         TEST_CASE_CLOSE                             \
@@ -647,7 +647,7 @@ void test_num_wrap(bool show)
     {                                               \
         TEST_CASE_OPEN(TAG)                         \
         {                                           \
-            num_t num = num_wrap_hex(STR);          \
+            num_p num = num_wrap_hex(STR);          \
             assert(num_immed(num, __VA_ARGS__));    \
         }                                           \
         TEST_CASE_CLOSE                             \
@@ -698,7 +698,7 @@ void test_num_wrap(bool show)
     {                                               \
         TEST_CASE_OPEN(TAG)                         \
         {                                           \
-            num_t num = num_wrap_str(STR);          \
+            num_p num = num_wrap_str(STR);          \
             assert(num_immed(num, __VA_ARGS__));    \
         }                                           \
         TEST_CASE_CLOSE                             \
@@ -736,7 +736,7 @@ void test_num_wrap(bool show)
     {                                                               \
         TEST_CASE_OPEN(TAG)                                         \
         {                                                           \
-            num_t num = num_read_dec("numbers/num_" #TAG ".txt");   \
+            num_p num = num_read_dec("numbers/num_" #TAG ".txt");   \
             assert(num_immed(num, __VA_ARGS__));                    \
         }                                                           \
         TEST_CASE_CLOSE                                             \
@@ -773,7 +773,7 @@ void test_num_wrap(bool show)
     {                                                   \
         TEST_CASE_OPEN(TAG)                             \
         {                                               \
-            num_t num = num_create_immed(ARG_OPEN NUM); \
+            num_p num = num_create_immed(ARG_OPEN NUM); \
             uint64_t res = num_unwrap(num);             \
             assert(res == RES);                         \
         }                                               \
@@ -788,7 +788,7 @@ void test_num_wrap(bool show)
 
 //     TEST_CASE_OPEN(4)
 //     {
-//         num_t num = num_create_immed(2, 3, 4);
+//         num_p num = num_create_immed(2, 3, 4);
 //         TEST_REVERT_OPEN
 //         {
 //             num_unwrap(num);
@@ -808,8 +808,8 @@ void test_num_wrap(bool show)
     {                                                   \
         TEST_CASE_OPEN(TAG)                             \
         {                                               \
-            num_t num = num_create_immed(ARG_OPEN NUM); \
-            num_t num_res = num_copy(num);              \
+            num_p num = num_create_immed(ARG_OPEN NUM); \
+            num_p num_res = num_copy(num);              \
             assert(num_eq_dbg(num_res, num));           \
         }                                               \
         TEST_CASE_CLOSE                                 \
@@ -834,7 +834,7 @@ void test_num_shl_uint(bool show)
     {                                                       \
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
-            num_t num = num_create_immed(ARG_OPEN NUM_BEF); \
+            num_p num = num_create_immed(ARG_OPEN NUM_BEF); \
             num = num_shl_uint(num, BITS);                  \
             assert(num_immed(num, ARG_OPEN NUM_AFT));       \
         }                                                   \
@@ -853,7 +853,7 @@ void test_num_shl_uint(bool show)
 
     TEST_CASE_OPEN(8)
     {
-        num_t num = num_create_immed(1, 1);
+        num_p num = num_create_immed(1, 1);
         TEST_REVERT_OPEN
         {
             num_shl_uint(num, 64);
@@ -873,7 +873,7 @@ void test_num_shr_uint(bool show)
     {                                                       \
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
-            num_t num = num_create_immed(ARG_OPEN NUM_BEF); \
+            num_p num = num_create_immed(ARG_OPEN NUM_BEF); \
             num = num_shr_uint(num, BITS);                  \
             assert(num_immed(num, ARG_OPEN NUM_AFT));       \
         }                                                   \
@@ -896,7 +896,7 @@ void test_num_shr_uint(bool show)
 
     TEST_CASE_OPEN(8)
     {
-        num_t num = num_create_immed(1, 1);
+        num_p num = num_create_immed(1, 1);
         TEST_REVERT_OPEN
         {
             num_shr_uint(num, 64);
@@ -916,7 +916,7 @@ void test_num_shr_uint(bool show)
     {                                                       \
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
-            num_t num = num_create_immed(ARG_OPEN NUM_BEF); \
+            num_p num = num_create_immed(ARG_OPEN NUM_BEF); \
             num = num_sub_uint(num, VALUE);                 \
             assert(num_immed(num, ARG_OPEN NUM_AFT));       \
         }                                                   \
@@ -940,7 +940,7 @@ void test_num_shr_uint(bool show)
     {                                                   \
         TEST_CASE_OPEN(TAG)                             \
         {                                               \
-            num_t num = num_create_immed(ARG_OPEN NUM); \
+            num_p num = num_create_immed(ARG_OPEN NUM); \
             TEST_REVERT_OPEN                            \
             {                                           \
                 num_sub_uint(num, VALUE);               \
@@ -966,8 +966,8 @@ void test_num_mul_uint(bool show)
     {                                                       \
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
-            num_t num = num_create_immed(ARG_OPEN NUM_BEF); \
-            num_t num_res = num_mul_uint(num, VALUE);       \
+            num_p num = num_create_immed(ARG_OPEN NUM_BEF); \
+            num_p num_res = num_mul_uint(num, VALUE);       \
             assert(num_immed(num_res, ARG_OPEN NUM_AFT));   \
             num_free(num);                                  \
         }                                                   \
@@ -997,8 +997,8 @@ void test_num_add_mul_uint(bool show)
     {                                                           \
         TEST_CASE_OPEN(TAG)                                     \
         {                                                       \
-            num_t num = num_create_immed(ARG_OPEN NUM_BEF);     \
-            num_t num_res = num_create_immed(1, 1);             \
+            num_p num = num_create_immed(ARG_OPEN NUM_BEF);     \
+            num_p num_res = num_create_immed(1, 1);             \
             num_res = num_add_mul_uint(num_res, num, VALUE);    \
             assert(num_immed(num_res, ARG_OPEN NUM_AFT));       \
             num_free(num);                                      \
@@ -1031,8 +1031,8 @@ void test_num_cmp_offset(bool show)
     {                                                           \
         TEST_CASE_OPEN(TAG)                                     \
         {                                                       \
-            num_t num_1 = num_create_immed(ARG_OPEN NUM_1);     \
-            num_t num_2 = num_create_immed(ARG_OPEN NUM_2);     \
+            num_p num_1 = num_create_immed(ARG_OPEN NUM_1);     \
+            num_p num_2 = num_create_immed(ARG_OPEN NUM_2);     \
             int64_t cmp = num_cmp_offset(num_1, POS, num_2);    \
             assert(cmp RELATION 0);                             \
             num_free(num_1);                                    \
@@ -1074,7 +1074,7 @@ void test_num_add_uint_offset(bool show)
     {                                                                       \
         TEST_CASE_OPEN(TAG)                                                 \
         {                                                                   \
-            num_t num = num_create_immed(ARG_OPEN NUM_BEF);                 \
+            num_p num = num_create_immed(ARG_OPEN NUM_BEF);                 \
             num = num_add_uint_offset(num, OFFSET, VALUE);                  \
             assert(num_immed(num, ARG_OPEN NUM_AFT));                       \
         }                                                                   \
@@ -1103,7 +1103,7 @@ void test_num_sub_uint_offset(bool show)
     {                                                           \
         TEST_CASE_OPEN(TAG)                                     \
         {                                                       \
-            num_t num = num_create_immed(ARG_OPEN NUM);         \
+            num_p num = num_create_immed(ARG_OPEN NUM);         \
             num = num_sub_uint_offset(num, POS, VALUE);         \
             assert(num_immed(num, ARG_OPEN RES));               \
         }                                                       \
@@ -1125,7 +1125,7 @@ void test_num_sub_uint_offset(bool show)
     {                                                       \
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
-            num_t num = num_create_immed(ARG_OPEN NUM);     \
+            num_p num = num_create_immed(ARG_OPEN NUM);     \
             TEST_REVERT_OPEN                                \
             {                                               \
                 num_sub_uint_offset(num, POS, VALUE);       \
@@ -1152,8 +1152,8 @@ void test_num_sub_offset(bool show)
     {                                                           \
         TEST_CASE_OPEN(TAG)                                     \
         {                                                       \
-            num_t num_1 = num_create_immed(ARG_OPEN NUM_1);     \
-            num_t num_2 = num_create_immed(ARG_OPEN NUM_2);     \
+            num_p num_1 = num_create_immed(ARG_OPEN NUM_1);     \
+            num_p num_2 = num_create_immed(ARG_OPEN NUM_2);     \
             num_1 = num_sub_offset(num_1, POS, num_2);          \
             assert(num_immed(num_1, ARG_OPEN RES));             \
             num_free(num_2);                                    \
@@ -1174,8 +1174,8 @@ void test_num_sub_offset(bool show)
     {                                                       \
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
-            num_t num_1 = num_create_immed(ARG_OPEN NUM_1); \
-            num_t num_2 = num_create_immed(ARG_OPEN NUM_2); \
+            num_p num_1 = num_create_immed(ARG_OPEN NUM_1); \
+            num_p num_2 = num_create_immed(ARG_OPEN NUM_2); \
             TEST_REVERT_OPEN                                \
             {                                               \
                 num_sub_offset(num_1, POS, num_2);         \
@@ -1202,9 +1202,9 @@ void test_num_cmp_mul_uint(bool show)
     {                                                                               \
         TEST_CASE_OPEN(TAG)                                                         \
         {                                                                           \
-            num_t num_1 = num_create_immed(ARG_OPEN NUM_1);                         \
-            num_t num_2 = num_create_immed(ARG_OPEN NUM_2);                         \
-            num_t num_res = num_create(0, 0);                                       \
+            num_p num_1 = num_create_immed(ARG_OPEN NUM_1);                         \
+            num_p num_2 = num_create_immed(ARG_OPEN NUM_2);                         \
+            num_p num_res = num_create(0, 0);                                       \
             num_res = num_cmp_mul_uint_offset(num_res, num_1, POS, num_2, VALUE);   \
             assert(num_immed(num_res, ARG_OPEN RES));                               \
             num_free(num_1);                                                        \
@@ -1343,7 +1343,7 @@ void test_num_is_zero(bool show)
     {                                                   \
         TEST_CASE_OPEN(TAG)                             \
         {                                               \
-            num_t num = num_create_immed(ARG_OPEN NUM); \
+            num_p num = num_create_immed(ARG_OPEN NUM); \
             bool res = num_is_zero(num);                \
             assert(res == IS_ZERO);                     \
             num_free(num);                              \
@@ -1370,7 +1370,7 @@ void test_num_shl(bool show)
     {                                                       \
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
-            num_t num = num_create_immed(ARG_OPEN NUM_IN);  \
+            num_p num = num_create_immed(ARG_OPEN NUM_IN);  \
             num = num_shl(num, BITS);                       \
             assert(num_immed(num, ARG_OPEN NUM_OUT));       \
         }                                                   \
@@ -1397,7 +1397,7 @@ void test_num_shr(bool show)
     {                                                       \
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
-            num_t num = num_create_immed(ARG_OPEN NUM_IN);  \
+            num_p num = num_create_immed(ARG_OPEN NUM_IN);  \
             num = num_shr(num, BITS);                       \
             assert(num_immed(num, ARG_OPEN NUM_OUT));       \
         }                                                   \
@@ -1428,8 +1428,8 @@ void test_num_add(bool show)
     {                                                       \
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
-            num_t num_1 = num_create_immed(ARG_OPEN NUM_1); \
-            num_t num_2 = num_create_immed(ARG_OPEN NUM_2); \
+            num_p num_1 = num_create_immed(ARG_OPEN NUM_1); \
+            num_p num_2 = num_create_immed(ARG_OPEN NUM_2); \
             num_1 = num_add(num_1, num_2);                  \
             assert(num_immed(num_1, ARG_OPEN NUM_OUT));     \
         }                                                   \
@@ -1490,8 +1490,8 @@ void test_num_sub(bool show)
     {                                                       \
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
-            num_t num_1 = num_create_immed(ARG_OPEN NUM_1); \
-            num_t num_2 = num_create_immed(ARG_OPEN NUM_2); \
+            num_p num_1 = num_create_immed(ARG_OPEN NUM_1); \
+            num_p num_2 = num_create_immed(ARG_OPEN NUM_2); \
             num_1 = num_sub(num_1, num_2);                  \
             assert(num_immed(num_1, ARG_OPEN NUM_OUT));     \
         }                                                   \
@@ -1552,8 +1552,8 @@ void test_num_mul(bool show)
     {                                                       \
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
-            num_t num_1 = num_create_immed(ARG_OPEN NUM_1); \
-            num_t num_2 = num_create_immed(ARG_OPEN NUM_2); \
+            num_p num_1 = num_create_immed(ARG_OPEN NUM_1); \
+            num_p num_2 = num_create_immed(ARG_OPEN NUM_2); \
             num_1 = num_mul(num_1, num_2);                  \
             assert(num_immed(num_1, ARG_OPEN NUM_OUT));     \
         }                                                   \
@@ -1649,7 +1649,7 @@ void test_num_sqr(bool show)
     {                                                       \
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
-            num_t num = num_create_immed(ARG_OPEN NUM_IN);  \
+            num_p num = num_create_immed(ARG_OPEN NUM_IN);  \
             num = num_sqr(num);                             \
             assert(num_immed(num, ARG_OPEN NUM_OUT));       \
         }                                                   \
@@ -1702,9 +1702,9 @@ void test_num_div_mod(bool show)
     {                                                           \
         TEST_CASE_OPEN(TAG)                                     \
         {                                                       \
-            num_t num_q, num_r;                                 \
-            num_t num_1 = num_create_immed(ARG_OPEN NUM_1);     \
-            num_t num_2 = num_create_immed(ARG_OPEN NUM_2);     \
+            num_p num_q, num_r;                                 \
+            num_p num_1 = num_create_immed(ARG_OPEN NUM_1);     \
+            num_p num_2 = num_create_immed(ARG_OPEN NUM_2);     \
             num_div_mod(&num_q, &num_r, num_1, num_2);          \
             assert(num_immed(num_q, ARG_OPEN NUM_Q));           \
             assert(num_immed(num_r, ARG_OPEN NUM_R));           \
@@ -1867,9 +1867,9 @@ void test_num_div_mod(bool show)
 
     TEST_CASE_OPEN(25)
     {
-        num_t num_1 = num_create_immed(1, 1);
-        num_t num_2 = num_create_immed(0);
-        num_t num_q, num_r;
+        num_p num_1 = num_create_immed(1, 1);
+        num_p num_2 = num_create_immed(0);
+        num_p num_q, num_r;
         TEST_REVERT_OPEN
         {
             num_div_mod(&num_q, &num_r, num_1, num_2);
@@ -1891,7 +1891,7 @@ void test_num_div_mod(bool show)
 {                                                       \
     TEST_CASE_OPEN(TAG)                                 \
     {                                                   \
-        num_t num = num_create_immed(ARG_OPEN NUM_IN);  \
+        num_p num = num_create_immed(ARG_OPEN NUM_IN);  \
         num = num_base_to(num, 10);                     \
         assert(num_immed(num, ARG_OPEN NUM_OUT));       \
     }                                                   \
@@ -1940,7 +1940,7 @@ void test_num_div_mod(bool show)
 {                                                       \
     TEST_CASE_OPEN(TAG)                                 \
     {                                                   \
-        num_t num = num_create_immed(ARG_OPEN NUM_IN);  \
+        num_p num = num_create_immed(ARG_OPEN NUM_IN);  \
         num = num_base_from(num, 10);                   \
         assert(num_immed(num, ARG_OPEN NUM_OUT));       \
     }                                                   \

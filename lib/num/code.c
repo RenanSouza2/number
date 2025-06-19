@@ -13,16 +13,16 @@
 
 #ifdef DEBUG
 
-num_t num_create_variadic(uint64_t n, va_list *args)
+num_p num_create_variadic(uint64_t n, va_list *args)
 {
-    num_t num = num_create(n, n);
+    num_p num = num_create(n, n);
     for(uint64_t i=0; i<n; i++)
-        num.chunk[n-1-i] = va_arg(*args, uint64_t);
+        num->chunk[n-1-i] = va_arg(*args, uint64_t);
 
     return num;
 }
 
-num_t num_create_immed(uint64_t n, ...)
+num_p num_create_immed(uint64_t n, ...)
 {
     va_list args;
     va_start(args, n);
@@ -72,32 +72,32 @@ bool uint128_immed(uint128_t u1, uint64_t v2h, uint64_t v2l)
 
 
 
-bool num_inner(num_t num_1, num_t num_2)
+bool num_inner(num_p num_1, num_p num_2)
 {
     CLU_NUM_IS_SAFE(num_1);
     CLU_NUM_IS_SAFE(num_2);
 
-    if(num_1.count > num_1.size)
+    if(num_1->count > num_1->size)
     {
-        printf("\n\n\tNUMBER ASSERT ERROR\t| COUNT BIGGER THAN SIZE | " U64P() " " U64P() "", num_1.count, num_1.size);
+        printf("\n\n\tNUMBER ASSERT ERROR\t| COUNT BIGGER THAN SIZE | " U64P() " " U64P() "", num_1->count, num_1->size);
         return false;
     }
 
-    if(num_1.chunk == NULL)
+    if(num_1->chunk == NULL)
     {
         printf("\n\n\tNUMBER ASSERT ERROR\t| CHUNK IS NULL");
         return false;
     }
 
-    if(!uint64(num_1.count, num_2.count))
+    if(!uint64(num_1->count, num_2->count))
     {
         printf("\n\tNUMBER ASSERT ERROR\t| DIFFERENCE IN LENGTH");
         return false;
     }
 
-    for(uint64_t i=0; i<num_1.count; i++)
+    for(uint64_t i=0; i<num_1->count; i++)
     {
-        if(!uint64(num_1.chunk[i], num_2.chunk[i]))
+        if(!uint64(num_1->chunk[i], num_2->chunk[i]))
         {
             printf("\n\tNUMBER ASSERT ERROR\t| DIFFERENCE IN VALUE " U64P() "", i);
             return false;
@@ -107,7 +107,7 @@ bool num_inner(num_t num_1, num_t num_2)
     return true;
 }
 
-bool num_eq_dbg(num_t num_1, num_t num_2)
+bool num_eq_dbg(num_p num_1, num_p num_2)
 {
     CLU_NUM_IS_SAFE(num_1);
     CLU_NUM_IS_SAFE(num_2);
@@ -125,11 +125,11 @@ bool num_eq_dbg(num_t num_1, num_t num_2)
     return true;
 }
 
-bool num_immed(num_t num, uint64_t n, ...)
+bool num_immed(num_p num, uint64_t n, ...)
 {
     va_list args;
     va_start(args, n);
-    num_t num_2 = num_create_variadic(n, &args);
+    num_p num_2 = num_create_variadic(n, &args);
     return num_eq_dbg(num, num_2);
 }
 
@@ -384,7 +384,7 @@ num_p num_cut(num_p num, uint64_t pos)  // TODO TEST
 // returns true if NUM was not normalized
 bool num_normalize(num_p num)
 {
-    CLU_NUM_IS_SAFE(*num);
+    CLU_NUM_IS_SAFE(num);
 
     if(num->count == 0)
         return false;
@@ -1001,6 +1001,8 @@ num_p num_sqr(num_p num)
 
         if(value >= 0x8000000000000000)
             num_res = num_add_offset(num_res, 2 * pos + 2, num_tmp);
+
+        free(num_tmp);
     }
     num_normalize(num_res);
 

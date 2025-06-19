@@ -1,0 +1,18 @@
+make build --directory=src -s
+building object lib/fix
+building object lib/float
+building object lib/mod
+building object lib/num
+building object lib/sig
+ linking object lib
+building exec src
+
+14	     0.003	     0.002	     0.007
+15	     0.013	     0.005	     0.030
+16	     0.053	     0.021	     0.117
+17	     0.209	     0.081	     0.417
+18	     0.832	     0.326	     2.153
+19	     3.372	     1.324	     6.005
+20	    13.394	     5.261	    30.626
+21	    53.457	    21.073	   121.479
+22
