@@ -254,15 +254,14 @@ num_p num_create(uint64_t size, uint64_t count)
 {
     assert(size >= count);
     size = size ? size : 1;
-    chunk_p chunk = calloc(size, sizeof(uint64_t));
-    assert(chunk);
+    num_p num = calloc(1, sizeof(num_t) + size * sizeof(uint64_t));
+    assert(num);
 
-    num_p num = malloc(sizeof(num_t));
     *num = (num_t)
     {
         .size = size,
         .count = count,
-        .chunk = chunk
+        .chunk = (chunk_p)&num[1]
     };
     return num;
 }
@@ -272,18 +271,17 @@ num_p num_expand_to(num_p num, uint64_t target)
     CLU_NUM_IS_SAFE(num);
 
     assert(target >= num->size);
-
     uint64_t size = target * 2;
-    chunk_p chunk = realloc(num->chunk, size * sizeof(uint64_t));
-    assert(chunk);
-
-    memset(&chunk[num->size], 0, (size - num->size) * sizeof(uint64_t));
+    num = realloc(num, sizeof(num_t) + size * sizeof(uint64_t));
+    assert(num);
     *num = (num_t)
     {
         .size = size,
         .count = num->count,
-        .chunk = chunk
+        .chunk = (chunk_p)&num[1]
     };
+
+    memset(&num->chunk[num->size], 0, (size - num->size) * sizeof(uint64_t));
     return num;
 }
 
@@ -571,7 +569,6 @@ void num_free(num_p num)
 {
     CLU_NUM_IS_SAFE(num);
 
-    free(num->chunk);
     free(num);
 }
 

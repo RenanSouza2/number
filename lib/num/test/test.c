@@ -240,7 +240,6 @@ void test_num_chunk_get(bool show)
         TEST_CASE_OPEN(TAG)                             \
         {                                               \
             num_p num = num_create_immed(ARG_OPEN NUM); \
-            num_display(num);   \
             uint64_t value = num_chunk_get(num, POS);   \
             assert(uint64(value, RES));                 \
             num_free(num);                              \
