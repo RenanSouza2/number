@@ -8,6 +8,7 @@
 #include "../../mods/macros/U64.h"
 
 #include "../num/header.h"
+#include "../num/struct.h"
 #include "../sig/header.h"
 
 #define CLU_FIX_IS_SAFE(FIX) CLU_HANDLER_IS_SAFE((FIX).sig.num)

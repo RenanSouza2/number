@@ -3,9 +3,10 @@
 
 #include <stdbool.h>
 
-#include "struct.h"
+#include "../../mods/macros/struct.h"
+#include "../../mods/macros/U64.h"
 
-void chunk_pool_clean();
+PLACEHOLDER(num);
 
 void num_display_dec(num_p num);
 void num_display_opts(num_p num, char *tag, bool length, bool full);

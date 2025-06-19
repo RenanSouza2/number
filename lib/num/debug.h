@@ -2,6 +2,7 @@
 #define __NUM_DEBUG_H__
 
 #include "header.h"
+#include "struct.h"
 
 typedef __uint128_t uint128_t;
 
