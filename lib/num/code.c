@@ -234,12 +234,12 @@ void num_display(num_p num)
     num_display_opts(num, NULL, true, false);
 }
 
-// void num_display_tag(char *tag, num_t num)
-// {
-//     CLU_HANDLER_IS_SAFE(num.head);
-//
-//     num_display_opts(num, tag, true, false);
-// }
+void num_display_tag(char *tag, num_p num)
+{
+    CLU_HANDLER_IS_SAFE(num);
+
+    num_display_opts(num, tag, true, false);
+}
 
 void num_display_full(char *tag, num_p num)
 {
