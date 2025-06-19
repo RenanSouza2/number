@@ -30,9 +30,9 @@ uint64_t altutime()
 // }
 
 
-num_t num_generate(uint64_t max, uint64_t salt)
+num_p num_generate(uint64_t max, uint64_t salt)
 {
-    num_t num = num_wrap(2);
+    num_p num = num_wrap(2);
     for(uint64_t i=0; i<max; i++)
     {
         // printf("\n%lu", i);
@@ -79,8 +79,8 @@ num_t num_generate(uint64_t max, uint64_t salt)
 void time_1(uint64_t begin, uint64_t end)
 {
     assert(begin);
-    num_t num_1 = num_generate(begin, 1);
-    num_t num_2 = num_generate(begin - 1, 2);
+    num_p num_1 = num_generate(begin, 1);
+    num_p num_2 = num_generate(begin - 1, 2);
     for(uint64_t i=begin; i<end; i++)
     {
         printf("\n" U64P() "", i);
@@ -97,11 +97,11 @@ void time_1(uint64_t begin, uint64_t end)
         end = altutime();
         printf("\t%10.3f", (end - begin) / 1e3);
 
-        num_t num_1_copy = num_copy(num_1);
-        num_t num_2_copy = num_copy(num_2);
+        num_p num_1_copy = num_copy(num_1);
+        num_p num_2_copy = num_copy(num_2);
 
         begin = altutime();
-        num_t num = num_div(num_1_copy, num_2_copy);
+        num_p num = num_div(num_1_copy, num_2_copy);
         end = altutime();
         printf("\t%10.3f", (end - begin) / 1e3);
 
