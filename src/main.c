@@ -16,12 +16,12 @@
 
 
 
-// uint64_t altutime()
-// {
-//     struct timespec time;
-//     clock_gettime(CLOCK_MONOTONIC, &time);
-//     return time.tv_sec * 1e3 + time.tv_nsec / 1e6;
-// }
+uint64_t altutime()
+{
+    struct timespec time;
+    clock_gettime(CLOCK_MONOTONIC, &time);
+    return time.tv_sec * 1e3 + time.tv_nsec / 1e6;
+}
 
 // int64_t get_arg(int argc, char** argv)
 // {
@@ -30,21 +30,21 @@
 // }
 
 
-// num_t num_generate(uint64_t max, uint64_t salt)
-// {
-//     num_t num = num_wrap(2);
-//     for(uint64_t i=0; i<max; i++)
-//     {
-//         // printf("\n%lu", i);
+num_t num_generate(uint64_t max, uint64_t salt)
+{
+    num_t num = num_wrap(2);
+    for(uint64_t i=0; i<max; i++)
+    {
+        // printf("\n%lu", i);
 
-//         // uint64_t begin = altutime();
-//         num = num_add(num, num_wrap(salt));
-//         num = num_sqr(num);
-//         // uint64_t end = altutime();
-//         // printf("\t%10.3f", (end - begin) / 1e3);
-//     }
-//     return num;
-// }
+        // uint64_t begin = altutime();
+        num = num_add(num, num_wrap(salt));
+        num = num_sqr(num);
+        // uint64_t end = altutime();
+        // printf("\t%10.3f", (end - begin) / 1e3);
+    }
+    return num;
+}
 
 // num_t num_generate_2(uint64_t index)
 // {
@@ -76,40 +76,40 @@
 
 
 
-// void time_1(uint64_t begin, uint64_t end)
-// {
-//     assert(begin);
-//     num_t num_1 = num_generate(begin, 1);
-//     num_t num_2 = num_generate(begin - 1, 2);
-//     for(uint64_t i=begin; i<end; i++)
-//     {
-//         printf("\n" U64P() "", i);
+void time_1(uint64_t begin, uint64_t end)
+{
+    assert(begin);
+    num_t num_1 = num_generate(begin, 1);
+    num_t num_2 = num_generate(begin - 1, 2);
+    for(uint64_t i=begin; i<end; i++)
+    {
+        printf("\n" U64P() "", i);
 
-//         uint64_t begin = altutime();
-//         num_1 = num_add(num_1, num_wrap(1));
-//         num_1 = num_sqr(num_1);
-//         uint64_t end = altutime();
-//         printf("\t%10.3f", (end - begin) / 1e3);
+        uint64_t begin = altutime();
+        num_1 = num_add(num_1, num_wrap(1));
+        num_1 = num_sqr(num_1);
+        uint64_t end = altutime();
+        printf("\t%10.3f", (end - begin) / 1e3);
 
-//         begin = altutime();
-//         num_2 = num_add(num_2, num_wrap(2));
-//         num_2 = num_sqr(num_2);
-//         end = altutime();
-//         printf("\t%10.3f", (end - begin) / 1e3);
+        begin = altutime();
+        num_2 = num_add(num_2, num_wrap(2));
+        num_2 = num_sqr(num_2);
+        end = altutime();
+        printf("\t%10.3f", (end - begin) / 1e3);
 
-//         num_t num_1_copy = num_copy(num_1);
-//         num_t num_2_copy = num_copy(num_2);
+        num_t num_1_copy = num_copy(num_1);
+        num_t num_2_copy = num_copy(num_2);
 
-//         begin = altutime();
-//         num_t num = num_div(num_1_copy, num_2_copy);
-//         end = altutime();
-//         printf("\t%10.3f", (end - begin) / 1e3);
+        begin = altutime();
+        num_t num = num_div(num_1_copy, num_2_copy);
+        end = altutime();
+        printf("\t%10.3f", (end - begin) / 1e3);
 
-//         num_free(num);
-//     }
-//     num_free(num_1);
-//     num_free(num_2);
-// }
+        num_free(num);
+    }
+    num_free(num_1);
+    num_free(num_2);
+}
 
 // void time_2(int argc, char** argv, uint64_t max)
 // {
@@ -622,7 +622,7 @@ int main()
     srand(time(NULL));
 
     // num_generate(21, 2);
-    // time_1(14, 21);
+    time_1(14, 21);
     // time_2(argc, argv, 19);
     // fibonacci();
     // fibonacci_2(16, 23);

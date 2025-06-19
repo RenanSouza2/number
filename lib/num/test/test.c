@@ -575,9 +575,9 @@ void test_num_normalize(bool show)
 
 
 
-// void test_num_wrap(bool show)
-// {
-//     TEST_FN_OPEN
+void test_num_wrap(bool show)
+{
+    TEST_FN_OPEN
 
     #define TEST_NUM_WRAP(TAG, NUM, ...)            \
     {                                               \
@@ -589,14 +589,14 @@ void test_num_normalize(bool show)
         TEST_CASE_CLOSE                             \
     }
 
-//     TEST_NUM_WRAP(1, 0, 0);
-//     TEST_NUM_WRAP(2, 2, 1, 2);
-//     TEST_NUM_WRAP(3, UINT64_MAX, 1, UINT64_MAX);
+    TEST_NUM_WRAP(1, 0, 0);
+    TEST_NUM_WRAP(2, 2, 1, 2);
+    TEST_NUM_WRAP(3, UINT64_MAX, 1, UINT64_MAX);
 
-//     #undef TEST_NUM_WRAP
+    #undef TEST_NUM_WRAP
 
-//     TEST_FN_CLOSE
-// }
+    TEST_FN_CLOSE
+}
 
 // void test_num_wrap_dec(bool show)
 // {
@@ -1982,7 +1982,7 @@ void test_num()
     test_num_normalize(show);
 //     test_num_break(show);
 
-//     test_num_wrap(show);
+    test_num_wrap(show);
 //     test_num_wrap_dec(show);
 //     test_num_wrap_hex(show);
 //     test_num_wrap_str(show);

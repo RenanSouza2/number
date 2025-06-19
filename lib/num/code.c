@@ -215,9 +215,9 @@ void num_display_opts(num_t num, char *tag, bool length, bool full)
         return;
     }
 
-    uint64_t max = full ? 
-        num.count : 
-        num.count > 4 ? 
+    uint64_t max = full ?
+        num.count :
+        num.count > 4 ?
             4 : num.count;
 
     for(uint64_t i=0; i<max; i++)
@@ -400,13 +400,12 @@ num_t num_head_grow(num_t num, uint64_t count) // TODO test
     if(count == 0)
         return num;
 
-    printf("\n")
-    
     uint64_t size = num.count + count;
     num_t num_res = num_create(size);
     memcpy(&num_res.chunk[count], num.chunk, num.count * sizeof(uint64_t));
 
-    return num;
+    num_free(num);
+    return num_res;
 }
 
 num_t num_head_trim(num_t num, uint64_t count) // TODO test
@@ -416,7 +415,7 @@ num_t num_head_trim(num_t num, uint64_t count) // TODO test
 
     if(count == 0)
         return num;
-    
+
     if(count >= num.count)
     {
         num_free(num);
@@ -427,7 +426,8 @@ num_t num_head_trim(num_t num, uint64_t count) // TODO test
     num_t num_res = num_create(size);
     memcpy(num_res.chunk, &num.chunk[count], size * sizeof(uint64_t));
 
-    return num;
+    num_free(num);
+    return num_res;
 }
 
 // void num_break(num_p out_num_hi, num_p out_num_lo, num_t num, uint64_t count)
@@ -467,14 +467,14 @@ num_t num_head_trim(num_t num, uint64_t count) // TODO test
 
 
 
-// num_t num_wrap(uint64_t value)
-// {
-//     if(value == 0)
-//         return num_create(0, NULL, NULL);
-//
-//     chunk_p chunk = chunk_create(value, NULL, NULL);
-//     return num_create(1, chunk,  chunk);
-// }
+num_t num_wrap(uint64_t value)
+{
+    if(value == 0)
+        return num_create(0);
+
+    num_t num = num_create(1);
+    return num_chunk_set(num, 0, value);
+}
 
 // num_t num_wrap_dec(char str[])
 // {
@@ -952,7 +952,7 @@ num_t num_mul(num_t num_1, num_t num_2)
     num_t num_res = num_create(0);
     for(uint64_t pos_2=0; pos_2<num_2.count; pos_2++)
         num_res = num_add_mul_uint_offset(num_res, pos_2, num_1, num_2.chunk[pos_2]);
-    
+
     num_free(num_1);
     num_free(num_2);
     return num_res;
