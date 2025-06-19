@@ -309,6 +309,18 @@ num_t num_chunk_set(num_t num, uint64_t pos, uint64_t value)
     return num;
 }
 
+num_t num_cut(num_t num, uint64_t pos)  // TODO TEST
+{
+    assert(num.count >= pos);
+    CLU_HANDLER_REGISTER(&num.chunk[pos]);
+    return (num_t)
+    {
+        .size = num.size - pos,
+        .count = num.count - pos,
+        .chunk = &num.chunk[pos]
+    };
+}
+
 // num_t num_insert_tail(num_t num, uint64_t value)
 // {
 //     CLU_NUM_IS_SAFE(num);
@@ -590,6 +602,7 @@ num_t num_add_mul_uint_offset(num_t num_res, uint64_t pos_res, num_t num, uint64
 
     return num_res;
 }
+
 
 
 // num_t num_shl_uint(num_t num, uint64_t bits)
@@ -933,39 +946,38 @@ num_t num_mul(num_t num_1, num_t num_2)
     return num_res;
 }
 
-// num_t num_sqr(num_t num)
-// {
-//     num_t num_res = num_create(0, NULL, NULL);
-//     if(num.count == 0)
-//         return num_res;
-//
-//     chunk_p chunk = num.head;
-//     chunk_p chunk_res = NULL;
-//     while(chunk)
-//     {
-//         uint64_t value = chunk->value;
-//         chunk = chunk->next;
-//
-//         uint128_t u = MUL(value, value);
-//         chunk_res = num_add_uint_offset(&num_res, chunk_res, LOW(u));
-//         chunk_res = num_denormalize(&num_res, chunk_res);
-//         chunk_res = chunk_res->next;
-//         chunk_res = num_add_uint_offset(&num_res, chunk_res, HIGH(u));
-//
-//         chunk_res = num_add_mul_uint_offset(&num_res, chunk_res, chunk, value << 1);
-//         chunk_res = num_denormalize(&num_res, chunk_res);
-//         chunk_res = chunk_res->next;
-//
-//         if(value >= 0x8000000000000000)
-//             chunk_res = num_add_offset(&num_res, chunk_res, chunk);
-//     }
-//     num_normalize(&num_res);
-//
-//     num_free(num);
-//     return num_res;
-// }
+num_t num_sqr(num_t num)
+{
+    num_t num_res = num_create(0);
+    if(num.count == 0)
+    {
+        num_free(num);
+        return num_res;
+    }
 
-// num_t num_exp(num_t num, uint64_t value) // TODO test
+    for(uint64_t pos=0; pos<num.count; pos++)
+    {
+        uint64_t value = num.chunk[pos];
+
+        uint128_t u = MUL(value, value);
+        num_res = num_add_uint_offset(num_res, 2 * pos, LOW(u));
+        num_res = num_add_uint_offset(num_res, 2 * pos + 1, HIGH(u));
+
+        num_t num_tmp = num_cut(num, pos + 1);
+        num_res = num_add_mul_uint_offset(num_res, 2 * pos + 1, num_tmp, value << 1);
+
+        if(value >= 0x8000000000000000)
+            num_res = num_add_offset(num_res, 2 * pos + 2, num_tmp);
+
+        CLU_HANDLER_UNREGISTER(num_tmp.chunk);
+    }
+    num_normalize(&num_res);
+
+    num_free(num);
+    return num_res;
+}
+
+// num_t num_exp(num_t num, uint64_t value) // TODO TEST
 // {
 //     CLU_HANDLER_IS_SAFE(num.head);
 //
