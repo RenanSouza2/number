@@ -622,7 +622,7 @@ int main()
     srand(time(NULL));
 
     // num_generate(21, 2);
-    time_1(14, 21);
+    time_1(14, 23);
     // time_2(argc, argv, 19);
     // fibonacci();
     // fibonacci_2(16, 23);

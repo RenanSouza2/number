@@ -30,7 +30,7 @@ bool num_immed(num_t num, uint64_t n, ...);
 
 uint64_t uint_from_char(char c);
 
-num_t num_create(uint64_t count);
+num_t num_create(uint64_t size, uint64_t count);
 num_t num_expand_to(num_t num, uint64_t target);
 num_t num_expand(num_t num);
 uint64_t num_chunk_get(num_t num, uint64_t pos);
@@ -47,7 +47,13 @@ num_t num_wrap_hex(char str[]);
 int64_t num_cmp_offset(num_t num_1, uint64_t pos_1, num_t num_2);
 num_t num_add_uint_offset(num_t num, uint64_t pos, uint64_t value);
 num_t num_sub_uint_offset(num_t num, uint64_t pos, uint64_t value);
-num_t num_cmp_mul_uint_offset(num_t num_1, uint64_t pos_1, num_t num_2, uint64_t r);
+num_t num_cmp_mul_uint_offset(
+    num_t num_res,
+    num_t num_1,
+    uint64_t pos_1,
+    num_t num_2,
+    uint64_t r
+);
 
 num_t num_shl_uint(num_t num, uint64_t bits);
 num_t num_shr_uint(num_t num, uint64_t bits);

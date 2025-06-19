@@ -173,25 +173,35 @@ void test_num_create(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_NUM_CREATE(TAG, IN, SIZE, COUNT)   \
-    {                                               \
-        TEST_CASE_OPEN(TAG)                         \
-        {                                           \
-            num_t num = num_create(IN);             \
-            assert(uint64(num.size, SIZE));         \
-            assert(uint64(num.count, COUNT));       \
-            assert(num.chunk != NULL);              \
-            num_free(num);                          \
-        }                                           \
-        TEST_CASE_CLOSE                             \
+    #define TEST_NUM_CREATE(TAG, SIZE, COUNT, SIZE_RES) \
+    {                                                   \
+        TEST_CASE_OPEN(TAG)                             \
+        {                                               \
+            num_t num = num_create(SIZE, COUNT);        \
+            assert(uint64(num.size, SIZE_RES));         \
+            assert(uint64(num.count, COUNT));           \
+            assert(num.chunk != NULL);                  \
+            num_free(num);                              \
+        }                                               \
+        TEST_CASE_CLOSE                                 \
     }
 
-    TEST_NUM_CREATE(1, 0, 2, 0);
-    TEST_NUM_CREATE(2, 1, 2, 1);
+    TEST_NUM_CREATE(1, 0, 0, 1);
+    TEST_NUM_CREATE(2, 1, 1, 1);
     TEST_NUM_CREATE(3, 2, 2, 2);
-    TEST_NUM_CREATE(4, 3, 3, 3);
+    TEST_NUM_CREATE(4, 3, 2, 3);
 
     #undef TEST_NUM_CREATE
+
+    TEST_CASE_OPEN(5)
+    {
+        TEST_REVERT_OPEN
+        {
+            num_create(0, 1);
+        }
+        TEST_REVERT_CLOSE
+    }
+    TEST_CASE_CLOSE
 
     TEST_FN_CLOSE
 }
@@ -212,9 +222,9 @@ void test_num_expand_to(bool show)
         TEST_CASE_CLOSE                                     \
     }
 
-    TEST_NUM_EXPAND_TO(1, (0), 2, 3, (0));
-    TEST_NUM_EXPAND_TO(1, (2, 1, 2), 2, 3, (2, 1, 2));
-    TEST_NUM_EXPAND_TO(1, (2, 1, 2), 10, 15, (2, 1, 2));
+    TEST_NUM_EXPAND_TO(1, (0), 2, 4, (0));
+    TEST_NUM_EXPAND_TO(1, (2, 1, 2), 2, 4, (2, 1, 2));
+    TEST_NUM_EXPAND_TO(1, (2, 1, 2), 10, 20, (2, 1, 2));
 
     #undef TEST_NUM_EXPAND_TO
 
@@ -230,6 +240,7 @@ void test_num_chunk_get(bool show)
         TEST_CASE_OPEN(TAG)                             \
         {                                               \
             num_t num = num_create_immed(ARG_OPEN NUM); \
+            num_display(num);   \
             uint64_t value = num_chunk_get(num, POS);   \
             assert(uint64(value, RES));                 \
             num_free(num);                              \
@@ -263,10 +274,11 @@ void test_num_chunk_set(bool show)
         TEST_CASE_CLOSE                                     \
     }
 
-    TEST_NUM_CHUNK_SET(1, (0), 0, 0, (1, 0));
+    TEST_NUM_CHUNK_SET(1, (0), 0, 0, (0));
     TEST_NUM_CHUNK_SET(2, (0), 0, 1, (1, 1));
     TEST_NUM_CHUNK_SET(3, (1, 1), 0, 2, (1, 2));
     TEST_NUM_CHUNK_SET(4, (1, 1), 5, 2, (6, 2, 0, 0, 0, 0, 1));
+    TEST_NUM_CHUNK_SET(5, (1, 1), 5, 0, (1, 1));
 
     #undef TEST_NUM_CHUNK_SET
 
@@ -1144,6 +1156,7 @@ void test_num_sub_offset(bool show)
             num_t num_2 = num_create_immed(ARG_OPEN NUM_2);     \
             num_1 = num_sub_offset(num_1, POS, num_2);          \
             assert(num_immed(num_1, ARG_OPEN RES));             \
+            num_free(num_2);                                    \
         }                                                       \
         TEST_CASE_CLOSE                                         \
     }
@@ -1185,18 +1198,19 @@ void test_num_cmp_mul_uint(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_NUM_CMP_MUL_UINT_OFFSET(TAG, NUM_1, NUM_2, VALUE, POS, RES)    \
-    {                                                                           \
-        TEST_CASE_OPEN(TAG)                                                     \
-        {                                                                       \
-            num_t num_1 = num_create_immed(ARG_OPEN NUM_1);                     \
-            num_t num_2 = num_create_immed(ARG_OPEN NUM_2);                     \
-            num_t num_res = num_cmp_mul_uint_offset(num_1, POS, num_2, VALUE);  \
-            assert(num_immed(num_res, ARG_OPEN RES));                           \
-            num_free(num_1);                                                    \
-            num_free(num_2);                                                    \
-        }                                                                       \
-        TEST_CASE_CLOSE                                                         \
+    #define TEST_NUM_CMP_MUL_UINT_OFFSET(TAG, NUM_1, NUM_2, VALUE, POS, RES)        \
+    {                                                                               \
+        TEST_CASE_OPEN(TAG)                                                         \
+        {                                                                           \
+            num_t num_1 = num_create_immed(ARG_OPEN NUM_1);                         \
+            num_t num_2 = num_create_immed(ARG_OPEN NUM_2);                         \
+            num_t num_res = num_create(0, 0);                                       \
+            num_res = num_cmp_mul_uint_offset(num_res, num_1, POS, num_2, VALUE);   \
+            assert(num_immed(num_res, ARG_OPEN RES));                               \
+            num_free(num_1);                                                        \
+            num_free(num_2);                                                        \
+        }                                                                           \
+        TEST_CASE_CLOSE                                                             \
     }
 
     TEST_NUM_CMP_MUL_UINT_OFFSET(1,

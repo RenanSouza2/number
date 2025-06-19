@@ -15,7 +15,7 @@
 
 num_t num_create_variadic(uint64_t n, va_list *args)
 {
-    num_t num = num_create(n);
+    num_t num = num_create(n, n);
     for(uint64_t i=0; i<n; i++)
         num.chunk[n-1-i] = va_arg(*args, uint64_t);
 
@@ -250,9 +250,10 @@ void num_display_full(char *tag, num_t num)
 
 
 
-num_t num_create(uint64_t count)
+num_t num_create(uint64_t size, uint64_t count)
 {
-    uint64_t size = count < 2 ? 2 : count;
+    assert(size >= count);
+    size = size ? size : 1;
     chunk_p chunk = calloc(size, sizeof(uint64_t));
     assert(chunk);
 
@@ -270,7 +271,7 @@ num_t num_expand_to(num_t num, uint64_t target)
 
     assert(target >= num.size);
 
-    uint64_t size = target * 3 / 2;
+    uint64_t size = target * 2;
     chunk_p chunk = realloc(num.chunk, size * sizeof(uint64_t));
     assert(chunk);
 
@@ -301,13 +302,11 @@ num_t num_chunk_set(num_t num, uint64_t pos, uint64_t value)
 {
     CLU_NUM_IS_SAFE(num);
 
-    if(pos >= num.size)
-    {
-        if(value == 0)
-            return num;
+    if(pos >= num.count && value == 0)
+        return num;
 
+    if(pos >= num.size)
         num = num_expand_to(num, pos);
-    }
 
     num.chunk[pos] = value;
     num.count = pos >= num.count ? pos + 1 : num.count;
@@ -324,6 +323,13 @@ num_t num_cut(num_t num, uint64_t pos)  // TODO TEST
         .count = num.count - pos,
         .chunk = &num.chunk[pos]
     };
+}
+
+num_t num_clean(num_t num)
+{
+    memset(num.chunk, 0, num.size * sizeof(uint64_t));
+    num.count = 0;
+    return num;
 }
 
 // num_t num_insert_tail(num_t num, uint64_t value)
@@ -401,7 +407,7 @@ num_t num_head_grow(num_t num, uint64_t count) // TODO test
         return num;
 
     uint64_t size = num.count + count;
-    num_t num_res = num_create(size);
+    num_t num_res = num_create(size, size);
     memcpy(&num_res.chunk[count], num.chunk, num.count * sizeof(uint64_t));
 
     num_free(num);
@@ -419,11 +425,11 @@ num_t num_head_trim(num_t num, uint64_t count) // TODO test
     if(count >= num.count)
     {
         num_free(num);
-        return num_create(0);
+        return num_create(0, 0);
     }
 
     uint64_t size = num.count - count;
-    num_t num_res = num_create(size);
+    num_t num_res = num_create(size, size);
     memcpy(num_res.chunk, &num.chunk[count], size * sizeof(uint64_t));
 
     num_free(num);
@@ -470,9 +476,9 @@ num_t num_head_trim(num_t num, uint64_t count) // TODO test
 num_t num_wrap(uint64_t value)
 {
     if(value == 0)
-        return num_create(0);
+        return num_create(0, 0);
 
-    num_t num = num_create(1);
+    num_t num = num_create(1, 1);
     return num_chunk_set(num, 0, value);
 }
 
@@ -557,7 +563,7 @@ num_t num_copy(num_t num) // TODO TEST
 {
     CLU_NUM_IS_SAFE(num);
 
-    num_t num_res = num_create(num.count);
+    num_t num_res = num_create(num.count, num.count);
     memcpy(num_res.chunk, num.chunk, num.count * sizeof(uint64_t));
 
     return num_res;
@@ -681,7 +687,7 @@ num_t num_mul_uint(num_t num, uint64_t value)
 {
     CLU_NUM_IS_SAFE(num);
 
-    num_t num_res = num_create(0);
+    num_t num_res = num_create(num.count, 0);
     return num_add_mul_uint(num_res, num, value);
 }
 
@@ -725,7 +731,10 @@ num_t num_add_offset(num_t num_1, uint64_t pos_1, num_t num_2) // TODO TEST
     return num_1;
 }
 
-/* returns NUM_RES in num_1, may be unormal */
+/*
+keeps NUM2,
+NUM_RES may not be normalized
+*/
 num_t num_sub_offset(num_t num_1, uint64_t pos_1, num_t num_2)
 {
     CLU_NUM_IS_SAFE(num_1);
@@ -733,8 +742,6 @@ num_t num_sub_offset(num_t num_1, uint64_t pos_1, num_t num_2)
 
     for(uint64_t pos_2 = 0; pos_2<num_2.count; pos_2++)
         num_1 = num_sub_uint_offset(num_1, pos_1 + pos_2, num_2.chunk[pos_2]);
-
-    num_free(num_2);
 
     while(num_1.count > pos_1 && num_normalize(&num_1));
 
@@ -747,27 +754,35 @@ returns 0 otherwise
 R cannot be zero
 keeps NUM_1 and NUM_2
 */
-num_t num_cmp_mul_uint_offset(num_t num_1, uint64_t pos_1, num_t num_2, uint64_t r)
+num_t num_cmp_mul_uint_offset(
+    num_t num_res,
+    num_t num_1,
+    uint64_t pos_1,
+    num_t num_2,
+    uint64_t r
+)
 {
+    CLU_NUM_IS_SAFE(num_res);
     CLU_NUM_IS_SAFE(num_1);
     CLU_NUM_IS_SAFE(num_2);
 
-    num_t num_aux = num_create(0);
+    // num_res = num_clean(num_res);
+    num_res.count = num_2.count;
     for(uint64_t pos_2=num_2.count-1; pos_2!=UINT64_MAX; pos_2--)
     {
         uint128_t u = MUL(num_2.chunk[pos_2], r);
 
-        num_aux = num_add_uint_offset(num_aux, pos_2 + 1, HIGH(u));
-        num_aux = num_add_uint_offset(num_aux, pos_2, LOW(u));
+        num_res = num_add_uint_offset(num_res, pos_2 + 1, HIGH(u));
+        num_res = num_add_uint_offset(num_res, pos_2, LOW(u));
 
-        if(num_cmp_offset(num_1, pos_1, num_aux) < 0)
+        if(num_cmp_offset(num_1, pos_1, num_res) < 0)
         {
-            num_free(num_aux);
-            return num_create(0);
+            num_res.count = 0;
+            return num_res;
         }
     }
 
-    return num_aux;
+    return num_res;
 }
 
 /* RES is quocient NUM_1 is remainder */
@@ -777,7 +792,7 @@ num_t num_div_mod_sigle(num_p num_1, num_t num_2)
     CLU_NUM_IS_SAFE(num_2);
 
     uint64_t value_2 = num_2.chunk[0];
-    num_t num_q = num_create(0);
+    num_t num_q = num_create(num_1->count, 0);
     for(uint64_t pos_q = num_1->count - 1; pos_q != UINT64_MAX; pos_q--)
     {
         if(num_normalize(num_1))
@@ -793,12 +808,12 @@ num_t num_div_mod_sigle(num_p num_1, num_t num_2)
         uint64_t r = value_1 / value_2;
         num_t num_aux = num_mul_uint(num_2, r);
         *num_1 = num_sub_offset(*num_1, pos_q, num_aux);
+        num_free(num_aux);
 
         num_q = num_chunk_set(num_q, pos_q, r);
     }
     num_free(num_2);
 
-    num_normalize(&num_q);
     return num_q;
 }
 
@@ -808,7 +823,8 @@ num_t num_div_mod_general(num_p num_1, num_t num_2)
     CLU_NUM_IS_SAFE(*num_1);
     CLU_NUM_IS_SAFE(num_2);
 
-    num_t num_q = num_create(0);
+    num_t num_q = num_create(num_1->count - num_2.count + 1, 0);
+    num_t num_aux = num_create(num_2.count+1, 0);
     uint128_t val_2 = num_2.chunk[num_2.count-1];
     for(uint64_t pos_q = num_1->count - num_2.count; pos_q != UINT64_MAX; pos_q--)
     {
@@ -828,7 +844,7 @@ num_t num_div_mod_general(num_p num_1, num_t num_2)
             uint128_t tmp = val_1 / val_2;
             uint64_t r_aux = UINT64_MAX < tmp ? UINT64_MAX : tmp;
 
-            num_t num_aux = num_cmp_mul_uint_offset(*num_1, pos_q, num_2, r_aux);
+            num_aux = num_cmp_mul_uint_offset(num_aux, *num_1, pos_q, num_2, r_aux);
             if(num_aux.count == 0)
             {
                 num_free(num_aux);
@@ -843,8 +859,8 @@ num_t num_div_mod_general(num_p num_1, num_t num_2)
         num_q = num_chunk_set(num_q, pos_q, r);
     }
     num_free(num_2);
+    num_free(num_aux);
 
-    num_normalize(&num_q);
     return num_q;
 }
 
@@ -859,7 +875,7 @@ uint64_t num_div_mod_unajusted(num_p out_num_q, num_p out_num_r, num_t num_1, nu
     if(num_cmp(num_1, num_2) < 0)
     {
         num_free(num_2);
-        *out_num_q = num_create(0);
+        *out_num_q = num_create(0, 0);
         *out_num_r = num_1;
         return 0;
     }
@@ -941,7 +957,9 @@ num_t num_sub(num_t num_1, num_t num_2)
     CLU_NUM_IS_SAFE(num_1);
     CLU_NUM_IS_SAFE(num_2);
 
-    return num_sub_offset(num_1, 0, num_2);
+    num_1 =  num_sub_offset(num_1, 0, num_2);
+    num_free(num_2);
+    return num_1;
 }
 
 num_t num_mul(num_t num_1, num_t num_2)
@@ -949,7 +967,7 @@ num_t num_mul(num_t num_1, num_t num_2)
     CLU_NUM_IS_SAFE(num_1);
     CLU_NUM_IS_SAFE(num_2);
 
-    num_t num_res = num_create(0);
+    num_t num_res = num_create(num_1.count + num_2.count, 0);
     for(uint64_t pos_2=0; pos_2<num_2.count; pos_2++)
         num_res = num_add_mul_uint_offset(num_res, pos_2, num_1, num_2.chunk[pos_2]);
 
@@ -960,7 +978,7 @@ num_t num_mul(num_t num_1, num_t num_2)
 
 num_t num_sqr(num_t num)
 {
-    num_t num_res = num_create(0);
+    num_t num_res = num_create(2 * num.count, 0);
     if(num.count == 0)
     {
         num_free(num);
