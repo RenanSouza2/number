@@ -383,7 +383,7 @@
 //     {
 //         i_p_2 = float_num_add(i_p_2, float_num_copy(float_4));
 //         i_p_2 = float_num_add(i_p_2, float_num_copy(i_m_8));
-    
+
 //         i_m_8 = float_num_add(i_m_8, float_num_copy(float_8));
 
 //         flt = float_num_mul(flt, float_num_copy(i_p_2));
@@ -405,7 +405,7 @@
 // void float_num_pi_2(int argc, char** argv)
 // {
 //     uint64_t size = get_arg(argc, argv);
- 
+
 //     float_num_t flt = float_num_wrap(3, size);
 //     float_num_t flt_a = float_num_wrap(6, size);
 //     float_num_t flt_1_4 = float_num_div(
@@ -428,18 +428,18 @@
 //         flt_tmp = float_num_div(float_num_copy(flt_m_3_8), flt_tmp);
 //         flt_tmp = float_num_add(float_num_copy(flt_1_4), flt_tmp);
 //         flt_a = float_num_mul(flt_a, flt_tmp);
-        
+
 //         flt_tmp = float_num_wrap(2*i + 1, size);
 //         flt_tmp = float_num_div(float_num_copy(flt_1), flt_tmp);
 //         flt_tmp = float_num_add(flt_tmp, float_num_copy(flt_m_1_2));
-        
+
 //         flt_tmp = float_num_mul(flt_tmp, float_num_copy(flt_a));
 //         if(!float_num_safe_add(flt, flt_tmp))
 //         {
 //             float_num_free(flt_tmp);
 //             break;
 //         }
-        
+
 //         flt = float_num_add(flt, flt_tmp);
 
 //         if(i%1000 == 0)
@@ -464,7 +464,7 @@
 // void fix_num_pi_2()
 // {
 //     uint64_t size = 500;
-    
+
 //     fix_num_t fix = fix_num_wrap(3, size);
 //     fix_num_t fix_a = fix_num_wrap(6, size);
 //     fix_num_t fix_1_4 = fix_num_div(
@@ -513,7 +513,7 @@
 // void float_lim()
 // {
 //     uint64_t size = 2;
-    
+
 //     float_num_t flt_a = float_num_wrap(1, size);
 //     float_num_t flt_3_2 = float_num_div(
 //         float_num_wrap(3, size),
@@ -639,7 +639,7 @@ int main()
     //     float_num_wrap(1234, size),
     //     float_num_wrap(100000000000000000, size)
     // );
-    
+
     // float_num_display_dec("flt", flt);
     // flt = float_num_mul(flt, float_num_wrap(100000000000000000, size));
     // flt = float_num_sub(flt, float_num_wrap(1234, size));

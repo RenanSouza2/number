@@ -291,7 +291,7 @@ void test_float_num_sub(bool show)
         (0, 1, POSITIVE, 1, 1),
         (0, 1, NEGATIVE, 1, 1)
     );
-    
+
     #undef TEST_FLOAT_NUM_SUB
 
     TEST_FN_CLOSE

@@ -342,7 +342,7 @@
 //         case ZERO: return 0;
 //         case POSITIVE: return 1;
 //     }
-    
+
 //     exit(EXIT_FAILURE);
 // }
 
