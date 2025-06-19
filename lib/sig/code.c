@@ -123,9 +123,13 @@ sig_num_t sig_num_create(uint64_t signal, num_p num)
     CLU_HANDLER_IS_SAFE(num);
 
     if(num_is_zero(num))
+    {
         signal = ZERO;
+    }
     else
+    {
         assert(signal != ZERO)
+    }
 
     return (sig_num_t)
     {
