@@ -137,10 +137,6 @@ bool num_immed(num_t num, uint64_t n, ...)
 
 
 
-// #define COALESCE(HANDLER_A, HANDLER_B) ((HANDLER_A) ? (HANDLER_A) : (HANDLER_B));
-// #define MAX(A, B) (((A) > (B)) : (A) ? (B))
-
-
 uint64_t uint_from_char(char c)
 {
     switch (c)
@@ -306,7 +302,12 @@ num_t num_chunk_set(num_t num, uint64_t pos, uint64_t value)
     CLU_NUM_IS_SAFE(num);
 
     if(pos >= num.size)
+    {
+        if(value == 0)
+            return num;
+
         num = num_expand_to(num, pos);
+    }
 
     num.chunk[pos] = value;
     num.count = pos >= num.count ? pos + 1 : num.count;
@@ -391,27 +392,43 @@ bool num_normalize(num_p num)
     return true;
 }
 
-// num_t num_head_grow(num_t num, uint64_t count) // TODO test
-// {
-//     if(num.count == 0)
-//         return num;
-//
-//     for(uint64_t i=0; i<count; i++)
-//         num_insert_head(&num, 0);
-//
-//     return num;
-// }
+num_t num_head_grow(num_t num, uint64_t count) // TODO test
+{
+    if(num.count == 0)
+        return num;
 
-// num_t num_head_trim(num_t num, uint64_t count) // TODO test
-// {
-//     if(num.count == 0)
-//         return num;
-//
-//     for(uint64_t i=0; i<count && num.count; i++)
-//         num = num_remove_head(num);
-//
-//     return num;
-// }
+    if(count == 0)
+        return num;
+
+    printf("\n")
+    
+    uint64_t size = num.count + count;
+    num_t num_res = num_create(size);
+    memcpy(&num_res.chunk[count], num.chunk, num.count * sizeof(uint64_t));
+
+    return num;
+}
+
+num_t num_head_trim(num_t num, uint64_t count) // TODO test
+{
+    if(num.count == 0)
+        return num;
+
+    if(count == 0)
+        return num;
+    
+    if(count >= num.count)
+    {
+        num_free(num);
+        return num_create(0);
+    }
+
+    uint64_t size = num.count - count;
+    num_t num_res = num_create(size);
+    memcpy(num_res.chunk, &num.chunk[count], size * sizeof(uint64_t));
+
+    return num;
+}
 
 // void num_break(num_p out_num_hi, num_p out_num_lo, num_t num, uint64_t count)
 // {
@@ -536,16 +553,15 @@ bool num_normalize(num_p num)
 //     return value;
 // }
 
-// num_t num_copy(num_t num)
-// {
-//     CLU_HANDLER_IS_SAFE(num.head);
-//
-//     num_t num_res = num_create(0, NULL, NULL);
-//     for(chunk_p chunk = num.head; chunk; chunk = chunk->next)
-//         num_insert_tail(&num_res, chunk->value);
-//
-//     return num_res;
-// }
+num_t num_copy(num_t num) // TODO TEST
+{
+    CLU_NUM_IS_SAFE(num);
+
+    num_t num_res = num_create(num.count);
+    memcpy(num_res.chunk, num.chunk, num.count * sizeof(uint64_t));
+
+    return num_res;
+}
 
 void num_free(num_t num)
 {
@@ -869,12 +885,12 @@ uint64_t num_div_mod_unajusted(num_p out_num_q, num_p out_num_r, num_t num_1, nu
 
 
 
-// bool num_is_zero(num_t num)
-// {
-//     CLU_HANDLER_IS_SAFE(num.head);
-//
-//     return num.count == 0;
-// }
+bool num_is_zero(num_t num)
+{
+    CLU_NUM_IS_SAFE(num);
+
+    return num.count == 0;
+}
 
 int64_t num_cmp(num_t num_1, num_t num_2) // TODO TEST
 {
@@ -886,27 +902,27 @@ int64_t num_cmp(num_t num_1, num_t num_2) // TODO TEST
 
 
 
-// num_t num_shl(num_t num, uint64_t bits)
-// {
-//     CLU_HANDLER_IS_SAFE(num.head);
-//
-//     if(num.count == 0)
-//         return num;
-//
-//     num = num_shl_uint(num, bits & 0x3f);
-//     return num_head_grow(num, bits >> 6);
-// }
+num_t num_shl(num_t num, uint64_t bits) // TODO TEST
+{
+    CLU_NUM_IS_SAFE(num);
 
-// num_t num_shr(num_t num, uint64_t bits)
-// {
-//     CLU_HANDLER_IS_SAFE(num.head);
-//
-//     if(num.count == 0)
-//         return num;
-//
-//     num = num_head_trim(num, bits >> 6);
-//     return num_shr_uint(num, bits & 0x3f);
-// }
+    if(num.count == 0)
+        return num;
+
+    num = num_shl_uint(num, bits & 0x3f);
+    return num_head_grow(num, bits >> 6);
+}
+
+num_t num_shr(num_t num, uint64_t bits) // TODO TEST
+{
+    CLU_NUM_IS_SAFE(num);
+
+    if(num.count == 0)
+        return num;
+
+    num = num_head_trim(num, bits >> 6);
+    return num_shr_uint(num, bits & 0x3f);
+}
 
 
 
@@ -1030,16 +1046,16 @@ num_t num_mod(num_t num_1, num_t num_2)
     return num_shr_uint(num_r, bits);
 }
 
-// num_t num_gcd(num_t num_1, num_t num_2)
-// {
-//     while(num_2.count == 0)
-//     {
-//         num_t num_aux = num_mod(num_1, num_copy(num_2));
-//         num_1 = num_2;
-//         num_2 = num_aux;
-//     }
-//     return(num_1);
-// }
+num_t num_gcd(num_t num_1, num_t num_2) // TODO TEST
+{
+    while(num_2.count == 0)
+    {
+        num_t num_aux = num_mod(num_1, num_copy(num_2));
+        num_1 = num_2;
+        num_2 = num_aux;
+    }
+    return(num_1);
+}
 
 
 

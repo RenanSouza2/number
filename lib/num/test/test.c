@@ -1321,9 +1321,9 @@ void test_num_cmp_mul_uint(bool show)
 
 
 
-// void test_num_is_zero(bool show)
-// {
-//     TEST_FN_OPEN
+void test_num_is_zero(bool show)
+{
+    TEST_FN_OPEN
 
     #define TEST_NUM_IS_ZERO(TAG, NUM, IS_ZERO)         \
     {                                                   \
@@ -1337,20 +1337,20 @@ void test_num_cmp_mul_uint(bool show)
         TEST_CASE_CLOSE                                 \
     }
 
-//     TEST_NUM_IS_ZERO(1, (0), true);
-//     TEST_NUM_IS_ZERO(1, (1, 1), false);
-//     TEST_NUM_IS_ZERO(1, (2, 1, 2), false);
+    TEST_NUM_IS_ZERO(1, (0), true);
+    TEST_NUM_IS_ZERO(1, (1, 1), false);
+    TEST_NUM_IS_ZERO(1, (2, 1, 2), false);
 
-//     #undef TEST_NUM_IS_ZERO
+    #undef TEST_NUM_IS_ZERO
 
-//     TEST_FN_CLOSE
-// }
+    TEST_FN_CLOSE
+}
 
 
 
-// void test_num_shl(bool show)
-// {
-//     TEST_FN_OPEN
+void test_num_shl(bool show)
+{
+    TEST_FN_OPEN
 
     #define TEST_NUM_SHL(TAG, NUM_IN, BITS, NUM_OUT)        \
     {                                                       \
@@ -1363,21 +1363,21 @@ void test_num_cmp_mul_uint(bool show)
         TEST_CASE_CLOSE                                     \
     }
 
-//     TEST_NUM_SHL(1, (0), 0, (0));
-//     TEST_NUM_SHL(2, (0), 1, (0));
-//     TEST_NUM_SHL(3, (0), 64, (0));
-//     TEST_NUM_SHL(4, (1, 1), 1, (1, 2));
-//     TEST_NUM_SHL(5, (1, 1), 64, (2, 1, 0));
-//     TEST_NUM_SHL(6, (1, 1), 65, (2, 2, 0));
+    TEST_NUM_SHL(1, (0), 0, (0));
+    TEST_NUM_SHL(2, (0), 1, (0));
+    TEST_NUM_SHL(3, (0), 64, (0));
+    TEST_NUM_SHL(4, (1, 1), 1, (1, 2));
+    TEST_NUM_SHL(5, (1, 1), 64, (2, 1, 0));
+    TEST_NUM_SHL(6, (1, 1), 65, (2, 2, 0));
 
-//     #undef TEST_NUM_SHL
+    #undef TEST_NUM_SHL
 
-//     TEST_FN_CLOSE
-// }
+    TEST_FN_CLOSE
+}
 
-// void test_num_shr(bool show)
-// {
-//     TEST_FN_OPEN
+void test_num_shr(bool show)
+{
+    TEST_FN_OPEN
 
     #define TEST_NUM_SHR(TAG, NUM_IN, BITS, NUM_OUT)        \
     {                                                       \
@@ -1390,18 +1390,18 @@ void test_num_cmp_mul_uint(bool show)
         TEST_CASE_CLOSE                                     \
     }
 
-//     TEST_NUM_SHR(1, (0), 0, (0));
-//     TEST_NUM_SHR(2, (0), 1, (0));
-//     TEST_NUM_SHR(3, (1, 1), 1, (0));
-//     TEST_NUM_SHR(4, (1, 2), 1, (1, 1));
-//     TEST_NUM_SHR(5, (2, 1, 0), 64, (1, 1));
-//     TEST_NUM_SHR(6, (2, 1, 0), 65, (0));
-//     TEST_NUM_SHR(7, (2, 2, 0), 65, (1, 1));
+    TEST_NUM_SHR(1, (0), 0, (0));
+    TEST_NUM_SHR(2, (0), 1, (0));
+    TEST_NUM_SHR(3, (1, 1), 1, (0));
+    TEST_NUM_SHR(4, (1, 2), 1, (1, 1));
+    TEST_NUM_SHR(5, (2, 1, 0), 64, (1, 1));
+    TEST_NUM_SHR(6, (2, 1, 0), 65, (0));
+    TEST_NUM_SHR(7, (2, 2, 0), 65, (1, 1));
 
-//     #undef TEST_NUM_SHR
+    #undef TEST_NUM_SHR
 
-//     TEST_FN_CLOSE
-// }
+    TEST_FN_CLOSE
+}
 
 
 
@@ -2002,10 +2002,10 @@ void test_num()
     test_num_sub_offset(show);
     test_num_cmp_mul_uint(show);
 
-//     test_num_is_zero(show);
+    test_num_is_zero(show);
 
-//     test_num_shl(show);
-//     test_num_shr(show);
+    test_num_shl(show);
+    test_num_shr(show);
 
     test_num_add(show);
     test_num_sub(show);
@@ -2016,7 +2016,7 @@ void test_num()
 //     test_num_base_to(show);
 //     test_num_base_from(show);
 
-//     TEST_ASSERT_MEM_EMPTY
+    TEST_ASSERT_MEM_EMPTY
 }
 
 
