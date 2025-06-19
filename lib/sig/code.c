@@ -7,6 +7,8 @@
 
 #include "../num/header.h"
 
+#define CLU_SIG_IS_SAFE(SIG) CLU_HANDLER_IS_SAFE((SIG).num);
+
 
 
 #ifdef DEBUG
@@ -30,6 +32,9 @@ sig_num_t sig_num_create_immed(uint64_t signal, uint64_t n, ...)
 
 bool sig_num_inner(sig_num_t sig_1, sig_num_t sig_2)
 {
+    CLU_SIG_IS_SAFE(sig_1);
+    CLU_SIG_IS_SAFE(sig_2);
+
     if(!uint64(sig_1.signal, sig_2.signal))
     {
         printf("\n\tSIG ASSERT ERROR\t| DIFFERENT SIGNAL");
@@ -47,6 +52,9 @@ bool sig_num_inner(sig_num_t sig_1, sig_num_t sig_2)
 
 bool sig_num_eq_dbg(sig_num_t sig_1, sig_num_t sig_2)
 {
+    CLU_SIG_IS_SAFE(sig_1);
+    CLU_SIG_IS_SAFE(sig_2);
+
     if(!sig_num_inner(sig_1, sig_2))
     {
         printf("\n");
@@ -62,6 +70,8 @@ bool sig_num_eq_dbg(sig_num_t sig_1, sig_num_t sig_2)
 
 bool sig_num_immed(sig_num_t sig, uint64_t signal, uint64_t n, ...)
 {
+    CLU_SIG_IS_SAFE(sig);
+
     va_list args;
     va_start(args, n);
     sig_num_t sig_2 = sig_num_create_variadic(signal, n, &args);
@@ -75,6 +85,8 @@ bool sig_num_immed(sig_num_t sig, uint64_t signal, uint64_t n, ...)
 
 void sig_num_display(sig_num_t sig, bool full)
 {
+    CLU_SIG_IS_SAFE(sig);
+
     if(sig.signal == ZERO)
     {
         printf("  0");
@@ -90,12 +102,16 @@ void sig_num_display(sig_num_t sig, bool full)
 
 void sig_num_display_tag(char tag[], sig_num_t sig)
 {
+    CLU_SIG_IS_SAFE(sig);
+
     printf("\n%s:\t", tag);
     sig_num_display(sig, false);
 }
 
 void sig_num_display_full(char tag[], sig_num_t sig)
 {
+    CLU_SIG_IS_SAFE(sig);
+
     printf("\n%s:\t", tag);
     sig_num_display(sig, true);
 }
@@ -104,6 +120,8 @@ void sig_num_display_full(char tag[], sig_num_t sig)
 
 sig_num_t sig_num_create(uint64_t signal, num_p num)
 {
+    CLU_HANDLER_IS_SAFE(num);
+
     if(num_is_zero(num))
         signal = ZERO;
     else
@@ -118,6 +136,8 @@ sig_num_t sig_num_create(uint64_t signal, num_p num)
 
 void sig_num_free(sig_num_t sig)
 {
+    CLU_SIG_IS_SAFE(sig);
+
     num_free(sig.num);
 }
 
@@ -151,17 +171,24 @@ sig_num_t sig_num_wrap_str(char str[])
 
 sig_num_t sig_num_copy(sig_num_t sig)
 {
+    CLU_SIG_IS_SAFE(sig);
+
     num_p num = num_copy(sig.num);
     return sig_num_create(sig.signal, num);
 }
 
 sig_num_t sig_num_head_grow(sig_num_t sig, uint64_t count) // TODO test
 {
+    CLU_SIG_IS_SAFE(sig);
+
     sig.num = num_head_grow(sig.num, count);
     return sig;
 }
+
 sig_num_t sig_num_head_trim(sig_num_t sig, uint64_t count) // TODO test
 {
+    CLU_SIG_IS_SAFE(sig);
+
     num_p num = num_head_trim(sig.num, count);
     return sig_num_create(sig.signal, num);
 }
@@ -170,11 +197,16 @@ sig_num_t sig_num_head_trim(sig_num_t sig, uint64_t count) // TODO test
 
 bool sig_num_is_zero(sig_num_t sig)
 {
+    CLU_SIG_IS_SAFE(sig);
+
     return sig.signal == ZERO;
 }
 
 int64_t sig_num_cmp(sig_num_t sig_1, sig_num_t sig_2)
 {
+    CLU_SIG_IS_SAFE(sig_1);
+    CLU_SIG_IS_SAFE(sig_2);
+
     if(sig_1.signal & POSITIVE)
     {
         if(sig_2.signal & POSITIVE)
@@ -193,12 +225,16 @@ int64_t sig_num_cmp(sig_num_t sig_1, sig_num_t sig_2)
 
 sig_num_t sig_num_shl(sig_num_t sig, uint64_t bits)
 {
+    CLU_SIG_IS_SAFE(sig);
+
     sig.num = num_shl(sig.num, bits);
     return sig;
 }
 
 sig_num_t sig_num_shr(sig_num_t sig, uint64_t bits)
 {
+    CLU_SIG_IS_SAFE(sig);
+
     num_p num = num_shr(sig.num, bits);
     return sig_num_create(sig.signal, num);
 }
@@ -207,12 +243,17 @@ sig_num_t sig_num_shr(sig_num_t sig, uint64_t bits)
 
 sig_num_t sig_num_opposite(sig_num_t sig)
 {
+    CLU_SIG_IS_SAFE(sig);
+
     sig.signal = sig.signal >> 1 | (sig.signal & POSITIVE) << 1;
     return sig;
 }
 
 sig_num_t sig_num_add(sig_num_t sig_1, sig_num_t sig_2)
 {
+    CLU_SIG_IS_SAFE(sig_1);
+    CLU_SIG_IS_SAFE(sig_2);
+
     uint64_t signal_res = sig_1.signal & sig_2.signal;
     if(signal_res)
     {
@@ -234,12 +275,18 @@ sig_num_t sig_num_add(sig_num_t sig_1, sig_num_t sig_2)
 
 sig_num_t sig_num_sub(sig_num_t sig_1, sig_num_t sig_2)
 {
+    CLU_SIG_IS_SAFE(sig_1);
+    CLU_SIG_IS_SAFE(sig_2);
+
     sig_2 = sig_num_opposite(sig_2);
     return sig_num_add(sig_1, sig_2);
 }
 
 sig_num_t sig_num_mul(sig_num_t sig_1, sig_num_t sig_2)
 {
+    CLU_SIG_IS_SAFE(sig_1);
+    CLU_SIG_IS_SAFE(sig_2);
+
     uint64_t signal_res = sig_1.signal & sig_2.signal ?
         POSITIVE : NEGATIVE;
 
@@ -249,12 +296,17 @@ sig_num_t sig_num_mul(sig_num_t sig_1, sig_num_t sig_2)
 
 sig_num_t sig_num_sqr(sig_num_t sig) // TODO test
 {
+    CLU_SIG_IS_SAFE(sig);
+
     num_p num = num_sqr(sig.num);
     return sig_num_create(POSITIVE, num);
 }
 
 sig_num_t sig_num_div(sig_num_t sig_1, sig_num_t sig_2)
 {
+    CLU_SIG_IS_SAFE(sig_1);
+    CLU_SIG_IS_SAFE(sig_2);
+
     uint64_t signal_res = sig_1.signal & sig_2.signal ?
         POSITIVE : NEGATIVE;
 

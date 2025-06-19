@@ -382,40 +382,34 @@ num_p num_head_trim(num_p num, uint64_t count) // TODO test
     return num_res;
 }
 
-// void num_break(num_p out_num_hi, num_p out_num_lo, num_t num, uint64_t count)
-// {
-//     CLU_HANDLER_IS_SAFE(num.head);
-//
-//     if(count == 0)
-//     {
-//         *out_num_hi = num;
-//         *out_num_lo = num_create(0, NULL, NULL);
-//         return;
-//     }
-//
-//     if(num.count <= count)
-//     {
-//         *out_num_hi = num_create(0, NULL, NULL);
-//         *out_num_lo = num;
-//         return;
-//     }
-//
-//     chunk_p chunk = num.head;
-//     for(uint64_t i=0; i<count; i++)
-//         chunk = chunk->next;
-//
-//     num_t num_hi = num_create(num.count - count, chunk, num.tail);
-//     num.count = count;
-//     num.tail = chunk->prev;
-//
-//     chunk->prev = NULL;
-//     num.tail->next = NULL;
-//
-//     while(num_normalize(&num));
-//
-//     *out_num_hi = num_hi;
-//     *out_num_lo = num;
-// }
+void num_break(num_p *out_num_hi, num_p *out_num_lo, num_p num, uint64_t count)
+{
+    CLU_HANDLER_IS_SAFE(num);
+
+    if(count == 0)
+    {
+        *out_num_hi = num;
+        *out_num_lo = num_create(0, 0);
+        return;
+    }
+
+    if(num->count <= count)
+    {
+        *out_num_hi = num_create(0, 0);
+        *out_num_lo = num;
+        return;
+    }
+
+    uint64_t size = num->count - count;
+    num_p num_hi = num_create(size, size);
+    memcpy(num_hi->chunk, &num->chunk[count], size * sizeof(uint64_t));
+
+    num->count = count;
+    while(num_normalize(num));
+
+    *out_num_hi = num_hi;
+    *out_num_lo = num;
+}
 
 
 

@@ -331,9 +331,9 @@ void test_num_normalize(bool show)
     TEST_FN_CLOSE
 }
 
-// void test_num_break(bool show)
-// {
-//     TEST_FN_OPEN
+void test_num_break(bool show)
+{
+    TEST_FN_OPEN
 
     #define TEST_NUM_BREAK(TAG, NUM, COUNT, NUM_HI, NUM_LO)             \
     {                                                                   \
@@ -347,77 +347,77 @@ void test_num_normalize(bool show)
         TEST_CASE_CLOSE                                                 \
     }
 
-//     TEST_NUM_BREAK(1,
-//         (0),
-//         0,
-//         (0),
-//         (0)
-//     );
-//     TEST_NUM_BREAK(2,
-//         (0),
-//         1,
-//         (0),
-//         (0)
-//     );
-//     TEST_NUM_BREAK(3,
-//         (1, 1),
-//         0,
-//         (1, 1),
-//         (0)
-//     );
-//     TEST_NUM_BREAK(4,
-//         (1, 1),
-//         1,
-//         (0),
-//         (1, 1)
-//     );
-//     TEST_NUM_BREAK(5,
-//         (1, 1),
-//         2,
-//         (0),
-//         (1, 1)
-//     );
-//     TEST_NUM_BREAK(6,
-//         (2, 1, 2),
-//         0,
-//         (2, 1, 2),
-//         (0)
-//     );
-//     TEST_NUM_BREAK(7,
-//         (2, 1, 2),
-//         1,
-//         (1, 1),
-//         (1, 2)
-//     );
-//     TEST_NUM_BREAK(8,
-//         (2, 1, 2),
-//         2,
-//         (0),
-//         (2, 1, 2)
-//     );
-//     TEST_NUM_BREAK(9,
-//         (2, 1, 2),
-//         3,
-//         (0),
-//         (2, 1, 2)
-//     );
-//     TEST_NUM_BREAK(10,
-//         (3, 1, 0, 2),
-//         2,
-//         (1, 1),
-//         (1, 2)
-//     );
-//     TEST_NUM_BREAK(11,
-//         (3, 1, 0, 0),
-//         2,
-//         (1, 1),
-//         (0)
-//     );
+    TEST_NUM_BREAK(1,
+        (0),
+        0,
+        (0),
+        (0)
+    );
+    TEST_NUM_BREAK(2,
+        (0),
+        1,
+        (0),
+        (0)
+    );
+    TEST_NUM_BREAK(3,
+        (1, 1),
+        0,
+        (1, 1),
+        (0)
+    );
+    TEST_NUM_BREAK(4,
+        (1, 1),
+        1,
+        (0),
+        (1, 1)
+    );
+    TEST_NUM_BREAK(5,
+        (1, 1),
+        2,
+        (0),
+        (1, 1)
+    );
+    TEST_NUM_BREAK(6,
+        (2, 1, 2),
+        0,
+        (2, 1, 2),
+        (0)
+    );
+    TEST_NUM_BREAK(7,
+        (2, 1, 2),
+        1,
+        (1, 1),
+        (1, 2)
+    );
+    TEST_NUM_BREAK(8,
+        (2, 1, 2),
+        2,
+        (0),
+        (2, 1, 2)
+    );
+    TEST_NUM_BREAK(9,
+        (2, 1, 2),
+        3,
+        (0),
+        (2, 1, 2)
+    );
+    TEST_NUM_BREAK(10,
+        (3, 1, 0, 2),
+        2,
+        (1, 1),
+        (1, 2)
+    );
+    TEST_NUM_BREAK(11,
+        (3, 1, 0, 0),
+        2,
+        (1, 1),
+        (0)
+    );
 
-//     #undef TEST_NUM_BREAK
+    #undef TEST_NUM_BREAK
 
-//     TEST_FN_CLOSE
-// }
+    TEST_FN_CLOSE
+}
 
 
 
@@ -1785,7 +1785,7 @@ void test_num()
     test_num_chunk_set(show);
 
     test_num_normalize(show);
-//     test_num_break(show);
+    test_num_break(show);
 
     test_num_wrap(show);
     test_num_wrap_dec(show);
