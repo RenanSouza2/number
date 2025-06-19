@@ -15,6 +15,6 @@ bool sig_num_immed(sig_num_t sig, uint64_t signal, uint64_t n, ...);
 
 #endif
 
-sig_num_t sig_num_create(uint64_t signal, num_t num);
+sig_num_t sig_num_create(uint64_t signal, num_p num);
 
 #endif
