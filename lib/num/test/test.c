@@ -1073,8 +1073,7 @@ void test_num_mul_uint(bool show)
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
             num_p num = num_create_immed(ARG_OPEN NUM_BEF); \
-            num_p num_res = num_create(0, 0);               \
-            num_res = num_mul_uint(num_res, num, VALUE);    \
+            num_p num_res = num_mul_uint(num, VALUE);       \
             assert(num_immed(num_res, ARG_OPEN NUM_AFT));   \
             num_free(num);                                  \
         }                                                   \
@@ -1774,7 +1773,7 @@ void test_num()
 {
     TEST_LIB
 
-    bool show = true;
+    bool show = false;
 
     test_uint_from_char(show);
     test_uint128(show);

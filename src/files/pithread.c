@@ -11,8 +11,6 @@
 
 #include "../../lib/float/header.h"
 
-#include "time.c"
-
 
 
 typedef handler_p (*pthread_f)(handler_p);
@@ -103,12 +101,6 @@ line_t line_init(uint64_t max)
 
 uint64_t line_get_request(line_p l)
 {
-    // if(sem_trywait(&l->sem_b) == -1)
-    // {
-    //     printf("\nPRODUCER HALTED");
-    //     sem_wait(&l->sem_b);
-    //     printf("\nPRODUCER RESUMED");
-    // }
     sem_wait(&l->sem_b);
     return counter_consume(&l->req);
 }
@@ -135,12 +127,9 @@ void line_post_response(line_p l, uint64_t index, float_num_t flt_res)
 
 float_num_t line_get_response(line_p l, pthread_f fn, handler_p args)
 {
-    // static uint64_t launched = 0;
     if(sem_trywait(&l->sem_f) == -1)
     {
         pthread_launch(fn, args);
-        // launched++;
-        // printf("\ntotal launched: %lu", launched);
         sem_wait(&l->sem_f);
     }
 
@@ -188,7 +177,7 @@ handler_p thread_a(handler_p args)
 
 handler_p thread_b(handler_p)
 {
-    uint64_t size = 5000;
+    uint64_t size = 2;
     line_t line = line_init(50);
     float_num_t flt_m_3_8 = float_num_div(
         float_num_wrap(-3, size),
@@ -198,6 +187,7 @@ handler_p thread_b(handler_p)
         float_num_wrap(1, size),
         float_num_wrap(4, size)
     );
+
     thread_a_args_t args = (thread_a_args_t)
     {
         .line = &line,
@@ -207,11 +197,14 @@ handler_p thread_b(handler_p)
     };
 
     float_num_t flt_b = float_num_wrap(6, size);
-    for(uint64_t i=1; ; i++)
+    for(uint64_t i=1; i<10; i++)
     {
-        printf("\ni: %lu", i);
         float_num_t flt_a = line_get_response(&line, thread_a, &args);
+
         flt_b = float_num_mul(flt_b, flt_a);
+
+        printf("\n");
+        float_num_display(flt_b);
     }
 
     return NULL;
@@ -219,7 +212,7 @@ handler_p thread_b(handler_p)
 
 void verify_b()
 {
-    uint64_t size = 5000;
+    uint64_t size = 2;
     float_num_t flt_m_3_8 = float_num_div(
         float_num_wrap(-3, size),
         float_num_wrap(8, size)
@@ -229,20 +222,16 @@ void verify_b()
         float_num_wrap(4, size)
     );
     float_num_t flt_b = float_num_wrap(6, size);
-
-    for(uint64_t i=1; ; i++)
+    for(uint64_t i=1; i<10; i++)
     {
-        uint64_t begin = altutime();
         float_num_t flt_tmp = float_num_div(
             float_num_copy(flt_m_3_8),
             float_num_wrap(i, size)
         );
         flt_tmp = float_num_add(flt_tmp, float_num_copy(flt_1_4));
-        uint64_t middle = altutime();
         flt_b = float_num_mul(flt_b, flt_tmp);
-        uint64_t end = altutime();
 
-        uint64_t diff = (end - middle);
-        printf("\n%.1f", (middle - begin) / (double)diff);
+        printf("\n");
+        float_num_display(flt_b);
     }
 }
