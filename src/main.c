@@ -13,6 +13,7 @@
 #include "../lib/mod/header.h"
 #include "../lib/num/header.h"
 
+#include "files/pithread.c"
 
 
 
@@ -28,6 +29,7 @@ int64_t get_arg(int argc, char** argv)
     assert(argc > 1);
     return atoi(argv[1]);
 }
+
 
 
 num_p num_generate(uint64_t max, uint64_t salt)
@@ -615,8 +617,8 @@ void sqrt_2()
 
 
 
-int main(int argc, char** argv)
-// int main()
+// int main(int argc, char** argv)
+int main()
 {
     setbuf(stdout, NULL);
     srand(time(NULL));
@@ -629,22 +631,14 @@ int main(int argc, char** argv)
     // fibonacci_3(16, 23);
     // sqrt_2();
     // float_num_pi_1();
-    float_num_pi_2(argc, argv);
+    // float_num_pi_2(argc, argv);
     // fix_num_pi_2();
     // float_lim();
 
-    // uint64_t size = 1000;
-    // // float_num_t flt = float_num_wrap(56786789010, size);
-    // float_num_t flt = float_num_div(
-    //     float_num_wrap(1234, size),
-    //     float_num_wrap(100000000000000000, size)
-    // );
-
-    // float_num_display_dec("flt", flt);
-    // flt = float_num_mul(flt, float_num_wrap(100000000000000000, size));
-    // flt = float_num_sub(flt, float_num_wrap(1234, size));
-    // float_num_display_dec("flt", flt);
-    // float_num_free(flt);
+    thread_b(NULL);
+    printf("\n\n");
+    verify_b();
+    
 
     // assert(clu_mem_is_empty());
 

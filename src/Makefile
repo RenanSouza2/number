@@ -1,4 +1,5 @@
-FLAGS = -Wall -Wextra -Werror -Wfatal-errors -O3
+FLAGS = -Wall -Wextra -Werror -Wfatal-errors -O3 -lpthread -lrt
+FLAGS_DBG = -D DEBUG -fsanitize=address
 
 LIB = ../lib/lib.o
 DGB = ../lib/debug.o
@@ -19,7 +20,7 @@ main.o: main.c $(LIB)
 
 debug.o: main.c $(DGB)
 	echo "building debug $(DIR)"
-	gcc -o $@ $^ $(FLAGS) -D DEBUG
+	gcc -o $@ $^ $(FLAGS) $(FLAGS_DBG)
 
 
 
