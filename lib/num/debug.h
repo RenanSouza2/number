@@ -57,7 +57,7 @@ num_p num_shl_uint(num_p num, uint64_t bits);
 num_p num_shr_uint(num_p num, uint64_t bits);
 num_p num_add_uint(num_p num, uint64_t value);
 num_p num_sub_uint(num_p num, uint64_t value);
-num_p num_mul_uint(num_p num, uint64_t value);
+num_p num_mul_uint(num_p num_res, num_p num, uint64_t value);
 num_p num_add_mul_uint(num_p num_res, num_p num, uint64_t value);
 
 num_p num_sub_offset(num_p num_1, uint64_t pos_1, num_p num_2);

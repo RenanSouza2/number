@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
-#include <time.h>
 #include <unistd.h>
 
 #include "../mods/clu/header.h"
@@ -14,15 +13,9 @@
 #include "../lib/num/header.h"
 
 #include "files/pithread.c"
+#include "files/time.c"
 
 
-
-uint64_t altutime()
-{
-    struct timespec time;
-    clock_gettime(CLOCK_MONOTONIC, &time);
-    return time.tv_sec * 1e3 + time.tv_nsec / 1e6;
-}
 
 int64_t get_arg(int argc, char** argv)
 {
@@ -624,7 +617,7 @@ int main()
     srand(time(NULL));
 
     // num_generate(21, 2);
-    // time_1(14, 23);
+    time_1(14, 23);
     // time_2(argc, argv, 19);
     // fibonacci();
     // fibonacci_2(16, 23);
@@ -635,12 +628,8 @@ int main()
     // fix_num_pi_2();
     // float_lim();
 
-    thread_b(NULL);
-    printf("\n\n");
-    verify_b();
-    
-
-    // assert(clu_mem_is_empty());
+    // thread_b(NULL);
+    // verify_b();
 
     printf("\n");
     return 0;
