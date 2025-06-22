@@ -12,6 +12,7 @@
 #include "../lib/float/header.h"
 #include "../lib/mod/header.h"
 #include "../lib/num/header.h"
+#include "../lib/num/struct.h"
 
 #include "files/pithread.c"
 
@@ -106,6 +107,8 @@ void time_1(uint64_t begin, uint64_t end)
         num_p num = num_div(num_1_copy, num_2_copy);
         end = altutime();
         printf("\t%10.3f", (end - begin) / 1e3);
+
+        printf("\t|\t%lu", num_1->count);
 
         num_free(num);
     }

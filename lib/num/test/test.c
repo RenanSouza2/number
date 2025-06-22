@@ -1773,7 +1773,7 @@ void test_num()
 {
     TEST_LIB
 
-    bool show = false;
+    bool show = true;
 
     test_uint_from_char(show);
     test_uint128(show);
