@@ -18,13 +18,6 @@
 
 
 
-uint64_t altutime()
-{
-    struct timespec time;
-    clock_gettime(CLOCK_MONOTONIC, &time);
-    return time.tv_sec * 1e3 + time.tv_nsec / 1e6;
-}
-
 int64_t get_arg(int argc, char** argv)
 {
     assert(argc > 1);
@@ -40,23 +33,27 @@ num_p num_generate(uint64_t max, uint64_t salt)
     {
         // printf("\n%lu", i);
 
-        // uint64_t begin = altutime();
+        // uint64_t begin = get_time();
         num = num_add(num, num_wrap(salt));
         num = num_sqr(num);
-        // uint64_t end = altutime();
+        // uint64_t end = get_time();
         // printf("\t%10.3f", (end - begin) / 1e3);
     }
     return num;
 }
 
-num_p num_generate_2(uint64_t index)
+num_p num_generate_2_step(num_p num, uint64_t salt)
+{
+    num = num_add(num, num_wrap(salt));
+    return num_mul(num, num_wrap(0xe6503424c62eef89));
+}
+
+num_p num_generate_2(uint64_t index, uint64_t salt)
 {
     num_p num = num_wrap(0xe6503424c62eef89);
     for(uint64_t i=1; i<index; i++)
-    {
-        num = num_add(num, num_wrap(2));
-        num = num_mul(num, num_wrap(0xe6503424c62eef89));
-    }
+        num = num_generate_2_step(num, salt);
+
     return num;
 }
 
@@ -88,27 +85,27 @@ void time_1(uint64_t begin, uint64_t end)
     {
         printf("\n" U64P() "", i);
 
-        uint64_t begin = altutime();
+        uint64_t begin = get_time();
         num_1 = num_add(num_1, num_wrap(1));
         num_1 = num_sqr(num_1);
-        uint64_t end = altutime();
-        printf("\t%10.3f", (end - begin) / 1e3);
+        uint64_t end = get_time();
+        printf("\t%10.3f", (end - begin) / 1e9);
 
-        begin = altutime();
+        begin = get_time();
         num_2 = num_add(num_2, num_wrap(2));
         num_2 = num_sqr(num_2);
-        end = altutime();
-        printf("\t%10.3f", (end - begin) / 1e3);
+        end = get_time();
+        printf("\t%10.3f", (end - begin) / 1e9);
 
         num_p num_1_copy = num_copy(num_1);
         num_p num_2_copy = num_copy(num_2);
 
-        begin = altutime();
+        begin = get_time();
         num_p num = num_div(num_1_copy, num_2_copy);
-        end = altutime();
-        printf("\t%10.3f", (end - begin) / 1e3);
+        end = get_time();
+        printf("\t%10.3f", (end - begin) / 1e9);
 
-        printf("\t|\t%lu", num_1->count);
+        // printf("\t|\t%lu", num_1->count);
 
         num_free(num);
     }
@@ -138,10 +135,46 @@ void time_2(int argc, char** argv, uint64_t max)
         num_p num_aux_1 = num_copy(num_1);
         num_p num_aux_2 = num_copy(num_2);
 
-        uint64_t begin = altutime();
+        uint64_t begin = get_time();
         num_aux_1 = num_div(num_aux_1, num_aux_2);
-        uint64_t end = altutime();
+        uint64_t end = get_time();
         printf("\t%10.3lf", (end - begin) / 1e3);
+    }
+}
+
+void time_3()
+{
+    num_p num_1 = num_wrap(0xe6503424c62eef89);
+    num_p num_2 = num_wrap(0xe6503424c62eef89);
+    num_p num_3 = num_wrap(0xe6503424c62eef89);
+
+    for(uint64_t i=1; i<10000; i++)
+    {
+        printf("\ni: %lu\t", i);
+
+        num_1 = num_generate_2_step(num_1, 2);
+        num_2 = num_generate_2_step(num_2, 3);
+
+        num_p num_1_cpy = num_copy(num_1);
+        num_p num_2_cpy = num_copy(num_2);
+        
+        uint64_t begin = get_time();
+        num_1_cpy = num_mul(num_1_cpy, num_2_cpy);
+        uint64_t end = get_time();
+        uint64_t t_mul = end - begin;
+        num_free(num_1_cpy);
+
+        num_1_cpy = num_head_grow(num_copy(num_1), i);
+        num_3 = num_head_grow(num_3, 1);
+        num_p num_3_cpy = num_copy(num_3);
+
+        begin = get_time();
+        num_1_cpy = num_div(num_1_cpy, num_3_cpy);
+        end = get_time();
+        uint64_t t_div = end - begin;
+
+        printf("\t%.1f", (double)t_div / t_mul);
+        num_free(num_1_cpy);
     }
 }
 
@@ -180,7 +213,7 @@ void fibonacci_2(uint64_t min, uint64_t max)
         if(i > min)
             printf("\n" U64P() "", i);
 
-        uint64_t begin = altutime();
+        uint64_t begin = get_time();
         num_p num_a_2 = num_sqr(num_copy(num_a));
         num_p num_b_2 = num_sqr(num_copy(num_b));
         num_p num_c_2 = num_sqr(num_copy(num_c));
@@ -190,7 +223,7 @@ void fibonacci_2(uint64_t min, uint64_t max)
 
         num_a = num_add(num_a_2, num_copy(num_b_2));
         num_c = num_add(num_b_2, num_c_2);
-        uint64_t end = altutime();
+        uint64_t end = get_time();
 
         if(i > min)
             printf("\t%10.3f", (end - begin) / 1e3);
@@ -208,7 +241,7 @@ void fibonacci_3(uint64_t min, uint64_t max)
         if(i > min)
             printf("\n" U64P() "", i);
 
-        uint64_t begin = altutime();
+        uint64_t begin = get_time();
 
         num_p num_c = num_add(num_copy(num_a), num_copy(num_b));
 
@@ -222,7 +255,7 @@ void fibonacci_3(uint64_t min, uint64_t max)
         num_a = num_a_new;
         num_b = num_b_new;
 
-        uint64_t end = altutime();
+        uint64_t end = get_time();
 
         if(i > min)
             printf("\t%10.3f", (end - begin) / 1e3);
@@ -308,9 +341,9 @@ void time_dec()
     num_p num = num_generate(20, 2);
     printf("\ngenerated\n");
     printf("\n");
-    uint64_t begin = altutime();
+    uint64_t begin = get_time();
     num_display_dec(num);
-    uint64_t end = altutime();
+    uint64_t end = get_time();
     printf("\n");
     printf("\ntime: %.3f", (end - begin) / 1e3);
 }
@@ -627,8 +660,9 @@ int main()
     srand(time(NULL));
 
     // num_generate(21, 2);
-    time_1(16, 23);
+    // time_1(16, 23);
     // time_2(argc, argv, 19);
+    time_3();
     // fibonacci();
     // fibonacci_2(16, 23);
     // fibonacci_3(16, 23);
@@ -639,9 +673,7 @@ int main()
     // float_lim();
 
     // thread_b(NULL);
-    // printf("\n\n");
     // verify_b();
-    
 
     // assert(clu_mem_is_empty());
 

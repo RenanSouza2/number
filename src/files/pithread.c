@@ -103,13 +103,13 @@ line_t line_init(uint64_t max)
 
 uint64_t line_get_request(line_p l)
 {
-    // if(sem_trywait(&l->sem_b) == -1)
-    // {
-    //     printf("\nPRODUCER HALTED");
-    //     sem_wait(&l->sem_b);
-    //     printf("\nPRODUCER RESUMED");
-    // }
-    sem_wait(&l->sem_b);
+    if(sem_trywait(&l->sem_b) != 0)
+    {
+        printf("\nPRODUCER HALTED");
+        sem_wait(&l->sem_b);
+        printf("\nPRODUCER RESUMED");
+    }
+    // sem_wait(&l->sem_b);
     return counter_consume(&l->req);
 }
 
@@ -133,17 +133,9 @@ void line_post_response(line_p l, uint64_t index, float_num_t flt_res)
     sem_post(&l->sem_f);
 }
 
-float_num_t line_get_response(line_p l, pthread_f fn, handler_p args)
+float_num_t line_get_response(line_p l)
 {
-    // static uint64_t launched = 0;
-    if(sem_trywait(&l->sem_f) == -1)
-    {
-        pthread_launch(fn, args);
-        // launched++;
-        // printf("\ntotal launched: %lu", launched);
-        sem_wait(&l->sem_f);
-    }
-
+    sem_wait(&l->sem_f);
     pthread_mutex_lock(&l->mut);
     list_float_p list = l->first;
     l->first = list->next;
@@ -205,12 +197,13 @@ handler_p thread_b(handler_p)
         .flt_m_3_8 = flt_m_3_8,
         .flt_1_4 = flt_1_4
     };
+    pthread_launch(thread_a, &args);
 
     float_num_t flt_b = float_num_wrap(6, size);
     for(uint64_t i=1; ; i++)
     {
         printf("\ni: %lu", i);
-        float_num_t flt_a = line_get_response(&line, thread_a, &args);
+        float_num_t flt_a = line_get_response(&line);
         flt_b = float_num_mul(flt_b, flt_a);
     }
 
@@ -232,17 +225,16 @@ void verify_b()
 
     for(uint64_t i=1; ; i++)
     {
-        uint64_t begin = get_time();
+        printf("\n");
+        printf("\ni: %lu", i);
+
         float_num_t flt_tmp = float_num_div(
             float_num_copy(flt_m_3_8),
             float_num_wrap(i, size)
         );
-        flt_tmp = float_num_add(flt_tmp, float_num_copy(flt_1_4));
-        uint64_t middle = get_time();
-        flt_b = float_num_mul(flt_b, flt_tmp);
-        uint64_t end = get_time();
 
-        uint64_t diff = (end - middle);
-        printf("\n%.1f", (middle - begin) / (double)diff);
+        flt_tmp = float_num_add(flt_tmp, float_num_copy(flt_1_4));
+
+        flt_b = float_num_mul(flt_b, flt_tmp);
     }
 }

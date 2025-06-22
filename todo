@@ -3,4 +3,4 @@ fp
 
 mod exp
 mod display
-set debug flags -fsanitize=address
+rename fix to fixed

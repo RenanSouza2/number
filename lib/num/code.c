@@ -97,7 +97,7 @@ bool num_inner(num_p num_1, num_p num_2)
     {
         if(!uint64(num_1->chunk[i], num_2->chunk[i]))
         {
-            printf("\n\tNUMBER ASSERT ERROR\t| DIFFERENCE IN VALUE " U64P() "", i);
+            printf("\n\tNUMBER ASSERT ERROR\t| DIFFERENCE IN VALUE | " U64P() "", i);
             return false;
         }
     }
@@ -309,7 +309,9 @@ num_p num_chunk_set(num_p num, uint64_t pos, uint64_t value)
         num = num_expand_to(num, pos);
 
     num->chunk[pos] = value;
-    num->count = pos >= num->count ? pos + 1 : num->count;
+    if(pos >= num->count)
+        num->count = pos + 1;
+
     return num;
 }
 
@@ -388,6 +390,7 @@ void num_break(num_p *out_num_hi, num_p *out_num_lo, num_p num, uint64_t count)
     num_p num_hi = num_create(size, size);
     memcpy(num_hi->chunk, &num->chunk[count], size * sizeof(uint64_t));
 
+    memset(&num->chunk[count], 0, (num->size - count) * sizeof(uint64_t));
     num->count = count;
     while(num_normalize(num));
 
@@ -528,7 +531,6 @@ void num_free(num_p num)
 
     free(num);
 }
-
 
 
 
