@@ -232,15 +232,15 @@ void verify_b()
 
     for(uint64_t i=1; ; i++)
     {
-        uint64_t begin = altutime();
+        uint64_t begin = get_time();
         float_num_t flt_tmp = float_num_div(
             float_num_copy(flt_m_3_8),
             float_num_wrap(i, size)
         );
         flt_tmp = float_num_add(flt_tmp, float_num_copy(flt_1_4));
-        uint64_t middle = altutime();
+        uint64_t middle = get_time();
         flt_b = float_num_mul(flt_b, flt_tmp);
-        uint64_t end = altutime();
+        uint64_t end = get_time();
 
         uint64_t diff = (end - middle);
         printf("\n%.1f", (middle - begin) / (double)diff);

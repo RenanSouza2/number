@@ -624,7 +624,7 @@ int main()
     srand(time(NULL));
 
     // num_generate(21, 2);
-    // time_1(14, 23);
+    time_1(16, 23);
     // time_2(argc, argv, 19);
     // fibonacci();
     // fibonacci_2(16, 23);
@@ -635,9 +635,9 @@ int main()
     // fix_num_pi_2();
     // float_lim();
 
-    thread_b(NULL);
-    printf("\n\n");
-    verify_b();
+    // thread_b(NULL);
+    // printf("\n\n");
+    // verify_b();
     
 
     // assert(clu_mem_is_empty());
