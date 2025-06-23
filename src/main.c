@@ -662,7 +662,7 @@ int main()
     // num_generate(21, 2);
     // time_1(16, 23);
     // time_2(argc, argv, 19);
-    time_3();
+    // time_3();
     // fibonacci();
     // fibonacci_2(16, 23);
     // fibonacci_3(16, 23);
@@ -672,7 +672,7 @@ int main()
     // fix_num_pi_2();
     // float_lim();
 
-    // thread_b(NULL);
+    pi_threads();
     // verify_b();
 
     // assert(clu_mem_is_empty());
