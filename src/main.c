@@ -570,7 +570,7 @@ int main()
     // sqrt_2();
     // float_num_pi_1();
     // float_num_pi_2(1000);
-    // pi_threads_1(3);
+    // pi_threads_1(1000);
     pi_threads_2(1000);
 
     printf("\n");

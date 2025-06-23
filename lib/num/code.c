@@ -644,11 +644,12 @@ num_p num_add_mul_uint(num_p num_res, num_p num, uint64_t value)
 }
 
 /* preserves NUM */
-num_p num_mul_uint(num_p num, uint64_t value)
+num_p num_mul_uint(num_p num_res, num_p num, uint64_t value)
 {
     CLU_HANDLER_IS_SAFE(num);
 
-    num_p num_res = num_create(num->count, 0);
+    memset(num_res->chunk, 0, num_res->size * sizeof(uint64_t));
+    num_res->count = 0;
     return num_add_mul_uint(num_res, num, value);
 }
 
@@ -753,6 +754,7 @@ num_p num_div_mod_sigle(num_p num_1, num_p num_2)
 
     uint64_t value_2 = num_2->chunk[0];
     num_p num_q = num_create(num_1->count, 0);
+    num_p num_aux = num_create(num_2->count + 1, 0);
     for(uint64_t pos_q = num_1->count - 1; pos_q != UINT64_MAX; pos_q--)
     {
         if(num_normalize(num_1))
@@ -766,13 +768,13 @@ num_p num_div_mod_sigle(num_p num_1, num_p num_2)
             num_1->chunk[num_1->count - 1];
 
         uint64_t r = value_1 / value_2;
-        num_p num_aux = num_mul_uint(num_2, r);
+        num_aux = num_mul_uint(num_aux, num_2, r);
         num_1 = num_sub_offset(num_1, pos_q, num_aux);
-        num_free(num_aux);
 
         num_q = num_chunk_set(num_q, pos_q, r);
     }
     num_free(num_2);
+    num_free(num_aux);
 
     return num_q;
 }
@@ -807,10 +809,8 @@ num_p num_div_mod_general(num_p num_1, num_p num_2)
             num_aux = num_cmp_mul_uint_offset(num_aux, num_1, pos_q, num_2, r_aux);
             if(num_aux->count == 0)
             {
-                num_free(num_aux);
-
                 r_aux = val_1 / (val_2 + 1);
-                num_aux = num_mul_uint(num_2, r_aux);
+                num_aux = num_mul_uint(num_aux, num_2, r_aux);
             }
             r += r_aux;
             num_1 = num_sub_offset(num_1, pos_q, num_aux);
