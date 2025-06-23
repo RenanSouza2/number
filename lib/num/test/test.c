@@ -851,7 +851,9 @@ void test_num_cmp_mul_uint_offset(bool show)
         {                                                                           \
             num_p num_1 = num_create_immed(ARG_OPEN NUM_1);                         \
             num_p num_2 = num_create_immed(ARG_OPEN NUM_2);                         \
-            num_p num_res = num_create(num_2->size + 1, 0);                         \
+            num_p num_res = num_create(num_2->size + 2, num_2->size + 2);           \
+            for(uint64_t i=0; i<num_2->size + 2; i++)   \
+                num_res->chunk[i] = UINT64_MAX;  \
             num_res = num_cmp_mul_uint_offset(num_res, num_1, POS, num_2, VALUE);   \
             assert(num_immed(num_res, ARG_OPEN RES));                               \
             num_free(num_1);                                                        \

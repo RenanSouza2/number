@@ -727,7 +727,8 @@ num_p num_cmp_mul_uint_offset(
     CLU_HANDLER_IS_SAFE(num_1);
     CLU_HANDLER_IS_SAFE(num_2);
 
-    num_res->count = num_2->count;
+    memset(num_res->chunk, 0, num_res->count * sizeof(uint64_t));
+    num_res->count = 0;
     for(uint64_t pos_2=num_2->count-1; pos_2!=UINT64_MAX; pos_2--)
     {
         uint128_t u = MUL(num_2->chunk[pos_2], r);
