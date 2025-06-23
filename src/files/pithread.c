@@ -70,6 +70,21 @@ line_t line_init(uint64_t max)
     };
 }
 
+void line_free(line_p l)
+{
+    sem_destroy(&l->sem_f);
+    sem_destroy(&l->sem_b);
+    pthread_mutex_destroy(&l->mut);
+
+    for(list_float_p head = l->first; head; )
+    {
+        list_float_p next = head->next;
+        float_num_free(head->flt_res);
+        free(head);
+        head = next;
+    }
+}
+
 void line_post_response(line_p l, float_num_t flt_res)
 {
     sem_wait(&l->sem_b);
@@ -111,12 +126,13 @@ STRUCT(thread_a_args)
     line_p line_a_b;
     float_num_t flt_m_3_8;
     float_num_t flt_1_4;
+    bool keep_going;
 };
 
 handler_p thread_a(handler_p args)
 {
     thread_a_args_p _args = args;
-    for(uint64_t i=1; ; i++)
+    for(uint64_t i=1; _args->keep_going; i++)
     {
         float_num_t flt = float_num_div(
             float_num_copy(_args->flt_m_3_8),
@@ -135,19 +151,21 @@ STRUCT(thread_b_args)
     uint64_t size;
     line_p line_a_b;
     line_p line_b_d;
+    bool keep_going;
 };
 
 handler_p thread_b(handler_p args)
 {
     thread_b_args_p _args = args;
     float_num_t flt_b = float_num_wrap(6, _args->size);
-    for(uint64_t i=1; ; i++)
+    for(uint64_t i=1; _args->keep_going; i++)
     {
         float_num_t flt_a = line_get_response(_args->line_a_b);
         flt_b = float_num_mul(flt_b, flt_a);
 
         line_post_response(_args->line_b_d, float_num_copy(flt_b));
     }
+    float_num_free(flt_b);
 
     return NULL;
 }
@@ -158,12 +176,13 @@ STRUCT(thread_c_args)
     line_p line_c_d;
     float_num_t flt_1;
     float_num_t flt_m_1_2;
+    bool keep_going;
 };
 
 handler_p thread_c(handler_p args)
 {
     thread_c_args_p _args = args;
-    for(uint64_t i=1; ; i++)
+    for(uint64_t i=1; _args->keep_going; i++)
     {
         float_num_t flt = float_num_div(
             float_num_copy(_args->flt_1),
@@ -183,12 +202,13 @@ STRUCT(thread_d_args)
     line_p line_b_d;
     line_p line_c_d;
     line_p line_d_pi;
+    bool keep_going;
 };
 
 handler_p thread_d(handler_p args)
 {
     thread_d_args_p _args = args;
-    for(uint64_t i=1; ; i++)
+    for(uint64_t i=1; _args->keep_going; i++)
     {
         float_num_t flt_b = line_get_response(_args->line_b_d);
         float_num_t flt_c = line_get_response(_args->line_c_d);
@@ -212,6 +232,12 @@ handler_p thread_pi(handler_p args)
     for(uint64_t i=1; ; i++)
     {
         float_num_t flt_d = line_get_response(_args->line_d_pi);
+        if(!float_num_safe_add(flt_pi, flt_d))
+        {
+            float_num_free(flt_d);
+            break;
+        }
+
         flt_pi = float_num_add(flt_pi, flt_d);
         
         if(i%1000 == 0)
@@ -221,12 +247,17 @@ handler_p thread_pi(handler_p args)
         }
     }
 
-    return NULL;
+    float_num_p flt_res = malloc(sizeof(float_num_t));
+    assert(flt_res);
+    *flt_res = flt_pi;
+    return flt_res;
 }
+
+
 
 void pi_threads()
 {
-    uint64_t size = 1000;
+    uint64_t size = 5;
 
     line_t line_a_b = line_init(50);
     float_num_t flt_m_3_8 = float_num_div(
@@ -242,7 +273,8 @@ void pi_threads()
         .size = size,
         .line_a_b = &line_a_b,
         .flt_m_3_8 = flt_m_3_8,
-        .flt_1_4 = flt_1_4
+        .flt_1_4 = flt_1_4,
+        .keep_going = true
     };
     pthread_t pid_a = pthread_launch(thread_a, &args_a);
 
@@ -251,9 +283,10 @@ void pi_threads()
     {
         .size = size,
         .line_a_b = &line_a_b,
-        .line_b_d = &line_b_d
+        .line_b_d = &line_b_d,
+        .keep_going = true
     };
-    pthread_launch(thread_b, &args_b);
+    pthread_t pid_b = pthread_launch(thread_b, &args_b);
     
     line_t line_c_d = line_init(50);
     float_num_t flt_1 = float_num_wrap(1, size);
@@ -266,9 +299,10 @@ void pi_threads()
         .size = size,
         .line_c_d = &line_c_d,
         .flt_1 = flt_1,
-        .flt_m_1_2 = flt_m_1_2
+        .flt_m_1_2 = flt_m_1_2,
+        .keep_going = true
     };
-    pthread_launch(thread_c, &args_c);
+    pthread_t pid_c = pthread_launch(thread_c, &args_c);
 
     line_t line_d_pi = line_init(50);
     thread_d_args_t args_d = (thread_d_args_t)
@@ -276,16 +310,44 @@ void pi_threads()
         .size = size,
         .line_b_d = &line_b_d,
         .line_c_d = &line_c_d,
-        .line_d_pi = &line_d_pi
+        .line_d_pi = &line_d_pi,
+        .keep_going = true
     };
-    pthread_launch(thread_d, &args_d);
+    pthread_t pid_d = pthread_launch(thread_d, &args_d);
 
     thread_pi_args_t args_pi = (thread_pi_args_t)
     {
         .size = size,
         .line_d_pi = &line_d_pi
     };
-    pthread_launch(thread_pi, &args_pi);
+    pthread_t pid_pi = pthread_launch(thread_pi, &args_pi);
+
+    float_num_p flt_res;
+    pthread_join(pid_pi, (handler_p*)&flt_res);
+    float_num_t flt_pi = *flt_res;
+    free(flt_res);
+
+    args_a.keep_going = false;
+    args_b.keep_going = false;
+    args_c.keep_going = false;
+    args_d.keep_going = false;
 
     pthread_join(pid_a, NULL);
+    pthread_join(pid_b, NULL);
+    pthread_join(pid_c, NULL);
+    pthread_join(pid_d, NULL);
+
+    line_free(&line_a_b);
+    line_free(&line_b_d);
+    line_free(&line_c_d);
+    line_free(&line_d_pi);
+
+    float_num_free(flt_m_3_8);
+    float_num_free(flt_1_4);
+    float_num_free(flt_1);
+    float_num_free(flt_m_1_2);
+
+    printf("\n\n");
+    float_num_display_dec(flt_pi);
+    float_num_free(flt_pi);
 } 

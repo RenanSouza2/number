@@ -673,7 +673,6 @@ int main()
     // float_lim();
 
     pi_threads();
-    // verify_b();
 
     // assert(clu_mem_is_empty());
 
