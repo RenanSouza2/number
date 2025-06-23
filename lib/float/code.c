@@ -204,7 +204,7 @@ void float_num_display_dec(float_num_t flt) // TODO TEST
     float_num_free(flt_ten);
 
     flt = float_num_div(flt, flt_base);
-    flt = float_num_set_size(flt, flt.size - 1);
+    flt = float_num_set_size(flt, flt.size - 2);
 
     fix_num_t fix = (fix_num_t)
     {
@@ -294,6 +294,17 @@ float_num_t float_num_wrap(int64_t value, uint64_t size) // TODO TEST
     return float_num_create(0, size, sig);
 }
 
+float_num_t float_num_wrap_num(num_p num, uint64_t size) // TODO TEST
+{
+    sig_num_t sig = sig_num_wrap_num(num);
+    return float_num_create(0, size, sig);
+}
+
+float_num_t float_num_wrap_sig_num(sig_num_t sig, uint64_t size) // TODO TEST
+{
+    return float_num_create(0, size, sig);
+}
+
 void float_num_free(float_num_t flt)
 {
     CLU_FLOAT_IS_SAFE(flt);
@@ -329,7 +340,6 @@ float_num_t float_num_set_size(float_num_t flt, uint64_t size) // TODO TEST
     flt.size = size;
     return float_num_normalize(flt);
 }
-
 
 
 

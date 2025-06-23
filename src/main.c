@@ -1,20 +1,14 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <limits.h>
-#include <time.h>
 #include <unistd.h>
 
 #include "../mods/clu/header.h"
-#include "../mods/macros/assert.h"
-#include "../mods/macros/U64.h"
 
 #include "../lib/fix/header.h"
-#include "../lib/float/header.h"
 #include "../lib/mod/header.h"
 #include "../lib/num/header.h"
-#include "../lib/num/struct.h"
+#include "../lib/sig/header.h"
 
 #include "files/pithread_1.c"
+#include "files/pithread_2.c"
 
 
 
@@ -576,7 +570,8 @@ int main()
     // sqrt_2();
     // float_num_pi_1();
     // float_num_pi_2(1000);
-    pi_threads(1000);
+    // pi_threads_1(3);
+    pi_threads_2(1000);
 
     printf("\n");
     return 0;

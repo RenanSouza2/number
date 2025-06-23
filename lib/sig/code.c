@@ -165,6 +165,11 @@ sig_num_t sig_num_wrap(int64_t value)
     return sig_num_create(POSITIVE, num);
 }
 
+sig_num_t sig_num_wrap_num(num_p num)   // TODO TEST
+{
+    return sig_num_create(POSITIVE, num);
+}
+
 sig_num_t sig_num_wrap_str(char str[])
 {
     uint64_t signal = str[0] == '-' ? NEGATIVE : POSITIVE;

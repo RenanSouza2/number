@@ -1,6 +1,3 @@
-fp
-    improve pos treatment
-
 mod exp
 mod display
 rename fix to fixed
@@ -8,3 +5,4 @@ implementar zip
 usar vetor em fila
 fila com handler
 wrap unwrap flt_p
+nested mutex display
