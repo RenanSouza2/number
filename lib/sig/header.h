@@ -26,6 +26,7 @@ sig_num_t sig_num_shr(sig_num_t sig, uint64_t bits);
 sig_num_t sig_num_opposite(sig_num_t sig);
 sig_num_t sig_num_add(sig_num_t sig_1, sig_num_t sig_2);
 sig_num_t sig_num_sub(sig_num_t sig_1, sig_num_t sig_2);
+sig_num_t sig_num_mul_high(sig_num_t sig_1, sig_num_t sig_2, uint64_t pos);
 sig_num_t sig_num_mul(sig_num_t sig_1, sig_num_t sig_2);
 sig_num_t sig_num_sqr(sig_num_t sig);
 sig_num_t sig_num_div(sig_num_t sig_1, sig_num_t sig_2);

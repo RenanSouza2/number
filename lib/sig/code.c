@@ -286,7 +286,7 @@ sig_num_t sig_num_sub(sig_num_t sig_1, sig_num_t sig_2)
     return sig_num_add(sig_1, sig_2);
 }
 
-sig_num_t sig_num_mul(sig_num_t sig_1, sig_num_t sig_2)
+sig_num_t sig_num_mul_high(sig_num_t sig_1, sig_num_t sig_2, uint64_t pos) // TODO TEST
 {
     CLU_SIG_IS_SAFE(sig_1);
     CLU_SIG_IS_SAFE(sig_2);
@@ -294,8 +294,16 @@ sig_num_t sig_num_mul(sig_num_t sig_1, sig_num_t sig_2)
     uint64_t signal_res = sig_1.signal & sig_2.signal ?
         POSITIVE : NEGATIVE;
 
-    num_p num_res = num_mul(sig_1.num, sig_2.num);
+    num_p num_res = num_mul_high(sig_1.num, sig_2.num, pos);
     return sig_num_create(signal_res, num_res);
+}
+
+sig_num_t sig_num_mul(sig_num_t sig_1, sig_num_t sig_2)
+{
+    CLU_SIG_IS_SAFE(sig_1);
+    CLU_SIG_IS_SAFE(sig_2);
+
+    return sig_num_mul_high(sig_1, sig_2, 0);
 }
 
 sig_num_t sig_num_sqr(sig_num_t sig) // TODO test

@@ -14,7 +14,7 @@
 #include "../lib/num/header.h"
 #include "../lib/num/struct.h"
 
-#include "files/pithread.c"
+#include "files/pithread_1.c"
 
 
 
@@ -576,7 +576,7 @@ int main()
     // sqrt_2();
     // float_num_pi_1();
     // float_num_pi_2(1000);
-    pi_threads(100);
+    pi_threads(1000);
 
     printf("\n");
     return 0;

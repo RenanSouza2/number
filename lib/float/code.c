@@ -431,8 +431,10 @@ float_num_t float_num_mul(float_num_t flt_1, float_num_t flt_2) // TODO TEST
     CLU_FLOAT_IS_SAFE(flt_1);
     CLU_FLOAT_IS_SAFE(flt_2);
 
+    uint64_t pos = flt_1.size > 1 ? flt_1.size - 2 : 0;
     int64_t exponent = int64_add(flt_1.exponent, flt_2.exponent);
-    sig_num_t sig = sig_num_mul(flt_1.sig, flt_2.sig);
+    exponent = int64_add(exponent, pos);
+    sig_num_t sig = sig_num_mul_high(flt_1.sig, flt_2.sig, pos);
     return float_num_create(exponent, flt_1.size, sig);
 }
 
