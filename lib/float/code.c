@@ -373,29 +373,11 @@ bool float_num_safe_add(float_num_t flt_1, float_num_t flt_2) // TODO TEST
     if(float_num_is_zero(flt_2))
         return true;
 
-    uint64_t exponent = flt_1.exponent > flt_2.exponent ?
-        flt_1.exponent : flt_2.exponent;
-
-    flt_1 = float_num_set_exponent(float_num_copy(flt_1), exponent - 1);
-    flt_2 = float_num_set_exponent(float_num_copy(flt_2), exponent - 1);
-
-    if(float_num_is_zero(flt_1))
-    {
-        float_num_free(flt_1);
-        float_num_free(flt_2);
-        return false;
-    }
-
-    if(float_num_is_zero(flt_2))
-    {
-        float_num_free(flt_1);
-        float_num_free(flt_2);
-        return false;
-    }
-
-    float_num_free(flt_1);
-    float_num_free(flt_2);
-    return true;
+    uint64_t diff = flt_1.exponent > flt_2.exponent ?
+        flt_1.exponent - flt_2.exponent:
+        flt_2.exponent > flt_1.exponent;
+        
+    return flt_1.size > diff;
 }
 
 float_num_t float_num_opposite(float_num_t flt) // TODO TEST

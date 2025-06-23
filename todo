@@ -4,3 +4,8 @@ fp
 mod exp
 mod display
 rename fix to fixed
+melhor flt mul
+implementar zip
+usar vetor em fila
+fila com handler
+wrap unwrap flt_p

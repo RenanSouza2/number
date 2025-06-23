@@ -440,10 +440,8 @@ void float_num_pi_1()
     }
 }
 
-void float_num_pi_2(int argc, char** argv)
+void float_num_pi_2(uint64_t size)
 {
-    uint64_t size = get_arg(argc, argv);
-
     float_num_t flt = float_num_wrap(3, size);
     float_num_t flt_a = float_num_wrap(6, size);
     float_num_t flt_1_4 = float_num_div(
@@ -499,105 +497,12 @@ void float_num_pi_2(int argc, char** argv)
     float_num_free(flt_m_1_2);
 }
 
-void fix_num_pi_2()
-{
-    uint64_t size = 500;
-
-    fix_num_t fix = fix_num_wrap(3, size);
-    fix_num_t fix_a = fix_num_wrap(6, size);
-    fix_num_t fix_1_4 = fix_num_div(
-        fix_num_wrap(1, size),
-        fix_num_wrap(4, size)
-    );
-    fix_num_t fix_3_8 = fix_num_div(
-        fix_num_wrap(-3, size),
-        fix_num_wrap(8, size)
-    );
-    fix_num_t fix_1 = fix_num_wrap(1, size);
-    fix_num_t fix_1_2 = fix_num_div(
-        fix_num_wrap(-1, size),
-        fix_num_wrap(2, size)
-    );
-    for(uint64_t i=1; ; i++)
-    {
-        fix_num_t fix_tmp = fix_num_wrap(i, size);
-        fix_tmp = fix_num_div(fix_num_copy(fix_3_8), fix_tmp);
-        fix_tmp = fix_num_add(fix_num_copy(fix_1_4), fix_tmp);
-        fix_a = fix_num_mul(fix_a, fix_tmp);
-
-        fix_tmp = fix_num_wrap(2*i + 1, size);
-        fix_tmp = fix_num_div(fix_num_copy(fix_1), fix_tmp);
-        fix_tmp = fix_num_add(fix_tmp, fix_num_copy(fix_1_2));
-
-        fix_tmp = fix_num_mul(fix_tmp, fix_num_copy(fix_a));
-
-        if(fix_num_is_zero(fix_tmp))
-            break;
-
-        fix = fix_num_add(fix, fix_tmp);
-
-        if(i%1000 == 0)
-        {
-            printf("\n");
-            fix_num_display_dec(fix);
-        }
-    }
-
-    printf("\n");
-    printf("\n");
-    fix_num_display_dec(fix);
-}
-
-void float_lim()
-{
-    uint64_t size = 2;
-
-    float_num_t flt_a = float_num_wrap(1, size);
-    float_num_t flt_3_2 = float_num_div(
-        float_num_wrap(3, size),
-        float_num_wrap(2, size)
-    );
-    float_num_t flt_m_1 = float_num_wrap(-1, size);
-    float_num_t flt_1 = float_num_wrap(1, size);
-    for(uint64_t i=1; ; i++)
-    {
-        float_num_t flt_tmp = float_num_wrap(i, size);
-        flt_tmp = float_num_div(float_num_copy(flt_3_2), flt_tmp);
-        flt_tmp = float_num_add(float_num_copy(flt_m_1), flt_tmp);
-
-        if(!float_num_cmp(flt_tmp, flt_1))
-            break;
-
-        uint64_t tam = 1000000;
-        if(i%tam == 0)
-        {
-            printf("\ntmp: ");
-            float_num_display_dec(flt_tmp);
-        }
-
-        flt_a = float_num_mul(flt_a, flt_tmp);
-
-        if(i%tam == 0)
-        {
-            printf("\ta: ");
-            float_num_display_dec(flt_a);
-        }
-    }
-
-    printf("\n");
-    printf("\n");
-    float_num_display_dec(flt_a);
-}
-
 
 
 void display_bit(uint64_t value)
 {
-    for(uint64_t i=0; i<64; i++)
-    {
-        printf(U64PX, value >> 63);
-        value <<= 1;
-    }
+    for(uint64_t i=0; i<64; i++, value <<= 1)
+        printf("" U64PX "", value >> 63);
 }
 
 
@@ -659,6 +564,8 @@ int main()
     setbuf(stdout, NULL);
     srand(time(NULL));
 
+    // uint64_t arg = get_arg(argc, argv);
+
     // num_generate(21, 2);
     // time_1(16, 23);
     // time_2(argc, argv, 19);
@@ -668,13 +575,8 @@ int main()
     // fibonacci_3(16, 23);
     // sqrt_2();
     // float_num_pi_1();
-    // float_num_pi_2(argc, argv);
-    // fix_num_pi_2();
-    // float_lim();
-
-    pi_threads();
-
-    // assert(clu_mem_is_empty());
+    // float_num_pi_2(1000);
+    pi_threads(100);
 
     printf("\n");
     return 0;

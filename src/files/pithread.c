@@ -6,15 +6,30 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdarg.h>
 
-#include "../../mods/macros/struct.h"
 #include "../../mods/clu/header.h"
+#include "../../mods/macros/struct.h"
+#include "../../mods/macros/threads.h"
 
 #include "../../lib/float/header.h"
 
 #include "time.c"
 
 
+
+void dbg(char format[], ...)
+{
+    char name[100];
+    sprintf(name, "dbg/log_%lu.txt", pthread_self());
+    FILE *fp = fopen(name, "a");
+    assert(fp);
+
+    va_list args;
+    va_start(args, format);
+    vfprintf(fp, format, args);
+    fclose(fp);
+}
 
 typedef handler_p (*pthread_f)(handler_p);
 
@@ -87,8 +102,8 @@ void line_free(line_p l)
 
 void line_post_response(line_p l, float_num_t flt_res)
 {
-    sem_wait(&l->sem_b);
-    pthread_mutex_lock(&l->mut);
+    TREAT(sem_wait(&l->sem_b));
+    TREAT(pthread_mutex_lock(&l->mut));
     list_float_p list = list_create(flt_res);
     if(l->last)
     {
@@ -98,20 +113,40 @@ void line_post_response(line_p l, float_num_t flt_res)
     {
         l->last = l->first = list;
     }
-    pthread_mutex_unlock(&l->mut);
-    sem_post(&l->sem_f);
+    TREAT(pthread_mutex_unlock(&l->mut));
+    TREAT(sem_post(&l->sem_f));
 }
 
 float_num_t line_get_response(line_p l)
 {
-    sem_wait(&l->sem_f);
-    pthread_mutex_lock(&l->mut);
+    TREAT(sem_wait(&l->sem_f));
+    TREAT(pthread_mutex_lock(&l->mut));
     list_float_p list = l->first;
     l->first = list->next;
     if(l->first == NULL)
         l->last = NULL;
-    pthread_mutex_unlock(&l->mut);
-    sem_post(&l->sem_b);
+    TREAT(pthread_mutex_unlock(&l->mut));
+    TREAT(sem_post(&l->sem_b));
+
+    float_num_t res = list->flt_res;
+    free(list);
+    return res;
+}
+
+float_num_t line_tryget_response(line_p l)
+{
+    if(sem_trywait(&l->sem_f) != 0)
+    {
+        return float_num_wrap(0, 1);
+    }
+
+    TREAT(pthread_mutex_lock(&l->mut));
+    list_float_p list = l->first;
+    l->first = list->next;
+    if(l->first == NULL)
+        l->last = NULL;
+    TREAT(pthread_mutex_unlock(&l->mut));
+    TREAT(sem_post(&l->sem_b));
 
     float_num_t res = list->flt_res;
     free(list);
@@ -161,6 +196,7 @@ handler_p thread_b(handler_p args)
     for(uint64_t i=1; _args->keep_going; i++)
     {
         float_num_t flt_a = line_get_response(_args->line_a_b);
+
         flt_b = float_num_mul(flt_b, flt_a);
 
         line_post_response(_args->line_b_d, float_num_copy(flt_b));
@@ -255,10 +291,8 @@ handler_p thread_pi(handler_p args)
 
 
 
-void pi_threads()
+void pi_threads(uint64_t size)
 {
-    uint64_t size = 5;
-
     line_t line_a_b = line_init(50);
     float_num_t flt_m_3_8 = float_num_div(
         float_num_wrap(-3, size),
@@ -331,6 +365,11 @@ void pi_threads()
     args_b.keep_going = false;
     args_c.keep_going = false;
     args_d.keep_going = false;
+
+    float_num_free(line_tryget_response(&line_a_b));
+    float_num_free(line_tryget_response(&line_b_d));
+    float_num_free(line_tryget_response(&line_c_d));
+    float_num_free(line_tryget_response(&line_d_pi));
 
     pthread_join(pid_a, NULL);
     pthread_join(pid_b, NULL);
