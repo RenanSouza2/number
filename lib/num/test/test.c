@@ -670,7 +670,7 @@ void test_num_cmp_offset(bool show)
         {                                                       \
             num_p num_1 = num_create_immed(ARG_OPEN NUM_1);     \
             num_p num_2 = num_create_immed(ARG_OPEN NUM_2);     \
-            int64_t cmp = num_cmp_offset(num_1, POS, num_2);    \
+            int64_t cmp = num_cmp_offset(num_1, POS, num_2, 0); \
             assert(cmp RELATION 0);                             \
             num_free(num_1);                                    \
             num_free(num_2);                                    \

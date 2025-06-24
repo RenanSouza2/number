@@ -645,32 +645,45 @@ num_p num_add_mul_uint(num_p num_res, num_p num, uint64_t value)
 }
 
 /* preserves NUM */
-void num_mul_uint(num_p num_res, num_p num, uint64_t value)
+void num_mul_uint(num_p num_res, num_p num, uint64_t value) // TODO TEST
 {
     CLU_HANDLER_IS_SAFE(num);
 
-    memset(num_res->chunk, 0, num_res->size * sizeof(uint64_t));
-    num_res->count = 0;
-    num_add_mul_uint(num_res, num, value);
+    if(value == 0 || num->count == 0)
+    {
+        memset(num_res->chunk, 0, num_res->size * sizeof(uint64_t));
+        num_res->count = 0;
+        return;
+    }
+
+    num_res->count = num->count + 1;
+    num_res->chunk[0] = 0;
+    for(uint64_t i=0; i<num->count; i++)
+    {
+        uint128_t u = MUL(num->chunk[i], value);
+        num_res->chunk[i+1] = HIGH(u);
+        num_res = num_add_uint_offset(num_res, i, LOW(u));
+    }
+    num_normalize(num_res);
 }
 
 
 
-int64_t num_cmp_offset(num_p num_1, uint64_t pos_1, num_p num_2) // TODO TEST
+int64_t num_cmp_offset(num_p num_1, uint64_t pos_1, num_p num_2, uint64_t pos_2) // TODO TEST
 {
     CLU_HANDLER_IS_SAFE(num_1);
     CLU_HANDLER_IS_SAFE(num_2);
 
-    if(num_1->count > num_2->count + pos_1)
+    if(num_1->count - pos_1 > num_2->count - pos_2)
         return 1;
 
-    if(num_1->count < num_2->count + pos_1)
+    if(num_1->count - pos_1 < num_2->count - pos_2)
         return -1;
 
-    for(uint64_t pos_2=num_2->count-1; pos_2!=UINT64_MAX; pos_2--)
+    for(uint64_t i = num_2->count-1; i != pos_2-1; i--)
     {
-        uint64_t value_1 = num_1->chunk[pos_1 + pos_2];
-        uint64_t value_2 = num_2->chunk[pos_2];
+        uint64_t value_1 = num_1->chunk[pos_1 - pos_2 + i];
+        uint64_t value_2 = num_2->chunk[i];
 
         if(value_1 > value_2)
             return 1;
@@ -729,15 +742,26 @@ void num_cmp_mul_uint_offset(
     CLU_HANDLER_IS_SAFE(num_1);
     CLU_HANDLER_IS_SAFE(num_2);
 
-    memset(num_res->chunk, 0, num_res->count * sizeof(uint64_t));
-    num_res->count = 0;
-    for(uint64_t i=num_2->count-1; i!=UINT64_MAX; i--)
+    {
+        uint128_t u = MUL(num_2->chunk[num_2->count-1], r);
+        num_res->chunk[num_2->count-1] = LOW(u);
+        num_res->chunk[num_2->count] = HIGH(u);
+        num_res->count = num_2->count+1;
+        num_normalize(num_res);
+        if(num_cmp_offset(num_1, pos_1, num_res, num_2->count-1) < 0)
+        {
+            num_res->count = 0;
+            return;
+        }
+    }
+
+    for(uint64_t i=num_2->count-2; i != UINT64_MAX; i--)
     {
         uint128_t u = MUL(num_2->chunk[i], r);
         num_res = num_add_uint_offset(num_res, i + 1, HIGH(u));
-        num_res = num_add_uint_offset(num_res, i, LOW(u));
+        num_res->chunk[i] = LOW(u);
 
-        if(num_cmp_offset(num_1, pos_1, num_res) < 0)
+        if(num_cmp_offset(num_1, pos_1, num_res, i) < 0)
         {
             num_res->count = 0;
             return;
@@ -796,7 +820,7 @@ num_p num_div_mod_general(num_p num_1, num_p num_2)
         }
 
         uint64_t r = 0;
-        while(num_cmp_offset(num_1, i, num_2) >= 0)
+        while(num_cmp_offset(num_1, i, num_2, 0) >= 0)
         {
             uint128_t val_1 = num_1->count > num_2->count + i ?
             U128_IMMED(num_1->chunk[num_1->count-1], num_1->chunk[num_1->count-2]) :
@@ -876,7 +900,7 @@ int64_t num_cmp(num_p num_1, num_p num_2) // TODO TEST
     CLU_HANDLER_IS_SAFE(num_1);
     CLU_HANDLER_IS_SAFE(num_2);
 
-    return num_cmp_offset(num_1, 0, num_2);
+    return num_cmp_offset(num_1, 0, num_2, 0);
 }
 
 

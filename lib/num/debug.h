@@ -42,7 +42,7 @@ bool num_normalize(num_p num);
 num_p num_wrap_dec(char str[]);
 num_p num_wrap_hex(char str[]);
 
-int64_t num_cmp_offset(num_p num_1, uint64_t pos_1, num_p num_2);
+int64_t num_cmp_offset(num_p num_1, uint64_t pos_1, num_p num_2, uint64_t pos_2);
 num_p num_add_uint_offset(num_p num, uint64_t pos, uint64_t value);
 num_p num_sub_uint_offset(num_p num, uint64_t pos, uint64_t value);
 void num_cmp_mul_uint_offset(
