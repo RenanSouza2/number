@@ -731,11 +731,11 @@ void num_cmp_mul_uint_offset(
 
     memset(num_res->chunk, 0, num_res->count * sizeof(uint64_t));
     num_res->count = 0;
-    for(uint64_t pos_2=num_2->count-1; pos_2!=UINT64_MAX; pos_2--)
+    for(uint64_t i=num_2->count-1; i!=UINT64_MAX; i--)
     {
-        uint128_t u = MUL(num_2->chunk[pos_2], r);
-        num_res = num_add_uint_offset(num_res, pos_2 + 1, HIGH(u));
-        num_res = num_add_uint_offset(num_res, pos_2, LOW(u));
+        uint128_t u = MUL(num_2->chunk[i], r);
+        num_res = num_add_uint_offset(num_res, i + 1, HIGH(u));
+        num_res = num_add_uint_offset(num_res, i, LOW(u));
 
         if(num_cmp_offset(num_1, pos_1, num_res) < 0)
         {
@@ -754,23 +754,23 @@ num_p num_div_mod_sigle(num_p num_1, num_p num_2)
     uint64_t value_2 = num_2->chunk[0];
     num_p num_q = num_create(num_1->count, 0);
     num_p num_aux = num_create(num_2->count + 1, 0);
-    for(uint64_t pos_q = num_1->count - 1; pos_q != UINT64_MAX; pos_q--)
+    for(uint64_t i = num_1->count - 1; i != UINT64_MAX; i--)
     {
         if(num_normalize(num_1))
         {
-            num_q = num_chunk_set(num_q, pos_q, 0);
+            num_q = num_chunk_set(num_q, i, 0);
             continue;
         }
 
-        uint128_t value_1 = num_1->count > 1 + pos_q ?
+        uint128_t value_1 = num_1->count > 1 + i ?
             U128_IMMED(num_1->chunk[num_1->count - 1], num_1->chunk[num_1->count - 2]) :
             num_1->chunk[num_1->count - 1];
 
         uint64_t r = value_1 / value_2;
         num_mul_uint(num_aux, num_2, r);
-        num_1 = num_sub_offset(num_1, pos_q, num_aux);
+        num_1 = num_sub_offset(num_1, i, num_aux);
 
-        num_q = num_chunk_set(num_q, pos_q, r);
+        num_q = num_chunk_set(num_q, i, r);
     }
     num_free(num_2);
     num_free(num_aux);
@@ -787,34 +787,34 @@ num_p num_div_mod_general(num_p num_1, num_p num_2)
     num_p num_q = num_create(num_1->count - num_2->count + 1, 0);
     num_p num_aux = num_create(num_2->count + 1, 0);
     uint128_t val_2 = num_2->chunk[num_2->count-1];
-    for(uint64_t pos_q = num_1->count - num_2->count; pos_q != UINT64_MAX; pos_q--)
+    for(uint64_t i = num_1->count - num_2->count; i != UINT64_MAX; i--)
     {
         if(num_normalize(num_1))
         {
-            num_q = num_chunk_set(num_q, pos_q, 0);
+            num_q = num_chunk_set(num_q, i, 0);
             continue;
         }
 
         uint64_t r = 0;
-        while(num_cmp_offset(num_1, pos_q, num_2) >= 0)
+        while(num_cmp_offset(num_1, i, num_2) >= 0)
         {
-            uint128_t val_1 = num_1->count > num_2->count + pos_q ?
+            uint128_t val_1 = num_1->count > num_2->count + i ?
             U128_IMMED(num_1->chunk[num_1->count-1], num_1->chunk[num_1->count-2]) :
             num_1->chunk[num_1->count-1];
             
             uint128_t tmp = val_1 / val_2;
             uint64_t r_aux = UINT64_MAX < tmp ? UINT64_MAX : tmp;
             
-            num_cmp_mul_uint_offset(num_aux, num_1, pos_q, num_2, r_aux);
+            num_cmp_mul_uint_offset(num_aux, num_1, i, num_2, r_aux);
             if(num_aux->count == 0)
             {
                 r_aux = val_1 / (val_2 + 1);
                 num_mul_uint(num_aux, num_2, r_aux);
             }
             r += r_aux;
-            num_1 = num_sub_offset(num_1, pos_q, num_aux);
+            num_1 = num_sub_offset(num_1, i, num_aux);
         }
-        num_q = num_chunk_set(num_q, pos_q, r);
+        num_q = num_chunk_set(num_q, i, r);
     }
     num_free(num_2);
     num_free(num_aux);
@@ -964,18 +964,18 @@ num_p num_sqr(num_p num)
         return num;
 
     num_p num_res = num_create(2 * num->count + 1, 0);
-    for(uint64_t pos=0; pos<num->count; pos++)
+    for(uint64_t i=0; i<num->count; i++)
     {
-        uint64_t value = num->chunk[pos];
+        uint64_t value = num->chunk[i];
 
         uint128_t u = MUL(value, value);
-        num_res = num_add_uint_offset(num_res, 2 * pos, LOW(u));
-        num_res = num_add_uint_offset(num_res, 2 * pos + 1, HIGH(u));
+        num_res = num_add_uint_offset(num_res, 2 * i, LOW(u));
+        num_res = num_add_uint_offset(num_res, 2 * i + 1, HIGH(u));
 
-        num_res = num_add_mul_uint_offset(num_res, 2 * pos + 1, num, pos + 1, value << 1);
+        num_res = num_add_mul_uint_offset(num_res, 2 * i + 1, num, i + 1, value << 1);
 
         if(value >= 0x8000000000000000)
-            num_res = num_add_offset(num_res, 2 * pos + 2, num, pos + 1);
+            num_res = num_add_offset(num_res, 2 * i + 2, num, i + 1);
     }
 
     num_free(num);
