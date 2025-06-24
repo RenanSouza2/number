@@ -35,25 +35,9 @@ pthread_t pthread_launch(pthread_f fn, handler_p args)
     return thread_id;
 }
 
-
-
-STRUCT(list_float)
+void pthread_wait(pthread_t thread_id)
 {
-    float_num_t flt_res;
-    list_float_p next;
-};
-
-list_float_p list_create(float_num_t flt_res)
-{
-    list_float_p list = malloc(sizeof(list_float_t));
-    assert(list);
-
-    *list = (list_float_t)
-    {
-        .flt_res = flt_res,
-        .next = NULL
-    };
-    return list;
+    TREAT(pthread_join(thread_id, NULL));
 }
 
 
@@ -86,24 +70,35 @@ line_t line_init(uint64_t size)
     };
 }
 
-uint64_t line_get_count(line_p l)
+void sem_wait_log(sem_t *sem, bool *is_halted)
 {
-    return l->start > l->end ?
-        l->end + l->size - l->start :
-        l->end - l->start;
+    if(is_halted)
+    {
+        if(sem_trywait(sem) != 0)
+        {
+            *is_halted = true;
+            TREAT(sem_wait(sem));
+            *is_halted = false;
+        }
+    } else {
+        TREAT(sem_wait(sem));
+    }
 }
 
-uint64_t line_get_index(line_p l, uint64_t i)
+float_num_t line_get_response_locked(line_p l)
 {
-    assert(i < line_get_count(l));
-    uint64_t index = l->start + i;
-    return index >= l->size ?
-        index - l->size : index;
+    float_num_t res = l->res[l->start];
+    l->start++;
+    if(l->start == l->size)
+        l->start = 0;
+    TREAT(sem_post(&l->sem_b));
+
+    return res;
 }
 
-void line_post_response(line_p l, float_num_t res)
+void line_post_response(line_p l, float_num_t res, bool *is_halted)
 {
-    TREAT(sem_wait(&l->sem_b));
+    sem_wait_log(&l->sem_b, is_halted);
     l->res[l->end] = res;
     l->end++;
     if(l->end == l->size)
@@ -111,16 +106,10 @@ void line_post_response(line_p l, float_num_t res)
     TREAT(sem_post(&l->sem_f));
 }
 
-float_num_t line_get_response(line_p l)
+float_num_t line_get_response(line_p l, bool * is_halted)
 {
-    TREAT(sem_wait(&l->sem_f));
-    float_num_t res = l->res[l->start];
-    l->start++;
-    if(l->start == l->size)
-        l->start = 0;
-    TREAT(sem_post(&l->sem_b));
-
-    return res;
+    sem_wait_log(&l->sem_f, is_halted);
+    return line_get_response_locked(l);
 }
 
 float_num_t line_tryget_response(line_p l)
@@ -128,20 +117,17 @@ float_num_t line_tryget_response(line_p l)
     if(sem_trywait(&l->sem_f) != 0)
         return float_num_wrap(0, 1);
 
-    float_num_t res = l->res[l->start];
-    l->start++;
-    if(l->start == l->size)
-        l->start = 0;
-    TREAT(sem_post(&l->sem_b));
-
-    return res;
+    return line_get_response_locked(l);
 }
 
 void line_free(line_p l)
 {
-    while(l->start != l->end)
+    bool ignore;
+    for(uint64_t i = 0; l->start != l->end; i++)
     {
-        float_num_t flt = line_get_response(l);
+        // printf("\nAAA");
+        float_num_t flt = line_get_response(l, &ignore);
+        // printf("\nBBB");
         float_num_free(flt);
     }
     
@@ -182,13 +168,13 @@ void zip_free(zip_p z)
     free(z->lines);
 }
 
-float_num_t zip_get_response(zip_p z)
+float_num_t zip_get_response(zip_p z, bool *is_halted)
 {
     uint64_t index = z->index;
     z->index++;
     if(z->index == z->total)
         z->index = 0;
-    return line_get_response(&z->lines[index]);
+    return line_get_response(&z->lines[index], is_halted);
 }
 
 #endif

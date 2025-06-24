@@ -23,7 +23,7 @@ handler_p pi_1_thread_a(handler_p args)
         );
         flt_a = float_num_add(flt_a, float_num_copy(_args->flt_1_4));
 
-        line_post_response(_args->line_a_b, flt_a);
+        line_post_response(_args->line_a_b, flt_a, NULL);
     }
 
     return NULL;
@@ -43,11 +43,11 @@ handler_p pi_1_thread_b(handler_p args)
     float_num_t flt_b = float_num_wrap(6, _args->size);
     for(uint64_t i=1; _args->keep_going; i++)
     {
-        float_num_t flt_a = line_get_response(_args->line_a_b);
+        float_num_t flt_a = line_get_response(_args->line_a_b, NULL);
 
         flt_b = float_num_mul(flt_b, flt_a);
 
-        line_post_response(_args->line_b_d, float_num_copy(flt_b));
+        line_post_response(_args->line_b_d, float_num_copy(flt_b), NULL);
     }
     float_num_free(flt_b);
 
@@ -74,7 +74,7 @@ handler_p pi_1_thread_c(handler_p args)
         );
         flt = float_num_add(flt, float_num_copy(_args->flt_m_1_2));
 
-        line_post_response(_args->line_c_d, flt);
+        line_post_response(_args->line_c_d, flt, NULL);
     }
 
     return NULL;
@@ -94,12 +94,12 @@ handler_p pi_1_thread_d(handler_p args)
     pi_1_thread_d_args_p _args = args;
     for(uint64_t i=1; _args->keep_going; i++)
     {
-        float_num_t flt_b = line_get_response(_args->line_b_d);
-        float_num_t flt_c = line_get_response(_args->line_c_d);
+        float_num_t flt_b = line_get_response(_args->line_b_d, NULL);
+        float_num_t flt_c = line_get_response(_args->line_c_d, NULL);
 
         float_num_t flt_d = float_num_mul(flt_b, flt_c);
 
-        line_post_response(_args->line_d_pi, flt_d);
+        line_post_response(_args->line_d_pi, flt_d, NULL);
     }
 
     return NULL;
@@ -117,7 +117,7 @@ handler_p pi_1_thread_pi(handler_p args)
     float_num_t flt_pi = float_num_wrap(3, _args->size);
     for(uint64_t i=1; ; i++)
     {
-        float_num_t flt_d = line_get_response(_args->line_d_pi);
+        float_num_t flt_d = line_get_response(_args->line_d_pi, NULL);
         if(!float_num_safe_add(flt_pi, flt_d))
         {
             float_num_free(flt_d);
