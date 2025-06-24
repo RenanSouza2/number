@@ -547,16 +547,16 @@ void sqrt_2()
 
 
 
-// int main(int argc, char** argv)
-int main()
+int main(int argc, char** argv)
+// int main()
 {
     setbuf(stdout, NULL);
     srand(time(NULL));
 
-    // uint64_t arg = get_arg(argc, argv);
+    uint64_t arg = get_arg(argc, argv);
 
     // num_generate(21, 2);
-    time_1(16, 23);
+    // time_1(16, 23);
     // time_2(argc, argv, 19);
     // time_3();
     // fibonacci();
@@ -566,7 +566,9 @@ int main()
     // float_num_pi_1();
     // float_num_pi_2(1000);
     // pi_threads_1(1000);
-    // pi_threads_2(1000);
+    pi_threads_2(arg);
+
+    // assert(clu_mem_is_empty("FINAL"));
 
     printf("\n");
     return 0;

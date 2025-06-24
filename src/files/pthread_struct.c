@@ -11,6 +11,8 @@
 
 #include "../../lib/float/header.h"
 
+
+
 void dbg(char format[], ...)
 {
     char name[100];
@@ -29,7 +31,7 @@ typedef handler_p (*pthread_f)(handler_p);
 pthread_t pthread_launch(pthread_f fn, handler_p args)
 {
     pthread_t thread_id;
-    pthread_create(&thread_id, NULL, fn, args);
+    TREAT(pthread_create(&thread_id, NULL, fn, args));
     return thread_id;
 }
 
@@ -59,91 +61,94 @@ list_float_p list_create(float_num_t flt_res)
 STRUCT(line)
 {
     sem_t sem_f, sem_b;
-    pthread_mutex_t mut;
-    list_float_p first;
-    list_float_p last;
+    float_num_p res;
+    uint64_t size;
+    uint64_t start, end;
 };
 
-line_t line_init(uint64_t max)
+line_t line_init(uint64_t size)
 {
     sem_t sem_f, sem_b;
     sem_init(&sem_f, 0, 0);
-    sem_init(&sem_b, 0, max);
+    sem_init(&sem_b, 0, size);
+
+    float_num_p res = malloc(size * sizeof(float_num_t));
+    assert(res);
+
     return (line_t)
     {
         .sem_f = sem_f,
         .sem_b = sem_b,
-        .first = NULL,
-        .last = NULL
+        .res = res,
+        .size = size,
+        .start = 0,
+        .end = 0
     };
 }
 
-void line_free(line_p l)
+uint64_t line_get_count(line_p l)
 {
-    sem_destroy(&l->sem_f);
-    sem_destroy(&l->sem_b);
-    pthread_mutex_destroy(&l->mut);
-
-    for(list_float_p head = l->first; head; )
-    {
-        list_float_p next = head->next;
-        float_num_free(head->flt_res);
-        free(head);
-        head = next;
-    }
+    return l->start > l->end ?
+        l->end + l->size - l->start :
+        l->end - l->start;
 }
 
-void line_post_response(line_p l, float_num_t flt_res)
+uint64_t line_get_index(line_p l, uint64_t i)
+{
+    assert(i < line_get_count(l));
+    uint64_t index = l->start + i;
+    return index >= l->size ?
+        index - l->size : index;
+}
+
+void line_post_response(line_p l, float_num_t res)
 {
     TREAT(sem_wait(&l->sem_b));
-    TREAT(pthread_mutex_lock(&l->mut));
-    list_float_p list = list_create(flt_res);
-    if(l->last)
-    {
-        l->last = l->last->next = list;
-    }
-    else
-    {
-        l->last = l->first = list;
-    }
-    TREAT(pthread_mutex_unlock(&l->mut));
+    l->res[l->end] = res;
+    l->end++;
+    if(l->end == l->size)
+        l->end = 0;
     TREAT(sem_post(&l->sem_f));
 }
 
 float_num_t line_get_response(line_p l)
 {
     TREAT(sem_wait(&l->sem_f));
-    TREAT(pthread_mutex_lock(&l->mut));
-    list_float_p list = l->first;
-    l->first = list->next;
-    if(l->first == NULL)
-        l->last = NULL;
-    TREAT(pthread_mutex_unlock(&l->mut));
+    float_num_t res = l->res[l->start];
+    l->start++;
+    if(l->start == l->size)
+        l->start = 0;
     TREAT(sem_post(&l->sem_b));
 
-    float_num_t res = list->flt_res;
-    free(list);
     return res;
 }
 
 float_num_t line_tryget_response(line_p l)
 {
     if(sem_trywait(&l->sem_f) != 0)
-    {
         return float_num_wrap(0, 1);
-    }
 
-    TREAT(pthread_mutex_lock(&l->mut));
-    list_float_p list = l->first;
-    l->first = list->next;
-    if(l->first == NULL)
-        l->last = NULL;
-    TREAT(pthread_mutex_unlock(&l->mut));
+    float_num_t res = l->res[l->start];
+    l->start++;
+    if(l->start == l->size)
+        l->start = 0;
     TREAT(sem_post(&l->sem_b));
 
-    float_num_t res = list->flt_res;
-    free(list);
     return res;
+}
+
+void line_free(line_p l)
+{
+    while(l->start != l->end)
+    {
+        float_num_t flt = line_get_response(l);
+        float_num_free(flt);
+    }
+    
+    TREAT(sem_destroy(&l->sem_f));
+    TREAT(sem_destroy(&l->sem_b));
+
+    free(l->res);
 }
 
 

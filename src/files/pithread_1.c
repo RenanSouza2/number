@@ -207,7 +207,7 @@ void pi_threads_1(uint64_t size)
     pthread_t pid_pi = pthread_launch(pi_1_thread_pi, &args_pi);
 
     float_num_p flt_res;
-    pthread_join(pid_pi, (handler_p*)&flt_res);
+    TREAT(pthread_join(pid_pi, (handler_p*)&flt_res));
     float_num_t flt_pi = *flt_res;
     free(flt_res);
 
@@ -221,10 +221,10 @@ void pi_threads_1(uint64_t size)
     float_num_free(line_tryget_response(&line_c_d));
     float_num_free(line_tryget_response(&line_d_pi));
 
-    pthread_join(pid_a, NULL);
-    pthread_join(pid_b, NULL);
-    pthread_join(pid_c, NULL);
-    pthread_join(pid_d, NULL);
+    TREAT(pthread_join(pid_a, NULL));
+    TREAT(pthread_join(pid_b, NULL));
+    TREAT(pthread_join(pid_c, NULL));
+    TREAT(pthread_join(pid_d, NULL));
 
     line_free(&line_a_b);
     line_free(&line_b_d);
