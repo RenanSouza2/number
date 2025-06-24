@@ -406,7 +406,8 @@ num_p num_wrap(uint64_t value)
         return num_create(0, 0);
 
     num_p num = num_create(1, 1);
-    return num_chunk_set(num, 0, value);
+    num->chunk[0] = value;
+    return num;
 }
 
 num_p num_wrap_dec(char str[])
@@ -644,13 +645,13 @@ num_p num_add_mul_uint(num_p num_res, num_p num, uint64_t value)
 }
 
 /* preserves NUM */
-num_p num_mul_uint(num_p num_res, num_p num, uint64_t value)
+void num_mul_uint(num_p num_res, num_p num, uint64_t value)
 {
     CLU_HANDLER_IS_SAFE(num);
 
     memset(num_res->chunk, 0, num_res->size * sizeof(uint64_t));
     num_res->count = 0;
-    return num_add_mul_uint(num_res, num, value);
+    num_add_mul_uint(num_res, num, value);
 }
 
 
@@ -716,7 +717,7 @@ returns 0 otherwise
 R cannot be zero
 keeps NUM_1 and NUM_2
 */
-num_p num_cmp_mul_uint_offset(
+void num_cmp_mul_uint_offset(
     num_p num_res,
     num_p num_1,
     uint64_t pos_1,
@@ -739,11 +740,9 @@ num_p num_cmp_mul_uint_offset(
         if(num_cmp_offset(num_1, pos_1, num_res) < 0)
         {
             num_res->count = 0;
-            return num_res;
+            return;
         }
     }
-
-    return num_res;
 }
 
 /* RES is quocient NUM_1 is remainder */
@@ -768,7 +767,7 @@ num_p num_div_mod_sigle(num_p num_1, num_p num_2)
             num_1->chunk[num_1->count - 1];
 
         uint64_t r = value_1 / value_2;
-        num_aux = num_mul_uint(num_aux, num_2, r);
+        num_mul_uint(num_aux, num_2, r);
         num_1 = num_sub_offset(num_1, pos_q, num_aux);
 
         num_q = num_chunk_set(num_q, pos_q, r);
@@ -786,7 +785,7 @@ num_p num_div_mod_general(num_p num_1, num_p num_2)
     CLU_HANDLER_IS_SAFE(num_2);
 
     num_p num_q = num_create(num_1->count - num_2->count + 1, 0);
-    num_p num_aux = num_create(num_2->count+1, 0);
+    num_p num_aux = num_create(num_2->count + 1, 0);
     uint128_t val_2 = num_2->chunk[num_2->count-1];
     for(uint64_t pos_q = num_1->count - num_2->count; pos_q != UINT64_MAX; pos_q--)
     {
@@ -800,22 +799,21 @@ num_p num_div_mod_general(num_p num_1, num_p num_2)
         while(num_cmp_offset(num_1, pos_q, num_2) >= 0)
         {
             uint128_t val_1 = num_1->count > num_2->count + pos_q ?
-                U128_IMMED(num_1->chunk[num_1->count-1], num_1->chunk[num_1->count-2]) :
-                num_1->chunk[num_1->count-1];
-
+            U128_IMMED(num_1->chunk[num_1->count-1], num_1->chunk[num_1->count-2]) :
+            num_1->chunk[num_1->count-1];
+            
             uint128_t tmp = val_1 / val_2;
             uint64_t r_aux = UINT64_MAX < tmp ? UINT64_MAX : tmp;
-
-            num_aux = num_cmp_mul_uint_offset(num_aux, num_1, pos_q, num_2, r_aux);
+            
+            num_cmp_mul_uint_offset(num_aux, num_1, pos_q, num_2, r_aux);
             if(num_aux->count == 0)
             {
                 r_aux = val_1 / (val_2 + 1);
-                num_aux = num_mul_uint(num_aux, num_2, r_aux);
+                num_mul_uint(num_aux, num_2, r_aux);
             }
             r += r_aux;
             num_1 = num_sub_offset(num_1, pos_q, num_aux);
         }
-
         num_q = num_chunk_set(num_q, pos_q, r);
     }
     num_free(num_2);
@@ -965,7 +963,7 @@ num_p num_sqr(num_p num)
     if(num->count == 0)
         return num;
 
-    num_p num_res = num_create(2 * num->count, 0);
+    num_p num_res = num_create(2 * num->count + 1, 0);
     for(uint64_t pos=0; pos<num->count; pos++)
     {
         uint64_t value = num->chunk[pos];
@@ -1021,11 +1019,11 @@ num_p num_div(num_p num_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_1);
     CLU_HANDLER_IS_SAFE(num_2);
-
+    
     num_p num_q, num_r;
     num_div_mod_unajusted(&num_q, &num_r, num_1, num_2);
     num_free(num_r);
-
+    
     return num_q;
 }
 
@@ -1075,7 +1073,7 @@ num_p num_base_from(num_p num, uint64_t base)
 {
     CLU_HANDLER_IS_SAFE(num);
 
-    num_p num_res = num_create(num->count, 0);
+    num_p num_res = num_create(2 * num->count, 0);
     for(uint64_t pos=num->count-1; pos!=UINT64_MAX; pos--)
     {
         assert(num->chunk[pos] < base);
