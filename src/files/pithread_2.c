@@ -228,7 +228,7 @@ void pi_2_monitor_thread_treat_res(pi_2_monitor_thread_res_t res)
 
 void pi_threads_2(uint64_t size)
 {
-    bool monitoring = true;
+    bool monitoring = false;
 
     pi_2_thread_a_args_t args_a[2];
     pi_2_thread_b_args_t args_b[2];
@@ -383,12 +383,15 @@ void pi_threads_2(uint64_t size)
     float_num_free(flt_1);
     float_num_free(flt_m_1_2);
 
-    // printf("\n\n");
-    // float_num_display_dec(flt_pi);
-    float_num_free(flt_pi);
 
     if(monitoring)
     {
         pi_2_monitor_thread_treat_res(args_monitor_thread.res);
     }
+    else
+    {
+        printf("\n\n");
+        float_num_display_dec(flt_pi);
+    }
+    float_num_free(flt_pi);
 } 

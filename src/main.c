@@ -10,6 +10,7 @@
 #include "files/pithread_1.c"
 #include "files/pithread_2.c"
 #include "files/pithread_3.c"
+#include "files/pithread_4.c"
 
 
 
@@ -568,7 +569,8 @@ int main(int argc, char** argv)
     // float_num_pi_2(1000);
     // pi_threads_1(1000);
     // pi_threads_2(arg);
-    pi_threads_3(arg);
+    pi_threads_3(arg, 4, false);
+    // pi_threads_4(arg);
 
     // assert(clu_mem_is_empty("FINAL"));
 
