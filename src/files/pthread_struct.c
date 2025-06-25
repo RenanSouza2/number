@@ -139,20 +139,20 @@ void line_free(line_p l)
 
 
 
-STRUCT(zip)
+STRUCT(junc)
 {
     uint64_t total;
     uint64_t index;
     line_p lines;
 };
 
-zip_t zip_init(uint64_t total, uint64_t max)
+junc_t junc_init(uint64_t total, uint64_t max)
 {
     line_p lines = malloc(total * sizeof(line_t));
     for(uint64_t i=0; i<total; i++)
         lines[i] = line_init(max);
 
-    return (zip_t)
+    return (junc_t)
     {
         .total = total,
         .index = 0,
@@ -160,21 +160,30 @@ zip_t zip_init(uint64_t total, uint64_t max)
     };
 }
 
-void zip_free(zip_p z)
+void junc_free(junc_p junc)
 {
-    for(uint64_t i=0; i<z->total; i++)
-        line_free(&z->lines[i]);
+    for(uint64_t i=0; i<junc->total; i++)
+        line_free(&junc->lines[i]);
 
-    free(z->lines);
+    free(junc->lines);
 }
 
-float_num_t zip_get_response(zip_p z, bool *is_halted)
+float_num_t junc_get_response(junc_p junc, bool *is_halted)
 {
-    uint64_t index = z->index;
-    z->index++;
-    if(z->index == z->total)
-        z->index = 0;
-    return line_get_response(&z->lines[index], is_halted);
+    uint64_t index = junc->index;
+    junc->index++;
+    if(junc->index == junc->total)
+        junc->index = 0;
+    return line_get_response(&junc->lines[index], is_halted);
+}
+
+void junc_post_response(junc_p junc, float_num_t res, bool *is_halted)
+{
+    uint64_t index = junc->index;
+    junc->index++;
+    if(junc->index == junc->total)
+        junc->index = 0;
+    line_post_response(&junc->lines[index], res, is_halted);
 }
 
 #endif
