@@ -86,8 +86,8 @@ handler_p pi_2_thread_pi(handler_p _args)
     {
         float_num_t flt_b = junc_get_response(args->junc_b_pi, &args->is_halted);
 
-        // if(i%1000 == 0)
-        //     fprintf(stderr, "\nexp: %ld", -(flt_b.size + flt_b.exponent));
+        if(i%1000 == 0)
+            fprintf(stderr, "\nexp: %ld", -(flt_b.size + flt_b.exponent));
 
         if(!float_num_safe_add(flt_pi, flt_b))
         {
