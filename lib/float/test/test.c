@@ -101,11 +101,11 @@ void test_float_num_normalize(bool show)
         TEST_CASE_CLOSE                                             \
     }
 
-    TEST_FLOAT_NUM_NORMALIZE(1, FLOAT_NUM_ZERO(1), 0, 1, (ZERO, 0));
-    TEST_FLOAT_NUM_NORMALIZE(2, (0, 1, POSITIVE, 1, 1), 0, 1, (POSITIVE, 1, 1));
-    TEST_FLOAT_NUM_NORMALIZE(3, (0, 1, NEGATIVE, 1, 1), 0, 1, (NEGATIVE, 1, 1));
-    TEST_FLOAT_NUM_NORMALIZE(4, (0, 2, POSITIVE, 1, 1), -1, 2, (POSITIVE, 2, 1, 0));
-    TEST_FLOAT_NUM_NORMALIZE(5, (0, 1, POSITIVE, 2, 1, 2), 1, 1, (POSITIVE, 1, 1));
+    TEST_FLOAT_NUM_NORMALIZE(1, FLOAT_NUM_ZERO(2), 0, 2, (ZERO, 0));
+    TEST_FLOAT_NUM_NORMALIZE(2, (0, 2, POSITIVE, 2, 1, 0), 0, 2, (POSITIVE, 2, 1, 0));
+    TEST_FLOAT_NUM_NORMALIZE(3, (0, 2, POSITIVE, 1, 1), -1, 2, (POSITIVE, 2, 1, 0));
+    TEST_FLOAT_NUM_NORMALIZE(4, (0, 2, NEGATIVE, 1, 1), -1, 2, (NEGATIVE, 2, 1, 0));
+    TEST_FLOAT_NUM_NORMALIZE(5, (0, 2, POSITIVE, 3, 1, 2, 3), 1, 2, (POSITIVE, 2, 1, 2));
 
     #undef TEST_FLOAT_NUM_NORMALIZE
 
@@ -124,7 +124,7 @@ void test_float_num_normalize(bool show)
     }
 
     TEST_FLOAT_NUM_NORMALIZE(6, (INT64_MIN, 2, POSITIVE, 1, 1));
-    TEST_FLOAT_NUM_NORMALIZE(7, (INT64_MAX, 1, POSITIVE, 2, 1, 0));
+    TEST_FLOAT_NUM_NORMALIZE(7, (INT64_MAX, 2, POSITIVE, 3, 1, 0, 1));
 
     #undef TEST_FLOAT_NUM_NORMALIZE
 
@@ -148,13 +148,13 @@ void test_float_num_set_exponent(bool show)
         TEST_CASE_CLOSE                                             \
     }
 
-    TEST_FLOAT_NUM_SET_EXPONENT(1, FLOAT_NUM_ZERO(1), 0, FLOAT_NUM_ZERO(1));
-    TEST_FLOAT_NUM_SET_EXPONENT(2, FLOAT_NUM_ZERO(1), 1, (1, 1, ZERO, 0));
-    TEST_FLOAT_NUM_SET_EXPONENT(3, FLOAT_NUM_ZERO(1), -1, (-1, 1, ZERO, 0));
-    TEST_FLOAT_NUM_SET_EXPONENT(4, (0, 1, POSITIVE, 1, 1), 0, (0, 1, POSITIVE, 1, 1));
-    TEST_FLOAT_NUM_SET_EXPONENT(5, (0, 1, POSITIVE, 1, 1), -1, (-1, 1, POSITIVE, 2, 1, 0));
-    TEST_FLOAT_NUM_SET_EXPONENT(6, (0, 1, POSITIVE, 1, 1), 1, (1, 1, ZERO, 0));
-    TEST_FLOAT_NUM_SET_EXPONENT(7, (0, 2, POSITIVE, 2, 1, 0), 1, (1, 2, POSITIVE, 1, 1));
+    TEST_FLOAT_NUM_SET_EXPONENT(1, FLOAT_NUM_ZERO(2), 0, FLOAT_NUM_ZERO(2));
+    TEST_FLOAT_NUM_SET_EXPONENT(2, FLOAT_NUM_ZERO(2), 1, (1, 2, ZERO, 0));
+    TEST_FLOAT_NUM_SET_EXPONENT(3, FLOAT_NUM_ZERO(2), -1, (-1, 2, ZERO, 0));
+    TEST_FLOAT_NUM_SET_EXPONENT(4, (0, 2, POSITIVE, 2, 1, 2), 0, (0, 2, POSITIVE, 2, 1, 2));
+    TEST_FLOAT_NUM_SET_EXPONENT(5, (0, 2, POSITIVE, 2, 1, 2), -1, (-1, 2, POSITIVE, 3, 1, 2, 0));
+    TEST_FLOAT_NUM_SET_EXPONENT(6, (0, 2, POSITIVE, 2, 1, 2), 2, (2, 2, ZERO, 0));
+    TEST_FLOAT_NUM_SET_EXPONENT(7, (0, 3, POSITIVE, 3, 1, 2, 3), 1, (1, 3, POSITIVE, 2, 1, 2));
 
     #undef TEST_FLOAT_NUM_SET_EXPONENT
 
@@ -179,8 +179,8 @@ void test_float_num_is_zero(bool show)
         TEST_CASE_CLOSE                                             \
     }
 
-    TEST_FLOAT_NUM_IS_ZERO(1, FLOAT_NUM_ZERO(1), true);
-    TEST_FLOAT_NUM_IS_ZERO(2, (0, 1, POSITIVE, 1, 1), false);
+    TEST_FLOAT_NUM_IS_ZERO(1, FLOAT_NUM_ZERO(2), true);
+    TEST_FLOAT_NUM_IS_ZERO(2, (0, 2, POSITIVE, 2, 1, 0), false);
 
     #undef TEST_FLOAT_NUM_IS_ZERO
 
@@ -206,33 +206,34 @@ void test_float_num_add(bool show)
     }
 
     TEST_FLOAT_NUM_ADD(1,
-        FLOAT_NUM_ZERO(1),
-        FLOAT_NUM_ZERO(1),
-        FLOAT_NUM_ZERO(1)
+        FLOAT_NUM_ZERO(2),
+        FLOAT_NUM_ZERO(2),
+        FLOAT_NUM_ZERO(2)
     );
     TEST_FLOAT_NUM_ADD(2,
-        FLOAT_NUM_ZERO(1),
-        (0, 1, POSITIVE, 1, 1),
-        (0, 1, POSITIVE, 1, 1)
+        FLOAT_NUM_ZERO(2),
+        (0, 2, POSITIVE, 1, 1, 0),
+        (0, 2, POSITIVE, 1, 1, 0)
     );
     TEST_FLOAT_NUM_ADD(3,
-        (0, 1, POSITIVE, 1, 1), FLOAT_NUM_ZERO(1),
-        (0, 1, POSITIVE, 1, 1)
+        (0, 2, POSITIVE, 2, 1, 0),
+        FLOAT_NUM_ZERO(2),
+        (0, 2, POSITIVE, 2, 1, 0)
     );
     TEST_FLOAT_NUM_ADD(4,
-        (0, 1, POSITIVE, 1, 1),
-        (0, 1, POSITIVE, 1, 2),
-        (0, 1, POSITIVE, 1, 3)
+        (0, 2, POSITIVE, 2, 1, 0),
+        (0, 2, POSITIVE, 2, 2, 0),
+        (0, 2, POSITIVE, 2, 3, 0)
     );
     TEST_FLOAT_NUM_ADD(5,
-        (0, 1, POSITIVE, 1, 1),
-        (0, 1, NEGATIVE, 1, 1),
-        (-1, 1, ZERO, 0)
+        ( 0, 2, POSITIVE, 2, 1, 0),
+        ( 0, 2, NEGATIVE, 2, 1, 0),
+        (-1, 2, ZERO, 0)
     );
     TEST_FLOAT_NUM_ADD(6,
-        (1, 1, POSITIVE, 1, 1),
-        (0, 1, POSITIVE, 1, 1),
-        (1, 1, POSITIVE, 1, 1)
+        (2, 2, POSITIVE, 2, 1, 0),
+        (0, 2, POSITIVE, 2, 1, 0),
+        (2, 2, POSITIVE, 2, 1, 0)
     );
     TEST_FLOAT_NUM_ADD(7,
         (1, 2, POSITIVE, 2, 1, 0),
@@ -245,9 +246,9 @@ void test_float_num_add(bool show)
         (0, 2, POSITIVE, 2, 1, 0)
     );
     TEST_FLOAT_NUM_ADD(9,
-        (0, 1, POSITIVE, 1, 1),
-        (1, 1, POSITIVE, 1, 1),
-        (1, 1, POSITIVE, 1, 1)
+        (0, 2, POSITIVE, 2, 1, 0),
+        (2, 2, POSITIVE, 2, 1, 0),
+        (2, 2, POSITIVE, 2, 1, 0)
     );
     TEST_FLOAT_NUM_ADD(10,
         (0, 2, POSITIVE, 2, 1, 0),
@@ -282,14 +283,14 @@ void test_float_num_sub(bool show)
     }
 
     TEST_FLOAT_NUM_SUB(1,
-        FLOAT_NUM_ZERO(1),
-        FLOAT_NUM_ZERO(1),
-        FLOAT_NUM_ZERO(1)
+        FLOAT_NUM_ZERO(2),
+        FLOAT_NUM_ZERO(2),
+        FLOAT_NUM_ZERO(2)
     );
     TEST_FLOAT_NUM_SUB(2,
-        FLOAT_NUM_ZERO(1),
-        (0, 1, POSITIVE, 1, 1),
-        (0, 1, NEGATIVE, 1, 1)
+        FLOAT_NUM_ZERO(2),
+        (0, 2, POSITIVE, 2, 1, 0),
+        (0, 2, NEGATIVE, 2, 1, 0)
     );
 
     #undef TEST_FLOAT_NUM_SUB
@@ -316,14 +317,53 @@ void test_float_num_div(bool show)
     }
 
     TEST_FLOAT_NUM_DIV(1,
-        (0, 1, POSITIVE, 1, 6),
-        (0, 1, POSITIVE, 1, 3),
-        (0, 1, POSITIVE, 1, 2)
-    );
-    TEST_FLOAT_NUM_DIV(1,
         (-1, 2, POSITIVE, 2, 6, 0),
         (-1, 2, POSITIVE, 2, 3, 0),
         (-1, 2, POSITIVE, 2, 2, 0)
+    );
+
+    #undef TEST_FLOAT_NUM_DIV
+
+    TEST_FN_CLOSE
+}
+
+
+
+void test_float_num_div_sig(bool show)
+{
+    TEST_FN_OPEN
+
+    #define TEST_FLOAT_NUM_DIV(TAG, FLT, SIG, RES)                  \
+    {                                                               \
+        TEST_CASE_OPEN(TAG)                                         \
+        {                                                           \
+            float_num_t flt = float_num_create_immed(ARG_OPEN FLT); \
+            sig_num_t flt_2 = sig_num_create_immed(ARG_OPEN SIG);   \
+            flt = float_num_div_sig(flt, flt_2);                    \
+            assert(float_num_immed(flt, ARG_OPEN RES))              \
+        }                                                           \
+        TEST_CASE_CLOSE                                             \
+    }
+
+    TEST_FLOAT_NUM_DIV(1,
+        (0, 2, POSITIVE, 2, 6, 0),
+        (POSITIVE, 1, 3),
+        (0, 2, POSITIVE, 2, 2, 0)
+    );
+    TEST_FLOAT_NUM_DIV(2,
+        (0, 2, POSITIVE, 2, 6, 0),
+        (POSITIVE, 2, 3, 0),
+        (-1, 2, POSITIVE, 2, 2, 0)
+    );
+    TEST_FLOAT_NUM_DIV(3,
+        (0, 2, POSITIVE, 2, 5, 0),
+        (POSITIVE, 1, 3),
+        (0, 2, POSITIVE, 2, 1, 0xAAAAAAAAAAAAAAAA)
+    );
+    TEST_FLOAT_NUM_DIV(4,
+        (0, 2, POSITIVE, 2, 2, 0),
+        (POSITIVE, 1, 3),
+        (-1, 2, POSITIVE, 2, 0xAAAAAAAAAAAAAAAA, 0xAAAAAAAAAAAAAAAA)
     );
 
     #undef TEST_FLOAT_NUM_DIV
@@ -352,6 +392,8 @@ void test_float()
     test_float_num_sub(show);
 
     test_float_num_div(show);
+
+    test_float_num_div_sig(show);
 
     TEST_ASSERT_MEM_EMPTY
 }

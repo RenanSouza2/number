@@ -29,8 +29,8 @@ handler_p pi_1_thread_a(handler_p _args)
             sig_2 = sig_num_mul(sig_2, sig_num_wrap(8 * (i - j)));
         }
         float_num_t flt_a = float_num_div(
-            float_num_wrap_sig_num(sig_1, args->size),
-            float_num_wrap_sig_num(sig_2, args->size)
+            float_num_wrap_sig(sig_1, args->size),
+            float_num_wrap_sig(sig_2, args->size)
         );
 
         line_post_response(args->line_a_b, flt_a, &args->is_halted);

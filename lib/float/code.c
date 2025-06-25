@@ -27,6 +27,8 @@ float_num_t float_num_create_variadic(
     va_list *args
 ){
     sig_num_t sig = sig_num_create_variadic(signal, n, args);
+
+    assert(size > 1);
     return (float_num_t)
     {
         .exponent = exponent,
@@ -68,7 +70,7 @@ bool float_num_inner(float_num_t flt_1, float_num_t flt_2)
 
     if(!sig_num_inner(flt_1.sig, flt_2.sig))
     {
-        printf("\n\tFLOAT NUM ASSERT ERROR\t| MISMATCH SIG");
+        printf("\n\tFLOAT NUM ASSERT ERROR\t| MISMATCH SIG NUM");
         return false;
     }
 
@@ -84,6 +86,7 @@ bool float_num_eq_dbg(float_num_t flt_1, float_num_t flt_2)
     {
         printf("\n");
         float_num_display(flt_1);
+        printf("\n");
         float_num_display(flt_2);
         return false;
     }
@@ -270,6 +273,7 @@ float_num_t float_num_create(int64_t exponent, uint64_t size, sig_num_t sig) // 
 {
     CLU_HANDLER_IS_SAFE(sig.num);
 
+    assert(size > 1);
     float_num_t flt = (float_num_t)
     {
         .exponent = exponent,
@@ -300,7 +304,7 @@ float_num_t float_num_wrap_num(num_p num, uint64_t size) // TODO TEST
     return float_num_create(0, size, sig);
 }
 
-float_num_t float_num_wrap_sig_num(sig_num_t sig, uint64_t size) // TODO TEST
+float_num_t float_num_wrap_sig(sig_num_t sig, uint64_t size) // TODO TEST
 {
     return float_num_create(0, size, sig);
 }
@@ -328,6 +332,7 @@ float_num_t float_num_set_exponent(float_num_t flt, int64_t exponent)
     {
         flt.sig = sig_num_head_grow(flt.sig, flt.exponent - exponent);
         flt.exponent = exponent;
+
     }
 
     return flt;
@@ -444,17 +449,17 @@ float_num_t float_num_mul(float_num_t flt_1, float_num_t flt_2) // TODO TEST
     uint64_t pos = flt_1.size > 1 ? flt_1.size - 2 : 0;
     int64_t exponent = int64_add(flt_1.exponent, flt_2.exponent);
     exponent = int64_add(exponent, pos);
-    sig_num_t sig = sig_num_mul_high(flt_1.sig, flt_2.sig, pos);
-    return float_num_create(exponent, flt_1.size, sig);
+    flt_1.sig = sig_num_mul_high(flt_1.sig, flt_2.sig, pos);
+    return float_num_normalize(flt_1);
 }
 
 float_num_t float_num_sqr(float_num_t flt) // TODO TEST
 {
     CLU_FLOAT_IS_SAFE(flt);
 
-    int64_t exponent = int64_add(flt.exponent, flt.exponent);
-    sig_num_t sig = sig_num_sqr(flt.sig);
-    return float_num_create(exponent, flt.size, sig);
+    flt.exponent = int64_add(flt.exponent, flt.exponent);
+    flt.sig = sig_num_sqr(flt.sig);
+    return float_num_normalize(flt);
 }
 
 float_num_t float_num_div(float_num_t flt_1, float_num_t flt_2) // TODO TEST
@@ -464,7 +469,23 @@ float_num_t float_num_div(float_num_t flt_1, float_num_t flt_2) // TODO TEST
 
     int64_t exponent = int64_add(flt_1.exponent, -(int64_t)flt_1.size);
     flt_1 = float_num_set_exponent(flt_1, exponent);
-    exponent = int64_add(flt_1.exponent, -flt_2.exponent);
-    sig_num_t sig = sig_num_div(flt_1.sig, flt_2.sig);
-    return float_num_create(exponent, flt_1.size, sig);
+    flt_1.exponent = int64_add(flt_1.exponent, -flt_2.exponent);
+    flt_1.sig = sig_num_div(flt_1.sig, flt_2.sig);
+    return float_num_normalize(flt_1);
+}
+
+
+
+float_num_t float_num_mul_sig(float_num_t flt, sig_num_t sig) // TODO TEST
+{
+    flt.sig = sig_num_mul(flt.sig, sig);
+    return float_num_normalize(flt);
+}
+
+float_num_t float_num_div_sig(float_num_t flt, sig_num_t sig) // TODO TEST
+{
+    int64_t exponent = int64_add(flt.exponent, -(int64_t)sig.num->count);
+    flt = float_num_set_exponent(flt, exponent);
+    flt.sig = sig_num_div(flt.sig, sig);
+    return float_num_normalize(flt);
 }

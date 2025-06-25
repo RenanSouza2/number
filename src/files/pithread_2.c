@@ -30,8 +30,8 @@ handler_p pi_2_thread_a(handler_p _args)
             sig_1 = sig_num_mul(sig_1, sig_num_wrap((int64_t)2 * (i - j) - 3));
             sig_2 = sig_num_mul(sig_2, sig_num_wrap((int64_t)8 * (i - j)));
         }
-        flt_a = float_num_mul(flt_a, float_num_wrap_sig_num(sig_1, args->size));
-        flt_a = float_num_div(flt_a, float_num_wrap_sig_num(sig_2, args->size));
+        flt_a = float_num_mul(flt_a, float_num_wrap_sig(sig_1, args->size));
+        flt_a = float_num_div(flt_a, float_num_wrap_sig(sig_2, args->size));
 
         line_post_response(args->line_a_b, float_num_copy(flt_a), &args->is_halted);
     }

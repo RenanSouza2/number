@@ -10,7 +10,7 @@ void float_num_display_dec(float_num_t flt);
 
 float_num_t float_num_wrap(int64_t value, uint64_t size);
 float_num_t float_num_wrap_num(num_p num, uint64_t size);
-float_num_t float_num_wrap_sig_num(sig_num_t sig, uint64_t size);
+float_num_t float_num_wrap_sig(sig_num_t sig, uint64_t size);
 float_num_t float_num_copy(float_num_t flt);
 void float_num_free(float_num_t flt);
 
@@ -22,5 +22,8 @@ float_num_t float_num_sub(float_num_t flt_1, float_num_t flt_2);
 float_num_t float_num_mul(float_num_t flt_1, float_num_t flt_2);
 float_num_t float_num_sqr(float_num_t flt);
 float_num_t float_num_div(float_num_t flt_1, float_num_t flt_2);
+
+float_num_t float_num_mul_sig(float_num_t flt, sig_num_t sig);
+float_num_t float_num_div_sig(float_num_t flt, sig_num_t sig);
 
 #endif
