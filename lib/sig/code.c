@@ -116,6 +116,18 @@ void sig_num_display_full(char tag[], sig_num_t sig)
     sig_num_display(sig, true);
 }
 
+void sig_num_display_dec(sig_num_t sig)
+{
+    if(sig.signal == ZERO)
+    {
+        printf("  0");
+        return;
+    }
+
+    printf("%c ", sig.signal & POSITIVE ? '+': '-');
+    num_display_dec(sig.num);
+}
+
 
 
 sig_num_t sig_num_create(uint64_t signal, num_p num)

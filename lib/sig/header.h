@@ -8,6 +8,7 @@
 void sig_num_display(sig_num_t sig, bool full);
 void sig_num_display_tag(char tag[], sig_num_t sig);
 void sig_num_display_full(char tag[], sig_num_t sig);
+void sig_num_display_dec(sig_num_t sig);
 
 void sig_num_free(sig_num_t sig);
 
