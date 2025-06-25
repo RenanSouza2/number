@@ -487,6 +487,40 @@ void float_num_pi_2(uint64_t size)
     float_num_free(flt_m_1_2);
 }
 
+void float_num_pi_3(uint64_t size)
+{
+    float_num_t flt_a = float_num_wrap(6, size);
+    float_num_t flt_pi = float_num_wrap(3, size);
+
+    for(uint64_t i=1; ; i++)
+    {
+        flt_a = float_num_mul(flt_a, float_num_wrap((int64_t)2 * i - 3, size));
+        flt_a = float_num_div(flt_a, float_num_wrap((int64_t)8 * i, size));
+
+        if(i%1000 == 0)
+            fprintf(stderr, "\nexp: %ld", -(flt_a.size + flt_a.exponent));
+
+        float_num_t flt_b = float_num_copy(flt_a);
+        flt_b = float_num_mul(flt_b, float_num_wrap((int64_t)1 - 2 * i, size));
+        flt_b = float_num_div(flt_b, float_num_wrap((int64_t)4 * i + 2, size));
+
+        if(!float_num_safe_add(flt_pi, flt_b))
+        {
+            float_num_free(flt_b);
+            break;
+        }
+
+        flt_pi = float_num_add(flt_pi, flt_b);
+    }
+
+    printf("\n");
+    printf("\n");
+    float_num_display_dec(flt_pi);
+    float_num_free(flt_pi);
+    float_num_free(flt_a);
+}
+
+
 
 
 void display_bit(uint64_t value)
@@ -566,7 +600,8 @@ int main(int argc, char** argv)
     // sqrt_2();
     // float_num_pi_1();
     // float_num_pi_2(1000);
-    pi_threads_1(arg, 8, true);
+    float_num_pi_3(arg);
+    // pi_threads_1(arg, 8, true);
     // pi_threads_4(arg);
 
     // assert(clu_mem_is_empty("FINAL"));
