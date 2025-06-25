@@ -602,7 +602,7 @@ int main(int argc, char** argv)
     // float_num_pi_2(1000);
     // float_num_pi_3(arg);
     // pi_threads_1(arg, 8, true);
-    pi_threads_2(arg, 1, false);
+    pi_threads_2(arg, 1, true);
 
     // assert(clu_mem_is_empty("FINAL"));
 

@@ -94,75 +94,111 @@ handler_p pi_2_thread_pi(handler_p _args)
 
 
 
-// STRUCT(pi_2_monitor_thread_res)
-// {
-//     uint64_t count_a[4];
-//     uint64_t count_b[4];
-//     uint64_t count_c[4];
-//     uint64_t count_d[4];
-//     uint64_t count_pi;
-//     uint64_t total;
-// };
+STRUCT(pi_2_monitor_thread_res)
+{
+    uint64_t *count_a;
+    uint64_t *count_b;
+    uint64_t count_pi;
+    uint64_t total;
+};
 
-// STRUCT(pi_2_monitor_thread_args)
-// {
-//     bool *a_is_halted[4];
-//     bool *b_is_halted[4];
-//     bool *c_is_halted[4];
-//     bool *d_is_halted[4];
-//     bool *pi_is_halted;
-//     pi_2_monitor_thread_res_t res;
-//     bool keep_going;
-// };
+pi_2_monitor_thread_res_t pi_2_monitor_thread_res_create(uint64_t layers)
+{
+    uint64_t *count_a = calloc(layers, sizeof(uint64_t));
+    uint64_t *count_b = calloc(layers, sizeof(uint64_t));
+    assert(count_a);
+    assert(count_b);
 
-// handler_p pi_2_monitor_thread(handler_p args)
-// {
-//     pi_2_monitor_thread_args_p _args = args;
-//     pi_2_monitor_thread_res_t res = (pi_2_monitor_thread_res_t) {};
-//     uint64_t i=0;
-//     for(; _args->keep_going; i++)
-//     {
-//         for(uint64_t j=0; j<4; j++)
-//         {
-//             res.count_a[j] += *(_args->a_is_halted[j]);
-//             res.count_b[j] += *(_args->b_is_halted[j]);
-//             res.count_c[j] += *(_args->c_is_halted[j]);
-//             res.count_d[j] += *(_args->d_is_halted[j]);
-//         }
-//         res.count_pi += *(_args->pi_is_halted);
+    return (pi_2_monitor_thread_res_t)
+    {
+        .count_a = count_a,
+        .count_b = count_b,
+    };
+}
+
+void pi_2_monitor_thread_res_free(pi_2_monitor_thread_res_t res)
+{
+    free(res.count_a);
+    free(res.count_b);
+}
+
+STRUCT(pi_2_monitor_thread_args)
+{
+    uint64_t layers;
+    bool **a_is_halted;
+    bool **b_is_halted;
+    bool *pi_is_halted;
+    pi_2_monitor_thread_res_t res;
+    bool keep_going;
+};
+
+pi_2_monitor_thread_args_t pi_2_monitor_thread_args_create(uint64_t layers)
+{
+    bool **a_is_halted = malloc(layers * sizeof(bool*));
+    bool **b_is_halted = malloc(layers * sizeof(bool*));
+    assert(a_is_halted);
+    assert(b_is_halted);
+
+    return (pi_2_monitor_thread_args_t)
+    {
+        .layers = layers,
+        .a_is_halted = a_is_halted,
+        .b_is_halted = b_is_halted,
+        .res = pi_2_monitor_thread_res_create(layers),
+        .keep_going = true
+    };
+}
+
+ void pi_2_monitor_thread_args_free(pi_2_monitor_thread_args_t args)
+ {
+    free(args.a_is_halted);
+    free(args.b_is_halted);
+ }
+
+handler_p pi_2_monitor_thread(handler_p _args)
+{
+    pi_2_monitor_thread_args_p args = _args;
+    pi_2_monitor_thread_res_t res = args->res;
+    uint64_t total=0;
+    for(; args->keep_going; total++)
+    {
+        for(uint64_t i=0; i<args->layers; i++)
+        {
+            res.count_a[i] += *(args->a_is_halted[i]);
+            res.count_b[i] += *(args->b_is_halted[i]);
+        }
+        res.count_pi += *(args->pi_is_halted);
         
-//         sleep(1);
-//     }
+        sleep(1);
+    }
 
-//     res.total = i;
-//     _args->res = res;
-//     return NULL;
-// }
+    res.total = total;
+    args->res = res;
+    return NULL;
+}
 
-// void pi_2_monitor_thread_treat_res(pi_2_monitor_thread_res_t res)
-// {
-//     printf("\n");
-//     printf("\n\t\t| 0\t| 1\t| 2\t| 3\t|");
-//     printf("\n ------------------------------------------------");
-//     printf("\n| thread_a\t|");
-//     for(uint64_t i=0; i<4; i++)
-//         printf(" %3.f %%\t|", 100 - 100.0 * res.count_a[i] / res.total);
-//     printf("\n| thread_b\t|");
-//     for(uint64_t i=0; i<4; i++)
-//         printf(" %3.f %%\t|", 100 - 100.0 * res.count_b[i] / res.total);
-//     printf("\n| thread_c\t|");
-//     for(uint64_t i=0; i<4; i++)
-//         printf(" %3.f %%\t|", 100 - 100.0 * res.count_c[i] / res.total);
-//     printf("\n| thread_d\t|");
-//     for(uint64_t i=0; i<4; i++)
-//         printf(" %3.f %%\t|", 100 - 100.0 * res.count_d[i] / res.total);
-//     printf("\n");
-//     printf("\n| thread_pi\t| %3.f %%\t|", 100 - 100.0 * res.count_pi / res.total);
-// }
+void pi_2_monitor_thread_treat_res(pi_2_monitor_thread_res_t res, uint64_t layers)
+{
+    printf("\n");
+    printf("\n\t\t|");
+    for(uint64_t i=0; i<layers; i++)
+        printf(" %lu\t|", i);
+    printf("\n ----------------");
+    for(uint64_t i=0; i<layers; i++)
+        printf("--------");
+    printf("\n| thread_a\t|");
+    for(uint64_t i=0; i<layers; i++)
+        printf(" %3.f %%\t|", 100 - 100.0 * res.count_a[i] / res.total);
+    printf("\n| thread_b\t|");
+    for(uint64_t i=0; i<layers; i++)
+        printf(" %3.f %%\t|", 100 - 100.0 * res.count_b[i] / res.total);
+    printf("\n");
+    printf("\n| thread_pi\t| %3.f %%\t|", 100 - 100.0 * res.count_pi / res.total);
+}
 
 
 
-void pi_threads_2(uint64_t size, uint64_t layers, bool /*monitoring*/)
+void pi_threads_2(uint64_t size, uint64_t layers, bool monitoring)
 {
     pi_2_thread_a_args_t args_a[layers];
     pi_2_thread_b_args_t args_b[layers];
@@ -214,24 +250,19 @@ void pi_threads_2(uint64_t size, uint64_t layers, bool /*monitoring*/)
     };
     pthread_t pid_pi = pthread_launch(pi_2_thread_pi, &args_pi);
 
-//     pi_2_monitor_thread_args_t args_monitor_thread;
-//     pthread_t pid_monitor_thread;
-//     if(monitoring)
-//     {
-//         args_monitor_thread = (pi_2_monitor_thread_args_t)
-//         {
-//             .pi_is_halted = &args_pi.is_halted,
-//             .keep_going = true
-//         };
-//         for(uint64_t i=0; i<4; i++)
-//         {
-//             args_monitor_thread.a_is_halted[i] = &args_a[i].is_halted;
-//             args_monitor_thread.b_is_halted[i] = &args_b[i].is_halted;
-//             args_monitor_thread.c_is_halted[i] = &args_c[i].is_halted;
-//             args_monitor_thread.d_is_halted[i] = &args_d[i].is_halted;
-//         }
-//         pid_monitor_thread = pthread_launch(pi_2_monitor_thread, &args_monitor_thread);
-//     }
+    pi_2_monitor_thread_args_t args_monitor_thread;
+    pthread_t pid_monitor_thread = 0;
+    if(monitoring)
+    {
+        args_monitor_thread = pi_2_monitor_thread_args_create(layers);
+        for(uint64_t i=0; i<layers; i++)
+        {
+            args_monitor_thread.a_is_halted[i] = &args_a[i].is_halted;
+            args_monitor_thread.b_is_halted[i] = &args_b[i].is_halted;
+        }
+        args_monitor_thread.pi_is_halted = &args_pi.is_halted;
+        pid_monitor_thread = pthread_launch(pi_2_monitor_thread, &args_monitor_thread);
+    }
 
     pthread_wait(pid_pi);
     float_num_t flt_pi = args_pi.res;
@@ -242,10 +273,10 @@ void pi_threads_2(uint64_t size, uint64_t layers, bool /*monitoring*/)
         args_b[i].keep_going = false;
     }
 
-//     if(monitoring)
-//     {
-//         args_monitor_thread.keep_going = false;
-//     }
+    if(monitoring)
+    {
+        args_monitor_thread.keep_going = false;
+    }
 
     for(uint64_t i=0; i<layers; i++)
     {
@@ -259,24 +290,24 @@ void pi_threads_2(uint64_t size, uint64_t layers, bool /*monitoring*/)
         pthread_wait(pid_b[i]);
     }
 
-//     if(monitoring)
-//     {
-//         pthread_wait(pid_monitor_thread);
-//     }
+    if(monitoring)
+    {
+        pthread_wait(pid_monitor_thread);
+    }
     
     for(uint64_t i=0; i<layers; i++)
         line_free(&line_a_b[i]);
 
     junc_free(&junc_b_pi);
 
-//     if(monitoring)
-//     {
-//         pi_2_monitor_thread_treat_res(args_monitor_thread.res);
-//     }
-//     else
-//     {
+    if(monitoring)
+    {
+        pi_2_monitor_thread_treat_res(args_monitor_thread.res, layers);
+    }
+    else
+    {
         printf("\n\n");
         float_num_display_dec(flt_pi);
-//     }
+    }
     float_num_free(flt_pi);
 } 
