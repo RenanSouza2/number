@@ -5,11 +5,10 @@
 #include "../lib/fix/header.h"
 #include "../lib/mod/header.h"
 #include "../lib/num/header.h"
+#include "../lib/num/struct.h"
 #include "../lib/sig/header.h"
 
 #include "files/pithread_1.c"
-#include "files/pithread_2.c"
-#include "files/pithread_3.c"
 #include "files/pithread_4.c"
 
 
@@ -567,9 +566,7 @@ int main(int argc, char** argv)
     // sqrt_2();
     // float_num_pi_1();
     // float_num_pi_2(1000);
-    // pi_threads_1(1000);
-    // pi_threads_2(arg);
-    pi_threads_3(arg, 4, false);
+    pi_threads_1(arg, 8, true);
     // pi_threads_4(arg);
 
     // assert(clu_mem_is_empty("FINAL"));
