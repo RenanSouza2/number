@@ -9,7 +9,7 @@
 #include "../lib/sig/header.h"
 
 #include "files/pithread_1.c"
-#include "files/pithread_4.c"
+#include "files/pithread_2.c"
 
 
 
@@ -600,9 +600,9 @@ int main(int argc, char** argv)
     // sqrt_2();
     // float_num_pi_1();
     // float_num_pi_2(1000);
-    float_num_pi_3(arg);
+    // float_num_pi_3(arg);
     // pi_threads_1(arg, 8, true);
-    // pi_threads_4(arg);
+    pi_threads_2(arg, 1, false);
 
     // assert(clu_mem_is_empty("FINAL"));
 

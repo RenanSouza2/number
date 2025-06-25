@@ -6,7 +6,7 @@
 
 
 
-STRUCT(pi_4_thread_a_args)
+STRUCT(pi_2_thread_a_args)
 {
     uint64_t size;
     line_p line_a_b;
@@ -16,23 +16,23 @@ STRUCT(pi_4_thread_a_args)
     bool is_halted;
 };
 
-handler_p pi_4_thread_a(handler_p args)
+handler_p pi_2_thread_a(handler_p _args)
 {
-    pi_4_thread_a_args_p _args = args;
-    float_num_t flt_a = _args->a0;
-    for(uint64_t i = _args->id + 1; _args->keep_going; i += 1)
+    pi_2_thread_a_args_p args = _args;
+    float_num_t flt_a = args->a0;
+    for(uint64_t i = args->id + 1; args->keep_going; i += 1)
     {
-        flt_a = float_num_mul(flt_a, float_num_wrap((int64_t)2*i - 3, _args->size));
-        flt_a = float_num_div(flt_a, float_num_wrap(8 * i, _args->size));
+        flt_a = float_num_mul(flt_a, float_num_wrap((int64_t)2 * i - 3, args->size));
+        flt_a = float_num_div(flt_a, float_num_wrap((int64_t)8 * i, args->size));
 
-        line_post_response(_args->line_a_b, float_num_copy(flt_a), &_args->is_halted);
+        line_post_response(args->line_a_b, float_num_copy(flt_a), &args->is_halted);
     }
     float_num_free(flt_a);
 
     return NULL;
 }
 
-STRUCT(pi_4_thread_b_args)
+STRUCT(pi_2_thread_b_args)
 {
     uint64_t size;
     line_p line_a_b;
@@ -42,44 +42,42 @@ STRUCT(pi_4_thread_b_args)
     bool is_halted;
 };
 
-handler_p pi_4_thread_b(handler_p args)
+handler_p pi_2_thread_b(handler_p _args)
 {
-    pi_4_thread_b_args_p _args = args;
-    for(uint64_t i = _args->id + 4; _args->keep_going; i += 4)
+    pi_2_thread_b_args_p args = _args;
+    for(uint64_t i = args->id + 1; args->keep_going; i += 1)
     {
-        float_num_t flt_a = line_get_response(_args->line_a_b, &_args->is_halted);
+        float_num_t flt_a = line_get_response(args->line_a_b, &args->is_halted);
     
         float_num_t flt_b;
-        flt_b = float_num_mul(flt_a, float_num_wrap((int64_t)1 - 2 * i, _args->size));
-        flt_b = float_num_mul(flt_b, float_num_wrap(4 * i + 2, _args->size));
+        flt_b = float_num_mul(flt_a, float_num_wrap((int64_t)1 - 2 * i, args->size));
+        flt_b = float_num_div(flt_b, float_num_wrap((int64_t)4 * i + 2, args->size));
 
-        line_post_response(_args->line_b_pi, flt_b, &_args->is_halted);
+        line_post_response(args->line_b_pi, flt_b, &args->is_halted);
     }
 
     return NULL;
 }
 
-STRUCT(pi_4_thread_pi_args)
+STRUCT(pi_2_thread_pi_args)
 {
     uint64_t size;
     junc_p junc_b_pi;
+    float_num_t pi0;
     float_num_t res;
     bool is_halted;
 };
 
-handler_p pi_4_thread_pi(handler_p args)
+handler_p pi_2_thread_pi(handler_p _args)
 {
-    pi_4_thread_pi_args_p _args = args;
-    float_num_t flt_pi = float_num_div(
-        float_num_wrap(25, _args->size),
-        float_num_wrap( 8, _args->size)
-    );
-    for(uint64_t i=4; ; i++)
+    pi_2_thread_pi_args_p args = _args;
+    float_num_t flt_pi = args->pi0;
+    for(uint64_t i=1; ; i++)
     {
-        float_num_t flt_b = junc_get_response(_args->junc_b_pi, &_args->is_halted);
+        float_num_t flt_b = junc_get_response(args->junc_b_pi, &args->is_halted);
 
-        // if(i%1000 == 0)
-        //     fprintf(stderr, "\nexp: %ld", -(flt_b.size + flt_b.exponent));
+        if(i%1000 == 0)
+            fprintf(stderr, "\nexp: %ld", -(flt_b.size + flt_b.exponent));
 
         if(!float_num_safe_add(flt_pi, flt_b))
         {
@@ -90,13 +88,13 @@ handler_p pi_4_thread_pi(handler_p args)
         flt_pi = float_num_add(flt_pi, flt_b);
     }
 
-    _args->res = flt_pi;
+    args->res = flt_pi;
     return NULL;
 }
 
 
 
-// STRUCT(pi_4_monitor_thread_res)
+// STRUCT(pi_2_monitor_thread_res)
 // {
 //     uint64_t count_a[4];
 //     uint64_t count_b[4];
@@ -106,21 +104,21 @@ handler_p pi_4_thread_pi(handler_p args)
 //     uint64_t total;
 // };
 
-// STRUCT(pi_4_monitor_thread_args)
+// STRUCT(pi_2_monitor_thread_args)
 // {
 //     bool *a_is_halted[4];
 //     bool *b_is_halted[4];
 //     bool *c_is_halted[4];
 //     bool *d_is_halted[4];
 //     bool *pi_is_halted;
-//     pi_4_monitor_thread_res_t res;
+//     pi_2_monitor_thread_res_t res;
 //     bool keep_going;
 // };
 
-// handler_p pi_4_monitor_thread(handler_p args)
+// handler_p pi_2_monitor_thread(handler_p args)
 // {
-//     pi_4_monitor_thread_args_p _args = args;
-//     pi_4_monitor_thread_res_t res = (pi_4_monitor_thread_res_t) {};
+//     pi_2_monitor_thread_args_p _args = args;
+//     pi_2_monitor_thread_res_t res = (pi_2_monitor_thread_res_t) {};
 //     uint64_t i=0;
 //     for(; _args->keep_going; i++)
 //     {
@@ -141,7 +139,7 @@ handler_p pi_4_thread_pi(handler_p args)
 //     return NULL;
 // }
 
-// void pi_4_monitor_thread_treat_res(pi_4_monitor_thread_res_t res)
+// void pi_2_monitor_thread_treat_res(pi_2_monitor_thread_res_t res)
 // {
 //     printf("\n");
 //     printf("\n\t\t| 0\t| 1\t| 2\t| 3\t|");
@@ -164,13 +162,10 @@ handler_p pi_4_thread_pi(handler_p args)
 
 
 
-void pi_threads_4(uint64_t size)
+void pi_threads_2(uint64_t size, uint64_t layers, bool /*monitoring*/)
 {
-//     bool monitoring = false;
-    uint64_t layers = 1;
-
-    pi_4_thread_a_args_t args_a[layers];
-    pi_4_thread_b_args_t args_b[layers];
+    pi_2_thread_a_args_t args_a[layers];
+    pi_2_thread_b_args_t args_b[layers];
 
     line_t line_a_b[layers];
 
@@ -179,26 +174,15 @@ void pi_threads_4(uint64_t size)
     pthread_t pid_a[layers];
     pthread_t pid_b[layers];
 
-    float_num_t a0[4] = {
-        float_num_wrap(6, size),
-//         float_num_div(
-//             float_num_wrap(-3, size),
-//             float_num_wrap( 4, size)
-//         ),
-//         float_num_div(
-//             float_num_wrap(-3, size),
-//             float_num_wrap(64, size)
-//         ),
-//         float_num_div(
-//             float_num_wrap( -3, size),
-//             float_num_wrap(512, size)
-//         ),
-    };
+    float_num_t a0[layers];
+    a0[0] = float_num_wrap(6, size);
+    
+    float_num_t pi0 = float_num_wrap(3, size);
 
     for(uint64_t i=0; i<layers; i++)
     {
         line_a_b[i] = line_init(50);
-        args_a[i] = (pi_4_thread_a_args_t)
+        args_a[i] = (pi_2_thread_a_args_t)
         {
             .size = size,
             .line_a_b = &line_a_b[i],
@@ -207,9 +191,9 @@ void pi_threads_4(uint64_t size)
             .keep_going = true,
             .is_halted = false
         };
-        pid_a[i] = pthread_launch(pi_4_thread_a, &args_a[i]);
+        pid_a[i] = pthread_launch(pi_2_thread_a, &args_a[i]);
 
-        args_b[i] = (pi_4_thread_b_args_t)
+        args_b[i] = (pi_2_thread_b_args_t)
         {
             .size = size,
             .line_a_b = &line_a_b[i],
@@ -218,22 +202,23 @@ void pi_threads_4(uint64_t size)
             .keep_going = true,
             .is_halted = false
         };
-        pid_b[i] = pthread_launch(pi_4_thread_b, &args_b[i]);
+        pid_b[i] = pthread_launch(pi_2_thread_b, &args_b[i]);
     }
 
-    pi_4_thread_pi_args_t args_pi = (pi_4_thread_pi_args_t)
+    pi_2_thread_pi_args_t args_pi = (pi_2_thread_pi_args_t)
     {
         .size = size,
         .junc_b_pi = &junc_b_pi,
+        .pi0 = pi0,
         .is_halted = false
     };
-    pthread_t pid_pi = pthread_launch(pi_4_thread_pi, &args_pi);
+    pthread_t pid_pi = pthread_launch(pi_2_thread_pi, &args_pi);
 
-//     pi_4_monitor_thread_args_t args_monitor_thread;
+//     pi_2_monitor_thread_args_t args_monitor_thread;
 //     pthread_t pid_monitor_thread;
 //     if(monitoring)
 //     {
-//         args_monitor_thread = (pi_4_monitor_thread_args_t)
+//         args_monitor_thread = (pi_2_monitor_thread_args_t)
 //         {
 //             .pi_is_halted = &args_pi.is_halted,
 //             .keep_going = true
@@ -245,7 +230,7 @@ void pi_threads_4(uint64_t size)
 //             args_monitor_thread.c_is_halted[i] = &args_c[i].is_halted;
 //             args_monitor_thread.d_is_halted[i] = &args_d[i].is_halted;
 //         }
-//         pid_monitor_thread = pthread_launch(pi_4_monitor_thread, &args_monitor_thread);
+//         pid_monitor_thread = pthread_launch(pi_2_monitor_thread, &args_monitor_thread);
 //     }
 
     pthread_wait(pid_pi);
@@ -286,7 +271,7 @@ void pi_threads_4(uint64_t size)
 
 //     if(monitoring)
 //     {
-//         pi_4_monitor_thread_treat_res(args_monitor_thread.res);
+//         pi_2_monitor_thread_treat_res(args_monitor_thread.res);
 //     }
 //     else
 //     {
