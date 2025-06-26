@@ -590,6 +590,8 @@ int main(int argc, char** argv)
 
     uint64_t arg = get_arg(argc, argv);
 
+    // clu_set_log(true);
+
     // num_generate(21, 2);
     // time_1(16, 23);
     // time_2(argc, argv, 19);
@@ -607,7 +609,7 @@ int main(int argc, char** argv)
     // pi_2_time_2();
 
     uint64_t begin = get_time();
-    pi_threads_2(arg, 1, true);
+    pi_threads_2(arg, 4, true);
     uint64_t end = get_time();
     uint64_t time_3 = end - begin;
     printf("\n\ntime 3: %.1f\n", time_3 / 1e9);
