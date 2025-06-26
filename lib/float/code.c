@@ -167,7 +167,6 @@ void float_num_display_dec(float_num_t flt) // TODO TEST
     }
     float_num_free(flt_one);
     
-    printf("\nbase: %lu", base);
     while(true)
     {
         float_num_t flt_tmp = float_num_div(

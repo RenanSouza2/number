@@ -582,13 +582,13 @@ void sqrt_2()
 
 
 
-// int main(int argc, char** argv)
-int main()
+int main(int argc, char** argv)
+// int main()
 {
     setbuf(stdout, NULL);
     srand(time(NULL));
 
-    // uint64_t arg = get_arg(argc, argv);
+    uint64_t arg = get_arg(argc, argv);
 
     // num_generate(21, 2);
     // time_1(16, 23);
@@ -600,9 +600,9 @@ int main()
     // sqrt_2();
     // float_num_pi_1();
     // float_num_pi_2(1000);
-    float_num_pi_3(1000);
+    // float_num_pi_3(1000);
     // pi_threads_1(arg, 8, true);
-    // pi_threads_2(arg, 8, false);
+    pi_threads_2(arg, 4, true);
     // pi_2_time_1(arg);
     // pi_2_time_2();
 

@@ -115,7 +115,7 @@ float_num_t line_get_response(line_p l, bool * is_halted)
 float_num_t line_tryget_response(line_p l)
 {
     if(sem_trywait(&l->sem_f) != 0)
-        return float_num_wrap(0, 1);
+        return float_num_wrap(0, 2);
 
     return line_get_response_locked(l);
 }

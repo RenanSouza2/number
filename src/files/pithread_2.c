@@ -30,8 +30,8 @@ handler_p pi_2_thread_a(handler_p _args)
             sig_1 = sig_num_mul(sig_1, sig_num_wrap((int64_t)2 * (i - j) - 3));
             sig_2 = sig_num_mul(sig_2, sig_num_wrap((int64_t)8 * (i - j)));
         }
-        flt_a = float_num_mul(flt_a, float_num_wrap_sig(sig_1, args->size));
-        flt_a = float_num_div(flt_a, float_num_wrap_sig(sig_2, args->size));
+        flt_a = float_num_mul_sig(flt_a, sig_1);
+        flt_a = float_num_div_sig(flt_a, sig_2);
 
         line_post_response(args->line_a_b, float_num_copy(flt_a), &args->is_halted);
     }
@@ -59,8 +59,8 @@ handler_p pi_2_thread_b(handler_p _args)
         float_num_t flt_a = line_get_response(args->line_a_b, &args->is_halted);
     
         float_num_t flt_b;
-        flt_b = float_num_mul(flt_a, float_num_wrap((int64_t)1 - 2 * i, args->size));
-        flt_b = float_num_div(flt_b, float_num_wrap((int64_t)4 * i + 2, args->size));
+        flt_b = float_num_mul_sig(flt_a, sig_num_wrap((int64_t)1 - 2 * i));
+        flt_b = float_num_div_sig(flt_b, sig_num_wrap((int64_t)4 * i + 2));
 
         line_post_response(args->line_b_pi, flt_b, &args->is_halted);
     }
@@ -86,7 +86,7 @@ handler_p pi_2_thread_pi(handler_p _args)
     {
         float_num_t flt_b = junc_get_response(args->junc_b_pi, &args->is_halted);
 
-        if(i%1000 == 0)
+        if(i%100000 == 0)
             fprintf(stderr, "\nexp: %ld", -(flt_b.size + flt_b.exponent));
 
         if(!float_num_safe_add(flt_pi, flt_b))
