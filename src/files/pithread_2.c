@@ -9,34 +9,7 @@
 STRUCT(pi_2_thread_a_args)
 {
     uint64_t size;
-    line_p line_a_c;
-    uint64_t id;
-    uint64_t layers;
-    bool keep_going;
-    bool is_halted;
-};
-
-handler_p pi_2_thread_a(handler_p _args)
-{
-    dbg("a"); // TODO DELETE
-    pi_2_thread_a_args_p args = _args;
-    for(uint64_t i = args->id + args->layers; args->keep_going; i += args->layers)
-    {
-        sig_num_t sig_a = sig_num_wrap((int64_t)2 * i - 3);
-        for(uint64_t j=1; j<args->layers; j++)
-            sig_a = sig_num_mul(sig_a, sig_num_wrap((int64_t)2 * (i - j) - 3));
-
-        float_num_t flt_a = (float_num_t) {.sig = sig_a};
-        line_post_response(args->line_a_c, flt_a, &args->is_halted);
-    }
-
-    return NULL;
-}
-
-STRUCT(pi_2_thread_b_args)
-{
-    uint64_t size;
-    line_p line_b_c;
+    line_p line_a_b;
     uint64_t id;
     uint64_t layers;
     float_num_t a0;
@@ -44,80 +17,53 @@ STRUCT(pi_2_thread_b_args)
     bool is_halted;
 };
 
+handler_p pi_2_thread_a(handler_p _args)
+{
+    pi_2_thread_a_args_p args = _args;
+    float_num_t flt_a = args->a0;
+    for(uint64_t i = args->id + args->layers; args->keep_going; i += args->layers)
+    {
+        sig_num_t sig_a = sig_num_wrap((int64_t)2 * i - 3);
+        sig_num_t sig_b = sig_num_wrap((int64_t)8 * i);
+        for(uint64_t j=1; j<args->layers; j++)
+        {
+            sig_a = sig_num_mul(sig_a, sig_num_wrap((int64_t)2 * (i - j) - 3));
+            sig_b = sig_num_mul(sig_b, sig_num_wrap((int64_t)8 * (i - j)));
+        }
+
+        flt_a = float_num_mul_sig(flt_a, sig_a);
+        flt_a = float_num_div_sig(flt_a, sig_b);
+
+        line_post_response(args->line_a_b, float_num_copy(flt_a), &args->is_halted);
+    }
+    float_num_free(flt_a);
+
+    return NULL;
+}
+
+STRUCT(pi_2_thread_b_args)
+{
+    uint64_t size;
+    line_p line_a_b;
+    line_p line_b_pi;
+    uint64_t id;
+    uint64_t layers;
+    bool keep_going;
+    bool is_halted;
+};
+
 handler_p pi_2_thread_b(handler_p _args)
 {
-    dbg("b");
     pi_2_thread_b_args_p args = _args;
     for(uint64_t i = args->id + args->layers; args->keep_going; i += args->layers)
     {
-        sig_num_t sig_b = sig_num_wrap((int64_t)8 * i);
-        for(uint64_t j=1; j<args->layers; j++)
-            sig_b = sig_num_mul(sig_b, sig_num_wrap((int64_t)8 * (i - j)));
-            
-        float_num_t flt_b = (float_num_t) {.sig = sig_b};
-        line_post_response(args->line_b_c, flt_b, &args->is_halted);
-    }
-
-    return NULL;
-}
-
-STRUCT(pi_2_thread_c_args)
-{
-    uint64_t size;
-    line_p line_a_c;
-    line_p line_b_c;
-    line_p line_c_d;
-    uint64_t id;
-    uint64_t layers;
-    float_num_t c0;
-    bool keep_going;
-    bool is_halted;
-};
-
-handler_p pi_2_thread_c(handler_p _args)
-{
-    dbg("c");
-    pi_2_thread_c_args_p args = _args;
-    float_num_t flt_c = args->c0;
-    for(uint64_t i = args->id + args->layers; args->keep_going; i += args->layers)
-    {
-        float_num_t flt_a = line_get_response(args->line_a_c, &args->is_halted);
-        float_num_t flt_b = line_get_response(args->line_b_c, &args->is_halted);
-
-        flt_c = float_num_mul_sig(flt_c, flt_a.sig);
-        flt_c = float_num_div_sig(flt_c, flt_b.sig);
-
-        line_post_response(args->line_c_d, float_num_copy(flt_c), &args->is_halted);
-    }
-    float_num_free(flt_c);
-
-    return NULL;
-}
-
-STRUCT(pi_2_thread_d_args)
-{
-    uint64_t size;
-    line_p line_c_d;
-    line_p line_d_pi;
-    uint64_t id;
-    uint64_t layers;
-    bool keep_going;
-    bool is_halted;
-};
-
-handler_p pi_2_thread_d(handler_p _args)
-{
-    dbg("d");
-    pi_2_thread_d_args_p args = _args;
-    for(uint64_t i = args->id + args->layers; args->keep_going; i += args->layers)
-    {
-        float_num_t flt_c = line_get_response(args->line_c_d, &args->is_halted);
+        float_num_t flt_a = line_get_response(args->line_a_b, &args->is_halted);
         
-        float_num_t flt_d;
-        flt_d = float_num_mul_sig(flt_c, sig_num_wrap((int64_t)1 - 2 * i));
-        flt_d = float_num_div_sig(flt_d, sig_num_wrap((int64_t)4 * i + 2));
+        float_num_t flt_b;
+        flt_b = float_num_mul_sig(flt_a, sig_num_wrap((int64_t)1 - 2 * i));
+        flt_b = float_num_div_sig(flt_b, sig_num_wrap((int64_t)4 * i + 2));
 
-        line_post_response(args->line_d_pi, flt_d, &args->is_halted);
+        line_post_response(args->line_b_pi, flt_b, &args->is_halted);
     }
 
     return NULL;
@@ -126,7 +72,7 @@ handler_p pi_2_thread_d(handler_p _args)
 STRUCT(pi_2_thread_pi_args)
 {
     uint64_t size;
-    junc_p junc_d_pi;
+    junc_p junc_b_pi;
     uint64_t layers;
     float_num_t pi0;
     float_num_t res;
@@ -135,18 +81,17 @@ STRUCT(pi_2_thread_pi_args)
 
 handler_p pi_2_thread_pi(handler_p _args)
 {
-    dbg("pi");
     pi_2_thread_pi_args_p args = _args;
     float_num_t flt_pi = args->pi0;
     for(uint64_t i=args->layers; ; i++)
     {
-        float_num_t flt_b = junc_get_response(args->junc_d_pi, &args->is_halted);
+        float_num_t flt_b = junc_get_response(args->junc_b_pi, &args->is_halted);
 
-        if(i%100000 == 0)
-        {
-            uint64_t done = -(flt_b.size + flt_b.exponent);
-            fprintf(stderr, "\npgr: %lu / %lu", done / 1000, flt_b.size / 1000);
-        }
+        // if(i%100000 == 0)
+        // {
+        //     uint64_t done = -(flt_b.size + flt_b.exponent);
+        //     fprintf(stderr, "\npgr: %lu / %lu", done / 1000, flt_b.size / 1000);
+        // }
 
         if(!float_num_safe_add(flt_pi, flt_b))
         {
@@ -177,19 +122,13 @@ pi_2_monitor_thread_res_t pi_2_monitor_thread_res_create(uint64_t layers)
 {
     uint64_t *count_a = calloc(layers, sizeof(uint64_t));
     uint64_t *count_b = calloc(layers, sizeof(uint64_t));
-    uint64_t *count_c = calloc(layers, sizeof(uint64_t));
-    uint64_t *count_d = calloc(layers, sizeof(uint64_t));
     assert(count_a);
     assert(count_b);
-    assert(count_c);
-    assert(count_d);
 
     return (pi_2_monitor_thread_res_t)
     {
         .count_a = count_a,
         .count_b = count_b,
-        .count_c = count_c,
-        .count_d = count_d,
     };
 }
 
@@ -197,8 +136,6 @@ void pi_2_monitor_thread_res_free(pi_2_monitor_thread_res_t res)
 {
     free(res.count_a);
     free(res.count_b);
-    free(res.count_c);
-    free(res.count_d);
 }
 
 STRUCT(pi_2_monitor_thread_args)
@@ -206,8 +143,6 @@ STRUCT(pi_2_monitor_thread_args)
     uint64_t layers;
     bool **a_is_halted;
     bool **b_is_halted;
-    bool **c_is_halted;
-    bool **d_is_halted;
     bool *pi_is_halted;
     pi_2_monitor_thread_res_t res;
     bool keep_going;
@@ -217,20 +152,14 @@ pi_2_monitor_thread_args_t pi_2_monitor_thread_args_create(uint64_t layers)
 {
     bool **a_is_halted = malloc(layers * sizeof(bool*));
     bool **b_is_halted = malloc(layers * sizeof(bool*));
-    bool **c_is_halted = malloc(layers * sizeof(bool*));
-    bool **d_is_halted = malloc(layers * sizeof(bool*));
     assert(a_is_halted);
     assert(b_is_halted);
-    assert(c_is_halted);
-    assert(d_is_halted);
 
     return (pi_2_monitor_thread_args_t)
     {
         .layers = layers,
         .a_is_halted = a_is_halted,
         .b_is_halted = b_is_halted,
-        .c_is_halted = c_is_halted,
-        .d_is_halted = d_is_halted,
         .res = pi_2_monitor_thread_res_create(layers),
         .keep_going = true
     };
@@ -240,8 +169,6 @@ pi_2_monitor_thread_args_t pi_2_monitor_thread_args_create(uint64_t layers)
  {
     free(args.a_is_halted);
     free(args.b_is_halted);
-    free(args.c_is_halted);
-    free(args.d_is_halted);
 
     pi_2_monitor_thread_res_free(args.res);
  }
@@ -257,8 +184,6 @@ handler_p pi_2_monitor_thread(handler_p _args)
         {
             res.count_a[i] += *(args->a_is_halted[i]);
             res.count_b[i] += *(args->b_is_halted[i]);
-            res.count_c[i] += *(args->c_is_halted[i]);
-            res.count_d[i] += *(args->d_is_halted[i]);
         }
         res.count_pi += *(args->pi_is_halted);
         
@@ -286,12 +211,6 @@ void pi_2_monitor_thread_treat_res(pi_2_monitor_thread_args_t args, uint64_t lay
     printf("\n| thread_b\t|");
     for(uint64_t i=0; i<layers; i++)
         printf(" %3.f %%\t|", 100 - 100.0 * res.count_b[i] / res.total);
-    printf("\n| thread_c\t|");
-    for(uint64_t i=0; i<layers; i++)
-        printf(" %3.f %%\t|", 100 - 100.0 * res.count_c[i] / res.total);
-    printf("\n| thread_d\t|");
-    for(uint64_t i=0; i<layers; i++)
-        printf(" %3.f %%\t|", 100 - 100.0 * res.count_d[i] / res.total);
     printf("\n");
     printf("\n| thread_pi\t| %3.f %%\t|", 100 - 100.0 * res.count_pi / res.total);
 
@@ -306,97 +225,65 @@ float_num_t pi_threads_2_calc(uint64_t size, uint64_t layers, bool monitoring)
 
     pi_2_thread_a_args_t args_a[layers];
     pi_2_thread_b_args_t args_b[layers];
-    pi_2_thread_c_args_t args_c[layers];
-    pi_2_thread_d_args_t args_d[layers];
 
-    line_t line_a_c[layers];
-    line_t line_b_c[layers];
-    line_t line_c_d[layers];
+    line_t line_a_b[layers];
 
-    junc_t junc_d_pi = junc_init(layers, line_size);
+    junc_t junc_b_pi = junc_init(layers, line_size);
 
     pthread_t pid_a[layers];
     pthread_t pid_b[layers];
-    pthread_t pid_c[layers];
-    pthread_t pid_d[layers];
 
-    float_num_t c0[layers];
-    c0[0] = float_num_wrap(6, size);
+    float_num_t a0[layers];
+    a0[0] = float_num_wrap(6, size);
 
-    float_num_t flt_c = float_num_wrap(6, size);
+    float_num_t flt_a = float_num_wrap(6, size);
     float_num_t pi0 = float_num_wrap(3, size);
     for(uint64_t i=1; i<layers; i++)
     {
-        flt_c = float_num_mul(flt_c, float_num_wrap((int64_t)2 * i - 3, size));
-        flt_c = float_num_div(flt_c, float_num_wrap((int64_t)8 * i, size));
-        c0[i] = float_num_copy(flt_c);
+        flt_a = float_num_mul(flt_a, float_num_wrap((int64_t)2 * i - 3, size));
+        flt_a = float_num_div(flt_a, float_num_wrap((int64_t)8 * i, size));
+        a0[i] = float_num_copy(flt_a);
 
-        float_num_t flt_d = float_num_copy(flt_c);
+        float_num_t flt_d = float_num_copy(flt_a);
         flt_d = float_num_mul(flt_d, float_num_wrap((int64_t)1 - 2 * i, size));
         flt_d = float_num_div(flt_d, float_num_wrap((int64_t)4 * i + 2, size));
 
         pi0 = float_num_add(pi0, flt_d);
     }
-    float_num_free(flt_c);
+    float_num_free(flt_a);
 
     for(uint64_t i=0; i<layers; i++)
     {
-        line_a_c[i] = line_init(line_size);
+        line_a_b[i] = line_init(line_size);
         args_a[i] = (pi_2_thread_a_args_t)
         {
             .size = size,
-            .line_a_c = &line_a_c[i],
+            .line_a_b = &line_a_b[i],
             .id = i,
             .layers = layers,
+            .a0 = a0[i],
             .keep_going = true,
             .is_halted = false
         };
         pid_a[i] = pthread_launch(pi_2_thread_a, &args_a[i]);
         
-        line_b_c[i] = line_init(line_size);
         args_b[i] = (pi_2_thread_b_args_t)
         {
             .size = size,
-            .line_b_c = &line_b_c[i],
+            .line_a_b = &line_a_b[i],
+            .line_b_pi = &junc_b_pi.lines[i],
             .id = i,
             .layers = layers,
             .keep_going = true,
             .is_halted = false
         };
         pid_b[i] = pthread_launch(pi_2_thread_b, &args_b[i]);
-        
-        line_c_d[i] = line_init(line_size);
-        args_c[i] = (pi_2_thread_c_args_t)
-        {
-            .size = size,
-            .line_a_c = &line_a_c[i],
-            .line_b_c = &line_b_c[i],
-            .line_c_d = &line_c_d[i],
-            .id = i,
-            .layers = layers,
-            .c0 = c0[i],
-            .keep_going = true, 
-            .is_halted = false
-        };
-        pid_c[i] = pthread_launch(pi_2_thread_c, &args_c[i]);
-
-        args_d[i] = (pi_2_thread_d_args_t)
-        {
-            .size = size,
-            .line_c_d = &line_c_d[i],
-            .line_d_pi = &junc_d_pi.lines[i],
-            .id = i,
-            .layers = layers,
-            .keep_going = true, 
-            .is_halted = false
-        };
-        pid_d[i] = pthread_launch(pi_2_thread_d, &args_d[i]);
     }
 
     pi_2_thread_pi_args_t args_pi = (pi_2_thread_pi_args_t)
     {
         .size = size,
-        .junc_d_pi = &junc_d_pi,
+        .junc_b_pi = &junc_b_pi,
         .layers = layers,
         .pi0 = pi0,
         .is_halted = false
@@ -412,8 +299,6 @@ float_num_t pi_threads_2_calc(uint64_t size, uint64_t layers, bool monitoring)
         {
             args_monitor_thread.a_is_halted[i] = &args_a[i].is_halted;
             args_monitor_thread.b_is_halted[i] = &args_b[i].is_halted;
-            args_monitor_thread.c_is_halted[i] = &args_c[i].is_halted;
-            args_monitor_thread.d_is_halted[i] = &args_d[i].is_halted;
         }
         args_monitor_thread.pi_is_halted = &args_pi.is_halted;
         pid_monitor_thread = pthread_launch(pi_2_monitor_thread, &args_monitor_thread);
@@ -426,8 +311,6 @@ float_num_t pi_threads_2_calc(uint64_t size, uint64_t layers, bool monitoring)
     {
         args_a[i].keep_going = false;
         args_b[i].keep_going = false;
-        args_c[i].keep_going = false;
-        args_d[i].keep_going = false;
     }
 
     if(monitoring)
@@ -437,23 +320,17 @@ float_num_t pi_threads_2_calc(uint64_t size, uint64_t layers, bool monitoring)
 
     for(uint64_t i=0; i<layers; i++)
     {
-        line_trypost_response(&line_a_c[i], float_num_wrap(0, 2));
-        line_trypost_response(&line_b_c[i], float_num_wrap(0, 2));
-        line_trypost_response(&line_c_d[i], float_num_wrap(0, 2));
-        line_trypost_response(&junc_d_pi.lines[i], float_num_wrap(0, 2));
+        line_trypost_response(&line_a_b[i], float_num_wrap(0, 2));
+        line_trypost_response(&junc_b_pi.lines[i], float_num_wrap(0, 2));
 
-        float_num_free(line_tryget_response(&line_a_c[i]));
-        float_num_free(line_tryget_response(&line_b_c[i]));
-        float_num_free(line_tryget_response(&line_c_d[i]));
-        float_num_free(line_tryget_response(&junc_d_pi.lines[i]));
+        float_num_free(line_tryget_response(&line_a_b[i]));
+        float_num_free(line_tryget_response(&junc_b_pi.lines[i]));
     }
 
     for(uint64_t i=0; i<layers; i++)
     {
         pthread_wait(pid_a[i]);
         pthread_wait(pid_b[i]);
-        pthread_wait(pid_c[i]);
-        pthread_wait(pid_d[i]);
     }
     
     if(monitoring)
@@ -463,11 +340,9 @@ float_num_t pi_threads_2_calc(uint64_t size, uint64_t layers, bool monitoring)
     
     for(uint64_t i=0; i<layers; i++)
     {
-        line_free(&line_a_c[i]);
-        line_free(&line_b_c[i]);
-        line_free(&line_c_d[i]);
+        line_free(&line_a_b[i]);
     }
-    junc_free(&junc_d_pi);
+    junc_free(&junc_b_pi);
 
     if(monitoring)
     {
