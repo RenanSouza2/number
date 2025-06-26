@@ -497,8 +497,8 @@ void float_num_pi_3(uint64_t size)
         flt_a = float_num_mul(flt_a, float_num_wrap((int64_t)2 * i - 3, size));
         flt_a = float_num_div(flt_a, float_num_wrap((int64_t)8 * i, size));
 
-        if(i%1000 == 0)
-            fprintf(stderr, "\nexp: %ld", -(flt_a.size + flt_a.exponent));
+        // if(i%1000 == 0)
+        //     fprintf(stderr, "\nexp: %ld", -(flt_a.size + flt_a.exponent));
 
         float_num_t flt_b = float_num_copy(flt_a);
         flt_b = float_num_mul(flt_b, float_num_wrap((int64_t)1 - 2 * i, size));
@@ -511,6 +511,12 @@ void float_num_pi_3(uint64_t size)
         }
 
         flt_pi = float_num_add(flt_pi, flt_b);
+        
+        if(i%1000 == 0)
+        {
+            printf("\n");
+            float_num_display_dec(flt_pi);
+        }
     }
 
     printf("\n");
@@ -582,13 +588,13 @@ void sqrt_2()
 
 
 
-int main(int argc, char** argv)
-// int main()
+// int main(int argc, char** argv)
+int main()
 {
     setbuf(stdout, NULL);
     srand(time(NULL));
 
-    uint64_t arg = get_arg(argc, argv);
+    // uint64_t arg = get_arg(argc, argv);
 
     // num_generate(21, 2);
     // time_1(16, 23);
@@ -600,9 +606,9 @@ int main(int argc, char** argv)
     // sqrt_2();
     // float_num_pi_1();
     // float_num_pi_2(1000);
-    // float_num_pi_3(arg);
+    float_num_pi_3(1000);
     // pi_threads_1(arg, 8, true);
-    pi_threads_2(arg, 8, false);
+    // pi_threads_2(arg, 8, false);
     // pi_2_time_1(arg);
     // pi_2_time_2();
 

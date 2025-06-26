@@ -58,6 +58,8 @@ void test_int64_add(bool show)
     TEST_INT64_ADD(27, INT64_MIN + 1, -1, INT64_MIN);
     TEST_INT64_ADD(28, INT64_MAX, 0, INT64_MAX);
     TEST_INT64_ADD(29, INT64_MAX - 1, 1, INT64_MAX);
+    TEST_INT64_ADD(31, INT64_MIN, INT64_MAX, -1);
+    TEST_INT64_ADD(32, INT64_MAX, INT64_MIN, -1);
 
     #undef TEST_INT64_ADD
 
@@ -74,8 +76,10 @@ void test_int64_add(bool show)
         TEST_CASE_CLOSE                 \
     }
 
-    TEST_INT64_ADD(30, INT64_MIN, -1);
-    TEST_INT64_ADD(31, INT64_MAX, 1);
+    TEST_INT64_ADD(33, INT64_MIN, -1);
+    TEST_INT64_ADD(34, INT64_MAX, 1);
+    TEST_INT64_ADD(35, INT64_MIN, INT64_MIN);
+    TEST_INT64_ADD(36, INT64_MAX, INT64_MAX);
 
     #undef TEST_INT64_ADD
 
@@ -298,7 +302,94 @@ void test_float_num_sub(bool show)
     TEST_FN_CLOSE
 }
 
+void test_float_num_mul(bool show)
+{
+    TEST_FN_OPEN
 
+    #define TEST_FLOAT_NUM_MUL(TAG, FLT_1, FLT_2, RES)                  \
+    {                                                                   \
+        TEST_CASE_OPEN(TAG)                                             \
+        {                                                               \
+            float_num_t flt_1 = float_num_create_immed(ARG_OPEN FLT_1); \
+            float_num_t flt_2 = float_num_create_immed(ARG_OPEN FLT_2); \
+            flt_1 = float_num_mul(flt_1, flt_2);                        \
+            assert(float_num_immed(flt_1, ARG_OPEN RES))                \
+        }                                                               \
+        TEST_CASE_CLOSE                                                 \
+    }
+
+    TEST_FLOAT_NUM_MUL(1,
+        FLOAT_NUM_ZERO(2),
+        FLOAT_NUM_ZERO(2),
+        (0, 2, ZERO, 0)
+    );
+    TEST_FLOAT_NUM_MUL(2,
+        FLOAT_NUM_ZERO(2),
+        (-1, 2, POSITIVE, 2, 1, 0),
+        (-1, 2, ZERO, 0)
+    );
+    TEST_FLOAT_NUM_MUL(3,
+        (-1, 2, POSITIVE, 2, 1, 0),
+        FLOAT_NUM_ZERO(2),
+        (-1, 2, ZERO, 0)
+    );
+    TEST_FLOAT_NUM_MUL(4,
+        (-1, 2, POSITIVE, 2, 1, 0),
+        (-1, 2, POSITIVE, 2, 1, 0),
+        (-1, 2, POSITIVE, 2, 1, 0)
+    );
+
+    #undef TEST_FLOAT_NUM_MUL
+
+    TEST_FN_CLOSE
+}
+
+void test_float_num_sqr(bool show)
+{
+    TEST_FN_OPEN
+
+    #define TEST_FLOAT_NUM_SQR(TAG, FLT, RES)                       \
+    {                                                               \
+        TEST_CASE_OPEN(TAG)                                         \
+        {                                                           \
+            float_num_t flt = float_num_create_immed(ARG_OPEN FLT); \
+            flt = float_num_sqr(flt);                               \
+            assert(float_num_immed(flt, ARG_OPEN RES))              \
+        }                                                           \
+        TEST_CASE_CLOSE                                             \
+    }
+
+    TEST_FLOAT_NUM_SQR(1,
+        (-1, 2, POSITIVE, 2, 3, 0),
+        (-1, 2, POSITIVE, 2, 9, 0)
+    );
+    TEST_FLOAT_NUM_SQR(2,
+        (-2, 2, NEGATIVE, 2, 3, 0),
+        (-3, 2, POSITIVE, 2, 9, 0)
+    );
+
+    #undef TEST_FLOAT_NUM_SQR
+    
+    #define TEST_FLOAT_NUM_SQR(TAG, FLT)                            \
+    {                                                               \
+        TEST_CASE_OPEN(TAG)                                         \
+        {                                                           \
+            float_num_t flt = float_num_create_immed(ARG_OPEN FLT); \
+            TEST_REVERT_OPEN                                        \
+            {                                                       \
+                float_num_sqr(flt);                                 \
+            }                                                       \
+            TEST_REVERT_CLOSE                                       \
+        }                                                           \
+        TEST_CASE_CLOSE                                             \
+    }
+
+    TEST_FLOAT_NUM_SQR(3, (INT64_MAX, 2, POSITIVE, 2, 1, 0));
+
+    #undef TEST_FLOAT_NUM_SQR
+
+    TEST_FN_CLOSE
+}
 
 void test_float_num_div(bool show)
 {
@@ -333,7 +424,7 @@ void test_float_num_div_sig(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_FLOAT_NUM_DIV(TAG, FLT, SIG, RES)                  \
+    #define TEST_FLOAT_NUM_DIV_SIG(TAG, FLT, SIG, RES)                  \
     {                                                               \
         TEST_CASE_OPEN(TAG)                                         \
         {                                                           \
@@ -345,28 +436,28 @@ void test_float_num_div_sig(bool show)
         TEST_CASE_CLOSE                                             \
     }
 
-    TEST_FLOAT_NUM_DIV(1,
+    TEST_FLOAT_NUM_DIV_SIG(1,
         (0, 2, POSITIVE, 2, 6, 0),
         (POSITIVE, 1, 3),
         (0, 2, POSITIVE, 2, 2, 0)
     );
-    TEST_FLOAT_NUM_DIV(2,
+    TEST_FLOAT_NUM_DIV_SIG(2,
         (0, 2, POSITIVE, 2, 6, 0),
         (POSITIVE, 2, 3, 0),
         (-1, 2, POSITIVE, 2, 2, 0)
     );
-    TEST_FLOAT_NUM_DIV(3,
+    TEST_FLOAT_NUM_DIV_SIG(3,
         (0, 2, POSITIVE, 2, 5, 0),
         (POSITIVE, 1, 3),
         (0, 2, POSITIVE, 2, 1, 0xAAAAAAAAAAAAAAAA)
     );
-    TEST_FLOAT_NUM_DIV(4,
+    TEST_FLOAT_NUM_DIV_SIG(4,
         (0, 2, POSITIVE, 2, 2, 0),
         (POSITIVE, 1, 3),
         (-1, 2, POSITIVE, 2, 0xAAAAAAAAAAAAAAAA, 0xAAAAAAAAAAAAAAAA)
     );
 
-    #undef TEST_FLOAT_NUM_DIV
+    #undef TEST_FLOAT_NUM_DIV_SIG
 
     TEST_FN_CLOSE
 }
@@ -377,7 +468,7 @@ void test_float()
 {
     TEST_LIB
 
-    bool show = false;
+    bool show = true;
 
     test_int64_get_sign(show);
     test_int64_add(show);
@@ -390,7 +481,8 @@ void test_float()
 
     test_float_num_add(show);
     test_float_num_sub(show);
-
+    test_float_num_mul(show);
+    test_float_num_sqr(show);
     test_float_num_div(show);
 
     test_float_num_div_sig(show);

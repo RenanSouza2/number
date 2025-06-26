@@ -85,6 +85,7 @@ bool float_num_eq_dbg(float_num_t flt_1, float_num_t flt_2)
     if(!float_num_inner(flt_1, flt_2))
     {
         printf("\n");
+        printf("\n");
         float_num_display(flt_1);
         printf("\n");
         float_num_display(flt_2);
@@ -109,6 +110,7 @@ bool float_num_immed(
     va_list args;
     va_start(args, n);
     float_num_t flt_2 = float_num_create_variadic(exponent, size, signal, n, &args);
+    printf("\nexp res: %ld", flt_2.exponent);
     return float_num_eq_dbg(flt, flt_2);
 }
 
@@ -131,22 +133,29 @@ void float_num_display_dec(float_num_t flt) // TODO TEST
     flt = float_num_copy(flt);
     flt = float_num_set_size(flt, flt.size + 2);
 
+    printf("\n"); float_num_display(flt);
+
+    printf("\na");
     if(float_num_is_zero(flt))
     {
         printf("0");
         return;
     }
-
+    
+    printf("\nb");
     uint64_t signal = flt.sig.signal;
     flt.sig.signal = POSITIVE;
-
+    
+    printf("\nc");
     float_num_t flt_one = float_num_wrap(1, flt.size);
     float_num_t flt_ten = float_num_wrap(10, flt.size);
-
+    
+    printf("\nd");
     int64_t base = 1;
     float_num_t flt_base;
     if(float_num_cmp(flt, flt_one) < 0)
     {
+        printf("\ne");
         flt_base = float_num_div(
             float_num_copy(flt_one),
             float_num_copy(flt_ten)
@@ -164,9 +173,12 @@ void float_num_display_dec(float_num_t flt) // TODO TEST
         base = 0;
     }
     float_num_free(flt_one);
-
+    
+    printf("\nf");
+    printf("\nbase: %lu", base);
     while(true)
     {
+        printf("\na");
         float_num_t flt_tmp = float_num_div(
             float_num_copy(flt),
             float_num_copy(flt_base)
@@ -227,20 +239,26 @@ void float_num_display_dec(float_num_t flt) // TODO TEST
 
 uint64_t int64_get_sign(int64_t i)
 {
-    if(i == 0)  return ZERO;
-    return i > 0 ? POSITIVE : NEGATIVE;
+    if(i == (int64_t)0) return ZERO;
+    return i > (int64_t)0 ? POSITIVE : NEGATIVE;
 }
 
 int64_t int64_add(int64_t a, int64_t b)
 {
     int64_t res = a + b;
-    if(a != 0 && b != 0)
+    if(a != (int64_t)0 && b != (int64_t)0)
     {
         uint64_t sign_a = int64_get_sign(a);
         if(sign_a == int64_get_sign(b))
             assert(sign_a == int64_get_sign(res));
     }
     return res;
+}
+
+int64_t int64_sub(int64_t a, int64_t b) // TODO test
+{
+    assert(b != INT64_MIN);
+    return int64_add(a, -b);
 }
 
 
@@ -446,9 +464,9 @@ float_num_t float_num_mul(float_num_t flt_1, float_num_t flt_2) // TODO TEST
     CLU_FLOAT_IS_SAFE(flt_1);
     CLU_FLOAT_IS_SAFE(flt_2);
 
-    uint64_t pos = flt_1.size > 1 ? flt_1.size - 2 : 0;
-    int64_t exponent = int64_add(flt_1.exponent, flt_2.exponent);
-    exponent = int64_add(exponent, pos);
+    uint64_t pos = flt_1.size - 2;
+    flt_1.exponent = int64_add(flt_1.exponent, flt_2.exponent);
+    flt_1.exponent = int64_add(flt_1.exponent, pos);
     flt_1.sig = sig_num_mul_high(flt_1.sig, flt_2.sig, pos);
     return float_num_normalize(flt_1);
 }
@@ -469,7 +487,7 @@ float_num_t float_num_div(float_num_t flt_1, float_num_t flt_2) // TODO TEST
 
     int64_t exponent = int64_add(flt_1.exponent, -(int64_t)flt_1.size);
     flt_1 = float_num_set_exponent(flt_1, exponent);
-    flt_1.exponent = int64_add(flt_1.exponent, -flt_2.exponent);
+    flt_1.exponent = int64_sub(flt_1.exponent, flt_2.exponent);
     flt_1.sig = sig_num_div(flt_1.sig, flt_2.sig);
     return float_num_normalize(flt_1);
 }
