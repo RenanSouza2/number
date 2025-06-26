@@ -192,7 +192,7 @@ void line_free(line_p l)
         float_num_t flt = line_get_response(l, &ignore);
         float_num_free(flt);
     }
-    
+
     TREAT(sem_destroy(&l->sem_f));
     TREAT(sem_destroy(&l->sem_b));
 

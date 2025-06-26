@@ -147,7 +147,7 @@ void time_3()
 
         num_p num_1_cpy = num_copy(num_1);
         num_p num_2_cpy = num_copy(num_2);
-        
+
         uint64_t begin = get_time();
         num_1_cpy = num_mul(num_1_cpy, num_2_cpy);
         uint64_t end = get_time();
@@ -607,16 +607,16 @@ int main(int argc, char** argv)
     // pi_2_time_2();
 
     uint64_t begin = get_time();
-    pi_threads_2(arg, 3, true);
+    pi_threads_2(arg, 1, true);
     uint64_t end = get_time();
     uint64_t time_3 = end - begin;
     printf("\n\ntime 3: %.1f\n", time_3 / 1e9);
-    
-    begin = get_time();
-    pi_threads_2(arg, 4, true);
-    end = get_time();
-    uint64_t time_4 = end - begin;
-    printf("\n\ntime 4: %.1f\n", time_4 / 1e9);
+
+    // begin = get_time();
+    // pi_threads_2(arg, 4, true);
+    // end = get_time();
+    // uint64_t time_4 = end - begin;
+    // printf("\n\ntime 4: %.1f\n", time_4 / 1e9);
 
     // assert(clu_mem_is_empty("FINAL"));
 

@@ -369,7 +369,7 @@ void test_float_num_sqr(bool show)
     );
 
     #undef TEST_FLOAT_NUM_SQR
-    
+
     #define TEST_FLOAT_NUM_SQR(TAG, FLT)                            \
     {                                                               \
         TEST_CASE_OPEN(TAG)                                         \

@@ -825,10 +825,10 @@ num_p num_div_mod_general(num_p num_1, num_p num_2)
             uint128_t val_1 = num_1->count > num_2->count + i ?
             U128_IMMED(num_1->chunk[num_1->count-1], num_1->chunk[num_1->count-2]) :
             num_1->chunk[num_1->count-1];
-            
+
             uint128_t tmp = val_1 / val_2;
             uint64_t r_aux = UINT64_MAX < tmp ? UINT64_MAX : tmp;
-            
+
             num_cmp_mul_uint_offset(num_aux, num_1, i, num_2, r_aux);
             if(num_aux->count == 0)
             {
@@ -1043,11 +1043,11 @@ num_p num_div(num_p num_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_1);
     CLU_HANDLER_IS_SAFE(num_2);
-    
+
     num_p num_q, num_r;
     num_div_mod_unajusted(&num_q, &num_r, num_1, num_2);
     num_free(num_r);
-    
+
     return num_q;
 }
 

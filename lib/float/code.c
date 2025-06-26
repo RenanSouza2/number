@@ -137,13 +137,13 @@ void float_num_display_dec(float_num_t flt) // TODO TEST
         printf("0");
         return;
     }
-    
+
     uint64_t signal = flt.sig.signal;
     flt.sig.signal = POSITIVE;
-    
+
     float_num_t flt_one = float_num_wrap(1, flt.size);
     float_num_t flt_ten = float_num_wrap(10, flt.size);
-    
+
     int64_t base = 1;
     float_num_t flt_base;
     if(float_num_cmp(flt, flt_one) < 0)
@@ -165,7 +165,7 @@ void float_num_display_dec(float_num_t flt) // TODO TEST
         base = 0;
     }
     float_num_free(flt_one);
-    
+
     while(true)
     {
         float_num_t flt_tmp = float_num_div(
@@ -398,7 +398,7 @@ bool float_num_safe_add(float_num_t flt_1, float_num_t flt_2) // TODO TEST
     uint64_t diff = flt_1.exponent > flt_2.exponent ?
         flt_1.exponent - flt_2.exponent:
         flt_2.exponent > flt_1.exponent;
-        
+
     return flt_1.size > diff;
 }
 
