@@ -494,15 +494,15 @@ void float_num_pi_3(uint64_t size)
 
     for(uint64_t i=1; ; i++)
     {
-        flt_a = float_num_mul(flt_a, float_num_wrap((int64_t)2 * i - 3, size));
-        flt_a = float_num_div(flt_a, float_num_wrap((int64_t)8 * i, size));
+        flt_a = float_num_mul_sig(flt_a, sig_num_wrap((int64_t)2 * i - 3));
+        flt_a = float_num_div_sig(flt_a, sig_num_wrap((int64_t)8 * i));
 
-        // if(i%1000 == 0)
-        //     fprintf(stderr, "\nexp: %ld", -(flt_a.size + flt_a.exponent));
+        if(i%1000 == 0)
+            fprintf(stderr, "\nexp: %ld", -(flt_a.size + flt_a.exponent));
 
         float_num_t flt_b = float_num_copy(flt_a);
-        flt_b = float_num_mul(flt_b, float_num_wrap((int64_t)1 - 2 * i, size));
-        flt_b = float_num_div(flt_b, float_num_wrap((int64_t)4 * i + 2, size));
+        flt_b = float_num_mul_sig(flt_b, sig_num_wrap((int64_t)1 - 2 * i));
+        flt_b = float_num_div_sig(flt_b, sig_num_wrap((int64_t)4 * i + 2));
 
         if(!float_num_safe_add(flt_pi, flt_b))
         {
@@ -511,12 +511,6 @@ void float_num_pi_3(uint64_t size)
         }
 
         flt_pi = float_num_add(flt_pi, flt_b);
-        
-        if(i%1000 == 0)
-        {
-            printf("\n");
-            float_num_display_dec(flt_pi);
-        }
     }
 
     printf("\n");

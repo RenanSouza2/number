@@ -133,29 +133,22 @@ void float_num_display_dec(float_num_t flt) // TODO TEST
     flt = float_num_copy(flt);
     flt = float_num_set_size(flt, flt.size + 2);
 
-    printf("\n"); float_num_display(flt);
-
-    printf("\na");
     if(float_num_is_zero(flt))
     {
         printf("0");
         return;
     }
     
-    printf("\nb");
     uint64_t signal = flt.sig.signal;
     flt.sig.signal = POSITIVE;
     
-    printf("\nc");
     float_num_t flt_one = float_num_wrap(1, flt.size);
     float_num_t flt_ten = float_num_wrap(10, flt.size);
     
-    printf("\nd");
     int64_t base = 1;
     float_num_t flt_base;
     if(float_num_cmp(flt, flt_one) < 0)
     {
-        printf("\ne");
         flt_base = float_num_div(
             float_num_copy(flt_one),
             float_num_copy(flt_ten)
@@ -174,11 +167,9 @@ void float_num_display_dec(float_num_t flt) // TODO TEST
     }
     float_num_free(flt_one);
     
-    printf("\nf");
     printf("\nbase: %lu", base);
     while(true)
     {
-        printf("\na");
         float_num_t flt_tmp = float_num_div(
             float_num_copy(flt),
             float_num_copy(flt_base)
