@@ -18,7 +18,7 @@ STRUCT(pi_2_thread_a_args)
 
 handler_p pi_2_thread_a(handler_p _args)
 {
-    dbg("a");
+    dbg("a"); // TODO DELETE
     pi_2_thread_a_args_p args = _args;
     for(uint64_t i = args->id + args->layers; args->keep_going; i += args->layers)
     {
@@ -50,7 +50,6 @@ handler_p pi_2_thread_b(handler_p _args)
     pi_2_thread_b_args_p args = _args;
     for(uint64_t i = args->id + args->layers; args->keep_going; i += args->layers)
     {
-        printf("\ni: %lu", i);
         sig_num_t sig_b = sig_num_wrap((int64_t)8 * i);
         for(uint64_t j=1; j<args->layers; j++)
             sig_b = sig_num_mul(sig_b, sig_num_wrap((int64_t)8 * (i - j)));
@@ -86,10 +85,7 @@ handler_p pi_2_thread_c(handler_p _args)
         float_num_t flt_b = line_get_response(args->line_b_c, &args->is_halted);
 
         flt_c = float_num_mul_sig(flt_c, flt_a.sig);
-        printf("\na\n");
-        sig_num_display(flt_b.sig, false);
         flt_c = float_num_div_sig(flt_c, flt_b.sig);
-        printf("\tb");
 
         line_post_response(args->line_c_d, float_num_copy(flt_c), &args->is_halted);
     }
@@ -111,7 +107,7 @@ STRUCT(pi_2_thread_d_args)
 
 handler_p pi_2_thread_d(handler_p _args)
 {
-    dbg("b");
+    dbg("d");
     pi_2_thread_d_args_p args = _args;
     for(uint64_t i = args->id + args->layers; args->keep_going; i += args->layers)
     {
@@ -147,7 +143,10 @@ handler_p pi_2_thread_pi(handler_p _args)
         float_num_t flt_b = junc_get_response(args->junc_d_pi, &args->is_halted);
 
         if(i%100000 == 0)
-            fprintf(stderr, "\nexp: %ld", -(flt_b.size + flt_b.exponent));
+        {
+            uint64_t done = -(flt_b.size + flt_b.exponent);
+            fprintf(stderr, "\npgr: %lu / %lu", done / 1000, flt_b.size / 1000);
+        }
 
         if(!float_num_safe_add(flt_pi, flt_b))
         {
@@ -389,7 +388,7 @@ float_num_t pi_threads_2_calc(uint64_t size, uint64_t layers, bool monitoring)
             .keep_going = true, 
             .is_halted = false
         };
-        pid_d[i] = pthread_launch(pi_2_thread_d, &args_c[i]);
+        pid_d[i] = pthread_launch(pi_2_thread_d, &args_d[i]);
     }
 
     pi_2_thread_pi_args_t args_pi = (pi_2_thread_pi_args_t)
@@ -442,6 +441,7 @@ float_num_t pi_threads_2_calc(uint64_t size, uint64_t layers, bool monitoring)
         float_num_free(line_tryget_response(&junc_d_pi.lines[i]));
     }
 
+    printf("\nwaiting");
     for(uint64_t i=0; i<layers; i++)
     {
         pthread_wait(pid_a[i]);
