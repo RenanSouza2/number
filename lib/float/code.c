@@ -110,7 +110,6 @@ bool float_num_immed(
     va_list args;
     va_start(args, n);
     float_num_t flt_2 = float_num_create_variadic(exponent, size, signal, n, &args);
-    printf("\nexp res: %ld", flt_2.exponent);
     return float_num_eq_dbg(flt, flt_2);
 }
 
@@ -490,8 +489,11 @@ float_num_t float_num_mul_sig(float_num_t flt, sig_num_t sig) // TODO TEST
     return float_num_normalize(flt);
 }
 
+#include <pthread.h>
+
 float_num_t float_num_div_sig(float_num_t flt, sig_num_t sig) // TODO TEST
 {
+    printf("\ntrying: %lu", pthread_self());
     int64_t exponent = int64_add(flt.exponent, -(int64_t)sig.num->count);
     flt = float_num_set_exponent(flt, exponent);
     flt.sig = sig_num_div(flt.sig, sig);

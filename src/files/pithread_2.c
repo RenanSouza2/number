@@ -18,6 +18,7 @@ STRUCT(pi_2_thread_a_args)
 
 handler_p pi_2_thread_a(handler_p _args)
 {
+    dbg("a");
     pi_2_thread_a_args_p args = _args;
     for(uint64_t i = args->id + args->layers; args->keep_going; i += args->layers)
     {
@@ -45,6 +46,7 @@ STRUCT(pi_2_thread_b_args)
 
 handler_p pi_2_thread_b(handler_p _args)
 {
+    dbg("b");
     pi_2_thread_b_args_p args = _args;
     for(uint64_t i = args->id + args->layers; args->keep_going; i += args->layers)
     {
@@ -75,6 +77,7 @@ STRUCT(pi_2_thread_c_args)
 
 handler_p pi_2_thread_c(handler_p _args)
 {
+    dbg("c");
     pi_2_thread_c_args_p args = _args;
     float_num_t flt_c = args->c0;
     for(uint64_t i = args->id + args->layers; args->keep_going; i += args->layers)
@@ -83,7 +86,8 @@ handler_p pi_2_thread_c(handler_p _args)
         float_num_t flt_b = line_get_response(args->line_b_c, &args->is_halted);
 
         flt_c = float_num_mul_sig(flt_c, flt_a.sig);
-        printf("\na");
+        printf("\na\n");
+        sig_num_display(flt_b.sig, false);
         flt_c = float_num_div_sig(flt_c, flt_b.sig);
         printf("\tb");
 
@@ -107,6 +111,7 @@ STRUCT(pi_2_thread_d_args)
 
 handler_p pi_2_thread_d(handler_p _args)
 {
+    dbg("b");
     pi_2_thread_d_args_p args = _args;
     for(uint64_t i = args->id + args->layers; args->keep_going; i += args->layers)
     {
@@ -134,6 +139,7 @@ STRUCT(pi_2_thread_pi_args)
 
 handler_p pi_2_thread_pi(handler_p _args)
 {
+    dbg("pi");
     pi_2_thread_pi_args_p args = _args;
     float_num_t flt_pi = args->pi0;
     for(uint64_t i=args->layers; ; i++)

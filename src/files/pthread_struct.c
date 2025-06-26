@@ -22,6 +22,7 @@ void dbg(char format[], ...)
 
     va_list args;
     va_start(args, format);
+    fprintf(fp, "\n");
     vfprintf(fp, format, args);
     fclose(fp);
 }
