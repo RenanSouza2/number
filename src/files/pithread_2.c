@@ -112,7 +112,7 @@ handler_p pi_2_thread_d(handler_p _args)
     for(uint64_t i = args->id + args->layers; args->keep_going; i += args->layers)
     {
         float_num_t flt_c = line_get_response(args->line_c_d, &args->is_halted);
-    
+        
         float_num_t flt_d;
         flt_d = float_num_mul_sig(flt_c, sig_num_wrap((int64_t)1 - 2 * i));
         flt_d = float_num_div_sig(flt_d, sig_num_wrap((int64_t)4 * i + 2));
@@ -389,6 +389,7 @@ float_num_t pi_threads_2_calc(uint64_t size, uint64_t layers, bool monitoring)
             .is_halted = false
         };
         pid_d[i] = pthread_launch(pi_2_thread_d, &args_d[i]);
+        // pthread_launch(pi_2_thread_d, &args_d[i]);
     }
 
     pi_2_thread_pi_args_t args_pi = (pi_2_thread_pi_args_t)
@@ -435,13 +436,17 @@ float_num_t pi_threads_2_calc(uint64_t size, uint64_t layers, bool monitoring)
 
     for(uint64_t i=0; i<layers; i++)
     {
+        line_trypost_response(&line_a_c[i], float_num_wrap(0, 2));
+        line_trypost_response(&line_b_c[i], float_num_wrap(0, 2));
+        line_trypost_response(&line_c_d[i], float_num_wrap(0, 2));
+        line_trypost_response(&junc_d_pi.lines[i], float_num_wrap(0, 2));
+
         float_num_free(line_tryget_response(&line_a_c[i]));
         float_num_free(line_tryget_response(&line_b_c[i]));
         float_num_free(line_tryget_response(&line_c_d[i]));
         float_num_free(line_tryget_response(&junc_d_pi.lines[i]));
     }
 
-    printf("\nwaiting");
     for(uint64_t i=0; i<layers; i++)
     {
         pthread_wait(pid_a[i]);
@@ -449,7 +454,7 @@ float_num_t pi_threads_2_calc(uint64_t size, uint64_t layers, bool monitoring)
         pthread_wait(pid_c[i]);
         pthread_wait(pid_d[i]);
     }
-
+    
     if(monitoring)
     {
         pthread_wait(pid_monitor_thread);

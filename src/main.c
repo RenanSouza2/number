@@ -602,7 +602,7 @@ int main(int argc, char** argv)
     // float_num_pi_2(1000);
     // float_num_pi_3(1000);
     // pi_threads_1(arg, 8, true);
-    pi_threads_2(arg, 1, false);
+    pi_threads_2(arg, 1, true);
     // pi_2_time_1(arg);
     // pi_2_time_2();
 

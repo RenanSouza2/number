@@ -489,8 +489,6 @@ float_num_t float_num_mul_sig(float_num_t flt, sig_num_t sig) // TODO TEST
     return float_num_normalize(flt);
 }
 
-#include <pthread.h>
-
 float_num_t float_num_div_sig(float_num_t flt, sig_num_t sig) // TODO TEST
 {
     int64_t exponent = int64_add(flt.exponent, -(int64_t)sig.num->count);

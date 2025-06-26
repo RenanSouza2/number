@@ -1,6 +1,8 @@
 #ifndef __PTHREAD_STRUCT__
 #define __PTHREAD_STRUCT__
 
+#define __USE_GNU
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <pthread.h>
@@ -41,6 +43,51 @@ void pthread_wait(pthread_t thread_id)
     TREAT(pthread_join(thread_id, NULL));
 }
 
+uint64_t sem_getvalue_return(sem_t *sem)
+{
+    int value;
+    TREAT(sem_getvalue(sem, &value));
+    return value;
+}
+
+
+
+STRUCT(pear_sem)
+{
+    sem_t sem, sem_c;
+};
+
+void pear_sem_init(pear_sem_p sem, uint64_t value)
+{
+    TREAT(sem_init(&sem->sem,   0, value));
+    TREAT(sem_init(&sem->sem_c, 0, 0));
+}
+
+void pear_sem_wait(pear_sem_p sem, bool *is_halted)
+{
+    if(sem_trywait(&sem->sem) == 0)
+        return;
+
+    TREAT(sem_post(&sem->sem_c));
+    if(is_halted)
+        *is_halted = true;
+    TREAT(sem_wait(&sem->sem));
+    if(is_halted)
+        *is_halted = false;
+    TREAT(sem_wait(&sem->sem_c));
+}
+
+void pear_sem_post(pear_sem_p sem)
+{
+    TREAT(sem_post(&sem->sem));
+}
+
+void pear_sem_evacuate(pear_sem_p sem)
+{
+    while(sem_getvalue_return(&sem->sem_c))
+        pear_sem_post(sem);
+}
+
 
 
 STRUCT(line)
@@ -75,7 +122,7 @@ void sem_wait_log(sem_t *sem, bool *is_halted)
 {
     if(is_halted)
     {
-        if(sem_trywait(sem) != 0)
+        if(sem_trywait(sem))
         {
             *is_halted = true;
             TREAT(sem_wait(sem));
@@ -84,6 +131,32 @@ void sem_wait_log(sem_t *sem, bool *is_halted)
     } else {
         TREAT(sem_wait(sem));
     }
+}
+
+void line_post_response_locked(line_p l, float_num_t res)
+{
+    l->res[l->end] = res;
+    l->end++;
+    if(l->end == l->size)
+        l->end = 0;
+    TREAT(sem_post(&l->sem_f));
+}
+
+void line_post_response(line_p l, float_num_t res, bool *is_halted)
+{
+    sem_wait_log(&l->sem_b, is_halted);
+    line_post_response_locked(l, res);
+}
+
+void line_trypost_response(line_p l, float_num_t res)
+{
+    if(sem_trywait(&l->sem_b))
+    {
+        float_num_free(res);
+        return;
+    }
+
+    line_post_response_locked(l, res);
 }
 
 float_num_t line_get_response_locked(line_p l)
@@ -97,16 +170,6 @@ float_num_t line_get_response_locked(line_p l)
     return res;
 }
 
-void line_post_response(line_p l, float_num_t res, bool *is_halted)
-{
-    sem_wait_log(&l->sem_b, is_halted);
-    l->res[l->end] = res;
-    l->end++;
-    if(l->end == l->size)
-        l->end = 0;
-    TREAT(sem_post(&l->sem_f));
-}
-
 float_num_t line_get_response(line_p l, bool * is_halted)
 {
     sem_wait_log(&l->sem_f, is_halted);
@@ -115,7 +178,7 @@ float_num_t line_get_response(line_p l, bool * is_halted)
 
 float_num_t line_tryget_response(line_p l)
 {
-    if(sem_trywait(&l->sem_f) != 0)
+    if(sem_trywait(&l->sem_f))
         return float_num_wrap(0, 2);
 
     return line_get_response_locked(l);
@@ -126,9 +189,7 @@ void line_free(line_p l)
     bool ignore;
     for(uint64_t i = 0; l->start != l->end; i++)
     {
-        // printf("\nAAA");
         float_num_t flt = line_get_response(l, &ignore);
-        // printf("\nBBB");
         float_num_free(flt);
     }
     
