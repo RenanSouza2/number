@@ -164,6 +164,7 @@ void queue_free(queue_p q)
         queue_get(q, h, NULL);
         q->res_free(h, q->res_size);
     }
+    free(h);
 
     for(uint64_t i=0; i<q->res_max; i++)
         free(q->res[i]);

@@ -602,9 +602,9 @@ int main(int argc, char** argv)
     // float_num_pi_1();
     // float_num_pi_2(1000);
     // float_num_pi_3(1000);
-    // pi_threads_1(arg, 8, true);
-    // pi_threads_2(arg, 5, true);
-    pi_2_time_1(arg);
+    // pi_threads_1(arg, 3, false);
+    pi_threads_2(arg, 3, true);
+    // pi_2_time_1(arg);
     // pi_2_time_2();
 
     // for(uint64_t i=1; i<6; i++)

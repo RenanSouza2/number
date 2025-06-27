@@ -1063,14 +1063,15 @@ num_p num_mod(num_p num_1, num_p num_2)
     return num_shr_uint(num_r, bits);
 }
 
-num_p num_gcd(num_p num_1, num_p num_2) // TODO TEST
+num_p num_gcd(num_p num_1, num_p num_2)
 {
-    while(num_2->count == 0)
+    while(num_2->count != 0)
     {
         num_p num_aux = num_mod(num_1, num_copy(num_2));
         num_1 = num_2;
         num_2 = num_aux;
     }
+    num_free(num_2);
     return(num_1);
 }
 

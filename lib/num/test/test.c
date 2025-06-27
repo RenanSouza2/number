@@ -1237,7 +1237,7 @@ void test_num_add(bool show)
         (0),
         (0),
         (0)
-    )
+    );
     TEST_NUM_ADD(2,
         (1, 1),
         (0),
@@ -1678,6 +1678,43 @@ void test_num_div_mod(bool show)
     TEST_FN_CLOSE
 }
 
+void test_num_gcd(bool show)
+{
+    TEST_FN_OPEN
+
+    #define TEST_NUM_GDC(TAG, NUM_1, NUM_2, NUM_OUT)        \
+    {                                                       \
+        TEST_CASE_OPEN(TAG)                                 \
+        {                                                   \
+            num_p num_1 = num_create_immed(ARG_OPEN NUM_1); \
+            num_p num_2 = num_create_immed(ARG_OPEN NUM_2); \
+            num_1 = num_gcd(num_1, num_2);                  \
+            assert(num_immed(num_1, ARG_OPEN NUM_OUT));     \
+        }                                                   \
+        TEST_CASE_CLOSE                                     \
+    }
+
+    TEST_NUM_GDC(1,
+        (1, 3),
+        (1, 2),
+        (1, 1)
+    );
+    TEST_NUM_GDC(2,
+        (1, 4),
+        (1, 2),
+        (1, 2)
+    );
+    TEST_NUM_GDC(3,
+        (1, 6),
+        (1, 4),
+        (1, 2)
+    );
+
+    #undef TEST_NUM_GDC
+
+    TEST_FN_CLOSE
+}
+
 
 
 void test_num_base_to(bool show)
@@ -1818,6 +1855,7 @@ void test_num()
     test_num_mul(show);
     test_num_sqr(show);
     test_num_div_mod(show);
+    test_num_gcd(show);
 
     test_num_base_to(show);
     test_num_base_from(show);

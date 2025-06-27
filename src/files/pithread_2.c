@@ -145,8 +145,7 @@ handler_p pi_2_thread_pi(handler_p _args)
     dbg("pi");
     pi_2_thread_pi_args_p args = _args;
     float_num_t flt_pi = args->pi0;
-    uint64_t jump = args->layers * args->batch_size;
-    for(uint64_t i=args->layers; ; i+= jump)
+    for(uint64_t i=1; ; i++)
     {
         float_num_t flt_b = float_num_wrap(0, args->size);
         for(uint64_t j=0; j<args->layers; j++)
@@ -157,11 +156,12 @@ handler_p pi_2_thread_pi(handler_p _args)
                 flt_b = float_num_add(flt_b, flt_b_batch[k]);
         }
 
-        // if(i%100000 == 0)
-        // {
-        //     uint64_t done = -(flt_b.size + flt_b.exponent);
-        //     fprintf(stderr, "\npgr: %lu / %lu", done / 1000, flt_b.size / 1000);
-        // }
+        uint64_t tam = 100;
+        if(i%(10*tam) == 0)
+        {
+            uint64_t done = -(flt_b.size + flt_b.exponent);
+            fprintf(stderr, "\npgr: %lu / %lu", done / tam, flt_b.size / tam);
+        }
         
         if(!float_num_safe_add(flt_pi, flt_b))
         {
@@ -412,7 +412,7 @@ void pi_2_res_free(handler_p h, uint64_t res_size)
 float_num_t pi_threads_2_calc(uint64_t size, uint64_t layers, bool monitoring)
 {
     assert(layers);
-    uint64_t queue_size = 1000;
+    uint64_t queue_size = 100;
     uint64_t batch_size = 10;
     uint64_t max_total_state = 5;
 
@@ -433,13 +433,13 @@ float_num_t pi_threads_2_calc(uint64_t size, uint64_t layers, bool monitoring)
     float_num_t pi0 = float_num_wrap(3, size);
     for(uint64_t i=1; i<layers; i++)
     {
-        flt_a = float_num_mul(flt_a, float_num_wrap((int64_t)2 * i - 3, size));
-        flt_a = float_num_div(flt_a, float_num_wrap((int64_t)8 * i, size));
+        flt_a = float_num_mul_sig(flt_a, sig_num_wrap((int64_t)2 * i - 3));
+        flt_a = float_num_div_sig(flt_a, sig_num_wrap((int64_t)8 * i));
         a0[i] = float_num_copy(flt_a);
-
+        
         float_num_t flt_d = float_num_copy(flt_a);
-        flt_d = float_num_mul(flt_d, float_num_wrap((int64_t)1 - 2 * i, size));
-        flt_d = float_num_div(flt_d, float_num_wrap((int64_t)4 * i + 2, size));
+        flt_d = float_num_mul_sig(flt_d, sig_num_wrap((int64_t)1 - 2 * i));
+        flt_d = float_num_div_sig(flt_d, sig_num_wrap((int64_t)4 * i + 2));
 
         pi0 = float_num_add(pi0, flt_d);
     }
@@ -598,7 +598,7 @@ void pi_2_time_1(uint64_t size)
 
 void pi_2_time_2()
 {
-    for(uint64_t size = 100; size < 2000; size += 100)
+    for(uint64_t size = 100; size < 5000; size += 100)
     {
         printf("\ni: %4lu\t", size);
         uint64_t begin = get_time();
