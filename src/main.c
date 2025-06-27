@@ -603,16 +603,16 @@ int main(int argc, char** argv)
     // float_num_pi_2(1000);
     // float_num_pi_3(1000);
     // pi_threads_1(arg, 8, true);
-    // pi_threads_2(arg, 3, false);
+    pi_threads_2(arg, 2, false);
     // pi_2_time_1(arg);
     // pi_2_time_2();
 
-    for(uint64_t i=0; ; i++)
-    {
-        printf("\n\n\ni: %lu\n", i);
-        usleep(1000);
-        pi_threads_2(arg, 3, false);
-    }
+    // for(uint64_t i=0; ; i++)
+    // {
+    //     printf("\n\n\ni: %lu\n", i);
+    //     usleep(10000);
+    //     pi_threads_2(arg, 3, false);
+    // }
 
     // assert(clu_mem_is_empty("FINAL"));
 

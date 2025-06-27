@@ -28,6 +28,8 @@ void dbg(char format[], ...)
     fclose(fp);
 }
 
+
+
 typedef handler_p (*pthread_f)(handler_p);
 
 pthread_t pthread_launch(pthread_f fn, handler_p args)
@@ -49,6 +51,21 @@ uint64_t sem_getvalue_return(sem_t *sem)
     return value;
 }
 
+void sem_wait_log(sem_t *sem, bool *is_idle)
+{
+    if(is_idle)
+    {
+        if(sem_trywait(sem))
+        {
+            *is_idle = true;
+            TREAT(sem_wait(sem));
+            *is_idle = false;
+        }
+    } else {
+        TREAT(sem_wait(sem));
+    }
+}
+
 
 
 typedef void (*free_f)(handler_p);
@@ -57,31 +74,24 @@ typedef handler_p (*spawn_f)();
 STRUCT(queue)
 {
     sem_t sem_f, sem_b;
-    uint64_t max_res;
-    uint64_t size_res;
+    uint64_t res_max;
+    uint64_t res_size;
     handler_p *res;
     uint64_t start, end;
-    free_f free_res;
-    spawn_f spawn_res;
 };
 
-queue_t queue_init(
-    uint64_t max_res,
-    uint64_t size_res,
-    free_f free_res,
-    spawn_f spawn_res
-)
+queue_t queue_init(uint64_t res_max, uint64_t res_size)
 {
     sem_t sem_f, sem_b;
     sem_init(&sem_f, 0, 0);
-    sem_init(&sem_b, 0, max_res);
+    sem_init(&sem_b, 0, res_max);
 
-    handler_p *res = malloc(max_res * sizeof(handler_p));
+    handler_p *res = malloc(res_max * sizeof(handler_p));
     assert(res);
 
-    for(uint64_t i=0; i<max_res; i++)
+    for(uint64_t i=0; i<res_max; i++)
     {
-        res[i] = malloc(size_res);
+        res[i] = malloc(res_size);
         assert(res[i]);
     }
 
@@ -89,86 +99,67 @@ queue_t queue_init(
     {
         .sem_f = sem_f,
         .sem_b = sem_b,
-        .max_res = max_res,
-        .size_res = size_res,
+        .res_max = res_max,
+        .res_size = res_size,
         .res = res,
         .start = 0,
-        .end = 0,
-        .free_res = free_res,
-        .spawn_res = spawn_res
+        .end = 0
     };
 }
 
-void sem_wait_log(sem_t *sem, bool *is_halted)
+uint64_t queue_get_value(queue_p q)
 {
-    if(is_halted)
-    {
-        if(sem_trywait(sem))
-        {
-            *is_halted = true;
-            TREAT(sem_wait(sem));
-            *is_halted = false;
-        }
-    } else {
-        TREAT(sem_wait(sem));
-    }
+    return sem_getvalue_return(&q->sem_f);
 }
 
-void queue_post(queue_p q, handler_p res, bool * is_halted)
+void queue_post(queue_p q, handler_p res, bool * is_idle)
 {
-    sem_wait_log(&q->sem_b, is_halted);
+    sem_wait_log(&q->sem_b, is_idle);
     uint64_t index = q->end;
     q->end++;
-    if(q->end == q->max_res)
+    if(q->end == q->res_max)
         q->end = 0;
-    memcpy(q->res[index], res, q->size_res);
+    memcpy(q->res[index], res, q->res_size);
     TREAT(sem_post(&q->sem_f));
 }
 
-void queue_get(queue_p q, handler_p out_res, bool * is_halted)
+void queue_get(queue_p q, handler_p out_res, bool * is_idle)
 {
-    sem_wait_log(&q->sem_f, is_halted);
+    sem_wait_log(&q->sem_f, is_idle);
     handler_p res = q->res[q->start];
-    memcpy(out_res, res, q->size_res);
+    memcpy(out_res, res, q->res_size);
     q->start++;
-    if(q->start == q->max_res)
+    if(q->start == q->res_max)
         q->start = 0;
     TREAT(sem_post(&q->sem_b));
 }
 
-void queue_unstuck(queue_p q)
+/* returns true if H ownership returns to caller */
+bool queue_unstuck(queue_p q, handler_p h)
 {
     if(sem_getvalue_return(&q->sem_f) == 0)
     {
-        handler_p h = q->spawn_res();
         queue_post(q, h, NULL);
-        free(h);
+        return false;
     }
-
+    
     if(sem_getvalue_return(&q->sem_b) == 0)
     {
-        handler_p h = malloc(q->size_res);
-        assert(h);
-
         queue_get(q, h, NULL);
-        q->free_res(h);
-        free(h);
+        return true;
     }
+
+    return true;
 }
 
 void queue_free(queue_p q)
 {
-    handler_p h = malloc(q->size_res);
+    assert(sem_getvalue_return(&q->sem_f) == 0);
+
+    handler_p h = malloc(q->res_size);
     assert(h);
 
-    while(sem_getvalue_return(&q->sem_f))
-    {
-        queue_get(q, h, NULL);
-        q->free_res(h);
-    }
-    free(h);
-    
-    for(uint64_t i=0; i<q->max_res; i++)
+    for(uint64_t i=0; i<q->res_max; i++)
         free(q->res[i]);
     
     free(q->res);
@@ -186,17 +177,11 @@ STRUCT(junc)
     queue_p queues;
 };
 
-junc_t junc_init(
-    uint64_t total,
-    uint64_t max_res,
-    uint64_t size_res,
-    free_f free_res,
-    spawn_f spawn_f
-)
+junc_t junc_init(uint64_t total, uint64_t res_max, uint64_t res_size)
 {
     queue_p queues = malloc(total * sizeof(queue_t));
     for(uint64_t i=0; i<total; i++)
-        queues[i] = queue_init(max_res, size_res, free_res, spawn_f);
+        queues[i] = queue_init(res_max, res_size);
 
     return (junc_t)
     {
@@ -214,22 +199,22 @@ void junc_free(junc_p junc)
     free(junc->queues);
 }
 
-void junc_get(junc_p junc, handler_p out_res, bool * is_halted)
+void junc_get(junc_p junc, handler_p out_res, bool * is_idle)
 {
     uint64_t index = junc->index;
     junc->index++;
     if(junc->index == junc->total)
         junc->index = 0;
-    queue_get(&junc->queues[index], out_res, is_halted);
+    queue_get(&junc->queues[index], out_res, is_idle);
 }
 
-void junc_post(junc_p junc, handler_p res, bool * is_halted)
+void junc_post(junc_p junc, handler_p res, bool * is_idle)
 {
     uint64_t index = junc->index;
     junc->index++;
     if(junc->index == junc->total)
         junc->index = 0;
-    queue_post(&junc->queues[index], res, is_halted);
+    queue_post(&junc->queues[index], res, is_idle);
 }
 
 #endif

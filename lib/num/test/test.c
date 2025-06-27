@@ -173,12 +173,12 @@ void test_num_create(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_NUM_CREATE(TAG, SIZE, COUNT, SIZE_RES) \
+    #define TEST_NUM_CREATE(TAG, SIZE, COUNT, res_size) \
     {                                                   \
         TEST_CASE_OPEN(TAG)                             \
         {                                               \
             num_p num = num_create(SIZE, COUNT);        \
-            assert(uint64(num->size, SIZE_RES));        \
+            assert(uint64(num->size, res_size));        \
             assert(uint64(num->count, COUNT));          \
             assert(num->chunk != NULL);                 \
             num_free(num);                              \
