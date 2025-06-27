@@ -95,7 +95,7 @@ handler_p pi_2_thread_b(handler_p _args)
             float_num_free(flt_a);
             break;
         }
-        
+
         float_num_t flt_b;
         args->state = 1;
         flt_b = float_num_mul_sig(flt_a, sig_num_wrap((int64_t)1 - 2 * i));
@@ -389,6 +389,14 @@ void pi_2_monitor_state_treat_res(pi_2_monitor_state_args_t args)
 }
 
 
+PLACEHOLDER(pi_2_res);
+
+pi_2_res_p pi_2_res_create(uint64_t batch)
+{
+    pi_2_res_p res = malloc(sizeof(uint64_t) + batch * sizeof(float_num_t));
+    *(uint64_p)res = batch;
+    return res;
+}
 
 void pi_2_free_res(handler_p h)
 {
@@ -505,6 +513,7 @@ float_num_t pi_threads_2_calc(uint64_t size, uint64_t layers, bool monitoring)
         args_monitor_state.keep_going = false;
     }
 
+    printf("\nwait 1");
     for(uint64_t i=0; i<layers; i++)
     {
         float_num_t res;
@@ -515,32 +524,47 @@ float_num_t pi_threads_2_calc(uint64_t size, uint64_t layers, bool monitoring)
 
         queue_tryget(&queue_a_b[i], &res);
         queue_tryget(&junc_b_pi.queues[i], &res);
-    }
+        
+        res = float_num_wrap(0, 2);
+        queue_trypost(&queue_a_b[i], &res);
+        res = float_num_wrap(0, 2);
+        queue_trypost(&junc_b_pi.queues[i], &res);
 
+        queue_tryget(&queue_a_b[i], &res);
+        queue_tryget(&junc_b_pi.queues[i], &res);
+    }
+    
+    printf("\nwait 2");
     for(uint64_t i=0; i<layers; i++)
     {
+        printf("\nwait 2 a");
         pthread_wait(pid_a[i]);
-        pthread_wait(pid_b[i]);
+        printf("\nwait 2 b");
+        // pthread_wait(pid_b[i]);
     }
 
+    printf("\nwait 3");
     if(monitoring)
     {
         pthread_wait(pid_monitor_idle);
         pthread_wait(pid_monitor_state);
     }
-
+    
+    printf("\nwait 4");
     for(uint64_t i=0; i<layers; i++)
     {
         queue_free(&queue_a_b[i]);
     }
     junc_free(&junc_b_pi);
-
+    
+    printf("\nwait 5");
     if(monitoring)
     {
         pi_2_monitor_idle_treat_res(args_monitor_idle);
         pi_2_monitor_state_treat_res(args_monitor_state);
     }
-
+    
+    printf("\nwait 6");
     return flt_pi;
 }
 
