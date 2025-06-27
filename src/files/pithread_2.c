@@ -286,7 +286,7 @@ STRUCT(pi_2_monitor_state_res)
     uint64_t n_threads;
     uint64_t layers;
     uint64_t max_total_state;
-    uint64_t ***count;
+    uint64_t **count;
     uint64_t total;
 };
 
@@ -296,19 +296,13 @@ pi_2_monitor_state_res_t pi_2_monitor_state_res_create(
     uint64_t max_total_state
 )
 {
-    uint64_t ***count = malloc(n_threads * sizeof(uint64_t**));
+    uint64_t **count = malloc(n_threads * sizeof(uint64_t*));
     assert(count);
 
     for(uint64_t i=0; i<n_threads; i++)
     {
-        count[i] = malloc(layers * sizeof(uint64_t*));
+        count[i] = calloc(max_total_state, sizeof(uint64_t));
         assert(count[i]);
-
-        for(uint64_t j=0; j<layers; j++)
-        {
-            count[i][j] = calloc(max_total_state, sizeof(uint64_t));
-            assert(count[i][j]);
-        }
     }
 
     return (pi_2_monitor_state_res_t)
@@ -323,12 +317,7 @@ pi_2_monitor_state_res_t pi_2_monitor_state_res_create(
 void pi_2_monitor_state_res_free(pi_2_monitor_state_res_t res)
 {
     for(uint64_t i=0; i<res.n_threads; i++)
-    {
-        for(uint64_t j=0; j<res.layers; j++)
-            free(res.count[i][j]);
-
         free(res.count[i]);
-    }
 
     free(res.count);
 }
@@ -385,7 +374,7 @@ handler_p pi_2_monitor_state(handler_p _args)
         {
             uint64_t state = *(args->state[i][j]);
             assert(state < res.max_total_state);
-            res.count[i][j][state]++;
+            res.count[i][state]++;
         }
 
         usleep(10000);
@@ -400,19 +389,13 @@ void pi_2_monitor_state_treat_res(pi_2_monitor_state_args_t args)
 {
     pi_2_monitor_state_res_t res = args.res;
     display_table_titles(res.max_total_state);
-    for(uint64_t i=0; i<res.layers; i++)
-    {
-        printf("\n| thread_a[%lu]\t|", i);
-        for(uint64_t j=0; j<res.max_total_state; j++)
-            printf(" %5.1f\t|", 100.0 * res.count[0][i][j] / res.total);
-    }
+    printf("\n| thread_a\t|");
+    for(uint64_t i=0; i<res.max_total_state; i++)
+        printf(" %5.1f\t|", 100.0 * res.count[0][i] / (res.total * res.layers));
     display_table_queue_break(res.max_total_state);
-    for(uint64_t i=0; i<res.layers; i++)
-    {
-        printf("\n| thread_b[%lu]\t|", i);
-        for(uint64_t j=0; j<res.max_total_state; j++)
-            printf(" %5.1f\t|", 100.0 * res.count[1][i][j] / res.total);
-    }
+    printf("\n| thread_b\t|");
+    for(uint64_t i=0; i<res.max_total_state; i++)
+        printf(" %5.1f\t|", 100.0 * res.count[1][i] / (res.total * res.layers));
 
     pi_2_monitor_state_args_free(args);
 }
@@ -604,7 +587,7 @@ void pi_2_time_1(uint64_t size)
 {
     for(uint64_t layers = 1; layers<8; layers++)
     {
-        printf("\n2i: %lu\t", layers);
+        printf("\ni: %2lu\t", layers);
         uint64_t begin = get_time();
         pi_threads_2_calc(size, layers, false);
         uint64_t end = get_time();
@@ -617,7 +600,7 @@ void pi_2_time_2()
 {
     for(uint64_t size = 100; size < 2000; size += 100)
     {
-        printf("\n4i: %5lu\t", size);
+        printf("\ni: %4lu\t", size);
         uint64_t begin = get_time();
         pi_threads_2_calc(size, 3, false);
         uint64_t end = get_time();
