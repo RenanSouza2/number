@@ -1,17 +1,16 @@
 #ifndef __PTHREAD_STRUCT__
 #define __PTHREAD_STRUCT__
 
-#define __USE_GNU
-
 #include <stdio.h>
 #include <stdarg.h>
 #include <pthread.h>
 #include <semaphore.h>
+#include <string.h>
+#include <stdbool.h>
 
 #include "../../mods/macros/struct.h"
 #include "../../mods/macros/threads.h"
-
-#include "../../lib/float/header.h"
+#include "../../mods/macros/U64.h"
 
 
 
@@ -52,69 +51,43 @@ uint64_t sem_getvalue_return(sem_t *sem)
 
 
 
-STRUCT(pear_sem)
-{
-    sem_t sem, sem_c;
-};
+typedef void (*free_f)(handler_p);
 
-void pear_sem_init(pear_sem_p sem, uint64_t value)
-{
-    TREAT(sem_init(&sem->sem,   0, value));
-    TREAT(sem_init(&sem->sem_c, 0, 0));
-}
-
-void pear_sem_wait(pear_sem_p sem, bool *is_halted)
-{
-    if(sem_trywait(&sem->sem) == 0)
-        return;
-
-    TREAT(sem_post(&sem->sem_c));
-    if(is_halted)
-        *is_halted = true;
-    TREAT(sem_wait(&sem->sem));
-    if(is_halted)
-        *is_halted = false;
-    TREAT(sem_wait(&sem->sem_c));
-}
-
-void pear_sem_post(pear_sem_p sem)
-{
-    TREAT(sem_post(&sem->sem));
-}
-
-void pear_sem_evacuate(pear_sem_p sem)
-{
-    while(sem_getvalue_return(&sem->sem_c))
-        pear_sem_post(sem);
-}
-
-
-
-STRUCT(line)
+STRUCT(queue)
 {
     sem_t sem_f, sem_b;
-    float_num_p res;
-    uint64_t size;
+    uint64_t max_res;
+    uint64_t size_res;
+    handler_p *res;
     uint64_t start, end;
+    free_f free_res;
 };
 
-line_t line_init(uint64_t size)
+queue_t queue_init(uint64_t max_res, uint64_t size_res, free_f free_res)
 {
     sem_t sem_f, sem_b;
     sem_init(&sem_f, 0, 0);
-    sem_init(&sem_b, 0, size);
+    sem_init(&sem_b, 0, max_res);
 
-    float_num_p res = malloc(size * sizeof(float_num_t));
+    handler_p *res = malloc(max_res * sizeof(handler_p));
     assert(res);
 
-    return (line_t)
+    for(uint64_t i=0; i<max_res; i++)
+    {
+        res[i] = malloc(size_res);
+        assert(res[i]);
+    }
+
+    return (queue_t)
     {
         .sem_f = sem_f,
         .sem_b = sem_b,
+        .max_res = max_res,
+        .size_res = size_res,
         .res = res,
-        .size = size,
         .start = 0,
-        .end = 0
+        .end = 0,
+        .free_res = free_res
     };
 }
 
@@ -133,70 +106,74 @@ void sem_wait_log(sem_t *sem, bool *is_halted)
     }
 }
 
-void line_post_response_locked(line_p l, float_num_t res)
+void queue_post_locked(queue_p q, handler_p res)
 {
-    l->res[l->end] = res;
-    l->end++;
-    if(l->end == l->size)
-        l->end = 0;
-    TREAT(sem_post(&l->sem_f));
+    memcpy(q->res[q->end], res, q->size_res);
+    q->end++;
+    if(q->end == q->max_res)
+        q->end = 0;
+    TREAT(sem_post(&q->sem_f));
 }
 
-void line_post_response(line_p l, float_num_t res, bool *is_halted)
+void queue_post(queue_p q, handler_p res, bool * is_halted)
 {
-    sem_wait_log(&l->sem_b, is_halted);
-    line_post_response_locked(l, res);
+    sem_wait_log(&q->sem_b, is_halted);
+    queue_post_locked(q, res);
 }
 
-void line_trypost_response(line_p l, float_num_t res)
+void queue_trypost(queue_p q, handler_p res)
 {
-    if(sem_trywait(&l->sem_b))
+    if(sem_trywait(&q->sem_b))
     {
-        float_num_free(res);
+        q->free_res(res);
         return;
     }
 
-    line_post_response_locked(l, res);
+    queue_post_locked(q, res);
 }
 
-float_num_t line_get_response_locked(line_p l)
+void queue_get_locked(queue_p q, handler_p out_res)
 {
-    float_num_t res = l->res[l->start];
-    l->start++;
-    if(l->start == l->size)
-        l->start = 0;
-    TREAT(sem_post(&l->sem_b));
-
-    return res;
+    handler_p res = q->res[q->start];
+    q->start++;
+    if(q->start == q->max_res)
+        q->start = 0;
+    memcpy(out_res, res, q->size_res);
+    TREAT(sem_post(&q->sem_b));
 }
 
-float_num_t line_get_response(line_p l, bool * is_halted)
+void queue_get(queue_p q, handler_p out_res, bool * is_halted)
 {
-    sem_wait_log(&l->sem_f, is_halted);
-    return line_get_response_locked(l);
+    sem_wait_log(&q->sem_f, is_halted);
+    queue_get_locked(q, out_res);
 }
 
-float_num_t line_tryget_response(line_p l)
+void queue_tryget(queue_p q, handler_p out_res)
 {
-    if(sem_trywait(&l->sem_f))
-        return float_num_wrap(0, 2);
+    if(sem_trywait(&q->sem_f))
+        return;
 
-    return line_get_response_locked(l);
+    queue_get_locked(q, out_res);
 }
 
-void line_free(line_p l)
+void queue_free(queue_p q)
 {
-    bool ignore;
-    for(uint64_t i = 0; l->start != l->end; i++)
+    handler_p h = malloc(q->size_res);
+    assert(h);
+
+    for(uint64_t i = 0; q->start != q->end; i++)
     {
-        float_num_t flt = line_get_response(l, &ignore);
-        float_num_free(flt);
+        queue_get(q, h, NULL);
+        q->free_res(h);
     }
-
-    TREAT(sem_destroy(&l->sem_f));
-    TREAT(sem_destroy(&l->sem_b));
-
-    free(l->res);
+    
+    for(uint64_t i=0; i<q->start; i++)
+    free(q->res[i]);
+    
+    free(q->res);
+    
+    TREAT(sem_destroy(&q->sem_f));
+    TREAT(sem_destroy(&q->sem_b));
 }
 
 
@@ -205,47 +182,52 @@ STRUCT(junc)
 {
     uint64_t total;
     uint64_t index;
-    line_p lines;
+    queue_p queues;
 };
 
-junc_t junc_init(uint64_t total, uint64_t max)
+junc_t junc_init(
+    uint64_t total,
+    uint64_t max_res,
+    uint64_t size_res,
+    free_f free_res
+)
 {
-    line_p lines = malloc(total * sizeof(line_t));
+    queue_p queues = malloc(total * sizeof(queue_t));
     for(uint64_t i=0; i<total; i++)
-        lines[i] = line_init(max);
+        queues[i] = queue_init(max_res, size_res, free_res);
 
     return (junc_t)
     {
         .total = total,
         .index = 0,
-        .lines = lines
+        .queues = queues
     };
 }
 
 void junc_free(junc_p junc)
 {
     for(uint64_t i=0; i<junc->total; i++)
-        line_free(&junc->lines[i]);
+        queue_free(&junc->queues[i]);
 
-    free(junc->lines);
+    free(junc->queues);
 }
 
-float_num_t junc_get_response(junc_p junc, bool *is_halted)
+void junc_get(junc_p junc, handler_p out_res, bool * is_halted)
 {
     uint64_t index = junc->index;
     junc->index++;
     if(junc->index == junc->total)
         junc->index = 0;
-    return line_get_response(&junc->lines[index], is_halted);
+    queue_get(&junc->queues[index], out_res, is_halted);
 }
 
-void junc_post_response(junc_p junc, float_num_t res, bool *is_halted)
+void junc_post(junc_p junc, handler_p res, bool * is_halted)
 {
     uint64_t index = junc->index;
     junc->index++;
     if(junc->index == junc->total)
         junc->index = 0;
-    line_post_response(&junc->lines[index], res, is_halted);
+    queue_post(&junc->queues[index], res, is_halted);
 }
 
 #endif

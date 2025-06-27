@@ -1,4 +1,3 @@
-#include <unistd.h>
 
 #include "../mods/clu/header.h"
 
@@ -604,21 +603,9 @@ int main(int argc, char** argv)
     // float_num_pi_2(1000);
     // float_num_pi_3(1000);
     // pi_threads_1(arg, 8, true);
-    // pi_threads_2(arg, 3, true);
+    pi_threads_2(arg, 3, false);
     // pi_2_time_1(arg);
     // pi_2_time_2();
-
-    uint64_t begin = get_time();
-    pi_threads_2(arg, 4, true);
-    uint64_t end = get_time();
-    uint64_t time_3 = end - begin;
-    printf("\n\ntime 3: %.1f\n", time_3 / 1e9);
-
-    // begin = get_time();
-    // pi_threads_2(arg, 4, true);
-    // end = get_time();
-    // uint64_t time_4 = end - begin;
-    // printf("\n\ntime 4: %.1f\n", time_4 / 1e9);
 
     // assert(clu_mem_is_empty("FINAL"));
 
