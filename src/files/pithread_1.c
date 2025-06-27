@@ -310,6 +310,15 @@ void pi_1_flt_free(handler_p h)
     float_num_free(*(float_num_p)h);
 }
 
+handler_p pi_1_flt_spawn()
+{
+    handler_p h = malloc(sizeof(float_num_t));
+    assert(h);
+
+    *(float_num_p)h = float_num_wrap(0, 2);
+    return h;
+}
+
 void pi_threads_1(uint64_t size, uint64_t layers, bool monitoring)
 {
     pi_1_thread_a_args_t args_a[layers];
@@ -321,7 +330,13 @@ void pi_threads_1(uint64_t size, uint64_t layers, bool monitoring)
     queue_t queue_b_d[layers];
     queue_t queue_c_d[layers];
 
-    junc_t junc_d_pi = junc_init(layers, 50, sizeof(float_num_t), pi_1_flt_free);
+    junc_t junc_d_pi = junc_init(
+        layers,
+        50,
+        sizeof(float_num_t),
+        pi_1_flt_free,
+        pi_1_flt_spawn
+    );
 
     pthread_t pid_a[layers];
     pthread_t pid_b[layers];
@@ -360,7 +375,12 @@ void pi_threads_1(uint64_t size, uint64_t layers, bool monitoring)
 
     for(uint64_t i=0; i<layers; i++)
     {
-        queue_a_b[i] = queue_init(50, sizeof(float_num_t), pi_1_flt_free);
+        queue_a_b[i] = queue_init(
+            50,
+            sizeof(float_num_t),
+            pi_1_flt_free,
+            pi_1_flt_spawn
+        );
         args_a[i] = (pi_1_thread_a_args_t)
         {
             .size = size,
@@ -372,7 +392,12 @@ void pi_threads_1(uint64_t size, uint64_t layers, bool monitoring)
         };
         pid_a[i] = pthread_launch(pi_1_thread_a, &args_a[i]);
 
-        queue_b_d[i] = queue_init(50, sizeof(float_num_t), pi_1_flt_free);
+        queue_b_d[i] = queue_init(
+            50,
+            sizeof(float_num_t),
+            pi_1_flt_free,
+            pi_1_flt_spawn
+        );
         args_b[i] = (pi_1_thread_b_args_t)
         {
             .size = size,
@@ -386,7 +411,12 @@ void pi_threads_1(uint64_t size, uint64_t layers, bool monitoring)
         };
         pid_b[i] = pthread_launch(pi_1_thread_b, &args_b[i]);
 
-        queue_c_d[i] = queue_init(50, sizeof(float_num_t), pi_1_flt_free);
+        queue_c_d[i] = queue_init(
+            50,
+            sizeof(float_num_t),
+            pi_1_flt_free,
+            pi_1_flt_spawn
+        );
         args_c[i] = (pi_1_thread_c_args_t)
         {
             .size = size,
@@ -458,16 +488,10 @@ void pi_threads_1(uint64_t size, uint64_t layers, bool monitoring)
 
     for(uint64_t i=0; i<layers; i++)
     {
-        float_num_t res = float_num_wrap(0, 2);
-        queue_trypost(&queue_a_b[i], &res);
-        queue_trypost(&queue_b_d[i], &res);
-        queue_trypost(&queue_c_d[i], &res);
-        queue_trypost(&junc_d_pi.queues[i], &res);
-
-        queue_tryget(&queue_a_b[i], &res);
-        queue_tryget(&queue_b_d[i], &res);
-        queue_tryget(&queue_c_d[i], &res);
-        queue_tryget(&junc_d_pi.queues[i], &res);
+        queue_unstuck(&queue_a_b[i]);
+        queue_unstuck(&queue_b_d[i]);
+        queue_unstuck(&queue_c_d[i]);
+        queue_unstuck(&junc_d_pi.queues[i]);
     }
 
     for(uint64_t i=0; i<layers; i++)

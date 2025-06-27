@@ -52,6 +52,7 @@ uint64_t sem_getvalue_return(sem_t *sem)
 
 
 typedef void (*free_f)(handler_p);
+typedef handler_p (*spawn_f)();
 
 STRUCT(queue)
 {
@@ -61,9 +62,15 @@ STRUCT(queue)
     handler_p *res;
     uint64_t start, end;
     free_f free_res;
+    spawn_f spawn_res;
 };
 
-queue_t queue_init(uint64_t max_res, uint64_t size_res, free_f free_res)
+queue_t queue_init(
+    uint64_t max_res,
+    uint64_t size_res,
+    free_f free_res,
+    spawn_f spawn_res
+)
 {
     sem_t sem_f, sem_b;
     sem_init(&sem_f, 0, 0);
@@ -87,7 +94,8 @@ queue_t queue_init(uint64_t max_res, uint64_t size_res, free_f free_res)
         .res = res,
         .start = 0,
         .end = 0,
-        .free_res = free_res
+        .free_res = free_res,
+        .spawn_res = spawn_res
     };
 }
 
@@ -106,8 +114,9 @@ void sem_wait_log(sem_t *sem, bool *is_halted)
     }
 }
 
-void queue_post_locked(queue_p q, handler_p res)
+void queue_post(queue_p q, handler_p res, bool * is_halted)
 {
+    sem_wait_log(&q->sem_b, is_halted);
     uint64_t index = q->end;
     q->end++;
     if(q->end == q->max_res)
@@ -116,25 +125,9 @@ void queue_post_locked(queue_p q, handler_p res)
     TREAT(sem_post(&q->sem_f));
 }
 
-void queue_post(queue_p q, handler_p res, bool * is_halted)
+void queue_get(queue_p q, handler_p out_res, bool * is_halted)
 {
-    sem_wait_log(&q->sem_b, is_halted);
-    queue_post_locked(q, res);
-}
-
-void queue_trypost(queue_p q, handler_p res)
-{
-    if(sem_trywait(&q->sem_b))
-    {
-        q->free_res(res);
-        return;
-    }
-
-    queue_post_locked(q, res);
-}
-
-void queue_get_locked(queue_p q, handler_p out_res)
-{
+    sem_wait_log(&q->sem_f, is_halted);
     handler_p res = q->res[q->start];
     memcpy(out_res, res, q->size_res);
     q->start++;
@@ -143,18 +136,24 @@ void queue_get_locked(queue_p q, handler_p out_res)
     TREAT(sem_post(&q->sem_b));
 }
 
-void queue_get(queue_p q, handler_p out_res, bool * is_halted)
+void queue_unstuck(queue_p q)
 {
-    sem_wait_log(&q->sem_f, is_halted);
-    queue_get_locked(q, out_res);
-}
+    if(sem_getvalue_return(&q->sem_f) == 0)
+    {
+        handler_p h = q->spawn_res();
+        queue_post(q, h, NULL);
+        free(h);
+    }
 
-void queue_tryget(queue_p q, handler_p out_res)
-{
-    if(sem_trywait(&q->sem_f))
-        return;
+    if(sem_getvalue_return(&q->sem_b) == 0)
+    {
+        handler_p h = malloc(q->size_res);
+        assert(h);
 
-    queue_get_locked(q, out_res);
+        queue_get(q, h, NULL);
+        q->free_res(h);
+        free(h);
+    }
 }
 
 void queue_free(queue_p q)
@@ -167,9 +166,10 @@ void queue_free(queue_p q)
         queue_get(q, h, NULL);
         q->free_res(h);
     }
+    free(h);
     
-    for(uint64_t i=0; i<q->start; i++)
-    free(q->res[i]);
+    for(uint64_t i=0; i<q->max_res; i++)
+        free(q->res[i]);
     
     free(q->res);
     
@@ -190,12 +190,13 @@ junc_t junc_init(
     uint64_t total,
     uint64_t max_res,
     uint64_t size_res,
-    free_f free_res
+    free_f free_res,
+    spawn_f spawn_f
 )
 {
     queue_p queues = malloc(total * sizeof(queue_t));
     for(uint64_t i=0; i<total; i++)
-        queues[i] = queue_init(max_res, size_res, free_res);
+        queues[i] = queue_init(max_res, size_res, free_res, spawn_f);
 
     return (junc_t)
     {
