@@ -108,10 +108,11 @@ void sem_wait_log(sem_t *sem, bool *is_halted)
 
 void queue_post_locked(queue_p q, handler_p res)
 {
-    memcpy(q->res[q->end], res, q->size_res);
+    uint64_t index = q->end;
     q->end++;
     if(q->end == q->max_res)
         q->end = 0;
+    memcpy(q->res[index], res, q->size_res);
     TREAT(sem_post(&q->sem_f));
 }
 
@@ -135,10 +136,10 @@ void queue_trypost(queue_p q, handler_p res)
 void queue_get_locked(queue_p q, handler_p out_res)
 {
     handler_p res = q->res[q->start];
+    memcpy(out_res, res, q->size_res);
     q->start++;
     if(q->start == q->max_res)
         q->start = 0;
-    memcpy(out_res, res, q->size_res);
     TREAT(sem_post(&q->sem_b));
 }
 
@@ -161,7 +162,7 @@ void queue_free(queue_p q)
     handler_p h = malloc(q->size_res);
     assert(h);
 
-    for(uint64_t i = 0; q->start != q->end; i++)
+    while(sem_getvalue_return(&q->sem_f))
     {
         queue_get(q, h, NULL);
         q->free_res(h);
