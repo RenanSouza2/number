@@ -277,3 +277,23 @@ fix_num_t fix_num_div(fix_num_t fix_1, fix_num_t fix_2) // TODO test
     fix_1.sig = sig_num_div(fix_1.sig, fix_2.sig);
     return fix_1;
 }
+
+
+
+fix_num_t fix_num_mul_sig(fix_num_t fix, sig_num_t sig) // TODO test
+{
+    CLU_FIX_IS_SAFE(fix);
+    CLU_HANDLER_IS_SAFE(sig.num);
+
+    fix.sig = sig_num_mul(fix.sig, sig);
+    return fix;
+}
+
+fix_num_t fix_num_div_sig(fix_num_t fix, sig_num_t sig) // TODO test
+{
+    CLU_FIX_IS_SAFE(fix);
+    CLU_HANDLER_IS_SAFE(sig.num);
+
+    fix.sig = sig_num_div(fix.sig, sig);
+    return fix;
+}

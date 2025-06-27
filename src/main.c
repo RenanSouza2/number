@@ -606,7 +606,8 @@ int main(int argc, char** argv)
     pi_threads_2(arg, 3, true);
     // pi_2_time_1(arg);
     // pi_2_time_2();
-
+    // pi_2_time_3(arg);
+    
     // for(uint64_t i=1; i<6; i++)
     // {
     //     printf("\n");

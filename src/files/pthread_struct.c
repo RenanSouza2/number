@@ -82,6 +82,8 @@ STRUCT(queue)
 
 queue_t queue_init(uint64_t res_max, uint64_t res_size, free_f res_free)
 {
+    assert(res_max > 1);
+
     sem_t sem_f, sem_b;
     sem_init(&sem_f, 0, 0);
     sem_init(&sem_b, 0, res_max);
