@@ -613,7 +613,7 @@ int main(int argc, char** argv)
     //     printf("\n");
     //     printf("\n----------------------------------------------------");
     //     printf("\ni: %lu", i);
-        
+    //
     //     uint64_t begin = get_time();
     //     pi_threads_2(arg, i, true);
     //     uint64_t end = get_time();
@@ -621,6 +621,24 @@ int main(int argc, char** argv)
     //     printf("\n");
     //     printf("\ntime: %.1f", time / 1e9);
     // }
+
+    // printf("\n----------------------------------------------------");
+    // printf("\nn: %u", 100000);
+    // uint64_t begin = get_time();
+    // pi_threads_2(100000, 3, true);
+    // uint64_t end = get_time();
+    // uint64_t time = end - begin;
+    // printf("\n");
+    // printf("\ntime: %.1f", time / 1e9);
+    // printf("\n");
+    // printf("\n----------------------------------------------------");
+    // printf("\nn: %u", 500000);
+    // begin = get_time();
+    // pi_threads_2(500000, 3, true);
+    // end = get_time();
+    // time = end - begin;
+    // printf("\n");
+    // printf("\ntime: %.1f", time / 1e9);
 
     // assert(clu_mem_is_empty("FINAL"));
 
