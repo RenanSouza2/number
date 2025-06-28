@@ -9,21 +9,11 @@
 
 
 
-void display_table_queue_break(uint64_t n)
+void display_table_line_break(uint64_t n)
 {
     printf("\n ----------------");
     for(uint64_t i=0; i<n; i++)
         printf("--------");
-}
-
-void display_table_titles(uint64_t n)
-{
-    printf("\n");
-    printf("\n\t\t|");
-    for(uint64_t i=0; i<n; i++)
-        printf(" %lu\t|", i);
-
-    display_table_queue_break(n);
 }
 
 
@@ -39,6 +29,7 @@ STRUCT(pi_2_thread_a_args)
     bool keep_going;
     bool is_idle;
     uint64_t state;
+    uint64_t total;
 };
 
 handler_p pi_2_thread_a(handler_p _args)
@@ -49,6 +40,7 @@ handler_p pi_2_thread_a(handler_p _args)
     uint64_t jump = args->layers * args->batch_size;
     for(uint64_t i = args->id + args->layers; args->keep_going; i += jump)
     {
+        args->total++;
         float_num_t flt_a_batch[args->batch_size];
         for(uint64_t j=0; j<args->batch_size; j++)
         {
@@ -67,10 +59,11 @@ handler_p pi_2_thread_a(handler_p _args)
             flt_a = float_num_mul_sig(flt_a, sig_a);
             args->state = 2;
             flt_a = float_num_div_sig(flt_a, sig_b);
+            args->state = 3;
             flt_a_batch[j] = float_num_copy(flt_a);
         }
         
-        args->state = 3;
+        args->state = 4;
         queue_post(args->queue_a_b, &flt_a_batch, &args->is_idle);
     }
     float_num_free(flt_a);
@@ -89,6 +82,7 @@ STRUCT(pi_2_thread_b_args)
     bool keep_going;
     bool is_idle;
     uint64_t state;
+    uint64_t val_a, val_b, total;
 };
 
 handler_p pi_2_thread_b(handler_p _args)
@@ -99,8 +93,25 @@ handler_p pi_2_thread_b(handler_p _args)
     for(uint64_t i = args->id + args->layers; args->keep_going; i += jump)
     {
         float_num_t flt_a_batch[args->batch_size];
+        // queue_get(args->queue_a_b, &flt_a_batch, &args->is_idle);
+        queue_p q = args->queue_a_b;
         args->state = 0;
-        queue_get(args->queue_a_b, &flt_a_batch, &args->is_idle);
+        args->val_a += sem_getvalue_return(&q->sem_f);
+        args->val_b += sem_getvalue_return(&q->sem_b);
+        args->total++;
+        args->state = 1;
+        // sem_wait_log(&q->sem_f, &args->is_idle); // see if tryget is slow
+        TREAT(sem_wait(&q->sem_f));
+        handler_p res = q->res[q->start];
+        args->state = 2;
+        memcpy(&flt_a_batch, res, q->res_size);
+        args->state = 3;
+        q->start++;
+        if(q->start == q->res_max)
+        q->start = 0;
+        args->state = 4;
+        TREAT(sem_post(&q->sem_b));
+        
         if(!args->keep_going)
         {
             for(uint64_t j=0; j<args->batch_size; j++)
@@ -114,15 +125,15 @@ handler_p pi_2_thread_b(handler_p _args)
         {
             uint64_t index = i + args->layers * j;
 
-            args->state = 1;
+            args->state = 5;
             float_num_t flt_b = float_num_mul_sig(flt_a_batch[j], sig_num_wrap((int64_t)1 - 2 * index));
-            args->state = 2;
+            args->state = 6;
             flt_b = float_num_div_sig(flt_b, sig_num_wrap((int64_t)4 * index + 2));
-            args->state = 3;
+            args->state = 7;
             flt_b_batch[j] = flt_b;
         }
 
-        args->state = 4;
+        args->state = 8;
         queue_post(args->queue_b_pi, &flt_b_batch, &args->is_idle);
     }
 
@@ -138,6 +149,7 @@ STRUCT(pi_2_thread_pi_args)
     float_num_t pi0;
     float_num_t res;
     bool is_idle;
+    uint64_t total;
 };
 
 handler_p pi_2_thread_pi(handler_p _args)
@@ -147,6 +159,8 @@ handler_p pi_2_thread_pi(handler_p _args)
     float_num_t flt_pi = args->pi0;
     for(uint64_t i=1; ; i++)
     {
+        args->total++;
+    
         float_num_t flt_b = float_num_wrap(0, args->size);
         for(uint64_t j=0; j<args->layers; j++)
         {
@@ -157,7 +171,7 @@ handler_p pi_2_thread_pi(handler_p _args)
         }
 
         uint64_t tam = 100;
-        if(i%(10*tam) == 0)
+        if(i%(tam) == 0)
         {
             uint64_t done = -(flt_b.size + flt_b.exponent);
             fprintf(stderr, "\npgr: %lu / %lu", done / tam, flt_b.size / tam);
@@ -178,66 +192,76 @@ handler_p pi_2_thread_pi(handler_p _args)
 
 
 
+handler_p matrix_alloc(uint64_t n_i, uint64_t n_j, uint64_t size)
+{
+    handler_p *m = malloc(n_i * sizeof(handler_p));
+    assert(m);
+
+    for(uint64_t i=0; i<n_i; i++)
+    {
+        m[i] = calloc(n_j, size);
+        assert(m[i]);
+    }
+
+    return m;
+}
+
+void matrix_free(handler_p *m, uint64_t n_i)
+{
+    for(uint64_t i=0; i<n_i; i++)
+        free(m[i]);
+
+    free(m);
+}
+
 STRUCT(pi_2_monitor_idle_res)
 {
-    uint64_t *count_a;
-    uint64_t *count_b;
+    uint64_t n_threads;
+    uint64_t layers;
+    uint64_t *count;
     uint64_t count_pi;
     uint64_t total;
 };
 
-pi_2_monitor_idle_res_t pi_2_monitor_idle_res_create(uint64_t layers)
+pi_2_monitor_idle_res_t pi_2_monitor_idle_res_create(uint64_t n_threads, uint64_t layers)
 {
-    uint64_t *count_a = calloc(layers, sizeof(uint64_t));
-    uint64_t *count_b = calloc(layers, sizeof(uint64_t));
-    assert(count_a);
-    assert(count_b);
+    uint64_t *count = calloc(layers, sizeof(uint64_t));
+    assert(count);
 
     return (pi_2_monitor_idle_res_t)
     {
-        .count_a = count_a,
-        .count_b = count_b,
+        .n_threads = n_threads,
+        .layers = layers,
+        .count = count
     };
 }
 
 void pi_2_monitor_idle_res_free(pi_2_monitor_idle_res_t res)
 {
-    free(res.count_a);
-    free(res.count_b);
+    free(res.count);
 }
 
 STRUCT(pi_2_monitor_idle_args)
 {
-    uint64_t layers;
-    bool **a_is_idle;
-    bool **b_is_idle;
-    bool *pi_is_idle;
+    bool ***is_idle;
     pi_2_monitor_idle_res_t res;
     bool keep_going;
 };
 
-pi_2_monitor_idle_args_t pi_2_monitor_idle_args_create(uint64_t layers)
+pi_2_monitor_idle_args_t pi_2_monitor_idle_args_create(uint64_t n_threads, uint64_t layers)
 {
-    bool **a_is_idle = malloc(layers * sizeof(bool*));
-    bool **b_is_idle = malloc(layers * sizeof(bool*));
-    assert(a_is_idle);
-    assert(b_is_idle);
-
+    bool ***is_idle = matrix_alloc(n_threads, layers, sizeof(bool*));
     return (pi_2_monitor_idle_args_t)
     {
-        .layers = layers,
-        .a_is_idle = a_is_idle,
-        .b_is_idle = b_is_idle,
-        .res = pi_2_monitor_idle_res_create(layers),
+        .is_idle = is_idle,
+        .res = pi_2_monitor_idle_res_create(n_threads, layers),
         .keep_going = true
     };
 }
 
  void pi_2_monitor_idle_args_free(pi_2_monitor_idle_args_t args)
  {
-    free(args.a_is_idle);
-    free(args.b_is_idle);
-
+    matrix_free((handler_p*)args.is_idle, args.res.n_threads);
     pi_2_monitor_idle_res_free(args.res);
  }
 
@@ -248,14 +272,11 @@ handler_p pi_2_monitor_idle(handler_p _args)
     uint64_t total=0;
     for(; args->keep_going; total++)
     {
-        for(uint64_t i=0; i<args->layers; i++)
-        {
-            res.count_a[i] += *(args->a_is_idle[i]);
-            res.count_b[i] += *(args->b_is_idle[i]);
-        }
-        res.count_pi += *(args->pi_is_idle);
+        for(uint64_t i=0; i<res.n_threads; i++)
+        for(uint64_t j=0; j<res.layers; j++)
+            res.count[i] += *(args->is_idle[i][j]);
 
-        usleep(10000);
+        sleep(1);
     }
 
     res.total = total;
@@ -266,15 +287,12 @@ handler_p pi_2_monitor_idle(handler_p _args)
 void pi_2_monitor_idle_treat_res(pi_2_monitor_idle_args_t args)
 {
     pi_2_monitor_idle_res_t res = args.res;
-    display_table_titles(args.layers);
-    printf("\n| thread_a\t|");
-    for(uint64_t i=0; i<args.layers; i++)
-        printf(" %3.f %%\t|", 100 - 100.0 * res.count_a[i] / res.total);
-    printf("\n| thread_b\t|");
-    for(uint64_t i=0; i<args.layers; i++)
-        printf(" %3.f %%\t|", 100 - 100.0 * res.count_b[i] / res.total);
     printf("\n");
-    printf("\n| thread_pi\t| %3.f %%\t|", 100 - 100.0 * res.count_pi / res.total);
+    printf("\n\t\t| use rate\t|");
+    display_table_line_break(2);
+    printf("\n| thread_a\t| \t%3.f %%\t|", 100 - 100.0 * res.count[0] / (res.total * res.layers));
+    printf("\n| thread_b\t| \t%3.f %%\t|", 100 - 100.0 * res.count[1] / (res.total * res.layers));
+    printf("\n| thread_pi\t| \t%3.f %%\t|", 100 - 100.0 * res.count[2] / (res.total * res.layers));
 
     pi_2_monitor_idle_args_free(args);
 }
@@ -296,15 +314,7 @@ pi_2_monitor_state_res_t pi_2_monitor_state_res_create(
     uint64_t max_total_state
 )
 {
-    uint64_t **count = malloc(n_threads * sizeof(uint64_t*));
-    assert(count);
-
-    for(uint64_t i=0; i<n_threads; i++)
-    {
-        count[i] = calloc(max_total_state, sizeof(uint64_t));
-        assert(count[i]);
-    }
-
+    uint64_t **count = matrix_alloc(n_threads,  max_total_state, sizeof(uint64_t));
     return (pi_2_monitor_state_res_t)
     {
         .n_threads = n_threads,
@@ -316,10 +326,7 @@ pi_2_monitor_state_res_t pi_2_monitor_state_res_create(
 
 void pi_2_monitor_state_res_free(pi_2_monitor_state_res_t res)
 {
-    for(uint64_t i=0; i<res.n_threads; i++)
-        free(res.count[i]);
-
-    free(res.count);
+    matrix_free((handler_p*)res.count, res.n_threads);
 }
 
 STRUCT(pi_2_monitor_state_args)
@@ -335,15 +342,7 @@ pi_2_monitor_state_args_t pi_2_monitor_state_args_create(
     uint64_t max_total_state
 )
 {
-    uint64_t ***state = malloc(n_threads * sizeof(uint64_t**));
-    assert(state);
-
-    for(uint64_t i=0; i<n_threads; i++)
-    {
-        state[i] = malloc(layers * sizeof(uint64_t*));
-        assert(state[i]);
-    }
-
+    uint64_t ***state = matrix_alloc(n_threads, layers, sizeof(uint64_t*));
     return (pi_2_monitor_state_args_t)
     {
         .state = state,
@@ -354,45 +353,40 @@ pi_2_monitor_state_args_t pi_2_monitor_state_args_create(
 
  void pi_2_monitor_state_args_free(pi_2_monitor_state_args_t args)
  {
-    for(uint64_t i=0; i<args.res.n_threads; i++)
-        free(args.state[i]);
-
-    free(args.state);
-
+    matrix_free((handler_p*)args.state, args.res.n_threads);
     pi_2_monitor_state_res_free(args.res);
  }
 
 handler_p pi_2_monitor_state(handler_p _args)
 {
     pi_2_monitor_state_args_p args = _args;
-    pi_2_monitor_state_res_t res = args->res;
-    uint64_t total=0;
-    for(; args->keep_going; total++)
+    pi_2_monitor_state_res_p res = &args->res;
+    for(res->total = 0; args->keep_going; res->total++)
     {
-        for(uint64_t i=0; i<res.n_threads; i++)
-        for(uint64_t j=0; j<res.layers; j++)
+        for(uint64_t i=0; i<res->n_threads; i++)
+        for(uint64_t j=0; j<res->layers; j++)
         {
             uint64_t state = *(args->state[i][j]);
-            assert(state < res.max_total_state);
-            res.count[i][state]++;
+            assert(state < res->max_total_state);
+            res->count[i][state]++;
         }
 
-        usleep(10000);
+        sleep(1);
     }
-
-    res.total = total;
-    args->res = res;
     return NULL;
 }
 
 void pi_2_monitor_state_treat_res(pi_2_monitor_state_args_t args)
 {
     pi_2_monitor_state_res_t res = args.res;
-    display_table_titles(res.max_total_state);
+    printf("\n");
+    printf("\n \tstate\t|");
+    for(uint64_t i=0; i<res.max_total_state; i++)
+        printf(" %lu\t|", i);
+    display_table_line_break(res.max_total_state);
     printf("\n| thread_a\t|");
     for(uint64_t i=0; i<res.max_total_state; i++)
         printf(" %5.1f\t|", 100.0 * res.count[0][i] / (res.total * res.layers));
-    display_table_queue_break(res.max_total_state);
     printf("\n| thread_b\t|");
     for(uint64_t i=0; i<res.max_total_state; i++)
         printf(" %5.1f\t|", 100.0 * res.count[1][i] / (res.total * res.layers));
@@ -421,7 +415,6 @@ pi_2_monitor_queue_res_t pi_2_monitor_queue_res_create(
     uint64_t *count = calloc(n_queues, sizeof(uint64_t*));
     assert(count);
 
-
     return (pi_2_monitor_queue_res_t)
     {
         .n_queues = n_queues,
@@ -449,15 +442,7 @@ pi_2_monitor_queue_args_t pi_2_monitor_queue_args_create(
     uint64_t queue_size
 )
 {
-    queue_p **queues = malloc(n_queues * sizeof(queue_p*));
-    assert(queues);
-
-    for(uint64_t i=0; i<n_queues; i++)
-    {
-        queues[i] = malloc(layers * sizeof(queue_p));
-        assert(queues[i]);
-    }
-
+    queue_p **queues = matrix_alloc(n_queues, layers, sizeof(queue_p));
     return (pi_2_monitor_queue_args_t)
     {
         .queues = queues,
@@ -468,31 +453,26 @@ pi_2_monitor_queue_args_t pi_2_monitor_queue_args_create(
 
  void pi_2_monitor_queue_args_free(pi_2_monitor_queue_args_t args)
  {
-    free(args.queues);
-
+    matrix_free((handler_p*)args.queues, args.res.n_queues);
     pi_2_monitor_queue_res_free(args.res);
  }
 
 handler_p pi_2_monitor_queue(handler_p _args)
 {
     pi_2_monitor_queue_args_p args = _args;
-    pi_2_monitor_queue_res_t res = args->res;
-    uint64_t total=0;
-    for(; args->keep_going; total++)
+    pi_2_monitor_queue_res_p res = &args->res;
+    for(res->total = 0; args->keep_going; res->total++)
     {
-        for(uint64_t i=0; i<res.n_queues; i++)
-        for(uint64_t j=0; j<res.layers; j++)
+        for(uint64_t i=0; i<res->n_queues; i++)
+        for(uint64_t j=0; j<res->layers; j++)
         {
             uint64_t val = queue_get_value(args->queues[i][j]);
-            // printf("\ni: %lu\tj: %lu\t val: %lu", i, j, val);
-            res.count[i] += val;
+            res->count[i] += val;
         }
 
-        usleep(10000);
+        sleep(1);
     }
 
-    res.total = total;
-    args->res = res;
     return NULL;
 }
 
@@ -500,7 +480,8 @@ void pi_2_monitor_queue_treat_res(pi_2_monitor_queue_args_t args)
 {
     pi_2_monitor_queue_res_t res = args.res;
     printf("\n");
-    printf("\n| queues\t| occupancy\t|");
+    printf("\n\t\t| occupancy\t|");
+    display_table_line_break(2);
     printf("\n| queue_a_b\t| \t%5.1f\t|", 100.0 * res.count[0] / (res.total * res.layers * res.queue_size));
     printf("\n| queue_b_pi\t| \t%5.1f\t|", 100.0 * res.count[1] / (res.total * res.layers * res.queue_size));
 
@@ -521,9 +502,9 @@ void pi_2_res_free(handler_p h, uint64_t res_size)
 float_num_t pi_threads_2_calc(uint64_t size, uint64_t layers, bool monitoring)
 {
     assert(layers);
-    uint64_t queue_size = 100;
+    uint64_t queue_size = 10;
     uint64_t batch_size = 10;
-    uint64_t max_total_state = 5;
+    uint64_t max_total_state = 9;
 
     pi_2_thread_a_args_t args_a[layers];
     pi_2_thread_b_args_t args_b[layers];
@@ -595,22 +576,22 @@ float_num_t pi_threads_2_calc(uint64_t size, uint64_t layers, bool monitoring)
     };
     pthread_t pid_pi = pthread_launch(pi_2_thread_pi, &args_pi);
 
-    pi_2_monitor_idle_args_t args_monitor_idle;
+    // pi_2_monitor_idle_args_t args_monitor_idle;
     pi_2_monitor_state_args_t args_monitor_state;
     pi_2_monitor_queue_args_t args_monitor_queue;
-    pthread_t pid_monitor_idle = 0;
+    // pthread_t pid_monitor_idle = 0;
     pthread_t pid_monitor_state = 0;
     pthread_t pid_monitor_queue = 0;
     if(monitoring)
     {
-        args_monitor_idle = pi_2_monitor_idle_args_create(layers);
-        for(uint64_t i=0; i<layers; i++)
-        {
-            args_monitor_idle.a_is_idle[i] = &args_a[i].is_idle;
-            args_monitor_idle.b_is_idle[i] = &args_b[i].is_idle;
-        }
-        args_monitor_idle.pi_is_idle = &args_pi.is_idle;
-        pid_monitor_idle = pthread_launch(pi_2_monitor_idle, &args_monitor_idle);
+        // args_monitor_idle = pi_2_monitor_idle_args_create(3, layers);
+        // for(uint64_t i=0; i<layers; i++)
+        // {
+        //     args_monitor_idle.is_idle[0][i] = &args_a[i].is_idle;
+        //     args_monitor_idle.is_idle[1][i] = &args_b[i].is_idle;
+        //     args_monitor_idle.is_idle[2][i] = &args_pi.is_idle;
+        // }
+        // pid_monitor_idle = pthread_launch(pi_2_monitor_idle, &args_monitor_idle);
 
         args_monitor_state = pi_2_monitor_state_args_create(2, layers, max_total_state);
         for(uint64_t i=0; i<layers; i++)
@@ -640,7 +621,7 @@ float_num_t pi_threads_2_calc(uint64_t size, uint64_t layers, bool monitoring)
 
     if(monitoring)
     {
-        args_monitor_idle.keep_going = false;
+        // args_monitor_idle.keep_going = false;
         args_monitor_state.keep_going = false;
         args_monitor_queue.keep_going = false;
     }
@@ -671,9 +652,9 @@ float_num_t pi_threads_2_calc(uint64_t size, uint64_t layers, bool monitoring)
 
     if(monitoring)
     {
-        pthread_wait(pid_monitor_idle);
-        pthread_wait(pid_monitor_state);
-        pthread_wait(pid_monitor_queue);
+        // pthread_wait(pid_monitor_idle);
+        pthread_cancel(pid_monitor_state);
+        pthread_cancel(pid_monitor_queue);
     }
 
     for(uint64_t i=0; i<layers; i++)
@@ -684,9 +665,23 @@ float_num_t pi_threads_2_calc(uint64_t size, uint64_t layers, bool monitoring)
 
     if(monitoring)
     {
-        pi_2_monitor_idle_treat_res(args_monitor_idle);
+        // pi_2_monitor_idle_treat_res(args_monitor_idle);
         pi_2_monitor_state_treat_res(args_monitor_state);
         pi_2_monitor_queue_treat_res(args_monitor_queue);
+
+        printf("\n");
+        printf("\n\t| del\t|");
+        display_table_line_break(0);
+        printf("\n| val_a\t| %5.1f\t|", 100.0 * args_b[0].val_a / (args_b[0].total * queue_size));
+        printf("\n| val_b\t| %5.1f\t|", 100.0 * args_b[0].val_b / (args_b[0].total * queue_size));
+
+        printf("\n");
+        printf("\n\t\t| total\t|");
+        display_table_line_break(1);
+        printf("\n| total_a\t| %lu\t|", args_a[0].total);
+        printf("\n| total_b\t| %lu\t|", args_b[0].total);
+        printf("\n| total_pi\t| %lu\t|", args_pi.total);
+
     }
 
     return flt_pi;

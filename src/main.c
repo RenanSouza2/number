@@ -581,13 +581,26 @@ void sqrt_2()
 
 
 
-int main(int argc, char** argv)
-// int main()
+void del(uint64_t n)
+{
+    printf("\n----------------------------------------------------");
+    printf("\nn: %lu", n);
+    uint64_t begin = get_time();
+    pi_threads_2(n, 3, true);
+    uint64_t end = get_time();
+    uint64_t time = end - begin;
+    printf("\n");
+    printf("\ntime: %.1f", time / 1e9);
+    printf("\n");
+}
+
+// int main(int argc, char** argv)
+int main()
 {
     setbuf(stdout, NULL);
     srand(time(NULL));
 
-    uint64_t arg = get_arg(argc, argv);
+    // uint64_t arg = get_arg(argc, argv);
 
     // clu_set_log(true);
 
@@ -603,7 +616,7 @@ int main(int argc, char** argv)
     // float_num_pi_2(1000);
     // float_num_pi_3(1000);
     // pi_threads_1(arg, 3, false);
-    pi_threads_2(arg, 3, true);
+    // pi_threads_2(10000, 3, true);
     // pi_2_time_1(arg);
     // pi_2_time_2();
     // pi_2_time_3(arg);
@@ -622,23 +635,14 @@ int main(int argc, char** argv)
     //     printf("\ntime: %.1f", time / 1e9);
     // }
 
-    // printf("\n----------------------------------------------------");
-    // printf("\nn: %u", 100000);
-    // uint64_t begin = get_time();
-    // pi_threads_2(100000, 3, true);
-    // uint64_t end = get_time();
-    // uint64_t time = end - begin;
-    // printf("\n");
-    // printf("\ntime: %.1f", time / 1e9);
-    // printf("\n");
-    // printf("\n----------------------------------------------------");
-    // printf("\nn: %u", 500000);
-    // begin = get_time();
-    // pi_threads_2(500000, 3, true);
-    // end = get_time();
-    // time = end - begin;
-    // printf("\n");
-    // printf("\ntime: %.1f", time / 1e9);
+    del(10000);
+    del(20000);
+    del(50000);
+
+    // del(100000);
+    // del(200000);
+    // del(500000);
+    // del(1000000);
 
     // assert(clu_mem_is_empty("FINAL"));
 
