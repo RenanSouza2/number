@@ -28,9 +28,11 @@ void num_free(num_p num);
 bool num_is_zero(num_p num);
 int64_t num_cmp(num_p num_1, num_p num_2);
 
+num_p num_shl_uint(num_p num, uint64_t bits);
+num_p num_shr_uint(num_p num, uint64_t bits);
 num_p num_shl(num_p num, uint64_t bits);
 num_p num_shr(num_p num, uint64_t bits);
-num_p num_exp(num_p num, uint64_t value);
+// num_p num_exp(num_p num, uint64_t value);
 
 num_p num_add(num_p num_1, num_p num_2);
 num_p num_sub(num_p num_1, num_p num_2);

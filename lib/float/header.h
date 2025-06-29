@@ -17,6 +17,8 @@ void float_num_free(float_num_t flt);
 int64_t float_num_cmp(float_num_t flt_1, float_num_t flt_2);
 bool float_num_safe_add(float_num_t flt_1, float_num_t flt_2);
 
+float_num_t float_num_shr(float_num_t flt, uint64_t bits);
+
 float_num_t float_num_add(float_num_t flt_1, float_num_t flt_2);
 float_num_t float_num_sub(float_num_t flt_1, float_num_t flt_2);
 float_num_t float_num_mul(float_num_t flt_1, float_num_t flt_2);

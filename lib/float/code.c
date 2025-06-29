@@ -7,6 +7,7 @@
 
 #include "../fix/header.h"
 #include "../sig/header.h"
+#include "../num/header.h"
 #include "../num/struct.h"
 
 #define CLU_FLOAT_IS_SAFE(FLOAT) CLU_HANDLER_IS_SAFE((FLOAT).sig.num)
@@ -407,6 +408,20 @@ float_num_t float_num_opposite(float_num_t flt) // TODO TEST
     CLU_FLOAT_IS_SAFE(flt);
 
     flt.sig = sig_num_opposite(flt.sig);
+    return flt;
+}
+
+
+
+float_num_t float_num_shr(float_num_t flt, uint64_t bits) // TODO TEST
+{
+    CLU_FLOAT_IS_SAFE(flt);
+
+    if(float_num_is_zero(flt))
+        return flt;
+
+    flt.exponent = int64_sub(flt.exponent, bits >> 6);
+    flt.sig.num = num_shr_uint(flt.sig.num, bits & 0x3f);
     return flt;
 }
 
