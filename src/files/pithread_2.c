@@ -5,6 +5,7 @@
 
 #include "../../lib/float/header.h"
 #include "../../lib/num/header.h"
+#include "../../lib/num/struct.h"
 #include "../../lib/sig/header.h"
 
 
@@ -38,28 +39,32 @@ handler_p pi_2_thread_a(handler_p _args)
     float_num_t flt_a = args->a0;
     uint64_t jump = args->layers * args->batch_size;
     float_num_t flt_a_batch[args->batch_size];
+    uint64_t del = 0;
     for(uint64_t i = args->id + args->layers; args->keep_going; i += jump)
     {
+        del++;
         for(uint64_t j=0; j<args->batch_size; j++)
         {
-            // if(args->id == 0)
-            // printf("\nj: %lu", j);
             uint64_t index = i + args->layers * j;
 
             args->state = 0;
             sig_num_t sig_a = sig_num_wrap((int64_t)2 * index - 3);
-            sig_num_t sig_b = sig_num_wrap((int64_t)8 * index);
+            sig_num_t sig_b = sig_num_wrap((int64_t)index);
             for(uint64_t k=1; k<args->layers; k++)
             {
                 sig_a = sig_num_mul(sig_a, sig_num_wrap((int64_t)2 * (index - k) - 3));
-                sig_b = sig_num_mul(sig_b, sig_num_wrap((int64_t)8 * (index - k)));
+                sig_b = sig_num_mul(sig_b, sig_num_wrap((int64_t)(index - k)));
             }
 
             args->state = 1;
             flt_a = float_num_mul_sig(flt_a, sig_a);
+
             args->state = 2;
-            flt_a = float_num_div_sig(flt_a, sig_b);
+            flt_a = float_num_shr(flt_a, 3 * args->layers);
+            
             args->state = 3;
+            flt_a = float_num_div_sig(flt_a, sig_b);
+            args->state = 0;
             flt_a_batch[j] = float_num_copy(flt_a);
         }
         
@@ -82,7 +87,7 @@ STRUCT(pi_2_thread_b_args)
     bool volatile keep_going;
     bool volatile is_idle;
     uint64_t volatile state;
-    uint64_t volatile val_a, val_b, total;
+    uint64_t volatile total;
     uint64_t volatile time_sem, time_op;
 };
 
@@ -90,20 +95,11 @@ handler_p pi_2_thread_b(handler_p _args)
 {
     dbg("b");
     pi_2_thread_b_args_p args = _args;
-    
-    cpu_set_t cpuset;
-    // CPU_ZERO(&cpuset);
-    __CPU_ZERO_S (sizeof (cpu_set_t), &cpuset);
-    // CPU_SET(2 * args->id, &cpuset); 
-    __CPU_SET_S (2 * args->id + 1, sizeof (cpu_set_t), &cpuset);
-    TREAT(pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset));
-
     uint64_t jump = args->layers * args->batch_size;
     float_num_t flt_a_batch[args->batch_size], flt_b_batch[args->batch_size];
     for(uint64_t i = args->id + args->layers; args->keep_going; i += jump)
     {
         args->total++;
-        args->val_a = sem_getvalue_return(&args->queue_a_b->sem_f);
         args->time_sem -= get_time();
         args->state = 0;
         queue_get(args->queue_a_b, &flt_a_batch, &args->is_idle);
@@ -155,14 +151,6 @@ handler_p pi_2_thread_pi(handler_p _args)
 {
     dbg("pi");
     pi_2_thread_pi_args_p args = _args;
-    
-    cpu_set_t cpuset;
-    // CPU_ZERO(&cpuset);
-    __CPU_ZERO_S (sizeof (cpu_set_t), &cpuset);
-    // CPU_SET(2 * args->id, &cpuset); 
-    __CPU_SET_S (6, sizeof (cpu_set_t), &cpuset);
-    TREAT(pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset));
-
     float_num_t flt_pi = args->pi0;
     float_num_t flt_b_batch[args->batch_size];
     for(uint64_t i=1; ; i++)
@@ -176,7 +164,7 @@ handler_p pi_2_thread_pi(handler_p _args)
             junc_get(args->junc_b_pi, &flt_b_batch, &args->is_idle);
             args->state = 2;
             for(uint64_t k=0; k<args->batch_size; k++)
-            flt_b = float_num_add(flt_b, flt_b_batch[k]);
+                flt_b = float_num_add(flt_b, flt_b_batch[k]);
         }
         
         args->state = 3;
@@ -509,7 +497,7 @@ void pi_2_res_free(handler_p h, uint64_t res_size)
 
 
 
-float_num_t pi_threads_2_calc(uint64_t size, bool monitoring)
+float_num_t pi_threads_2_calc(uint64_t size, uint64_t thread_0, bool monitoring)
 {
     uint64_t layers = 3;
     uint64_t queue_size = 5;
@@ -560,7 +548,7 @@ float_num_t pi_threads_2_calc(uint64_t size, bool monitoring)
             .is_idle = false
         };
         pid_a[i] = pthread_launch(pi_2_thread_a, &args_a[i]);
-        pthread_lock(pid_a[i], 2 * i);
+        pthread_lock(pid_a[i], thread_0 + 2 * i);
 
         args_b[i] = (pi_2_thread_b_args_t)
         {
@@ -574,7 +562,7 @@ float_num_t pi_threads_2_calc(uint64_t size, bool monitoring)
             .is_idle = false
         };
         pid_b[i] = pthread_launch(pi_2_thread_b, &args_b[i]);
-        pthread_lock(pid_b[i], 2 * i + 1);
+        pthread_lock(pid_b[i], thread_0 + 2 * i + 1);
     }
 
     pi_2_thread_pi_args_t args_pi = (pi_2_thread_pi_args_t)
@@ -587,7 +575,7 @@ float_num_t pi_threads_2_calc(uint64_t size, bool monitoring)
         .is_idle = false
     };
     pthread_t pid_pi = pthread_launch(pi_2_thread_pi, &args_pi);
-    pthread_lock(pid_pi, 6);
+    pthread_lock(pid_pi, thread_0 + 6);
 
     pi_2_monitor_idle_args_t args_monitor_idle;
     pi_2_monitor_state_args_t args_monitor_state;
@@ -684,12 +672,6 @@ float_num_t pi_threads_2_calc(uint64_t size, bool monitoring)
         pi_2_monitor_queue_treat_res(args_monitor_queue);
 
         printf("\n");
-        printf("\n\t| del\t|");
-        display_table_line_break(0);
-        printf("\n| val_a\t| %5.1f\t|", 100.0 * args_b[0].val_a / (args_b[0].total * queue_size));
-        printf("\n| val_b\t| %5.1f\t|", 100.0 * args_b[0].val_b / (args_b[0].total * queue_size));
-
-        printf("\n");
         printf("\n\t\t| total\t|");
         display_table_line_break(1);
         printf("\n| total_pi\t| %lu\t|", args_pi.total);
@@ -703,9 +685,9 @@ float_num_t pi_threads_2_calc(uint64_t size, bool monitoring)
     return flt_pi;
 }
 
-void pi_threads_2(uint64_t size, bool monitoring)
+void pi_threads_2(uint64_t size, uint64_t thread_0, bool monitoring)
 {
-    float_num_t flt_pi = pi_threads_2_calc(size, monitoring);
+    float_num_t flt_pi = pi_threads_2_calc(size, thread_0, monitoring);
     if(!monitoring)
     {
         printf("\n\n");
@@ -716,13 +698,13 @@ void pi_threads_2(uint64_t size, bool monitoring)
 
 
 
-void pi_2_time_2()
+void pi_2_time_2(uint64_t thread_0)
 {
     for(uint64_t size = 100; size < 5000; size += 100)
     {
         printf("\ni: %4lu\t", size);
         uint64_t begin = get_time();
-        pi_threads_2_calc(size, false);
+        pi_threads_2_calc(size, thread_0, false);
         uint64_t end = get_time();
         uint64_t time = end - begin;
         printf("\t%10.3f", time / 1e9);

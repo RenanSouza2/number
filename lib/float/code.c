@@ -75,6 +75,16 @@ bool float_num_inner(float_num_t flt_1, float_num_t flt_2)
         return false;
     }
 
+    // TODO
+    // if(!sig_num_is_zero(flt_1.sig))
+    // {
+    //     if(!uint64(flt_1.size, flt_1.sig.num->count))
+    //     {
+    //         printf("\n\tFLOAT NUM ASSERT ERROR\t| NUM COUNT IS NOT SIZE");
+    //         return false;
+    //     }
+    // }
+
     return true;
 }
 
@@ -417,11 +427,22 @@ float_num_t float_num_shr(float_num_t flt, uint64_t bits) // TODO TEST
 {
     CLU_FLOAT_IS_SAFE(flt);
 
+    if(bits == 0)
+        return flt;
+
     if(float_num_is_zero(flt))
         return flt;
 
-    flt.exponent = int64_sub(flt.exponent, bits >> 6);
-    flt.sig.num = num_shr_uint(flt.sig.num, bits & 0x3f);
+    uint64_t rem = bits & 0x3f;
+    if(flt.sig.num->chunk[flt.size - 1] >> rem)
+    {
+        flt.exponent = int64_sub(flt.exponent, bits >> 6);
+        flt.sig.num = num_shr_uint(flt.sig.num, rem);
+        return flt;
+    }
+    
+    flt.exponent = int64_sub(flt.exponent, 1 + (bits >> 6));
+    flt.sig.num = num_shl_uint(flt.sig.num, 64 - rem);
     return flt;
 }
 

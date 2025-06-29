@@ -192,6 +192,52 @@ void test_float_num_is_zero(bool show)
 }
 
 
+void test_float_num_shr(bool show)
+{
+    TEST_FN_OPEN
+
+    #define TEST_FLOAT_NUM_shr(TAG, FLT, BITS, RES)                  \
+    {                                                                   \
+        TEST_CASE_OPEN(TAG)                                             \
+        {                                                               \
+            float_num_t flt = float_num_create_immed(ARG_OPEN FLT); \
+            flt = float_num_shr(flt, BITS);                        \
+            assert(float_num_immed(flt, ARG_OPEN RES))                \
+        }                                                               \
+        TEST_CASE_CLOSE                                                 \
+    }
+
+    TEST_FLOAT_NUM_shr(1, FLOAT_NUM_ZERO(2), 0, FLOAT_NUM_ZERO(2));
+    TEST_FLOAT_NUM_shr(2, FLOAT_NUM_ZERO(2), 1, FLOAT_NUM_ZERO(2));
+    TEST_FLOAT_NUM_shr(3, FLOAT_NUM_ZERO(2), 64, FLOAT_NUM_ZERO(2));
+    TEST_FLOAT_NUM_shr(4, FLOAT_NUM_ZERO(2), 65, FLOAT_NUM_ZERO(2));
+    TEST_FLOAT_NUM_shr(5, (0, 2, POSITIVE, 2, 1, 0), 0, (0, 2, POSITIVE, 2, 1, 0));
+    TEST_FLOAT_NUM_shr(6, (0, 2, POSITIVE, 2, 1, 0), 1, (-1, 2, POSITIVE, 2, 0x8000000000000000, 0));
+    TEST_FLOAT_NUM_shr(7, (0, 2, POSITIVE, 2, 1, 0), 64,(-1, 2, POSITIVE, 2, 1, 0));
+    TEST_FLOAT_NUM_shr(8, (0, 2, POSITIVE, 2, 1, 0), 65, (-2, 2, POSITIVE, 2, 0x8000000000000000, 0));
+    TEST_FLOAT_NUM_shr(9, (0, 2, POSITIVE, 2, 2, 0), 0, (0, 2, POSITIVE, 2, 2, 0));
+    TEST_FLOAT_NUM_shr(10, (0, 2, POSITIVE, 2, 2, 0), 1, (0, 2, POSITIVE, 2, 1, 0));
+    TEST_FLOAT_NUM_shr(11, (0, 2, POSITIVE, 2, 2, 0), 2, (-1, 2, POSITIVE, 2, 0x8000000000000000, 0));
+    TEST_FLOAT_NUM_shr(12, (0, 2, POSITIVE, 2, 3, 0), 0, (0, 2, POSITIVE, 2, 3, 0));
+    TEST_FLOAT_NUM_shr(13, (0, 2, POSITIVE, 2, 3, 0), 1, (0, 2, POSITIVE, 2, 1, 0x8000000000000000));
+    TEST_FLOAT_NUM_shr(14, (0, 2, POSITIVE, 2, 3, 0), 2, (-1, 2, POSITIVE, 2, 0xc000000000000000, 0));
+    TEST_FLOAT_NUM_shr(15,
+        (0, 2, POSITIVE, 2, 2, 1),
+        1,
+        (0, 2, POSITIVE, 2, 1, 0)
+    );
+    TEST_FLOAT_NUM_shr(16,
+        (0, 2, POSITIVE, 2, 3, 0x8000000000000000),
+        1,
+        (0, 2, POSITIVE, 2, 1, 0xc000000000000000)
+    );
+
+    #undef TEST_FLOAT_NUM_shr
+
+    TEST_FN_CLOSE
+}
+
+
 
 void test_float_num_add(bool show)
 {
@@ -468,7 +514,7 @@ void test_float()
 {
     TEST_LIB
 
-    bool show = false;
+    bool show = true;
 
     test_int64_get_sign(show);
     test_int64_add(show);
@@ -478,6 +524,8 @@ void test_float()
     test_float_num_set_exponent(show);
 
     test_float_num_is_zero(show);
+
+    test_float_num_shr(show);
 
     test_float_num_add(show);
     test_float_num_sub(show);

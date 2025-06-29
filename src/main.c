@@ -586,7 +586,7 @@ void del(uint64_t n)
     printf("\n----------------------------------------------------");
     printf("\nn: %lu", n);
     uint64_t begin = get_time();
-    pi_threads_2(n, true);
+    pi_threads_2(n, 0, false);
     uint64_t end = get_time();
     uint64_t time = end - begin;
     printf("\n");
@@ -616,7 +616,7 @@ int main()
     // float_num_pi_2(1000);
     // float_num_pi_3(1000);
     // pi_threads_1(arg, 3, false);
-    // pi_threads_2(10000, 3, true);
+    pi_threads_2(50000, 0, true);
     // pi_2_time_1(arg);
     // pi_2_time_2();
     // pi_2_time_3(arg);
@@ -639,6 +639,7 @@ int main()
 
     // del(10000);
     // del(20000);
+    // del(50000);
 
     // del(100000);
     // del(200000);
