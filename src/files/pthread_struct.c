@@ -42,6 +42,14 @@ pthread_t pthread_launch(pthread_f fn, handler_p args)
     return thread_id;
 }
 
+void pthread_lock(pthread_t thread_id, uint64_t cpu)
+{
+    cpu_set_t cpuset;
+    __CPU_ZERO_S(sizeof (cpu_set_t), &cpuset);
+    __CPU_SET_S(cpu, sizeof (cpu_set_t), &cpuset);
+    TREAT(pthread_setaffinity_np(thread_id, sizeof(cpu_set_t), &cpuset));
+}
+
 void pthread_wait(pthread_t thread_id)
 {
     TREAT(pthread_join(thread_id, NULL));
@@ -75,11 +83,16 @@ typedef void (*free_f)(handler_p, uint64_t);
 
 STRUCT(queue)
 {
-    sem_t sem_f, sem_b;
+    sem_t sem_f __attribute__((aligned(64)));
+    sem_t sem_b __attribute__((aligned(64)));
+
     uint64_t res_max;
     uint64_t res_size;
     handler_p *res;
-    uint64_t start, end;
+
+    uint64_t start __attribute__((aligned(64)));
+    uint64_t end   __attribute__((aligned(64)));
+
     free_f res_free;
 };
 
