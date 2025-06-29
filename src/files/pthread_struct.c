@@ -7,6 +7,7 @@
 #include <semaphore.h>
 #include <string.h>
 #include <stdbool.h>
+#include <sched.h>
 
 #include "../../mods/macros/struct.h"
 #include "../../mods/macros/threads.h"
@@ -35,6 +36,8 @@ typedef handler_p (*pthread_f)(handler_p);
 pthread_t pthread_launch(pthread_f fn, handler_p args)
 {
     pthread_t thread_id;
+    pthread_attr_t attr;
+    pthread_attr_init(&attr);
     TREAT(pthread_create(&thread_id, NULL, fn, args));
     return thread_id;
 }
@@ -51,7 +54,7 @@ uint64_t sem_getvalue_return(sem_t *sem)
     return value;
 }
 
-void sem_wait_log(sem_t *sem, bool *is_idle)
+void sem_wait_log(sem_t *sem, bool volatile * is_idle)
 {
     if(is_idle)
     {
@@ -115,7 +118,7 @@ uint64_t queue_get_value(queue_p q)
     return sem_getvalue_return(&q->sem_f);
 }
 
-void queue_post(queue_p q, handler_p res, bool * is_idle)
+void queue_post(queue_p q, handler_p res, bool volatile * is_idle)
 {
     sem_wait_log(&q->sem_b, is_idle);
     uint64_t index = q->end;
@@ -126,7 +129,7 @@ void queue_post(queue_p q, handler_p res, bool * is_idle)
     TREAT(sem_post(&q->sem_f));
 }
 
-void queue_get(queue_p q, handler_p out_res, bool * is_idle)
+void queue_get(queue_p q, handler_p out_res, bool volatile * is_idle)
 {
     sem_wait_log(&q->sem_f, is_idle);
     handler_p res = q->res[q->start];
@@ -208,7 +211,7 @@ void junc_free(junc_p junc)
     free(junc->queues);
 }
 
-void junc_get(junc_p junc, handler_p out_res, bool * is_idle)
+void junc_get(junc_p junc, handler_p out_res, bool volatile * is_idle)
 {
     uint64_t index = junc->index;
     junc->index++;
@@ -217,7 +220,7 @@ void junc_get(junc_p junc, handler_p out_res, bool * is_idle)
     queue_get(&junc->queues[index], out_res, is_idle);
 }
 
-void junc_post(junc_p junc, handler_p res, bool * is_idle)
+void junc_post(junc_p junc, handler_p res, bool volatile * is_idle)
 {
     uint64_t index = junc->index;
     junc->index++;

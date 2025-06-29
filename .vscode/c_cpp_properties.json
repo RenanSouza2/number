@@ -8,7 +8,8 @@
             "defines": [
                 "DEBUG",
                 "__ASSERT_FILE_NAME",
-                "CLOCK_MONOTONIC"
+                "CLOCK_MONOTONIC",
+                "_GNU_SOURCE"
             ],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "c17",

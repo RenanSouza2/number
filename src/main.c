@@ -581,12 +581,12 @@ void sqrt_2()
 
 
 
-void del(uint64_t n)
+void del(uint64_t n, uint64_t batch_size)
 {
     printf("\n----------------------------------------------------");
-    printf("\nn: %lu", n);
+    printf("\nn: %lu\tb: %lu", n, batch_size);
     uint64_t begin = get_time();
-    pi_threads_2(n, 3, true);
+    pi_threads_2(n, 3, batch_size, true);
     uint64_t end = get_time();
     uint64_t time = end - begin;
     printf("\n");
@@ -635,10 +635,16 @@ int main()
     //     printf("\ntime: %.1f", time / 1e9);
     // }
 
-    del(10000);
-    del(20000);
-    del(50000);
+    // del(2);
 
+    // del(10000);
+    // del(20000);
+
+    for(uint64_t i=1; i<20; i++)
+        del(50000, i);
+    for(uint64_t i=30; i<100; i+=10)
+        del(50000, i);
+    
     // del(100000);
     // del(200000);
     // del(500000);

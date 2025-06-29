@@ -1,4 +1,4 @@
-FLAGS = -Wall -Wextra -Werror -Wfatal-errors -O3 -lpthread -lrt
+FLAGS = -Wall -Wextra -Werror -Wfatal-errors -O3 -pthread -std=c99 -lrt -D_GNU_SOURCE
 FLAGS_DBG = -D DEBUG -fsanitize=address
 
 LIB = ../lib/lib.o
