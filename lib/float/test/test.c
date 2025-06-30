@@ -514,7 +514,7 @@ void test_float()
 {
     TEST_LIB
 
-    bool show = true;
+    bool show = false;
 
     test_int64_get_sign(show);
     test_int64_add(show);

@@ -3,7 +3,7 @@
 
 #include "../../mods/clu/header.h"
 
-#include "../../lib/float/header.h"
+#include "../../lib/fix/header.h"
 #include "../../lib/num/header.h"
 #include "../../lib/num/struct.h"
 #include "../../lib/sig/header.h"
@@ -26,7 +26,7 @@ STRUCT(pi_2_thread_a_args)
     uint64_t id;
     uint64_t layers;
     uint64_t batch_size;
-    float_num_t a0;
+    fix_num_t a0;
     bool volatile keep_going;
     bool volatile is_idle;
     uint64_t volatile state;
@@ -36,9 +36,9 @@ handler_p pi_2_thread_a(handler_p _args)
 {
     dbg("a");
     pi_2_thread_a_args_p args = _args;
-    float_num_t flt_a = args->a0;
+    fix_num_t fix_a = args->a0;
     uint64_t jump = args->layers * args->batch_size;
-    float_num_t flt_a_batch[args->batch_size];
+    fix_num_t fix_a_batch[args->batch_size];
     uint64_t del = 0;
     for(uint64_t i = args->id + args->layers; args->keep_going; i += jump)
     {
@@ -57,21 +57,23 @@ handler_p pi_2_thread_a(handler_p _args)
             }
 
             args->state = 1;
-            flt_a = float_num_mul_sig(flt_a, sig_a);
+            fix_a = fix_num_mul_sig(fix_a, sig_a);
 
             args->state = 2;
-            flt_a = float_num_shr(flt_a, 3 * args->layers);
+            fix_a = fix_num_shr(fix_a, 3 * args->layers);
             
             args->state = 3;
-            flt_a = float_num_div_sig(flt_a, sig_b);
+            fix_a = fix_num_div_sig(fix_a, sig_b);
             args->state = 0;
-            flt_a_batch[j] = float_num_copy(flt_a);
+            fix_a_batch[j] = fix_num_copy(fix_a);
+
+            // printf("\na: ");fix_num_display_dec(fix_a);
         }
         
         args->state = 4;
-        queue_post(args->queue_a_b, &flt_a_batch, &args->is_idle);
+        queue_post(args->queue_a_b, &fix_a_batch, &args->is_idle);
     }
-    float_num_free(flt_a);
+    fix_num_free(fix_a);
 
     return NULL;
 }
@@ -94,17 +96,17 @@ handler_p pi_2_thread_b(handler_p _args)
     dbg("b");
     pi_2_thread_b_args_p args = _args;
     uint64_t jump = args->layers * args->batch_size;
-    float_num_t flt_a_batch[args->batch_size], flt_b_batch[args->batch_size];
+    fix_num_t fix_a_batch[args->batch_size], fix_b_batch[args->batch_size];
     for(uint64_t i = args->id + args->layers; args->keep_going; i += jump)
     {
         args->state = 0;
-        queue_get(args->queue_a_b, &flt_a_batch, &args->is_idle);
+        queue_get(args->queue_a_b, &fix_a_batch, &args->is_idle);
         args->state = 1;
         
         if(!args->keep_going)
         {
             for(uint64_t j=0; j<args->batch_size; j++)
-                float_num_free(flt_a_batch[j]);
+                fix_num_free(fix_a_batch[j]);
 
             break;
         }
@@ -114,15 +116,17 @@ handler_p pi_2_thread_b(handler_p _args)
             uint64_t index = i + args->layers * j;
 
             args->state = 2;
-            float_num_t flt_b = float_num_mul_sig(flt_a_batch[j], sig_num_wrap((int64_t)1 - 2 * index));
+            fix_num_t fix_b = fix_num_mul_sig(fix_a_batch[j], sig_num_wrap((int64_t)1 - 2 * index));
             args->state = 3;
-            flt_b = float_num_div_sig(flt_b, sig_num_wrap((int64_t)4 * index + 2));
+            fix_b = fix_num_div_sig(fix_b, sig_num_wrap((int64_t)4 * index + 2));
             args->state = 4;
-            flt_b_batch[j] = flt_b;
+            fix_b_batch[j] = fix_b;
+            
+            // printf("\nb: ");fix_num_display_dec(fix_b);
         }
 
         args->state = 5;
-        queue_post(args->queue_b_pi, &flt_b_batch, &args->is_idle);
+        queue_post(args->queue_b_pi, &fix_b_batch, &args->is_idle);
     }
 
     return NULL;
@@ -134,8 +138,8 @@ STRUCT(pi_2_thread_pi_args)
     junc_p junc_b_pi;
     uint64_t layers;
     uint64_t batch_size;
-    float_num_t pi0;
-    float_num_t res;
+    fix_num_t pi0;
+    fix_num_t res;
     bool volatile is_idle;
     uint64_t volatile state;
     uint64_t volatile total;
@@ -145,41 +149,41 @@ handler_p pi_2_thread_pi(handler_p _args)
 {
     dbg("pi");
     pi_2_thread_pi_args_p args = _args;
-    float_num_t flt_pi = args->pi0;
-    float_num_t flt_b_batch[args->batch_size];
+    fix_num_t fix_pi = args->pi0;
+    fix_num_t fix_b_batch[args->batch_size];
     for(uint64_t i=1; ; i++)
     {
         args->total++;
     
-        float_num_t flt_b = float_num_wrap(0, args->size);
+        fix_num_t fix_b = fix_num_wrap(0, args->size);
         for(uint64_t j=0; j<args->layers; j++)
         {
             args->state = 1;
-            junc_get(args->junc_b_pi, &flt_b_batch, &args->is_idle);
+            junc_get(args->junc_b_pi, &fix_b_batch, &args->is_idle);
             args->state = 2;
             for(uint64_t k=0; k<args->batch_size; k++)
-                flt_b = float_num_add(flt_b, flt_b_batch[k]);
+                fix_b = fix_num_add(fix_b, fix_b_batch[k]);
         }
-        
+
         args->state = 3;
         uint64_t tam = 100;
         if(i%(tam) == 0)
         {
-            uint64_t done = -(flt_b.size + flt_b.exponent);
-            fprintf(stderr, "\npgr: %lu / %lu", done / tam, flt_b.size / tam);
+            uint64_t done = args->size - fix_b.sig.num->count;
+            fprintf(stderr, "\npgr: %lu / %lu", done / tam, args->size / tam);
         }
         
-        if(!float_num_safe_add(flt_pi, flt_b))
+        if(fix_num_is_zero(fix_b))
         {
-            float_num_free(flt_b);
+            fix_num_free(fix_b);
             break;
         }
         
         args->state = 4;
-        flt_pi = float_num_add(flt_pi, flt_b);
+        fix_pi = fix_num_add(fix_pi, fix_b);
     }
 
-    args->res = flt_pi;
+    args->res = fix_pi;
     return NULL;
 }
 
@@ -484,14 +488,14 @@ void pi_2_monitor_queue_treat_res(pi_2_monitor_queue_args_t args)
 
 void pi_2_res_free(handler_p h, uint64_t res_size)
 {
-    uint64_t batch_size = res_size / sizeof(float_num_t);
+    uint64_t batch_size = res_size / sizeof(fix_num_t);
     for(uint64_t i=0; i<batch_size; i++)
-        float_num_free(((float_num_p)h)[i]);
+        fix_num_free(((fix_num_p)h)[i]);
 }
 
 
 
-float_num_t pi_threads_2_calc(uint64_t size, uint64_t thread_0, bool monitoring)
+fix_num_t pi_threads_2_calc(uint64_t size, uint64_t thread_0, bool monitoring)
 {
     uint64_t layers = 3;
     uint64_t queue_size = 5;
@@ -503,33 +507,33 @@ float_num_t pi_threads_2_calc(uint64_t size, uint64_t thread_0, bool monitoring)
 
     queue_t queue_a_b[layers];
 
-    junc_t junc_b_pi = junc_init(layers, queue_size, batch_size * sizeof(float_num_t), pi_2_res_free);
+    junc_t junc_b_pi = junc_init(layers, queue_size, batch_size * sizeof(fix_num_t), pi_2_res_free);
 
     pthread_t pid_a[layers];
     pthread_t pid_b[layers];
 
-    float_num_t a0[layers];
-    a0[0] = float_num_wrap(6, size);
+    fix_num_t a0[layers];
+    a0[0] = fix_num_wrap(6, size);
 
-    float_num_t flt_a = float_num_wrap(6, size);
-    float_num_t pi0 = float_num_wrap(3, size);
+    fix_num_t fix_a = fix_num_wrap(6, size);
+    fix_num_t pi0 = fix_num_wrap(3, size);
     for(uint64_t i=1; i<layers; i++)
     {
-        flt_a = float_num_mul_sig(flt_a, sig_num_wrap((int64_t)2 * i - 3));
-        flt_a = float_num_div_sig(flt_a, sig_num_wrap((int64_t)8 * i));
-        a0[i] = float_num_copy(flt_a);
+        fix_a = fix_num_mul_sig(fix_a, sig_num_wrap((int64_t)2 * i - 3));
+        fix_a = fix_num_div_sig(fix_a, sig_num_wrap((int64_t)8 * i));
+        a0[i] = fix_num_copy(fix_a);
         
-        float_num_t flt_d = float_num_copy(flt_a);
-        flt_d = float_num_mul_sig(flt_d, sig_num_wrap((int64_t)1 - 2 * i));
-        flt_d = float_num_div_sig(flt_d, sig_num_wrap((int64_t)4 * i + 2));
+        fix_num_t fix_d = fix_num_copy(fix_a);
+        fix_d = fix_num_mul_sig(fix_d, sig_num_wrap((int64_t)1 - 2 * i));
+        fix_d = fix_num_div_sig(fix_d, sig_num_wrap((int64_t)4 * i + 2));
 
-        pi0 = float_num_add(pi0, flt_d);
+        pi0 = fix_num_add(pi0, fix_d);
     }
-    float_num_free(flt_a);
+    fix_num_free(fix_a);
 
     for(uint64_t i=0; i<layers; i++)
     {
-        queue_a_b[i] = queue_init(queue_size, batch_size * sizeof(float_num_t), pi_2_res_free);
+        queue_a_b[i] = queue_init(queue_size, batch_size * sizeof(fix_num_t), pi_2_res_free);
         args_a[i] = (pi_2_thread_a_args_t)
         {
             .size = size,
@@ -607,7 +611,7 @@ float_num_t pi_threads_2_calc(uint64_t size, uint64_t thread_0, bool monitoring)
     }
 
     pthread_wait(pid_pi);
-    float_num_t flt_pi = args_pi.res;
+    fix_num_t fix_pi = args_pi.res;
 
     for(uint64_t i=0; i<layers; i++)
     {
@@ -624,19 +628,19 @@ float_num_t pi_threads_2_calc(uint64_t size, uint64_t thread_0, bool monitoring)
 
     for(uint64_t i=0; i<layers; i++)
     {
-        float_num_t flt[batch_size];
+        fix_num_t fix[batch_size];
         for(uint64_t j=0; j<batch_size; j++)
-            flt[j] = float_num_wrap(0, 2);
+            fix[j] = fix_num_wrap(0, 2);
         
-        if(!queue_unstuck(&queue_a_b[i], &flt))
+        if(!queue_unstuck(&queue_a_b[i], &fix))
         {
             for(uint64_t j=0; j<batch_size; j++)
-                flt[j] = float_num_wrap(0, 2);
+                fix[j] = fix_num_wrap(0, 2);
         }
-        if(queue_unstuck(&junc_b_pi.queues[i], &flt))
+        if(queue_unstuck(&junc_b_pi.queues[i], &fix))
         {
             for(uint64_t j=0; j<batch_size; j++)
-                float_num_free(flt[j]);
+                fix_num_free(fix[j]);
         }
     }
 
@@ -671,18 +675,18 @@ float_num_t pi_threads_2_calc(uint64_t size, uint64_t thread_0, bool monitoring)
         printf("\n| total_pi\t| %lu\t|", args_pi.total);
     }
 
-    return flt_pi;
+    return fix_pi;
 }
 
 void pi_threads_2(uint64_t size, uint64_t thread_0, bool monitoring)
 {
-    float_num_t flt_pi = pi_threads_2_calc(size, thread_0, monitoring);
+    fix_num_t fix_pi = pi_threads_2_calc(size, thread_0, monitoring);
     if(!monitoring)
     {
         printf("\n\n");
-        float_num_display_dec(flt_pi);
+        fix_num_display_dec(fix_pi);
     }
-    float_num_free(flt_pi);
+    fix_num_free(fix_pi);
 }
 
 

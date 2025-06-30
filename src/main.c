@@ -521,7 +521,6 @@ void float_num_pi_3(uint64_t size)
 
 
 
-
 void display_bit(uint64_t value)
 {
     for(uint64_t i=0; i<64; i++, value <<= 1)
@@ -615,8 +614,9 @@ int main()
     // float_num_pi_1();
     // float_num_pi_2(1000);
     // float_num_pi_3(1000);
+    // float_num_pi_4(1000);
     // pi_threads_1(arg, 3, false);
-    pi_threads_2(50000, 0, true);
+    pi_threads_2(300000, 0, false);
     // pi_2_time_1(arg);
     // pi_2_time_2();
     // pi_2_time_3(arg);
@@ -645,6 +645,19 @@ int main()
     // del(200000);
     // del(500000);
     // del(1000000);
+
+    // uint64_t size = 50000;
+    // float_num_t flt_a = float_num_wrap(6, size);
+    // float_num_t flt_b = float_num_wrap(1, size);
+    // for(uint64_t i=1; i<1800000; i++)
+    // {
+    //     uint64_t tam = 1000;
+    //     if(i%tam == 0)
+    //         printf("\ni: %lu / %lu\t%lu", i/tam, 1800000/tam, flt_a.sig.num->count);
+
+    //     flt_a = float_num_mul_sig(flt_a, sig_num_wrap((int64_t)2 * i - 3));
+    //     flt_b = float_num_mul_sig(flt_b, sig_num_wrap((int64_t)(i)));
+    // }
 
     // assert(clu_mem_is_empty("FINAL"));
 
