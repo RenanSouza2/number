@@ -8,13 +8,15 @@ DIR = lib$(word 2,$(subst lib, ,$(CURDIR)))
 
 build: lib.o
 
+dbg: debug.o $(CLU_FILE)
+
 
 
 lib.o: $(LIB_FILES)
 	echo " linking num object $(DIR)"
 	ld -r -o $@ $^
 
-debug.o: $(DGB_FILES) $(CLU_FILE)
+debug.o: $(DGB_FILES)
 	echo " linking num debug $(DIR)"
 	ld -r -o $@ $^
 
@@ -26,7 +28,7 @@ $(LIB_FILES) $(CLU_FILE):
 
 .PHONY: $(DGB_FILES)
 $(DGB_FILES):
-	$(MAKE) debug.o --directory=$(dir $@)
+	$(MAKE) dbg --directory=$(dir $@)
 
 
 
@@ -45,7 +47,7 @@ _clean:
 
 .PHONY: test
 test t:
-	$(MAKE) debug.o -s
+	$(MAKE) dbg -s
 	$(MAKE) _test -s
 
 _test:

@@ -179,7 +179,7 @@ void queue_free(queue_p q)
     handler_p h = malloc(q->res_size);
     assert(h);
     
-    while(queue_get_occupancy(q))
+    while(queue_get_value(q))
     {
         queue_get(q, h, NULL);
         q->res_free(h, q->res_size);

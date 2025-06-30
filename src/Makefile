@@ -15,7 +15,7 @@ dbg: debug.o
 
 
 main.o: main.c $(LIB)
-	echo "building exec $(DIR)"
+	echo "building num exec $(DIR)"
 	gcc -o $@ $^ $(FLAGS)
 
 debug.o: main.c $(DGB)
@@ -30,10 +30,11 @@ $(LIB):
 
 .PHONY: $(DGB)
 $(DGB):
-	$(MAKE) debug.o --directory=$(dir $@)
+	$(MAKE) dbg --directory=$(dir $@)
 
 
 
 clean:
+	echo cleaning "num $(DIR)"
 	rm -rf *.o
 	$(MAKE) clean --directory=$(dir $(LIB))

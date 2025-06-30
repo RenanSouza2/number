@@ -29,7 +29,7 @@ _clean:
 
 .PHONY: test
 test t:
-	$(MAKE) debug.o --directory=$(LIB_ROOT) -s
+	$(MAKE) dbg --directory=$(LIB_ROOT) -s
 	$(MAKE) _test -s
 
 _test:

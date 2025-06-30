@@ -4,7 +4,11 @@ FLAGS_DBG = -D DEBUG -fsanitize=address
 LIB_ROOT = $(word 1,$(subst lib, ,$(CURDIR)))lib
 DIR = lib$(word 2,$(subst lib, ,$(CURDIR)))
 
+
+
 build: lib.o
+
+dbg: debug.o
 
 
 
@@ -30,7 +34,7 @@ _clean:
 
 .PHONY: test
 test t:
-	$(MAKE) debug.o --directory=$(LIB_ROOT) -s
+	$(MAKE) dbg --directory=$(LIB_ROOT) -s
 	$(MAKE) _test -s
 
 _test:
