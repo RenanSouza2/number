@@ -10,69 +10,28 @@ void test_sig_num_create(bool show)
 {
     TEST_FN_OPEN
 
-    TEST_CASE_OPEN(1)
-    {
-        num_t num = num_create_immed(1, 1);
-        sig_num_t sig = sig_num_create(POSITIVE, num);
-        assert(sig.signal == POSITIVE);
-        assert(sig.num.count == num.count);
-        assert(sig.num.head == num.head);
-        assert(sig.num.tail == num.tail);
-        sig_num_free(sig);
+    #define TEST_SIG_NUM_CREATE(TAG, NUM, SIGNAL, SIGNAL_RES)   \
+    {                                                           \
+        TEST_CASE_OPEN(TAG)                                     \
+        {                                                       \
+            num_p num = num_create_immed(ARG_OPEN NUM);         \
+            sig_num_t sig = sig_num_create(SIGNAL, num);        \
+            assert(uint64(sig.signal, SIGNAL_RES));             \
+            assert(uint64(sig.num->count, num->count));           \
+            sig_num_free(sig);                                  \
+        }                                                       \
+        TEST_CASE_CLOSE                                         \
     }
-    TEST_CASE_CLOSE
 
-    TEST_CASE_OPEN(2)
-    {
-        num_t num = num_create_immed(1, 1);
-        sig_num_t sig = sig_num_create(NEGATIVE, num);
-        assert(sig.signal == NEGATIVE);
-        assert(sig.num.count == num.count);
-        assert(sig.num.head == num.head);
-        assert(sig.num.tail == num.tail);
-        sig_num_free(sig);
-    }
-    TEST_CASE_CLOSE
-
-    TEST_CASE_OPEN(3)
-    {
-        num_t num = num_create_immed(0);
-        sig_num_t sig = sig_num_create(POSITIVE, num);
-        assert(sig.signal == ZERO);
-        assert(sig.num.count == num.count);
-        assert(sig.num.head == num.head);
-        assert(sig.num.tail == num.tail);
-        sig_num_free(sig);
-    }
-    TEST_CASE_CLOSE
-
-    TEST_CASE_OPEN(4)
-    {
-        num_t num = num_create_immed(0);
-        sig_num_t sig = sig_num_create(ZERO, num);
-        assert(sig.signal == ZERO);
-        assert(sig.num.count == num.count);
-        assert(sig.num.head == num.head);
-        assert(sig.num.tail == num.tail);
-        sig_num_free(sig);
-    }
-    TEST_CASE_CLOSE
-
-    TEST_CASE_OPEN(5)
-    {
-        num_t num = num_create_immed(0);
-        sig_num_t sig = sig_num_create(NEGATIVE, num);
-        assert(sig.signal == ZERO);
-        assert(sig.num.count == num.count);
-        assert(sig.num.head == num.head);
-        assert(sig.num.tail == num.tail);
-        sig_num_free(sig);
-    }
-    TEST_CASE_CLOSE
+    TEST_SIG_NUM_CREATE(1, (1, 1), POSITIVE, POSITIVE);
+    TEST_SIG_NUM_CREATE(2, (1, 1), NEGATIVE, NEGATIVE);
+    TEST_SIG_NUM_CREATE(3, (0), POSITIVE, ZERO);
+    TEST_SIG_NUM_CREATE(4, (0), ZERO, ZERO);
+    TEST_SIG_NUM_CREATE(5, (0), NEGATIVE, ZERO);
 
     TEST_CASE_OPEN(6)
     {
-        num_t num = num_create_immed(1, 5);
+        num_p num = num_create_immed(1, 5);
         TEST_REVERT_OPEN
         {
             sig_num_create(ZERO, num);

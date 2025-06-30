@@ -3,44 +3,48 @@
 
 #include <stdbool.h>
 
-#include "struct.h"
+#include "../../mods/macros/struct.h"
+#include "../../mods/macros/U64.h"
 
-void chunk_pool_clean();
+PLACEHOLDER(num);
 
-void num_display_dec(num_t num);
-void num_display_opts(num_t num, char *tag, bool length, bool full);
-void num_display(num_t num);
-void num_display_tag(char *tag, num_t num);
-void num_display_full(char *tag, num_t num);
+void num_display_dec(num_p num);
+void num_display_opts(num_p num, char *tag, bool length, bool full);
+void num_display(num_p num);
+void num_display_tag(char *tag, num_p num);
+void num_display_full(char *tag, num_p num);
 
-chunk_p num_insert_head(num_p num, uint64_t value);
-num_t num_head_grow(num_t num, uint64_t count);
-num_t num_head_trim(num_t num, uint64_t count);
-void num_break(num_p out_num_ih, num_p out_num_lo,num_t num, uint64_t count);
+num_p num_head_grow(num_p num, uint64_t count);
+num_p num_head_trim(num_p num, uint64_t count);
+void num_break(num_p *out_num_ih, num_p *out_num_lo,num_p num, uint64_t count);
 
-num_t num_wrap(uint64_t value);
-num_t num_wrap_str(char str[]);
-num_t num_read_dec(char file_name[]);
-uint64_t num_unwrap(num_t num);
-num_t num_copy(num_t num);
-void num_free(num_t num);
+num_p num_wrap(uint64_t value);
+num_p num_wrap_str(char str[]);
+num_p num_read_dec(char file_name[]);
+uint64_t num_unwrap(num_p num);
+num_p num_copy(num_p num);
+void num_free(num_p num);
 
-bool num_is_zero(num_t num);
-int64_t num_cmp(num_t num_1, num_t num_2);
+bool num_is_zero(num_p num);
+int64_t num_cmp(num_p num_1, num_p num_2);
 
-num_t num_shl(num_t num, uint64_t bits);
-num_t num_shr(num_t num, uint64_t bits);
-num_t num_exp(num_t num, uint64_t value);
+num_p num_shl_uint(num_p num, uint64_t bits);
+num_p num_shr_uint(num_p num, uint64_t bits);
+num_p num_shl(num_p num, uint64_t bits);
+num_p num_shr(num_p num, uint64_t bits);
+// num_p num_exp(num_p num, uint64_t value);
 
-num_t num_add(num_t num_1, num_t num_2);
-num_t num_sub(num_t num_1, num_t num_2);
-num_t num_mul(num_t num_1, num_t num_2);
-void num_div_mod(num_p out_num_q, num_p out_num_r, num_t num_1, num_t num_2);
-num_t num_sqr(num_t num);
-num_t num_div(num_t num_1, num_t num_2);
-num_t num_mod(num_t num_1, num_t num_2);
+num_p num_add(num_p num_1, num_p num_2);
+num_p num_sub(num_p num_1, num_p num_2);
+num_p num_mul_high(num_p num_1, num_p num_2, uint64_t pos);
+num_p num_mul(num_p num_1, num_p num_2);
+void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2);
+num_p num_sqr(num_p num);
+num_p num_div(num_p num_1, num_p num_2);
+num_p num_mod(num_p num_1, num_p num_2);
+num_p num_gcd(num_p num_1, num_p num_2);
 
-num_t num_base_to(num_t num, uint64_t base);
-num_t num_base_from(num_t num, uint64_t base);
+num_p num_base_to(num_p num, uint64_t base);
+num_p num_base_from(num_p num, uint64_t base);
 
 #endif

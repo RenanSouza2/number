@@ -1,7 +1,10 @@
 #ifndef __SIG_STRUCT_H__
 #define __SIG_STRUCT_H__
 
-#include "../num/struct.h"
+#include "../../mods/macros/struct.h"
+#include "../../mods/macros/U64.h"
+
+PLACEHOLDER(num);
 
 #define POSITIVE 1
 #define NEGATIVE 2
@@ -10,7 +13,7 @@
 STRUCT(sig_num)
 {
     uint64_t signal;
-    num_t num;
+    num_p num;
 };
 
 #endif

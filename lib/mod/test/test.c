@@ -10,13 +10,13 @@ void test_mod_num_create(bool show)
 {
     TEST_FN_OPEN
 
-    num_t p = num_wrap(7);
+    num_p p = num_wrap(7);
 
     #define TEST_MOD_NUM_CREATE(TAG, NUM, RES)          \
     {                                                   \
         TEST_CASE_OPEN(TAG)                             \
         {                                               \
-            num_t num = num_create_immed(ARG_OPEN NUM); \
+            num_p num = num_create_immed(ARG_OPEN NUM); \
             mod_num_t mod = mod_num_create(num, p);     \
             assert(mod_num_immed(mod, ARG_OPEN RES));   \
         }                                               \
@@ -39,7 +39,7 @@ void test_mod_num_wrap(bool show)
 {
     TEST_FN_OPEN
 
-    num_t p = num_wrap(7);
+    num_p p = num_wrap(7);
 
     #define TEST_MOD_NUM_WRAP(TAG, VALUE, RES)          \
     {                                                   \
@@ -69,7 +69,7 @@ void test_mod_num_add(bool show)
 {
     TEST_FN_OPEN
 
-    num_t p = num_wrap(7);
+    num_p p = num_wrap(7);
 
     #define TEST_MOD_NUM_ADD(TAG, VALUE_1, VALUE_2, RES)    \
     {                                                       \
@@ -99,7 +99,7 @@ void test_mod_num_sub(bool show)
 {
     TEST_FN_OPEN
 
-    num_t p = num_wrap(7);
+    num_p p = num_wrap(7);
 
     #define TEST_MOD_NUM_SUB(TAG, VALUE_1, VALUE_2, RES)    \
     {                                                       \
@@ -130,7 +130,7 @@ void test_mod_num_mul(bool show)
 {
     TEST_FN_OPEN
 
-    num_t p = num_wrap(7);
+    num_p p = num_wrap(7);
 
     #define TEST_MOD_NUM_MUL(TAG, VALUE_1, VALUE_2, RES)    \
     {                                                       \
@@ -155,7 +155,7 @@ void test_mod_num_mul(bool show)
 
     TEST_CASE_OPEN(6)
     {
-        num_t p_6 = num_wrap(6);
+        num_p p_6 = num_wrap(6);
 
         mod_num_t mod_1 = mod_num_wrap(3, p_6);
         mod_num_t mod_2 = mod_num_wrap(2, p_6);
@@ -179,7 +179,7 @@ void test_mod_num_div(bool show)
     {                                                           \
         TEST_CASE_OPEN(TAG)                                     \
         {                                                       \
-            num_t p = num_wrap(MOD);                            \
+            num_p p = num_wrap(MOD);                            \
             mod_num_t mod_1 = mod_num_wrap(VALUE_1, p);         \
             mod_num_t mod_2 = mod_num_wrap(VALUE_2, p);         \
             mod_num_t mod_res = mod_num_div(mod_1, mod_2);      \
@@ -200,7 +200,7 @@ void test_mod_num_div(bool show)
     {                                                       \
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
-            num_t p = num_wrap(MOD);                        \
+            num_p p = num_wrap(MOD);                        \
             mod_num_t mod_1 = mod_num_wrap(VALUE_1, p);     \
             mod_num_t mod_2 = mod_num_wrap(VALUE_2, p);     \
             TEST_REVERT_OPEN                                \

@@ -1,5 +1,8 @@
-fp
-    improve pos treatment
-
 mod exp
 mod display
+rename fix to fixed
+wrap unwrap flt_p
+nested mutex display
+iterating variable is I
+simplify division
+test: get commit mid commit and run with no monitoring

@@ -1,4 +1,5 @@
-FLAGS = -Wall -Wextra -Werror -Wfatal-errors -O3 -c
+FLAGS = -Wall -Wextra -Werror -Wfatal-errors -c
+FLAGS_DBG = -D DEBUG -fsanitize=address
 
 LIB_ROOT = $(word 1,$(subst lib, ,$(CURDIR)))lib
 DIR = lib$(word 2,$(subst lib, ,$(CURDIR)))
@@ -13,7 +14,7 @@ lib.o: code.c
 
 debug.o: code.c
 	echo "building debug $(DIR)"
-	gcc -o $@ $^ $(FLAGS) -D DEBUG
+	gcc -o $@ $^ $(FLAGS) $(FLAGS_DBG)
 
 
 

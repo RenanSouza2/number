@@ -1,4 +1,4 @@
-FLAGS = -Wall -Wextra -Werror -Wfatal-errors -O3 -c
+FLAGS = -fsanitize=address -Wall -Wextra -Werror -Wfatal-errors -O3 -c
 
 LIB_ROOT = $(word 1,$(subst lib, ,$(CURDIR)))lib
 DIR = lib$(word 2,$(subst lib, ,$(CURDIR)))

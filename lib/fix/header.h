@@ -30,4 +30,7 @@ fix_num_t fix_num_mul(fix_num_t fix_1, fix_num_t fix_2);
 fix_num_t fix_num_sqr(fix_num_t fix);
 fix_num_t fix_num_div(fix_num_t fix_1, fix_num_t fix_2);
 
+fix_num_t fix_num_mul_sig(fix_num_t fix, sig_num_t sig); 
+fix_num_t fix_num_div_sig(fix_num_t fix, sig_num_t sig);
+
 #endif
