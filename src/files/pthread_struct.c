@@ -55,7 +55,7 @@ void pthread_wait(pthread_t thread_id)
     TREAT(pthread_join(thread_id, NULL));
 }
 
-uint64_t sem_getvalue_return(sem_t *sem)
+uint64_t sem_getvalue_treat(sem_t *sem)
 {
     int value;
     TREAT(sem_getvalue(sem, &value));
@@ -130,7 +130,7 @@ queue_t queue_init(uint64_t res_max, uint64_t res_size, free_f res_free)
 
 uint64_t queue_get_value(queue_p q)
 {
-    return sem_getvalue_return(q->sem_f);
+    return sem_getvalue_treat(q->sem_f);
 }
 
 void queue_post(queue_p q, handler_p res, bool volatile * is_idle)
@@ -158,13 +158,13 @@ void queue_get(queue_p q, handler_p out_res, bool volatile * is_idle)
 /* returns true if H ownership returns to caller */
 bool queue_unstuck(queue_p q, handler_p h)
 {
-    if(sem_getvalue_return(q->sem_f) == 0)
+    if(sem_getvalue_treat(q->sem_f) == 0)
     {
         queue_post(q, h, NULL);
         return false;
     }
     
-    if(sem_getvalue_return(q->sem_b) == 0)
+    if(sem_getvalue_treat(q->sem_b) == 0)
     {
         q->res_free(h, q->res_size);
         queue_get(q, h, NULL);
@@ -179,7 +179,7 @@ void queue_free(queue_p q)
     handler_p h = malloc(q->res_size);
     assert(h);
     
-    while(queue_get_value(q))
+    while(queue_get_occupancy(q))
     {
         queue_get(q, h, NULL);
         q->res_free(h, q->res_size);

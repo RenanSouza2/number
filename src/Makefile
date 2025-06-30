@@ -19,7 +19,7 @@ main.o: main.c $(LIB)
 	gcc -o $@ $^ $(FLAGS)
 
 debug.o: main.c $(DGB)
-	echo "building debug $(DIR)"
+	echo "building num debug $(DIR)"
 	gcc -o $@ $^ $(FLAGS) $(FLAGS_DBG)
 
 
