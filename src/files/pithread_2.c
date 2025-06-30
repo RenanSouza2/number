@@ -87,8 +87,6 @@ STRUCT(pi_2_thread_b_args)
     bool volatile keep_going;
     bool volatile is_idle;
     uint64_t volatile state;
-    uint64_t volatile total;
-    uint64_t volatile time_sem, time_op;
 };
 
 handler_p pi_2_thread_b(handler_p _args)
@@ -99,11 +97,9 @@ handler_p pi_2_thread_b(handler_p _args)
     float_num_t flt_a_batch[args->batch_size], flt_b_batch[args->batch_size];
     for(uint64_t i = args->id + args->layers; args->keep_going; i += jump)
     {
-        args->total++;
-        args->time_sem -= get_time();
         args->state = 0;
         queue_get(args->queue_a_b, &flt_a_batch, &args->is_idle);
-        args->time_sem += get_time();
+        args->state = 1;
         
         if(!args->keep_going)
         {
@@ -113,21 +109,19 @@ handler_p pi_2_thread_b(handler_p _args)
             break;
         }
 
-        args->time_op -= get_time();
         for(uint64_t j=0; j<args->batch_size; j++)
         {
             uint64_t index = i + args->layers * j;
 
-            args->state = 1;
-            float_num_t flt_b = float_num_mul_sig(flt_a_batch[j], sig_num_wrap((int64_t)1 - 2 * index));
             args->state = 2;
-            flt_b = float_num_div_sig(flt_b, sig_num_wrap((int64_t)4 * index + 2));
+            float_num_t flt_b = float_num_mul_sig(flt_a_batch[j], sig_num_wrap((int64_t)1 - 2 * index));
             args->state = 3;
+            flt_b = float_num_div_sig(flt_b, sig_num_wrap((int64_t)4 * index + 2));
+            args->state = 4;
             flt_b_batch[j] = flt_b;
         }
-        args->time_op += get_time();
 
-        args->state = 4;
+        args->state = 5;
         queue_post(args->queue_b_pi, &flt_b_batch, &args->is_idle);
     }
 
@@ -274,7 +268,7 @@ handler_p pi_2_monitor_idle(handler_p _args)
         for(uint64_t j=0; j<res->layers; j++)
             res->count[i] += *(args->is_idle[i][j]);
 
-        sleep(1);
+        usleep(10000);
     }
     return NULL;
 }
@@ -346,11 +340,11 @@ pi_2_monitor_state_args_t pi_2_monitor_state_args_create(
     };
 }
 
- void pi_2_monitor_state_args_free(pi_2_monitor_state_args_t args)
- {
+void pi_2_monitor_state_args_free(pi_2_monitor_state_args_t args)
+{
     matrix_free((handler_p*)args.state, args.res.n_threads);
     pi_2_monitor_state_res_free(args.res);
- }
+}
 
 handler_p pi_2_monitor_state(handler_p _args)
 {
@@ -468,7 +462,7 @@ handler_p pi_2_monitor_queue(handler_p _args)
             res->count[i] += val;
         }
 
-        sleep(1);
+        usleep(10000);
     }
 
     return NULL;
@@ -502,7 +496,7 @@ float_num_t pi_threads_2_calc(uint64_t size, uint64_t thread_0, bool monitoring)
     uint64_t layers = 3;
     uint64_t queue_size = 5;
     uint64_t batch_size = 20;
-    uint64_t max_total_state = 5;
+    uint64_t max_total_state = 6;
 
     pi_2_thread_a_args_t args_a[layers];
     pi_2_thread_b_args_t args_b[layers];
@@ -675,11 +669,6 @@ float_num_t pi_threads_2_calc(uint64_t size, uint64_t thread_0, bool monitoring)
         printf("\n\t\t| total\t|");
         display_table_line_break(1);
         printf("\n| total_pi\t| %lu\t|", args_pi.total);
-
-        printf("\n");
-        printf("\n| time_sem\t| %8.1f", args_b[0].time_sem / (1e3 * args_b[0].total));
-        printf("\n| time_op\t| %8.1f", args_b[0].time_op / (1e3 * args_b[0].total));
-
     }
 
     return flt_pi;
