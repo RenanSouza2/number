@@ -440,7 +440,7 @@ float_num_t float_num_shr(float_num_t flt, uint64_t bits) // TODO TEST
         flt.sig.num = num_shr_uint(flt.sig.num, rem);
         return flt;
     }
-    
+
     flt.exponent = int64_sub(flt.exponent, 1 + (bits >> 6));
     flt.sig.num = num_shl_uint(flt.sig.num, 64 - rem);
     return flt;

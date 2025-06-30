@@ -163,7 +163,7 @@ bool queue_unstuck(queue_p q, handler_p h)
         queue_post(q, h, NULL);
         return false;
     }
-    
+
     if(sem_getvalue_treat(q->sem_b) == 0)
     {
         q->res_free(h, q->res_size);
@@ -178,7 +178,7 @@ void queue_free(queue_p q)
 {
     handler_p h = malloc(q->res_size);
     assert(h);
-    
+
     while(queue_get_value(q))
     {
         queue_get(q, h, NULL);
@@ -188,9 +188,9 @@ void queue_free(queue_p q)
 
     for(uint64_t i=0; i<q->res_max; i++)
         free(q->res[i]);
-    
+
     free(q->res);
-    
+
     TREAT(sem_destroy(q->sem_f));
     TREAT(sem_destroy(q->sem_b));
 }

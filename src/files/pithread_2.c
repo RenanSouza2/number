@@ -61,7 +61,7 @@ handler_p pi_2_thread_a(handler_p _args)
 
             args->state = 2;
             fix_a = fix_num_shr(fix_a, 3 * args->layers);
-            
+
             args->state = 3;
             fix_a = fix_num_div_sig(fix_a, sig_b);
             args->state = 0;
@@ -69,9 +69,9 @@ handler_p pi_2_thread_a(handler_p _args)
 
             // printf("\na: ");fix_num_display_dec(fix_a);
         }
-        
+
         args->state = 4;
-        queue_post(args->queue_a_b, &fix_a_batch, &args->is_idle);
+        queue_send(args->queue_a_b, &fix_a_batch, &args->is_idle);
     }
     fix_num_free(fix_a);
 
@@ -100,9 +100,9 @@ handler_p pi_2_thread_b(handler_p _args)
     for(uint64_t i = args->id + args->layers; args->keep_going; i += jump)
     {
         args->state = 0;
-        queue_get(args->queue_a_b, &fix_a_batch, &args->is_idle);
+        queue_recv(args->queue_a_b, &fix_a_batch, &args->is_idle);
         args->state = 1;
-        
+
         if(!args->keep_going)
         {
             for(uint64_t j=0; j<args->batch_size; j++)
@@ -121,12 +121,12 @@ handler_p pi_2_thread_b(handler_p _args)
             fix_b = fix_num_div_sig(fix_b, sig_num_wrap((int64_t)4 * index + 2));
             args->state = 4;
             fix_b_batch[j] = fix_b;
-            
+
             // printf("\nb: ");fix_num_display_dec(fix_b);
         }
 
         args->state = 5;
-        queue_post(args->queue_b_pi, &fix_b_batch, &args->is_idle);
+        queue_send(args->queue_b_pi, &fix_b_batch, &args->is_idle);
     }
 
     return NULL;
@@ -154,7 +154,7 @@ handler_p pi_2_thread_pi(handler_p _args)
     for(uint64_t i=1; ; i++)
     {
         args->total++;
-    
+
         fix_num_t fix_b = fix_num_wrap(0, args->size);
         for(uint64_t j=0; j<args->layers; j++)
         {
@@ -172,13 +172,13 @@ handler_p pi_2_thread_pi(handler_p _args)
             uint64_t done = args->size - fix_b.sig.num->count;
             fprintf(stderr, "\npgr: %lu / %lu", done / tam, args->size / tam);
         }
-        
+
         if(fix_num_is_zero(fix_b))
         {
             fix_num_free(fix_b);
             break;
         }
-        
+
         args->state = 4;
         fix_pi = fix_num_add(fix_pi, fix_b);
     }
@@ -522,7 +522,7 @@ fix_num_t pi_threads_2_calc(uint64_t size, uint64_t thread_0, bool monitoring)
         fix_a = fix_num_mul_sig(fix_a, sig_num_wrap((int64_t)2 * i - 3));
         fix_a = fix_num_div_sig(fix_a, sig_num_wrap((int64_t)8 * i));
         a0[i] = fix_num_copy(fix_a);
-        
+
         fix_num_t fix_d = fix_num_copy(fix_a);
         fix_d = fix_num_mul_sig(fix_d, sig_num_wrap((int64_t)1 - 2 * i));
         fix_d = fix_num_div_sig(fix_d, sig_num_wrap((int64_t)4 * i + 2));
@@ -631,7 +631,7 @@ fix_num_t pi_threads_2_calc(uint64_t size, uint64_t thread_0, bool monitoring)
         fix_num_t fix[batch_size];
         for(uint64_t j=0; j<batch_size; j++)
             fix[j] = fix_num_wrap(0, 2);
-        
+
         if(!queue_unstuck(&queue_a_b[i], &fix))
         {
             for(uint64_t j=0; j<batch_size; j++)
