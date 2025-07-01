@@ -5,7 +5,6 @@
 #include "../../mods/clu/header.h"
 #include "../../mods/macros/assert.h"
 
-#include "../fix/header.h"
 #include "../sig/header.h"
 #include "../num/header.h"
 #include "../num/struct.h"
@@ -332,6 +331,18 @@ void float_num_free(float_num_t flt)
     CLU_FLOAT_IS_SAFE(flt);
 
     sig_num_free(flt.sig);
+}
+
+
+
+fix_num_t fix_num_wrap_float(float_num_t flt) // TODO test
+{
+    flt = float_num_set_exponent(flt, 1 - flt.size);
+    return (fix_num_t)
+    {
+        .pos = flt.size - 1,
+        .sig = flt.sig
+    };
 }
 
 
