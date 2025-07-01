@@ -3,6 +3,7 @@ FLAGS_DBG = -D DEBUG -fsanitize=address
 
 LIB = ../lib/lib.o
 DGB = ../lib/debug.o
+CLU = ../mods/clu/bin/bin.o
 
 DIR = src
 
@@ -18,14 +19,14 @@ main.o: main.c $(LIB)
 	echo "building num exec $(DIR)"
 	gcc -o $@ $^ $(FLAGS)
 
-debug.o: main.c $(DGB)
+debug.o: main.c $(DGB) $(CLU)
 	echo "building num debug $(DIR)"
 	gcc -o $@ $^ $(FLAGS) $(FLAGS_DBG)
 
 
 
-.PHONY: $(LIB)
-$(LIB):
+.PHONY: $(LIB)  $(CLU)
+$(LIB) $(CLU):
 	$(MAKE) --directory=$(dir $@)
 
 .PHONY: $(DGB)

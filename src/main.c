@@ -616,7 +616,7 @@ int main()
     // float_num_pi_3(1000);
     // float_num_pi_4(1000);
     // pi_threads_1(arg, 3, false);
-    pi_threads_2(300000, 0, false);
+    pi_threads_2(2, 0, false);
     // pi_2_time_1(arg);
     // pi_2_time_2();
     // pi_2_time_3(arg);

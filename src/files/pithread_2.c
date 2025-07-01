@@ -39,10 +39,8 @@ handler_p pi_2_thread_a(handler_p _args)
     fix_num_t fix_a = args->a0;
     uint64_t jump = args->layers * args->batch_size;
     fix_num_t fix_a_batch[args->batch_size];
-    uint64_t del = 0;
     for(uint64_t i = args->id + args->layers; args->keep_going; i += jump)
     {
-        del++;
         for(uint64_t j=0; j<args->batch_size; j++)
         {
             uint64_t index = i + args->layers * j;
@@ -66,12 +64,10 @@ handler_p pi_2_thread_a(handler_p _args)
             fix_a = fix_num_div_sig(fix_a, sig_b);
             args->state = 0;
             fix_a_batch[j] = fix_num_copy(fix_a);
-
-            // printf("\na: ");fix_num_display_dec(fix_a);
         }
 
         args->state = 4;
-        queue_send(args->queue_a_b, &fix_a_batch, &args->is_idle);
+        queue_post(args->queue_a_b, &fix_a_batch, &args->is_idle);
     }
     fix_num_free(fix_a);
 
@@ -100,7 +96,7 @@ handler_p pi_2_thread_b(handler_p _args)
     for(uint64_t i = args->id + args->layers; args->keep_going; i += jump)
     {
         args->state = 0;
-        queue_recv(args->queue_a_b, &fix_a_batch, &args->is_idle);
+        queue_get(args->queue_a_b, &fix_a_batch, &args->is_idle);
         args->state = 1;
 
         if(!args->keep_going)
@@ -121,12 +117,10 @@ handler_p pi_2_thread_b(handler_p _args)
             fix_b = fix_num_div_sig(fix_b, sig_num_wrap((int64_t)4 * index + 2));
             args->state = 4;
             fix_b_batch[j] = fix_b;
-
-            // printf("\nb: ");fix_num_display_dec(fix_b);
         }
 
         args->state = 5;
-        queue_send(args->queue_b_pi, &fix_b_batch, &args->is_idle);
+        queue_post(args->queue_b_pi, &fix_b_batch, &args->is_idle);
     }
 
     return NULL;
