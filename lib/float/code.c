@@ -335,12 +335,12 @@ void float_num_free(float_num_t flt)
 
 
 
-fix_num_t fix_num_wrap_float(float_num_t flt) // TODO test
+fix_num_t fix_num_wrap_float(float_num_t flt, uint64_t pos) // TODO test
 {
-    flt = float_num_set_exponent(flt, 1 - flt.size);
+    flt = float_num_set_exponent(flt, 1 - pos);
     return (fix_num_t)
     {
-        .pos = flt.size - 1,
+        .pos = pos - 1,
         .sig = flt.sig
     };
 }
