@@ -532,12 +532,18 @@ float_num_t float_num_div(float_num_t flt_1, float_num_t flt_2) // TODO TEST
 
 float_num_t float_num_mul_sig(float_num_t flt, sig_num_t sig) // TODO TEST
 {
+    CLU_FLOAT_IS_SAFE(flt);
+    CLU_HANDLER_IS_SAFE(sig.num);
+
     flt.sig = sig_num_mul(flt.sig, sig);
     return float_num_normalize(flt);
 }
 
 float_num_t float_num_div_sig(float_num_t flt, sig_num_t sig) // TODO TEST
 {
+    CLU_FLOAT_IS_SAFE(flt);
+    CLU_HANDLER_IS_SAFE(sig.num);
+
     int64_t exponent = int64_add(flt.exponent, -(int64_t)sig.num->count);
     flt = float_num_set_exponent(flt, exponent);
     flt.sig = sig_num_div(flt.sig, sig);
