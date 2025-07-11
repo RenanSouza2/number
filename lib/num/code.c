@@ -820,10 +820,7 @@ num_p num_div_mod_general(num_p num_1, num_p num_2)
             U128_IMMED(num_1->chunk[num_1->count-1], num_1->chunk[num_1->count-2]) :
             num_1->chunk[num_1->count-1];
 
-            uint128_t tmp = (val_1 == val_2) ? 1 : (val_1 / (val_2 + 1));
             uint64_t r_aux = (val_1 == val_2) ? 1 : (val_1 / (val_2 + 1));
-            printf("\n%lx %lx | %lx %lx", HIGH(val_1), LOW(val_1), HIGH(val_2), LOW(val_2));
-            printf("| %lx %lx", HIGH(tmp), LOW(tmp));
             num_mul_uint(num_aux, num_2, r_aux);
             r += r_aux;
             num_1 = num_sub_offset(num_1, i, num_aux);
