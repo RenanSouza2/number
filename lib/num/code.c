@@ -759,54 +759,6 @@ num_p num_sub_offset(num_p num_1, uint64_t pos_1, num_p num_2)
     return num_1;
 }
 
-/*
-returns NUM_2 * R if less then NUM_1,
-returns 0 otherwise
-R cannot be zero
-keeps NUM_1 and NUM_2
-*/
-void num_cmp_mul_uint_offset(
-    num_p num_res,
-    num_p num_1,
-    uint64_t pos_1,
-    num_p num_2,
-    uint64_t r
-)
-{
-    CLU_HANDLER_IS_SAFE(num_res);
-    CLU_HANDLER_IS_SAFE(num_1);
-    CLU_HANDLER_IS_SAFE(num_2);
-    assert(num_res);
-    assert(num_1);
-    assert(num_2);
-
-    {
-        uint128_t u = MUL(num_2->chunk[num_2->count-1], r);
-        num_res->chunk[num_2->count-1] = LOW(u);
-        num_res->chunk[num_2->count] = HIGH(u);
-        num_res->count = num_2->count+1;
-        num_normalize(num_res);
-        if(num_cmp_offset(num_1, pos_1, num_res, num_2->count-1) < 0)
-        {
-            num_res->count = 0;
-            return;
-        }
-    }
-
-    for(uint64_t i=num_2->count-2; i != UINT64_MAX; i--)
-    {
-        uint128_t u = MUL(num_2->chunk[i], r);
-        num_res = num_add_uint_offset(num_res, i + 1, HIGH(u));
-        num_res->chunk[i] = LOW(u);
-
-        if(num_cmp_offset(num_1, pos_1, num_res, i) < 0)
-        {
-            num_res->count = 0;
-            return;
-        }
-    }
-}
-
 /* RES is quocient NUM_1 is remainder */
 num_p num_div_mod_sigle(num_p num_1, num_p num_2)
 {
@@ -868,15 +820,7 @@ num_p num_div_mod_general(num_p num_1, num_p num_2)
             U128_IMMED(num_1->chunk[num_1->count-1], num_1->chunk[num_1->count-2]) :
             num_1->chunk[num_1->count-1];
 
-            uint128_t tmp = val_1 / val_2;
-            uint64_t r_aux = UINT64_MAX < tmp ? UINT64_MAX : tmp;
-
-            num_cmp_mul_uint_offset(num_aux, num_1, i, num_2, r_aux);
-            if(num_aux->count == 0)
-            {
-                r_aux = val_1 / (val_2 + 1);
-                num_mul_uint(num_aux, num_2, r_aux);
-            }
+            uint64_t r_aux = (val_1 == val_2) ? 1 : (val_1 / (val_2 + 1));
             r += r_aux;
             num_1 = num_sub_offset(num_1, i, num_aux);
         }

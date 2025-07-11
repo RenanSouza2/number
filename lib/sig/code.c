@@ -161,12 +161,6 @@ void sig_num_free(sig_num_t sig)
 
 sig_num_t sig_num_wrap(int64_t value)
 {
-    if(value == 0)
-    {
-        num_p num = num_wrap(0);
-        return sig_num_create(ZERO, num);
-    }
-
     if(value < 0)
     {
         num_p num = num_wrap(-value);

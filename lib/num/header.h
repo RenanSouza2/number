@@ -6,7 +6,7 @@
 #include "../../mods/macros/struct.h"
 #include "../../mods/macros/U64.h"
 
-PLACEHOLDER(num);
+PLACEHOLDER(num)
 
 void num_display_dec(num_p num);
 void num_display_opts(num_p num, char *tag, bool length, bool full);

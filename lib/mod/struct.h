@@ -3,7 +3,7 @@
 
 #include "../../mods/macros/struct.h"
 
-PLACEHOLDER(num);
+PLACEHOLDER(num)
 
 STRUCT(mod_num)
 {
