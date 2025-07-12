@@ -3,6 +3,8 @@
 
 #include <stdbool.h>
 
+#include "../fix/header.h"
+
 #include "struct.h"
 
 void float_num_display(float_num_t flt);
@@ -13,6 +15,8 @@ float_num_t float_num_wrap_num(num_p num, uint64_t size);
 float_num_t float_num_wrap_sig(sig_num_t sig, uint64_t size);
 float_num_t float_num_copy(float_num_t flt);
 void float_num_free(float_num_t flt);
+
+fix_num_t fix_num_wrap_float(float_num_t flt, uint64_t pos);
 
 int64_t float_num_cmp(float_num_t flt_1, float_num_t flt_2);
 bool float_num_safe_add(float_num_t flt_1, float_num_t flt_2);

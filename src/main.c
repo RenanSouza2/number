@@ -1,14 +1,15 @@
+#include <time.h>
+#include <unistd.h>
 
 #include "../mods/clu/header.h"
+#include "../mods/macros/assert.h"
 
 #include "../lib/fix/header.h"
+#include "../lib/float/header.h"
 #include "../lib/mod/header.h"
 #include "../lib/num/header.h"
 #include "../lib/num/struct.h"
 #include "../lib/sig/header.h"
-
-#include "files/pithread_1.c"
-#include "files/pithread_2.c"
 
 
 
@@ -16,6 +17,13 @@ int64_t get_arg(int argc, char** argv)
 {
     assert(argc > 1);
     return atoi(argv[1]);
+}
+
+uint64_t get_time()
+{
+    struct timespec time;
+    clock_gettime(CLOCK_MONOTONIC_RAW, &time);
+    return time.tv_sec * (uint64_t)1e9 + time.tv_nsec;
 }
 
 
@@ -580,19 +588,6 @@ void sqrt_2()
 
 
 
-void del(uint64_t n)
-{
-    printf("\n----------------------------------------------------");
-    printf("\nn: %lu", n);
-    uint64_t begin = get_time();
-    pi_threads_2(n, 0, false);
-    uint64_t end = get_time();
-    uint64_t time = end - begin;
-    printf("\n");
-    printf("\ntime: %.1f", time / 1e9);
-    printf("\n");
-}
-
 // int main(int argc, char** argv)
 int main()
 {
@@ -615,49 +610,6 @@ int main()
     // float_num_pi_2(1000);
     // float_num_pi_3(1000);
     // float_num_pi_4(1000);
-    // pi_threads_1(arg, 3, false);
-    pi_threads_2(300000, 0, false);
-    // pi_2_time_1(arg);
-    // pi_2_time_2();
-    // pi_2_time_3(arg);
-    
-    // for(uint64_t i=1; i<6; i++)
-    // {
-    //     printf("\n");
-    //     printf("\n----------------------------------------------------");
-    //     printf("\ni: %lu", i);
-    //
-    //     uint64_t begin = get_time();
-    //     pi_threads_2(arg, i, true);
-    //     uint64_t end = get_time();
-    //     uint64_t time = end - begin;
-    //     printf("\n");
-    //     printf("\ntime: %.1f", time / 1e9);
-    // }
-
-    // del(2);
-
-    // del(10000);
-    // del(20000);
-    // del(50000);
-
-    // del(100000);
-    // del(200000);
-    // del(500000);
-    // del(1000000);
-
-    // uint64_t size = 50000;
-    // float_num_t flt_a = float_num_wrap(6, size);
-    // float_num_t flt_b = float_num_wrap(1, size);
-    // for(uint64_t i=1; i<1800000; i++)
-    // {
-    //     uint64_t tam = 1000;
-    //     if(i%tam == 0)
-    //         printf("\ni: %lu / %lu\t%lu", i/tam, 1800000/tam, flt_a.sig.num->count);
-
-    //     flt_a = float_num_mul_sig(flt_a, sig_num_wrap((int64_t)2 * i - 3));
-    //     flt_b = float_num_mul_sig(flt_b, sig_num_wrap((int64_t)(i)));
-    // }
 
     // assert(clu_mem_is_empty("FINAL"));
 

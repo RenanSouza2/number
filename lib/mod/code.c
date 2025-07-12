@@ -169,10 +169,10 @@ mod_num_t mod_num_div(mod_num_t mod_1, mod_num_t mod_2)
     {
         num_free(num_r);
 
-        num_p num_t = mod_1.max;
+        num_p num = mod_1.max;
         mod_num_free(mod_1);
         mod_num_free(mod_2);
-        return mod_num_create(num_q, num_t);
+        return mod_num_create(num_q, num);
     }
     num_free(num_q);
 

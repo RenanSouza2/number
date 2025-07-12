@@ -4,7 +4,7 @@
 #include "../../mods/macros/struct.h"
 #include "../../mods/macros/U64.h"
 
-PLACEHOLDER(num);
+PLACEHOLDER(num)
 
 #define POSITIVE 1
 #define NEGATIVE 2

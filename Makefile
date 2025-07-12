@@ -7,7 +7,7 @@ build b:
 dbg d:
 	$(MAKE) dbg --directory=$(SRC) -s
 
-clean c:
+clean c _clean:
 	$(MAKE) clean --directory=$(SRC) -s
 
 test t:

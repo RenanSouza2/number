@@ -5,7 +5,6 @@
 #include "../../mods/clu/header.h"
 #include "../../mods/macros/assert.h"
 
-#include "../fix/header.h"
 #include "../sig/header.h"
 #include "../num/header.h"
 #include "../num/struct.h"
@@ -336,6 +335,18 @@ void float_num_free(float_num_t flt)
 
 
 
+fix_num_t fix_num_wrap_float(float_num_t flt, uint64_t pos) // TODO test
+{
+    flt = float_num_set_exponent(flt, 1 - pos);
+    return (fix_num_t)
+    {
+        .pos = pos - 1,
+        .sig = flt.sig
+    };
+}
+
+
+
 float_num_t float_num_set_exponent(float_num_t flt, int64_t exponent)
 {
     CLU_FLOAT_IS_SAFE(flt);
@@ -440,7 +451,7 @@ float_num_t float_num_shr(float_num_t flt, uint64_t bits) // TODO TEST
         flt.sig.num = num_shr_uint(flt.sig.num, rem);
         return flt;
     }
-    
+
     flt.exponent = int64_sub(flt.exponent, 1 + (bits >> 6));
     flt.sig.num = num_shl_uint(flt.sig.num, 64 - rem);
     return flt;
@@ -521,12 +532,18 @@ float_num_t float_num_div(float_num_t flt_1, float_num_t flt_2) // TODO TEST
 
 float_num_t float_num_mul_sig(float_num_t flt, sig_num_t sig) // TODO TEST
 {
+    CLU_FLOAT_IS_SAFE(flt);
+    CLU_HANDLER_IS_SAFE(sig.num);
+
     flt.sig = sig_num_mul(flt.sig, sig);
     return float_num_normalize(flt);
 }
 
 float_num_t float_num_div_sig(float_num_t flt, sig_num_t sig) // TODO TEST
 {
+    CLU_FLOAT_IS_SAFE(flt);
+    CLU_HANDLER_IS_SAFE(sig.num);
+
     int64_t exponent = int64_add(flt.exponent, -(int64_t)sig.num->count);
     flt = float_num_set_exponent(flt, exponent);
     flt.sig = sig_num_div(flt.sig, sig);
