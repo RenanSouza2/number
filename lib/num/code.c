@@ -157,7 +157,7 @@ uint64_t uint_from_str(char str[], uint64_t size, uint64_t base) // TODO test
     {
         uint64_t aux = uint_from_char(str[i]);
         assert(aux < base);
-        value = value * base + uint_from_char(str[i]);
+        value = value * base + aux;
     }
 
     return value;
