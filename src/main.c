@@ -599,7 +599,7 @@ int main()
     // clu_set_log(true);
 
     // num_generate(21, 2);
-    // time_1(16, 23);
+    time_1(16, 23);
     // time_2(argc, argv, 19);
     // time_3();
     // fibonacci();
@@ -611,17 +611,17 @@ int main()
     // float_num_pi_3(1000);
     // float_num_pi_4(1000);
 
-    uint64_t size = 2;
-    float_num_t flt = float_num_wrap(1, size);
-    for(uint64_t i=1; i < INT64_MAX; i++)
-    {
-        flt = float_num_mul_sig(flt, sig_num_wrap((4 * i + 2) * (8 * i)));
+    // uint64_t size = 2;
+    // float_num_t flt = float_num_wrap(1, size);
+    // for(uint64_t i=1; i < INT64_MAX; i++)
+    // {
+    //     flt = float_num_mul_sig(flt, sig_num_wrap((4 * i + 2) * (8 * i)));
         
-        if(i%10000000 == 0)
-        {
-            printf("\n");float_num_display(flt);printf(" | %.1e", (double)flt.exponent / INT64_MAX);
-        }
-    }
+    //     if(i%10000000 == 0)
+    //     {
+    //         printf("\n");float_num_display(flt);printf(" | %.1e", (double)flt.exponent / INT64_MAX);
+    //     }
+    // }
 
     // assert(clu_mem_is_empty("FINAL"));
 

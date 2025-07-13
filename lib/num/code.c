@@ -816,14 +816,20 @@ num_p num_div_mod_general(num_p num_1, num_p num_2)
         uint64_t r = 0;
         while(num_cmp_offset(num_1, i, num_2, 0) >= 0)
         {
-            uint128_t val_1 = num_1->count > num_2->count + i ?
-            U128_IMMED(num_1->chunk[num_1->count-1], num_1->chunk[num_1->count-2]) :
-            num_1->chunk[num_1->count-1];
-
-            uint64_t r_aux = (val_1 == val_2) ? 1 : (val_1 / (val_2 + 1));
-            num_mul_uint(num_aux, num_2, r_aux);
+            uint64_t r_aux;
+            if(num_1->count > num_2->count + i)
+            {
+                uint128_t val_1 = U128_IMMED(num_1->chunk[num_1->count-1], num_1->chunk[num_1->count-2]);
+                r_aux = val_1 / (val_2 + 1);
+                num_mul_uint(num_aux, num_2, r_aux);
+                num_1 = num_sub_offset(num_1, i, num_aux);
+            }
+            else
+            {
+                r_aux = 1;
+                num_1 = num_sub_offset(num_1, i, num_2);
+            }
             r += r_aux;
-            num_1 = num_sub_offset(num_1, i, num_aux);
         }
         num_q = num_chunk_set(num_q, i, r);
     }

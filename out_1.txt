@@ -1,0 +1,12 @@
+make build --directory=src -s
+building num object lib/sig
+ linking num object lib
+building num exec src
+
+16	     0.018	     0.007	     0.033
+17	     0.083	     0.028	     0.113
+18	     0.305	     0.112	     0.604
+19	     1.172	     0.459	     1.658
+20	     4.620	     1.821	     8.940
+21	    18.394	     7.227	    34.712
+22	    73.766	    29.216	   150.486
