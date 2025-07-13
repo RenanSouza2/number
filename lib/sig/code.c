@@ -86,6 +86,7 @@ bool sig_num_immed(sig_num_t sig, uint64_t signal, uint64_t n, ...)
 void sig_num_display(sig_num_t sig, bool full)
 {
     CLU_SIG_IS_SAFE(sig);
+    assert(sig.num);
 
     if(sig.signal == ZERO)
     {
@@ -103,6 +104,7 @@ void sig_num_display(sig_num_t sig, bool full)
 void sig_num_display_tag(char tag[], sig_num_t sig)
 {
     CLU_SIG_IS_SAFE(sig);
+    assert(sig.num);
 
     printf("\n%s:\t", tag);
     sig_num_display(sig, false);
@@ -111,6 +113,7 @@ void sig_num_display_tag(char tag[], sig_num_t sig)
 void sig_num_display_full(char tag[], sig_num_t sig)
 {
     CLU_SIG_IS_SAFE(sig);
+    assert(sig.num);
 
     printf("\n%s:\t", tag);
     sig_num_display(sig, true);
@@ -118,6 +121,9 @@ void sig_num_display_full(char tag[], sig_num_t sig)
 
 void sig_num_display_dec(sig_num_t sig)
 {
+    CLU_SIG_IS_SAFE(sig);
+    assert(sig.num);
+
     if(sig.signal == ZERO)
     {
         printf("  0");
@@ -133,6 +139,7 @@ void sig_num_display_dec(sig_num_t sig)
 sig_num_t sig_num_create(uint64_t signal, num_p num)
 {
     CLU_HANDLER_IS_SAFE(num);
+    assert(num);
 
     if(num_is_zero(num))
     {
