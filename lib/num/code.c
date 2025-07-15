@@ -1038,40 +1038,11 @@ num_p num_fft_inv(num_p num, uint64_t n) // TODO TEST
     fft_rec(num->chunk, n, w, tmp);
     free(tmp);
 
-    // printf("\n");
-    // for(uint64_t i=0; i<n; i++)
-    //     printf("\nvec[%lu]: %lx", i, num->chunk[i]);
-
     uint64_t n_inv = mod_div(1, n, p);
     for(uint64_t i=0; i<n; i++)
         num->chunk[i] = mod_mul(num->chunk[i], n_inv, p);
 
     return num;
-}
-
-void del()
-{
-    
-    uint64_t p = 4179340454199820289;
-    // uint64_t w0 = 68630377364883;
-
-    // uint64_t q = ((uint64_t)1 << 57) / 4;
-    // uint64_t w = mod_pow(w0, q, p);
-    // uint64_t c = mod_pow(w, 4, p);
-
-    // uint64_t w = 0x2ea15a3febca078a;
-    
-    // uint64_t c = mod_add(
-    //     mod_sub(4, 0, p),
-    //     mod_mul(3, w, p),
-    //     p
-    // );
-    // printf("\nc: %lx", c);
-
-    uint64_t a = 0x17e40ebfc35e16a0;
-    uint64_t b = 0x221bf1403ca1e969;
-    uint64_t c = mod_add(a, b, p);
-    printf("\nc: %lu", c);
 }
 
 
@@ -1193,18 +1164,9 @@ num_p num_mul(num_p num_1, num_p num_2)
     num_1 = num_pad(num_1);
     num_2 = num_pad(num_2);
 
-    // printf("\n");
-    // for(uint64_t i=0; i<num_1->count; i++)
-    //     printf("\nvec[%lu]: %lx", i, num_1->chunk[i]);
-
     uint64_t n = stdc_bit_ceil(num_1->count + num_2->count);
     num_1 = num_fft(num_1, n);
     num_2 = num_fft(num_2, n);
-
-    // printf("\n");
-    // for(uint64_t i=0; i<n; i++)
-    //     printf("\nvec[%lu]: %lx", i, num_1->chunk[i]);
-
 
     uint64_t p = 4179340454199820289;
 
@@ -1224,7 +1186,23 @@ num_p num_sqr(num_p num)
     CLU_HANDLER_IS_SAFE(num);
     assert(num);
 
-    return num_mul(num, num_copy(num));
+    if(num->count == 0)
+        return num;
+
+    num = num_pad(num);
+
+    uint64_t n = stdc_bit_ceil(2 * num->count);
+    num = num_fft(num, n);
+
+    uint64_t p = 4179340454199820289;
+
+    for(uint64_t i=0; i<n; i++)
+        num->chunk[i] = mod_mul(num->chunk[i], num->chunk[i], p);
+
+    num = num_fft_inv(num, n);
+    num = num_depad(num);
+
+    return num;
 }
 
 // num_t num_exp(num_t num, uint64_t value) // TODO TEST

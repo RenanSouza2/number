@@ -47,6 +47,4 @@ num_p num_gcd(num_p num_1, num_p num_2);
 num_p num_base_to(num_p num, uint64_t base);
 num_p num_base_from(num_p num, uint64_t base);
 
-void del();
-
 #endif
