@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbit.h>
 
 #include "debug.h"
 #include "../../mods/macros/assert.h"
@@ -278,7 +279,9 @@ num_p num_expand_to(num_p num, uint64_t target)
     CLU_HANDLER_IS_SAFE(num);
     assert(num);
 
-    assert(target >= num->size);
+    if(target < num->size)
+        return num;
+
     uint64_t size = target * 2;
     num = realloc(num, sizeof(num_t) + size * sizeof(uint64_t));
     assert(num);
@@ -883,6 +886,196 @@ uint64_t num_div_mod_unajusted(
 
 
 
+
+static uint64_t mod_add(uint64_t a, uint64_t b, uint64_t p)
+{
+    return (((uint128_t)a) + b) % p;
+}
+
+static uint64_t mod_sub(uint64_t a, uint64_t b, uint64_t p)
+{
+    uint64_t c = a - b;
+    if(a < b) c += p;  
+    return c % p;
+}
+
+static uint64_t mod_mul(uint64_t a, uint64_t b, uint64_t p)
+{
+    return (((uint128_t)a) * b) % p;
+}
+
+static uint64_t mod_pow(uint64_t a, uint64_t b, uint64_t p)
+{
+    uint64_t res = 1;
+    for(uint64_t mask = ((uint64_t)1) << 63; mask; mask >>= 1)
+    {
+        res = mod_mul(res, res, p);
+        if(b & mask)
+            res = mod_mul(res, a, p);
+    }
+    return res;
+}
+
+static uint64_t mod_div(uint64_t a, uint64_t b, uint64_t p)
+{
+    if(a % b == 0)
+        return a / b;
+
+    uint64_t n = b > (p / 2) ?
+        mod_div(b - a%b, p%b, b) :
+        mod_div(a%b, b - p%b, b);
+
+    return (((uint128_t)n) * p + a) / b;
+}
+
+num_p num_pad(num_p num) // TODO TEST
+{
+    uint64_t count = num->count;
+    for(uint64_t i=count-1; i!=UINT64_MAX; i--)
+    {
+        uint64_t value = num->chunk[i];
+        for(uint64_t j=0; j<4; j++)
+        {
+            num = num_chunk_set(num, 4 * i + j, value & 0xffff);
+            value >>= 16;
+        }
+    }
+    return num;
+}
+
+num_p num_depad(num_p num) // TODO TEST
+{
+    uint64_t count = num->count;
+    for(uint64_t i=1; i<count; i++)
+    {
+        uint64_t value = num->chunk[i];
+        num->chunk[i] = 0;
+
+        uint128_t tmp = U128(value) << (16 * (i%4));
+        uint64_t value_1 = LOW(tmp);
+        uint64_t value_2 = HIGH(tmp);
+
+        num = num_add_uint_offset(num, i/4, value_1);
+        num = num_add_uint_offset(num, i/4 + 1, value_2);
+    }
+
+    num->count = (num->count + 3) / 4;
+    while(num_normalize(num));
+    return num;
+}
+
+void fft_rec(uint64_t vec[], uint64_t n, uint64_t w, uint64_t tmp[])
+{
+    uint64_t p = 4179340454199820289;
+
+    if(n > 2)
+    {
+        for(uint64_t i=0; i<n/2; i++)
+        {
+            tmp[i] = vec[2 * i + 1];
+            vec[i] = vec[2 * i];
+        }
+        memcpy(&vec[n/2], tmp, (n/2) * sizeof(uint64_t));
+
+        uint64_t w_next = mod_mul(w, w, p);
+        fft_rec( vec     , n/2, w_next, tmp);
+        fft_rec(&vec[n/2], n/2, w_next, tmp);
+    }
+
+    uint64_t wi = 1;
+    for(uint64_t i=0; i<n/2; i++)
+    {
+        uint64_t i_a = i; 
+        uint64_t i_b = i + n/2;
+
+        uint64_t a = vec[i_a];
+        uint64_t b = mod_mul(wi, vec[i_b], p);
+
+        vec[i_a] = mod_add(a, b, p);
+        vec[i_b] = mod_sub(a, b, p);
+
+        wi = mod_mul(wi, w, p);
+    }
+}
+
+num_p num_fft(num_p num, uint64_t n) // TODO TEST
+{
+    if(n == 1)
+        return num;
+
+    num = num_expand_to(num, n);
+    num->count = n;
+
+    uint64_t p = 4179340454199820289;
+    uint64_t w0 = 68630377364883;
+
+    uint64_t q = ((uint64_t)1 << 57) / n;
+    uint64_t w = mod_pow(w0, q, p);
+
+    uint64_t *tmp = malloc((n/2) * sizeof(uint64_t));
+    assert(tmp);
+    fft_rec(num->chunk, n, w, tmp);
+    free(tmp);
+
+    return num;
+}
+
+num_p num_fft_inv(num_p num, uint64_t n) // TODO TEST
+{
+    if(n == 1)
+        return num;
+
+    num = num_expand_to(num, n);
+
+    uint64_t p = 4179340454199820289;
+    uint64_t w0 = 182099332568824125;
+
+    uint64_t q = ((uint64_t)1 << 57) / n;
+    uint64_t w = mod_pow(w0, q, p);
+
+    uint64_t *tmp = malloc((n/2) * sizeof(uint64_t));
+    assert(tmp);
+    fft_rec(num->chunk, n, w, tmp);
+    free(tmp);
+
+    // printf("\n");
+    // for(uint64_t i=0; i<n; i++)
+    //     printf("\nvec[%lu]: %lx", i, num->chunk[i]);
+
+    uint64_t n_inv = mod_div(1, n, p);
+    for(uint64_t i=0; i<n; i++)
+        num->chunk[i] = mod_mul(num->chunk[i], n_inv, p);
+
+    return num;
+}
+
+void del()
+{
+    
+    uint64_t p = 4179340454199820289;
+    // uint64_t w0 = 68630377364883;
+
+    // uint64_t q = ((uint64_t)1 << 57) / 4;
+    // uint64_t w = mod_pow(w0, q, p);
+    // uint64_t c = mod_pow(w, 4, p);
+
+    // uint64_t w = 0x2ea15a3febca078a;
+    
+    // uint64_t c = mod_add(
+    //     mod_sub(4, 0, p),
+    //     mod_mul(3, w, p),
+    //     p
+    // );
+    // printf("\nc: %lx", c);
+
+    uint64_t a = 0x17e40ebfc35e16a0;
+    uint64_t b = 0x221bf1403ca1e969;
+    uint64_t c = mod_add(a, b, p);
+    printf("\nc: %lu", c);
+}
+
+
+
 bool num_is_zero(num_p num)
 {
     CLU_HANDLER_IS_SAFE(num);
@@ -985,7 +1178,45 @@ num_p num_mul(num_p num_1, num_p num_2)
     assert(num_1);
     assert(num_2);
 
-    return num_mul_high(num_1, num_2, 0);
+    if(num_1->count == 0)
+    {
+        num_free(num_2);
+        return num_1;
+    }
+
+    if(num_2->count == 0)
+    {
+        num_free(num_1);
+        return num_2;
+    }
+
+    num_1 = num_pad(num_1);
+    num_2 = num_pad(num_2);
+
+    // printf("\n");
+    // for(uint64_t i=0; i<num_1->count; i++)
+    //     printf("\nvec[%lu]: %lx", i, num_1->chunk[i]);
+
+    uint64_t n = stdc_bit_ceil(num_1->count + num_2->count);
+    num_1 = num_fft(num_1, n);
+    num_2 = num_fft(num_2, n);
+
+    // printf("\n");
+    // for(uint64_t i=0; i<n; i++)
+    //     printf("\nvec[%lu]: %lx", i, num_1->chunk[i]);
+
+
+    uint64_t p = 4179340454199820289;
+
+    for(uint64_t i=0; i<n; i++)
+        num_1->chunk[i] = mod_mul(num_1->chunk[i], num_2->chunk[i], p);
+
+    num_free(num_2);
+
+    num_1 = num_fft_inv(num_1, n);
+    num_1 = num_depad(num_1);
+
+    return num_1;
 }
 
 num_p num_sqr(num_p num)
@@ -993,26 +1224,7 @@ num_p num_sqr(num_p num)
     CLU_HANDLER_IS_SAFE(num);
     assert(num);
 
-    if(num->count == 0)
-        return num;
-
-    num_p num_res = num_create(2 * num->count + 1, 0);
-    for(uint64_t i=0; i<num->count; i++)
-    {
-        uint64_t value = num->chunk[i];
-
-        uint128_t u = MUL(value, value);
-        num_res = num_add_uint_offset(num_res, 2 * i, LOW(u));
-        num_res = num_add_uint_offset(num_res, 2 * i + 1, HIGH(u));
-
-        num_res = num_add_mul_uint_offset(num_res, 2 * i + 1, num, i + 1, value << 1);
-
-        if(value >= 0x8000000000000000)
-            num_res = num_add_offset(num_res, 2 * i + 2, num, i + 1);
-    }
-
-    num_free(num);
-    return num_res;
+    return num_mul(num, num_copy(num));
 }
 
 // num_t num_exp(num_t num, uint64_t value) // TODO TEST

@@ -991,6 +991,129 @@ void test_num_add_mul_uint(bool show)
 
 
 
+void test_num_pad(bool show)
+{
+    TEST_FN_OPEN
+
+    #define TEST_NUM_PAD(TAG, NUM_BEF, NUM_AFT)             \
+    {                                                       \
+        TEST_CASE_OPEN(TAG)                                 \
+        {                                                   \
+            num_p num = num_create_immed(ARG_OPEN NUM_BEF); \
+            num = num_pad(num);                             \
+            assert(num_immed(num, ARG_OPEN NUM_AFT));       \
+        }                                                   \
+        TEST_CASE_CLOSE                                     \
+    }
+
+    TEST_NUM_PAD(1, (0), (0));
+    TEST_NUM_PAD(2, (1, 1), (1, 1));
+    TEST_NUM_PAD(3, (1, 0xddddccccbbbbaaaa), (4, 0xdddd, 0xcccc, 0xbbbb, 0xaaaa));
+    TEST_NUM_PAD(4,
+        (2, 0xddddccccbbbbaaaa, 0x4444333322221111),
+        (8, 0xdddd, 0xcccc, 0xbbbb, 0xaaaa, 0x4444, 0x3333, 0x2222, 0x1111)
+    );
+
+    #undef TEST_NUM_PAD
+
+    TEST_FN_CLOSE
+}
+
+void test_num_depad(bool show)
+{
+    TEST_FN_OPEN
+
+    #define TEST_NUM_DEPAD(TAG, NUM_BEF, NUM_AFT)           \
+    {                                                       \
+        TEST_CASE_OPEN(TAG)                                 \
+        {                                                   \
+            num_p num = num_create_immed(ARG_OPEN NUM_BEF); \
+            num = num_depad(num);                           \
+            assert(num_immed(num, ARG_OPEN NUM_AFT));       \
+        }                                                   \
+        TEST_CASE_CLOSE                                     \
+    }
+
+    TEST_NUM_DEPAD(1, (0), (0));
+    TEST_NUM_DEPAD(2, (1, 1), (1, 1));
+    TEST_NUM_DEPAD(3, (4, 0xdddd, 0xcccc, 0xbbbb, 0xaaaa), (1, 0xddddccccbbbbaaaa));
+    TEST_NUM_DEPAD(4,
+        (8, 0xdddd, 0xcccc, 0xbbbb, 0xaaaa, 0x4444, 0x3333, 0x2222, 0x1111),
+        (2, 0xddddccccbbbbaaaa, 0x4444333322221111)
+    );
+    TEST_NUM_DEPAD(5,
+        (4, 0, 0, 0x22222222, 0x11111111),
+        (1, 0x222233331111)
+    );
+
+    #undef TEST_NUM_DEPAD
+
+    TEST_FN_CLOSE
+}
+
+void test_num_fft(bool show)
+{
+    TEST_FN_OPEN
+
+    uint64_t p = 4179340454199820289;
+
+    #define TEST_NUM_FFT(TAG, NUM_BEF, N, NUM_AFT)          \
+    {                                                       \
+        TEST_CASE_OPEN(TAG)                                 \
+        {                                                   \
+            num_p num = num_create_immed(ARG_OPEN NUM_BEF); \
+            num = num_fft(num, N);                          \
+            assert(num_immed(num, ARG_OPEN NUM_AFT));       \
+        }                                                   \
+        TEST_CASE_CLOSE                                     \
+    }
+
+    TEST_NUM_FFT(1, (1, 1), 1, (1, 1));
+    TEST_NUM_FFT(2, (2, 1, 0), 2, (2, p - 1, 1));
+    TEST_NUM_FFT(3, (2, 1, 2), 2, (2, 1, 3));
+    TEST_NUM_FFT(4,
+        (4, 0, 0, 3, 4), 4,
+        (4, 0x221bf1403ca1e969, 1, 0x17e40ebfc35e16a0, 7)
+    );
+
+    #undef TEST_NUM_FFT
+
+    TEST_FN_CLOSE
+}
+
+void test_num_fft_inv(bool show)
+{
+    TEST_FN_OPEN
+
+    uint64_t p = 4179340454199820289;
+
+    #define TEST_NUM_FFT_INV(TAG, NUM_BEF, N, NUM_AFT)      \
+    {                                                       \
+        TEST_CASE_OPEN(TAG)                                 \
+        {                                                   \
+            num_p num = num_create_immed(ARG_OPEN NUM_BEF); \
+            num = num_fft_inv(num, N);                      \
+            assert(num_immed(num, ARG_OPEN NUM_AFT));       \
+        }                                                   \
+        TEST_CASE_CLOSE                                     \
+    }
+
+    TEST_NUM_FFT_INV(1, (1, 1), 1, (1, 1));
+    TEST_NUM_FFT_INV(2, (2, p - 1, 1), 2, (2, 1, 0));
+    TEST_NUM_FFT_INV(3, (2, 1, 3), 2, (2, 1, 2));
+    TEST_NUM_FFT_INV(4,
+        (4, 0x221bf1403ca1e969, 1, 0x17e40ebfc35e16a0, 7), 4,
+        (4, 0, 0, 3, 4)
+    );
+
+    #undef TEST_NUM_FFT_INV
+
+    TEST_FN_CLOSE
+}
+
+
+
+
 void test_num_is_zero(bool show)
 {
     TEST_FN_OPEN
@@ -1672,7 +1795,7 @@ void test_num()
 {
     TEST_LIB
 
-    bool show = false;
+    bool show = true;
 
     test_uint_from_char(show);
     test_uint128(show);
@@ -1702,6 +1825,11 @@ void test_num()
     test_num_shr_uint(show);
     test_num_mul_uint(show);
     test_num_add_mul_uint(show);
+
+    test_num_pad(show);
+    test_num_depad(show);
+    test_num_fft(show);
+    test_num_fft_inv(show);
 
     test_num_is_zero(show);
 

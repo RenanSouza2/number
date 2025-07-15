@@ -51,4 +51,9 @@ num_p num_add_mul_uint(num_p num_res, num_p num, uint64_t value);
 
 num_p num_sub_offset(num_p num_1, uint64_t pos_1, num_p num_2);
 
+num_p num_pad(num_p num);
+num_p num_depad(num_p num);
+num_p num_fft(num_p num, uint64_t n);
+num_p num_fft_inv(num_p num, uint64_t n);
+
 #endif
