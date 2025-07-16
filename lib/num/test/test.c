@@ -1533,193 +1533,6 @@ void test_num_sqr(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_div_single(bool show)
-{
-    TEST_FN_OPEN
-
-    #define TEST_NUM_DIV_MOD(TAG, NUM_1, NUM_2, NUM_Q, NUM_R)   \
-    {                                                           \
-        TEST_CASE_OPEN(TAG)                                     \
-        {                                                       \
-            num_p num_q, num_r;                                 \
-            num_p num_1 = num_create_immed(ARG_OPEN NUM_1);     \
-            num_p num_2 = num_create_immed(ARG_OPEN NUM_2);     \
-            num_div_mod(&num_q, &num_r, num_1, num_2);          \
-            assert(num_immed(num_q, ARG_OPEN NUM_Q));           \
-            assert(num_immed(num_r, ARG_OPEN NUM_R));           \
-        }                                                       \
-        TEST_CASE_CLOSE                                         \
-    }
-
-    TEST_NUM_DIV_MOD(1,
-        (0),
-        (1, 1),
-        (0),
-        (0)
-    );
-    TEST_NUM_DIV_MOD(2,
-        (1, 4),
-        (1, 2),
-        (1, 2),
-        (0)
-    );
-    TEST_NUM_DIV_MOD(3,
-        (1, 5),
-        (1, 2),
-        (1, 2),
-        (1, 1)
-    );
-    TEST_NUM_DIV_MOD(4,
-        (1, 5),
-        (1, 5),
-        (1, 1),
-        (0)
-    );
-    TEST_NUM_DIV_MOD(5,
-        (1, 9),
-        (1, 3),
-        (1, 3),
-        (0)
-    );
-    TEST_NUM_DIV_MOD(6,
-        (3, 1, 0, 0),
-        (2, 1, 0),
-        (2, 1, 0),
-        (0)
-    );
-    TEST_NUM_DIV_MOD(7,
-        (1, 1),
-        (2, 1, 0),
-        (0),
-        (1, 1)
-    );
-    TEST_NUM_DIV_MOD(8,
-        (2, 4, UINT64_MAX),
-        (2, 2, 0),
-        (1, 2),
-        (1, UINT64_MAX)
-    );
-    TEST_NUM_DIV_MOD(9,
-        (2, 4, 0),
-        (2, 2, UINT64_MAX),
-        (1, 1),
-        (2, 1, 1)
-    );
-    TEST_NUM_DIV_MOD(10,
-        (2, 1, 0),
-        (1, UINT64_MAX),
-        (1, 1),
-        (1, 1)
-    );
-    TEST_NUM_DIV_MOD(11,
-        (2, UINT64_MAX, 0),
-        (2, 1, UINT64_MAX),
-        (1, UINT64_MAX >> 1),
-        (2, 1, UINT64_MAX >> 1)
-    );
-    TEST_NUM_DIV_MOD(12,
-        (2, 0xc929d7d593, 0xb7090a859117cfa4),
-        (2, 6, 0xea7db545decb57a4),
-        (1, 0x0000001d1635b735),
-        (1, 0x88c80995d8646eb0)
-    );
-    TEST_NUM_DIV_MOD(13,
-        (3, UINT64_MAX, 0, UINT64_MAX),
-        (1, UINT64_MAX),
-        (3, 1, 0, 1),
-        (0)
-    );
-    TEST_NUM_DIV_MOD(14,
-        (5, UINT64_MAX, 0, 0, 0, UINT64_MAX),
-        (1, UINT64_MAX),
-        (5, 1, 0, 0, 0, 1),
-        (0)
-    );
-    TEST_NUM_DIV_MOD(15,
-        (6, 4, 0, 8, 4, 0, 0),
-        (4, 4, 0, 0, 4),
-        (3, 1, 0, 1),
-        (4, 3, UINT64_MAX, UINT64_MAX, UINT64_MAX - 3)
-    );
-    TEST_NUM_DIV_MOD(16,
-        (3, 1, 1, 0),
-        (2, 1, 2),
-        (1, UINT64_MAX),
-        (1, 2)
-    );
-    TEST_NUM_DIV_MOD(17,
-        (3, UINT64_MAX, UINT64_MAX, UINT64_MAX),
-        (2, UINT64_MAX, UINT64_MAX),
-        (2, 1, 0),
-        (1, UINT64_MAX)
-    );
-    TEST_NUM_DIV_MOD(18,
-        (3, 1, 0, 0),
-        (2, 1, UINT64_MAX),
-        (1, 0x8000000000000000),
-        (1, 0x8000000000000000)
-    );
-    TEST_NUM_DIV_MOD(19,
-        (4, 1, 0, 0, 0),
-        (3, 1, 0, UINT64_MAX),
-        (1, UINT64_MAX),
-        (2, 1, UINT64_MAX)
-    );
-    TEST_NUM_DIV_MOD(20,
-        (3, 1, UINT64_MAX - 1, 0),
-        (2, 1, UINT64_MAX),
-        (1, UINT64_MAX),
-        (1, UINT64_MAX)
-    );
-    TEST_NUM_DIV_MOD(21,
-        (4, 1, UINT64_MAX, UINT64_MAX - 1, 0),
-        (3, 1, UINT64_MAX, UINT64_MAX),
-        (1, UINT64_MAX),
-        (3, 1, UINT64_MAX - 1, UINT64_MAX)
-    );
-    TEST_NUM_DIV_MOD(22,
-        (3, UINT64_MAX, 0, 0),
-        (2, UINT64_MAX, UINT64_MAX),
-        (1, UINT64_MAX),
-        (1, UINT64_MAX)
-    );
-    TEST_NUM_DIV_MOD(23,
-        (3, 2, 0, 0),
-        (2, 2, UINT64_MAX),
-        (1, 0xAAAAAAAAAAAAAAAA),
-        (2, 2, 0xAAAAAAAAAAAAAAAA)
-    );
-    TEST_NUM_DIV_MOD(24,
-        (5, 1, 0, 0, 0, 0),
-        (4, 0x8000000000000000, 0, 0, 0x8000000000000000),
-        (1, 1),
-        (4, UINT64_MAX >> 1, UINT64_MAX, UINT64_MAX, 0x8000000000000000)
-    );
-    TEST_NUM_DIV_MOD(25,
-        (6, 0x8000000000000000, 1, 0, 0x8000000000000000, 0, 0),
-        (4, 0x8000000000000000, 0, 0, 0x8000000000000000),
-        (3, 1, 0, 1),
-        (4, UINT64_MAX >> 1, UINT64_MAX, UINT64_MAX, 0x8000000000000000)
-    );
-
-    #undef TEST_NUM_DIV_MOD
-
-    TEST_CASE_OPEN(25)
-    {
-        num_p num_1 = num_create_immed(1, 1);
-        num_p num_2 = num_create_immed(0);
-        num_p num_q, num_r;
-        TEST_REVERT_OPEN
-        {
-            num_div_mod(&num_q, &num_r, num_1, num_2);
-        }
-        TEST_REVERT_CLOSE
-    }
-    TEST_CASE_CLOSE
-
-    TEST_FN_CLOSE
-}
-
 void test_num_div_mod(bool show)
 {
     TEST_FN_OPEN
@@ -1946,6 +1759,89 @@ void test_num_gcd(bool show)
 
 
 
+void test_num_div_mod_uint(bool show)
+{
+    TEST_FN_OPEN
+
+    #define TEST_NUM_DIV_MOD_UINT(TAG, NUM, VALUE, NUM_Q, R)    \
+    {                                                           \
+        TEST_CASE_OPEN(TAG)                                     \
+        {                                                       \
+            num_p num = num_create_immed(ARG_OPEN NUM);         \
+            uint64_t r = num_div_mod_uint(&num, num, VALUE);    \
+            assert(num_immed(num, ARG_OPEN NUM_Q));             \
+            assert(uint64(r, R));                               \
+        }                                                       \
+        TEST_CASE_CLOSE                                         \
+    }
+
+    TEST_NUM_DIV_MOD_UINT(1,
+        (0),
+        1,
+        (0),
+        0
+    );
+    TEST_NUM_DIV_MOD_UINT(2,
+        (1, 4),
+        2,
+        (1, 2),
+        (0)
+    );
+    TEST_NUM_DIV_MOD_UINT(3,
+        (1, 5),
+        2,
+        (1, 2),
+        1
+    );
+    TEST_NUM_DIV_MOD_UINT(4,
+        (1, 5),
+        5,
+        (1, 1),
+        0
+    );
+    TEST_NUM_DIV_MOD_UINT(5,
+        (1, 9),
+        3,
+        (1, 3),
+        0
+    );
+    TEST_NUM_DIV_MOD_UINT(6,
+        (2, 1, 0),
+        UINT64_MAX,
+        (1, 1),
+        1
+    );
+    TEST_NUM_DIV_MOD_UINT(7,
+        (3, UINT64_MAX, 0, UINT64_MAX),
+        UINT64_MAX,
+        (3, 1, 0, 1),
+        0
+    );
+    TEST_NUM_DIV_MOD_UINT(8,
+        (5, UINT64_MAX, 0, 0, 0, UINT64_MAX),
+        UINT64_MAX,
+        (5, 1, 0, 0, 0, 1),
+        0
+    );
+
+    #undef TEST_NUM_DIV_MOD_UINT
+
+    TEST_CASE_OPEN(9)
+    {
+        num_p num = num_create_immed(1, 1);
+        TEST_REVERT_OPEN
+        {
+            num_div_mod_uint(&num, num, 0);
+        }
+        TEST_REVERT_CLOSE
+    }
+    TEST_CASE_CLOSE
+
+    TEST_FN_CLOSE
+}
+
+
+
 void test_num_base_to(bool show)
 {
     TEST_FN_OPEN
@@ -2042,7 +1938,7 @@ void test_num()
 {
     TEST_LIB
 
-    bool show = false;
+    bool show = true;
 
     test_uint_from_char(show);
     test_uint_inv(show);
@@ -2091,6 +1987,8 @@ void test_num()
     test_num_sqr(show);
     test_num_div_mod(show);
     test_num_gcd(show);
+
+    test_num_div_mod_uint(show);
 
     test_num_base_to(show);
     test_num_base_from(show);

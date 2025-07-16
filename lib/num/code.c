@@ -773,13 +773,14 @@ num_p num_sub_offset(num_p num_1, uint64_t pos_1, num_p num_2)
     return num_1;
 }
 
-/* RES is quocient NUM_1 is remainder */
-num_p num_div_mod_sigle(num_p num, uint64_t value)
+/* RES remainder */
+uint64_t num_div_mod_uint(num_p *out_num_q, num_p num, uint64_t value)
 {
     CLU_HANDLER_IS_SAFE(num);
     assert(num);
+    assert(value);
 
-    num_p num_q = num_create(num->count, 0);
+    num_p num_q = num_create(num->count, num->count);
     for(uint64_t i = num->count - 1; i != UINT64_MAX; i--)
     {
         if(num_normalize(num))
@@ -788,19 +789,28 @@ num_p num_div_mod_sigle(num_p num, uint64_t value)
             continue;
         }
 
-        uint128_t value_1 = num->count > 1 + i ?
-            U128_IMMED(num->chunk[num->count - 1], num->chunk[num->count - 2]) :
-            num->chunk[num->count - 1];
+        if(num->count - 1 == i)
+        {
+            uint64_t value_1 = num->chunk[i];
+            num->chunk[i]   = value_1 % value;
+            num_q->chunk[i] = value_1 / value;
 
-        uint64_t r = value_1 / value;
-        uint128_t aux = MUL(r, value);
-        num = num_sub_uint_offset(num, i + 1, HIGH(aux));
-        num = num_sub_uint_offset(num, i    , LOW(aux));
+            num_normalize(num);
+            continue;
+        }
 
-        num_q = num_chunk_set(num_q, i, r);
+        uint128_t value_1 = U128_IMMED(num->chunk[num->count - 1], num->chunk[num->count - 2]);
+        num->chunk[i+1] = 0;
+        num->chunk[i]   = value_1 % value;
+        num_q->chunk[i] = value_1 / value;
+
+        num_normalize(num);
+        num_normalize(num);
     }
+    num_normalize(num_q);
 
-    return num_q;
+    *out_num_q = num_q;
+    return num_unwrap(num);
 }
 
 /* RES is quocient NUM_1 is remainder */
@@ -882,8 +892,8 @@ uint64_t num_div_mod_inner(
     if(num_2->count == 1)
     {
         uint64_t value = num_unwrap(num_2);
-        *out_num_q = num_div_mod_sigle(num_1, value);
-        *out_num_r = num_1;
+        value = num_div_mod_uint(out_num_q, num_1, value);
+        *out_num_r = num_wrap(value);
         return 0;
     }
 
@@ -1451,11 +1461,8 @@ num_p num_base_to(num_p num, uint64_t base)
     num_p num_res = num_create(num->count, 0);
     for(uint64_t i=0; num->count; i++)
     {
-        num_p num_q, num_r;
-        num_div_mod(&num_q, &num_r, num, num_wrap(base));
-        uint64_t value = num_unwrap(num_r);
+        uint64_t value = num_div_mod_uint(&num, num, base);
         num_res = num_chunk_set(num_res, i, value);
-        num = num_q;
     }
     num_free(num);
     return num_res;
