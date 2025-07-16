@@ -30,6 +30,7 @@ bool num_immed(num_p num, uint64_t n, ...);
 #define HIGH(V) U64((V) >> 64)
 
 uint64_t uint_from_char(char c);
+uint64_t uint_inv(uint64_t value, uint64_t q);
 
 num_p num_create(uint64_t size, uint64_t count);
 num_p num_expand_to(num_p num, uint64_t target);
@@ -53,7 +54,11 @@ num_p num_sub_offset(num_p num_1, uint64_t pos_1, num_p num_2);
 
 num_p num_pad(num_p num);
 num_p num_depad(num_p num);
+num_p num_shuflfe(num_p num, uint64_t n);
 num_p num_fft(num_p num, uint64_t n);
 num_p num_fft_inv(num_p num, uint64_t n);
+
+num_p num_mul_simple(num_p num_1, num_p num_2);
+num_p num_mul_fft(num_p num_1, num_p num_2);
 
 #endif

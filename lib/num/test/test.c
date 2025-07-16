@@ -43,6 +43,31 @@ void test_uint_from_char(bool show)
     TEST_FN_CLOSE
 }
 
+void test_uint_inv(bool show)
+{
+    TEST_FN_OPEN
+
+    #define TEST_UINT_INV(TAG, VALUE, Q, RES)   \
+    {                                           \
+        TEST_CASE_OPEN(TAG)                     \
+        {                                       \
+            uint64_t res = uint_inv(VALUE, Q);  \
+            assert(uint64(res, RES));           \
+        }                                       \
+        TEST_CASE_CLOSE                         \
+    }
+
+    TEST_UINT_INV(1, 0, 1, 0);
+    TEST_UINT_INV(2, 1, 1, 1);
+    TEST_UINT_INV(3, 0, 2, 0);
+    TEST_UINT_INV(4, 1, 2, 2);
+    TEST_UINT_INV(5, 2, 2, 1);
+
+    #undef TEST_UINT_INV
+
+    TEST_FN_CLOSE
+}
+
 void test_uint128(bool show)
 {
     TEST_FN_OPEN
@@ -1051,6 +1076,29 @@ void test_num_depad(bool show)
     TEST_FN_CLOSE
 }
 
+void test_num_shuffle(bool show)
+{
+    TEST_FN_OPEN
+
+    #define TEST_NUM_SHUFFLE(TAG, NUM_BEF, N, NUM_AFT)      \
+    {                                                       \
+        TEST_CASE_OPEN(TAG)                                 \
+        {                                                   \
+            num_p num = num_create_immed(ARG_OPEN NUM_BEF); \
+            num = num_shuflfe(num, N);                      \
+            assert(num_immed(num, ARG_OPEN NUM_AFT));       \
+        }                                                   \
+        TEST_CASE_CLOSE                                     \
+    }
+
+    TEST_NUM_SHUFFLE(1, (2, 1, 2), 2, (2, 1, 2));
+    TEST_NUM_SHUFFLE(2, (4, 1, 2, 3, 4), 4, (4, 1, 3, 2, 4));
+
+    #undef TEST_NUM_SHUFFLE
+
+    TEST_FN_CLOSE
+}
+
 void test_num_fft(bool show)
 {
     TEST_FN_OPEN
@@ -1062,6 +1110,7 @@ void test_num_fft(bool show)
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
             num_p num = num_create_immed(ARG_OPEN NUM_BEF); \
+            num = num_shuflfe(num, N);                      \
             num = num_fft(num, N);                          \
             assert(num_immed(num, ARG_OPEN NUM_AFT));       \
         }                                                   \
@@ -1092,6 +1141,7 @@ void test_num_fft_inv(bool show)
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
             num_p num = num_create_immed(ARG_OPEN NUM_BEF); \
+            num = num_shuflfe(num, N);                      \
             num = num_fft_inv(num, N);                      \
             assert(num_immed(num, ARG_OPEN NUM_AFT));       \
         }                                                   \
@@ -1333,8 +1383,13 @@ void test_num_mul(bool show)
         {                                                   \
             num_p num_1 = num_create_immed(ARG_OPEN NUM_1); \
             num_p num_2 = num_create_immed(ARG_OPEN NUM_2); \
-            num_1 = num_mul(num_1, num_2);                  \
-            assert(num_immed(num_1, ARG_OPEN NUM_OUT));     \
+            num_p num_res = num_mul_simple(                 \
+                num_copy(num_1),                            \
+                num_copy(num_2)                             \
+            );                                              \
+            assert(num_immed(num_res, ARG_OPEN NUM_OUT))    \
+            num_res = num_mul_fft(num_1, num_2);            \
+            assert(num_immed(num_res, ARG_OPEN NUM_OUT));   \
         }                                                   \
         TEST_CASE_CLOSE                                     \
     }
@@ -1798,6 +1853,7 @@ void test_num()
     bool show = true;
 
     test_uint_from_char(show);
+    test_uint_inv(show);
     test_uint128(show);
 
     test_num_create(show);
@@ -1828,6 +1884,7 @@ void test_num()
 
     test_num_pad(show);
     test_num_depad(show);
+    test_num_shuffle(show);
     test_num_fft(show);
     test_num_fft_inv(show);
 

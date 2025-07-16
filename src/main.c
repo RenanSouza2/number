@@ -1,8 +1,8 @@
-#include <time.h>
 #include <unistd.h>
 
 #include "../mods/clu/header.h"
 #include "../mods/macros/assert.h"
+#include "../mods/macros/time.h"
 
 #include "../lib/fix/header.h"
 #include "../lib/float/header.h"
@@ -17,13 +17,6 @@ int64_t get_arg(int argc, char** argv)
 {
     assert(argc > 1);
     return atoi(argv[1]);
-}
-
-uint64_t get_time()
-{
-    struct timespec time;
-    clock_gettime(CLOCK_MONOTONIC_RAW, &time);
-    return time.tv_sec * (uint64_t)1e9 + time.tv_nsec;
 }
 
 
@@ -61,13 +54,15 @@ uint64_t rand_64()
 
 num_p num_rand(uint64_t count)
 {
-    num_p num = num_wrap(0);
+    num_p num = num_wrap(1);
+    num = num_head_grow(num, count - 1);
     for(uint64_t i=0; i<count; i++)
-    {
-        uint64_t value = rand_64();
-        num = num_shl(num, 64);
-        num = num_add(num, num_wrap(value));
-    }
+        num->chunk[i] = rand_64();
+    
+    if(count)
+        while(num->chunk[count - 1] == 0)
+            num->chunk[count - 1] = rand();
+    
     return num;
 }
 
@@ -170,6 +165,34 @@ void time_3()
 
         printf("\t%.1f", (double)t_div / t_mul);
         num_free(num_1_cpy);
+    }
+}
+
+void time_4()
+{
+    uint64_t tam = 1;
+    for(uint64_t i=tam; i<50000; i += tam)
+    {
+        num_p num_1 = num_rand(i);
+        num_p num_2 = num_rand(i);
+
+        num_p num_1_cpy = num_copy(num_1);
+        num_p num_2_cpy = num_copy(num_2);
+
+        TIME_SETUP
+        num_1_cpy = num_mul_simple(num_1_cpy, num_2_cpy);
+        TIME_END(t1)
+        num_free(num_1_cpy);
+
+        num_1_cpy = num_copy(num_1);
+        num_2_cpy = num_copy(num_2);
+
+        TIME_BEGIN
+        num_1_cpy = num_mul(num_1_cpy, num_2_cpy);
+        TIME_END(t2)
+        num_free(num_1_cpy);
+
+        printf("\n%lu,\t%.4f,\t%.4f", i, t1/1e9, t2/1e9);
     }
 }
 
@@ -597,9 +620,10 @@ int main()
     // clu_set_log(true);
 
     // num_generate(21, 2);
-    time_1(16, 23);
+    // time_1(16, 23);
     // time_2(argc, argv, 19);
     // time_3();
+    time_4();
     // fibonacci();
     // fibonacci_2(16, 23);
     // fibonacci_3(16, 23);
@@ -609,7 +633,8 @@ int main()
     // float_num_pi_3(1000);
     // float_num_pi_4(1000);
 
-    // del();
+    // num_p num = num_rand(10);
+    // printf("\n");num_display_full("AAA", num);
 
     // assert(clu_mem_is_empty("FINAL"));
 
