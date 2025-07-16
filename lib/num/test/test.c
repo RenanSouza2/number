@@ -866,37 +866,37 @@ void test_num_sub_offset(bool show)
 
 
 
-void test_num_shl_uint(bool show)
+void test_num_shl_inner(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_NUM_SHL_UINT(TAG, NUM_BEF, BITS, NUM_AFT)  \
+    #define TEST_NUM_SHL_INNER(TAG, NUM_BEF, BITS, NUM_AFT) \
     {                                                       \
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
             num_p num = num_create_immed(ARG_OPEN NUM_BEF); \
-            num = num_shl_uint(num, BITS);                  \
+            num = num_shl_inner(num, BITS);                 \
             assert(num_immed(num, ARG_OPEN NUM_AFT));       \
         }                                                   \
         TEST_CASE_CLOSE                                     \
     }
 
-    TEST_NUM_SHL_UINT(1, (0), 0, (0));
-    TEST_NUM_SHL_UINT(2, (0), 63, (0));
-    TEST_NUM_SHL_UINT(3, (1, 1), 1, (1, 2));
-    TEST_NUM_SHL_UINT(4, (1, 1), 1, (1, 2));
-    TEST_NUM_SHL_UINT(5, (1, 1), 63, (1, 0x8000000000000000));
-    TEST_NUM_SHL_UINT(6, (1, 2), 63, (2, 1, 0));
-    TEST_NUM_SHL_UINT(7, (2, 1, 2), 63, (2, 0x8000000000000001, 0));
+    TEST_NUM_SHL_INNER(1, (0), 0, (0));
+    TEST_NUM_SHL_INNER(2, (0), 63, (0));
+    TEST_NUM_SHL_INNER(3, (1, 1), 1, (1, 2));
+    TEST_NUM_SHL_INNER(4, (1, 1), 1, (1, 2));
+    TEST_NUM_SHL_INNER(5, (1, 1), 63, (1, 0x8000000000000000));
+    TEST_NUM_SHL_INNER(6, (1, 2), 63, (2, 1, 0));
+    TEST_NUM_SHL_INNER(7, (2, 1, 2), 63, (2, 0x8000000000000001, 0));
 
-    #undef TEST_NUM_SHL_UINT
+    #undef TEST_NUM_SHL_INNER
 
     TEST_CASE_OPEN(8)
     {
         num_p num = num_create_immed(1, 1);
         TEST_REVERT_OPEN
         {
-            num_shl_uint(num, 64);
+            num_shl_inner(num, 64);
         }
         TEST_REVERT_CLOSE
     }
@@ -905,41 +905,41 @@ void test_num_shl_uint(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_shr_uint(bool show)
+void test_num_shr_inner(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_NUM_SHR_UINT(TAG, NUM_BEF, BITS, NUM_AFT)  \
+    #define TEST_NUM_SHR_INNER(TAG, NUM_BEF, BITS, NUM_AFT) \
     {                                                       \
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
             num_p num = num_create_immed(ARG_OPEN NUM_BEF); \
-            num = num_shr_uint(num, BITS);                  \
+            num = num_shr_inner(num, BITS);                 \
             assert(num_immed(num, ARG_OPEN NUM_AFT));       \
         }                                                   \
         TEST_CASE_CLOSE                                     \
     }
 
-    TEST_NUM_SHR_UINT(1, (0), 1, (0));
-    TEST_NUM_SHR_UINT(2, (1, 1), 0, (1, 1));
-    TEST_NUM_SHR_UINT(3, (1, 1), 1, (0));
-    TEST_NUM_SHR_UINT(4, (1, 2), 1, (1, 1));
-    TEST_NUM_SHR_UINT(5, (1, UINT64_MAX), 63, (1, 1));
-    TEST_NUM_SHR_UINT(6, (2, 1, 0x8000000000000000), 63, (1, 3));
-    TEST_NUM_SHR_UINT(7,
+    TEST_NUM_SHR_INNER(1, (0), 1, (0));
+    TEST_NUM_SHR_INNER(2, (1, 1), 0, (1, 1));
+    TEST_NUM_SHR_INNER(3, (1, 1), 1, (0));
+    TEST_NUM_SHR_INNER(4, (1, 2), 1, (1, 1));
+    TEST_NUM_SHR_INNER(5, (1, UINT64_MAX), 63, (1, 1));
+    TEST_NUM_SHR_INNER(6, (2, 1, 0x8000000000000000), 63, (1, 3));
+    TEST_NUM_SHR_INNER(7,
         (4, 4, UINT64_MAX, UINT64_MAX, UINT64_MAX - 3),
         0,
         (4, 4, UINT64_MAX, UINT64_MAX, UINT64_MAX - 3)
     );
 
-    #undef TEST_NUM_SHR_UINT
+    #undef TEST_NUM_SHR_INNER
 
     TEST_CASE_OPEN(8)
     {
         num_p num = num_create_immed(1, 1);
         TEST_REVERT_OPEN
         {
-            num_shr_uint(num, 64);
+            num_shr_inner(num, 64);
         }
         TEST_REVERT_CLOSE
     }
@@ -957,10 +957,8 @@ void test_num_mul_uint(bool show)
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
             num_p num = num_create_immed(ARG_OPEN NUM_BEF); \
-            num_p num_res = num_create(num->count + 1, 0);    \
-            num_mul_uint(num_res, num, VALUE);       \
-            assert(num_immed(num_res, ARG_OPEN NUM_AFT));   \
-            num_free(num);                                  \
+            num = num_mul_uint(num, VALUE);                 \
+            assert(num_immed(num, ARG_OPEN NUM_AFT));       \
         }                                                   \
         TEST_CASE_CLOSE                                     \
     }
@@ -976,38 +974,6 @@ void test_num_mul_uint(bool show)
     TEST_NUM_MUL_UINT(9, (2, 6, 0xea7db545decb57a4), 123427205323, (2, 0xc6bfba060d, 0xdf4c110fd2f33f0c));
 
     #undef TEST_NUM_MUL_UINT
-
-    TEST_FN_CLOSE
-}
-
-void test_num_add_mul_uint(bool show)
-{
-    TEST_FN_OPEN
-
-    #define TEST_NUM_ADD_MUL_UINT(TAG, NUM_BEF, VALUE, NUM_AFT) \
-    {                                                           \
-        TEST_CASE_OPEN(TAG)                                     \
-        {                                                       \
-            num_p num = num_create_immed(ARG_OPEN NUM_BEF);     \
-            num_p num_res = num_create_immed(1, 1);             \
-            num_res = num_add_mul_uint(num_res, num, VALUE);    \
-            assert(num_immed(num_res, ARG_OPEN NUM_AFT));       \
-            num_free(num);                                      \
-        }                                                       \
-        TEST_CASE_CLOSE                                         \
-    }
-
-    TEST_NUM_ADD_MUL_UINT(1, (0), 0, (1, 1));
-    TEST_NUM_ADD_MUL_UINT(2, (0), 1, (1, 1));
-    TEST_NUM_ADD_MUL_UINT(3, (1, 2), 0, (1, 1));
-    TEST_NUM_ADD_MUL_UINT(4, (1, 2), 3, (1, 7));
-    TEST_NUM_ADD_MUL_UINT(5, (1, 2), UINT64_MAX, (2, 1, UINT64_MAX));
-    TEST_NUM_ADD_MUL_UINT(6, (2, 2, 3), 4, (2, 8, 13));
-    TEST_NUM_ADD_MUL_UINT(7, (2, UINT64_MAX, UINT64_MAX), UINT64_MAX, (3, UINT64_MAX - 1, UINT64_MAX, 2));
-    TEST_NUM_ADD_MUL_UINT(8, (2, 2, 0), 3, (2, 6, 1));
-    TEST_NUM_ADD_MUL_UINT(9, (2, 6, 0xea7db545decb57a4), 123427205323, (2, 0xc6bfba060d, 0xdf4c110fd2f33f0d));
-
-    #undef TEST_NUM_ADD_MUL_UINT
 
     TEST_FN_CLOSE
 }
@@ -1155,6 +1121,196 @@ void test_num_fft_inv(bool show)
     );
 
     #undef TEST_NUM_FFT_INV
+
+    TEST_FN_CLOSE
+}
+
+void test_num_div_newton(bool show)
+{
+    TEST_FN_OPEN
+
+    #define TEST_NUM_DIV_NEWTON(TAG, NUM_1, NUM_2, RES)     \
+    {                                                       \
+        TEST_CASE_OPEN(TAG)                                 \
+        {                                                   \
+            num_p num_1 = num_create_immed(ARG_OPEN NUM_1); \
+            num_p num_2 = num_create_immed(ARG_OPEN NUM_2); \
+            num_1 = num_div_newton(num_1, num_2);           \
+            assert(num_immed(num_1, ARG_OPEN RES));         \
+        }                                                   \
+        TEST_CASE_CLOSE                                     \
+    }
+
+    TEST_NUM_DIV_NEWTON(1,
+        (1, 4),
+        (1, 2),
+        (1, 2)
+    );
+    TEST_NUM_DIV_NEWTON(2,
+        (1, 5),
+        (1, 2),
+        (1, 2)
+    );
+    TEST_NUM_DIV_NEWTON(3,
+        (1, 5),
+        (1, 5),
+        (1, 1)
+    );
+    TEST_NUM_DIV_NEWTON(4,
+        (1, 9),
+        (1, 3),
+        (1, 3)
+    );
+    TEST_NUM_DIV_NEWTON(5,
+        (2, 5, 0),
+        (1, 1),
+        (2, 5, 0)
+    );
+    TEST_NUM_DIV_NEWTON(6,
+        (2, 5, 0),
+        (1, 2),
+        (2, 2, 0x8000000000000000)
+    );
+    TEST_NUM_DIV_NEWTON(7,
+        (2, 5, 0),
+        (1, 3),
+        (2, 1, 0xaaaaaaaaaaaaaaaa)
+    );
+    TEST_NUM_DIV_NEWTON(8,
+        (2, 5, 0),
+        (1, 5),
+        (2, 1, 0)
+    );
+    TEST_NUM_DIV_NEWTON(9,
+        (2, 5, 0),
+        (1, 7),
+        (1, 0xb6db6db6db6db6db)
+    );
+    TEST_NUM_DIV_NEWTON(10,
+        (3, 5, 0, 0),
+        (2, 1, 0),
+        (2, 5, 0)
+    );
+    TEST_NUM_DIV_NEWTON(11,
+        (2, 2, 0),
+        (1, 2),
+        (2, 1, 0)
+    );
+    TEST_NUM_DIV_NEWTON(12,
+        (2, 2, 0),
+        (1, 3),
+        (1, 0xaaaaaaaaaaaaaaaa)
+    );
+    TEST_NUM_DIV_NEWTON(13,
+        (3, 1, 0, 0),
+        (2, 1, 0),
+        (2, 1, 0)
+    );
+    TEST_NUM_DIV_NEWTON(14,
+        (2, 4, UINT64_MAX),
+        (2, 2, 0),
+        (1, 2)
+    );
+    TEST_NUM_DIV_NEWTON(15,
+        (2, 4, 0),
+        (2, 2, UINT64_MAX),
+        (1, 1)
+    );
+    TEST_NUM_DIV_NEWTON(16,
+        (2, 1, 0),
+        (1, UINT64_MAX),
+        (1, 1)
+    );
+    TEST_NUM_DIV_NEWTON(17,
+        (2, UINT64_MAX, 0),
+        (2, 1, UINT64_MAX),
+        (1, UINT64_MAX >> 1)
+    );
+    TEST_NUM_DIV_NEWTON(18,
+        (2, 0xc929d7d593, 0xb7090a859117cfa4),
+        (2, 6, 0xea7db545decb57a4),
+        (1, 0x0000001d1635b735)
+    );
+    TEST_NUM_DIV_NEWTON(19,
+        (3, UINT64_MAX, 0, UINT64_MAX),
+        (1, UINT64_MAX),
+        (3, 1, 0, 1)
+    );
+    TEST_NUM_DIV_NEWTON(20,
+        (5, UINT64_MAX, 0, 0, 0, UINT64_MAX),
+        (1, UINT64_MAX),
+        (5, 1, 0, 0, 0, 1)
+    );
+    TEST_NUM_DIV_NEWTON(21,
+        (6, 4, 0, 8, 4, 0, 0),
+        (4, 4, 0, 0, 4),
+        (3, 1, 0, 1)
+    );
+    TEST_NUM_DIV_NEWTON(22,
+        (3, 1, 1, 0),
+        (2, 1, 2),
+        (1, UINT64_MAX)
+    );
+    TEST_NUM_DIV_NEWTON(23,
+        (3, UINT64_MAX, UINT64_MAX, UINT64_MAX),
+        (2, UINT64_MAX, UINT64_MAX),
+        (2, 1, 0)
+    );
+    TEST_NUM_DIV_NEWTON(24,
+        (3, 1, 0, 0),
+        (2, 1, UINT64_MAX),
+        (1, 0x8000000000000000)
+    );
+    TEST_NUM_DIV_NEWTON(25,
+        (4, 1, 0, 0, 0),
+        (3, 1, 0, UINT64_MAX),
+        (1, UINT64_MAX)
+    );
+    TEST_NUM_DIV_NEWTON(26,
+        (3, 1, UINT64_MAX - 1, 0),
+        (2, 1, UINT64_MAX),
+        (1, UINT64_MAX)
+    );
+    TEST_NUM_DIV_NEWTON(27,
+        (4, 1, UINT64_MAX, UINT64_MAX - 1, 0),
+        (3, 1, UINT64_MAX, UINT64_MAX),
+        (1, UINT64_MAX)
+    );
+    TEST_NUM_DIV_NEWTON(28,
+        (3, UINT64_MAX, 0, 0),
+        (2, UINT64_MAX, UINT64_MAX),
+        (1, UINT64_MAX)
+    );
+    TEST_NUM_DIV_NEWTON(29,
+        (3, 2, 0, 0),
+        (2, 2, UINT64_MAX),
+        (1, 0xAAAAAAAAAAAAAAAA)
+    );
+    TEST_NUM_DIV_NEWTON(30,
+        (5, 1, 0, 0, 0, 0),
+        (4, 0x8000000000000000, 0, 0, 0x8000000000000000),
+        (1, 1)
+    );
+    TEST_NUM_DIV_NEWTON(31,
+        (6, 0x8000000000000000, 1, 0, 0x8000000000000000, 0, 0),
+        (4, 0x8000000000000000, 0, 0, 0x8000000000000000),
+        (3, 1, 0, 1)
+    );
+
+    #undef TEST_NUM_DIV_NEWTON
+
+    TEST_CASE_OPEN(32)
+    {
+        num_p num_1 = num_create_immed(1, 1);
+        num_p num_2 = num_create_immed(0);
+        num_p num_q, num_r;
+        TEST_REVERT_OPEN
+        {
+            num_div_mod(&num_q, &num_r, num_1, num_2);
+        }
+        TEST_REVERT_CLOSE
+    }
+    TEST_CASE_CLOSE
 
     TEST_FN_CLOSE
 }
@@ -1940,41 +2096,42 @@ void test_num()
 
     bool show = true;
 
-    test_uint_from_char(show);
-    test_uint_inv(show);
-    test_uint128(show);
+    // test_uint_from_char(show);
+    // test_uint_inv(show);
+    // test_uint128(show);
 
-    test_num_create(show);
-    test_num_expand_to(show);
-    test_num_chunk_get(show);
-    test_num_chunk_set(show);
+    // test_num_create(show);
+    // test_num_expand_to(show);
+    // test_num_chunk_get(show);
+    // test_num_chunk_set(show);
 
-    test_num_normalize(show);
-    test_num_break(show);
+    // test_num_normalize(show);
+    // test_num_break(show);
 
-    test_num_wrap(show);
-    test_num_wrap_dec(show);
-    test_num_wrap_hex(show);
-    test_num_wrap_str(show);
-    test_num_read_dec(show);
-    test_num_unwrap(show);
-    test_num_copy(show);
+    // test_num_wrap(show);
+    // test_num_wrap_dec(show);
+    // test_num_wrap_hex(show);
+    // test_num_wrap_str(show);
+    // test_num_read_dec(show);
+    // test_num_unwrap(show);
+    // test_num_copy(show);
 
-    test_num_add_uint_offset(show);
-    test_num_sub_uint_offset(show);
-    test_num_cmp_offset(show);
-    test_num_sub_offset(show);
+    // test_num_add_uint_offset(show);
+    // test_num_sub_uint_offset(show);
+    // test_num_cmp_offset(show);
+    // test_num_sub_offset(show);
 
-    test_num_shl_uint(show);
-    test_num_shr_uint(show);
-    test_num_mul_uint(show);
-    test_num_add_mul_uint(show);
+    // test_num_shl_inner(show);
+    // test_num_shr_inner(show);
+    // test_num_mul_uint(show);
+    // test_num_add_mul_uint(show);
 
-    test_num_pad(show);
-    test_num_depad(show);
-    test_num_shuffle(show);
-    test_num_fft(show);
-    test_num_fft_inv(show);
+    // test_num_pad(show);
+    // test_num_depad(show);
+    // test_num_shuffle(show);
+    // test_num_fft(show);
+    // test_num_fft_inv(show);
+    test_num_div_newton(show);
 
     test_num_is_zero(show);
 

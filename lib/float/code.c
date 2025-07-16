@@ -448,12 +448,12 @@ float_num_t float_num_shr(float_num_t flt, uint64_t bits) // TODO TEST
     if(flt.sig.num->chunk[flt.size - 1] >> rem)
     {
         flt.exponent = int64_sub(flt.exponent, bits >> 6);
-        flt.sig.num = num_shr_uint(flt.sig.num, rem);
+        flt.sig.num = num_shr_inner(flt.sig.num, rem);
         return flt;
     }
 
     flt.exponent = int64_sub(flt.exponent, 1 + (bits >> 6));
-    flt.sig.num = num_shl_uint(flt.sig.num, 64 - rem);
+    flt.sig.num = num_shl_inner(flt.sig.num, 64 - rem);
     return flt;
 }
 

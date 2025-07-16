@@ -43,13 +43,13 @@ bool num_normalize(num_p num);
 num_p num_wrap_dec(char str[]);
 num_p num_wrap_hex(char str[]);
 
-int64_t num_cmp_offset(num_p num_1, uint64_t pos_1, num_p num_2);
+num_p num_shl_inner(num_p num, uint64_t bits);
+num_p num_shr_inner(num_p num, uint64_t bits);
+
 num_p num_add_uint_offset(num_p num, uint64_t pos, uint64_t value);
 num_p num_sub_uint_offset(num_p num, uint64_t pos, uint64_t value);
 
-void num_mul_uint(num_p num_res, num_p num, uint64_t value);
-num_p num_add_mul_uint(num_p num_res, num_p num, uint64_t value);
-
+int64_t num_cmp_offset(num_p num_1, uint64_t pos_1, num_p num_2);
 num_p num_sub_offset(num_p num_1, uint64_t pos_1, num_p num_2);
 
 num_p num_pad(num_p num);
@@ -63,5 +63,8 @@ num_p num_sqr_simple(num_p num);
 
 num_p num_mul_fft(num_p num_1, num_p num_2);
 num_p num_sqr_fft(num_p num);
+
+uint64_t num_div_normalize(num_p *num_1, num_p *num_2);
+num_p num_div_newton(num_p num_1, num_p num_2);
 
 #endif
