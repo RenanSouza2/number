@@ -200,8 +200,8 @@ void num_display_dec(num_p num)
 
     num = num_base_to(num_copy(num), 1000000000000000000);
     printf(U64P(), num->chunk[num->count-1]);
-    for(uint64_t pos=num->count-2; pos!=UINT64_MAX; pos--)
-        printf(U64P(018), num->chunk[pos]);
+    for(uint64_t i=num->count-2; i!=UINT64_MAX; i--)
+        printf(U64P(018), num->chunk[i]);
 
     num_free(num);
 }
@@ -600,6 +600,7 @@ num_p num_sub_uint_offset(num_p num, uint64_t pos, uint64_t value)
         value = next;
     }
 
+    num_normalize(num);
     return num;
 }
 
@@ -642,10 +643,10 @@ num_p num_shl_uint(num_p num, uint64_t bits) // TODO test
         return num;
 
     uint64_t carry = 0;
-    for(uint64_t pos=0; pos<num->count; pos++)
+    for(uint64_t i=0; i<num->count; i++)
     {
-        uint64_t value = num->chunk[pos];
-        num->chunk[pos] = (value << bits) | carry;
+        uint64_t value = num->chunk[i];
+        num->chunk[i] = (value << bits) | carry;
         carry = value >> (64 - bits);
     }
 
@@ -665,10 +666,10 @@ num_p num_shr_uint(num_p num, uint64_t bits) // TODO test
         return num;
 
     uint64_t carry = 0;
-    for(uint64_t pos=num->count-1; pos!=UINT64_MAX; pos--)
+    for(uint64_t i=num->count-1; i!=UINT64_MAX; i--)
     {
-        uint64_t value = num->chunk[pos];
-        num->chunk[pos] = (value >> bits) | carry;
+        uint64_t value = num->chunk[i];
+        num->chunk[i] = (value >> bits) | carry;
         carry = value << (64 - bits);
     }
     num_normalize(num);
@@ -766,51 +767,44 @@ num_p num_sub_offset(num_p num_1, uint64_t pos_1, num_p num_2)
     assert(num_1);
     assert(num_2);
 
-    for(uint64_t pos_2 = 0; pos_2<num_2->count; pos_2++)
-        num_1 = num_sub_uint_offset(num_1, pos_1 + pos_2, num_2->chunk[pos_2]);
-
-    while(num_1->count > pos_1 && num_normalize(num_1));
+    for(uint64_t i = num_2->count-1; i!=UINT64_MAX; i--)
+        num_1 = num_sub_uint_offset(num_1, pos_1 + i, num_2->chunk[i]);
 
     return num_1;
 }
 
 /* RES is quocient NUM_1 is remainder */
-num_p num_div_mod_sigle(num_p num_1, num_p num_2)
+num_p num_div_mod_sigle(num_p num, uint64_t value)
 {
-    CLU_HANDLER_IS_SAFE(num_1);
-    CLU_HANDLER_IS_SAFE(num_2);
-    assert(num_1);
-    assert(num_2);
+    CLU_HANDLER_IS_SAFE(num);
+    assert(num);
 
-    uint64_t value_2 = num_2->chunk[0];
-    num_p num_q = num_create(num_1->count, 0);
-    num_p num_aux = num_create(num_2->count + 1, 0);
-    for(uint64_t i = num_1->count - 1; i != UINT64_MAX; i--)
+    num_p num_q = num_create(num->count, 0);
+    for(uint64_t i = num->count - 1; i != UINT64_MAX; i--)
     {
-        if(num_normalize(num_1))
+        if(num_normalize(num))
         {
-            num_q = num_chunk_set(num_q, i, 0);
+            num_q->chunk[i] = 0;
             continue;
         }
 
-        uint128_t value_1 = num_1->count > 1 + i ?
-            U128_IMMED(num_1->chunk[num_1->count - 1], num_1->chunk[num_1->count - 2]) :
-            num_1->chunk[num_1->count - 1];
+        uint128_t value_1 = num->count > 1 + i ?
+            U128_IMMED(num->chunk[num->count - 1], num->chunk[num->count - 2]) :
+            num->chunk[num->count - 1];
 
-        uint64_t r = value_1 / value_2;
-        num_mul_uint(num_aux, num_2, r);
-        num_1 = num_sub_offset(num_1, i, num_aux);
+        uint64_t r = value_1 / value;
+        uint128_t aux = MUL(r, value);
+        num = num_sub_uint_offset(num, i + 1, HIGH(aux));
+        num = num_sub_uint_offset(num, i    , LOW(aux));
 
         num_q = num_chunk_set(num_q, i, r);
     }
-    num_free(num_2);
-    num_free(num_aux);
 
     return num_q;
 }
 
 /* RES is quocient NUM_1 is remainder */
-num_p num_div_mod_general(num_p num_1, num_p num_2)
+num_p num_div_mod_full(num_p num_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_1);
     CLU_HANDLER_IS_SAFE(num_2);
@@ -854,8 +848,16 @@ num_p num_div_mod_general(num_p num_1, num_p num_2)
     return num_q;
 }
 
+uint64_t num_div_normalize(num_p *num_1, num_p *num_2)
+{
+    uint64_t bits = 64 - stdc_bit_width((*num_2)->chunk[(*num_2)->count-1]);
+    *num_1 = num_shl_uint((*num_1), bits);
+    *num_2 = num_shl_uint((*num_2), bits);
+    return bits;
+}
+
 /* NUM_R has to be shifted RES bites to the right */
-uint64_t num_div_mod_unajusted(
+uint64_t num_div_mod_inner(
     num_p *out_num_q,
     num_p *out_num_r,
     num_p num_1,
@@ -879,19 +881,14 @@ uint64_t num_div_mod_unajusted(
 
     if(num_2->count == 1)
     {
-        *out_num_q = num_div_mod_sigle(num_1, num_2);
+        uint64_t value = num_unwrap(num_2);
+        *out_num_q = num_div_mod_sigle(num_1, value);
         *out_num_r = num_1;
         return 0;
     }
 
-    uint64_t bits = 0;
-    for(uint64_t l = num_2->chunk[num_2->count-1]; l < 0x8000000000000000; l <<= 1)
-        bits++;
-
-    num_1 = num_shl_uint(num_1, bits);
-    num_2 = num_shl_uint(num_2, bits);
-
-    *out_num_q = num_div_mod_general(num_1, num_2);
+    uint64_t bits = num_div_normalize(&num_1, &num_2);
+    *out_num_q = num_div_mod_full(num_1, num_2);
     *out_num_r = num_1;
     return bits;
 }
@@ -937,9 +934,9 @@ num_p num_sqr_simple(num_p num)
 
 
 
-#define PRIME_1         4179340454199820289ULL
-#define ROOT_W_1        68630377364883ULL
-#define ROOT_W_INV_1    182099332568824125ULL
+#define PRIME_1         4179340454199820289UL
+#define ROOT_W_1        68630377364883UL
+#define ROOT_W_INV_1    182099332568824125UL
 
 static uint64_t mod_add(uint64_t a, uint64_t b, uint64_t p)
 {
@@ -1067,7 +1064,7 @@ num_p num_fft(num_p num, uint64_t n) // TODO TEST
     if(n == 1)
         return num;
 
-    uint64_t q = (1ULL << 57) / n;
+    uint64_t q = (1UL << 57) / n;
     uint64_t w = mod_pow(ROOT_W_1, q, PRIME_1);
     fft_rec(num->chunk, n, w);
 
@@ -1081,7 +1078,7 @@ num_p num_fft_inv(num_p num, uint64_t n) // TODO TEST
 
     num = num_expand_to(num, n);
 
-    uint64_t q = (1ULL << 57) / n;
+    uint64_t q = (1UL << 57) / n;
     uint64_t w = mod_pow(ROOT_W_INV_1, q, PRIME_1);
     fft_rec(num->chunk, n, w);
 
@@ -1091,6 +1088,8 @@ num_p num_fft_inv(num_p num, uint64_t n) // TODO TEST
 
     return num;
 }
+
+
 
 num_p num_mul_fft(num_p num_1, num_p num_2)
 {
@@ -1142,6 +1141,113 @@ num_p num_sqr_fft(num_p num)
     return num;
 }
 
+
+
+
+
+uint64_t num_checksum(num_p num) // TODO TEST
+{
+    uint64_t res = 0;
+    for(uint64_t i=0; i<num->count; i++)
+        res ^= num->chunk[i];
+
+    return res ^= num->count;
+}
+
+num_p num_pseudo_float_num(num_p num_1, num_p num_2, uint64_t count)
+{
+    num_1 = num_mul(num_1, num_2);
+    num_1 = num_head_trim(num_1, count);
+    return num_1;
+}
+
+num_p num_newton_inv(num_p num, uint64_t count)
+{
+    num_p num_r = num_wrap(1);
+    num_r = num_head_grow(num_r, count);
+
+    num_p num_2 = num_wrap(2);
+    num_2 = num_head_grow(num_2, count);
+
+    uint64_t checksum_last = 0;
+    uint64_t i=0;
+    for(i=0; i < 64 * num->count; i++)
+    {
+        num_p num_aux = num_pseudo_float_num(num_copy(num), num_copy(num_r), num->count);
+        num_aux = num_sub(num_copy(num_2), num_aux);
+        
+        num_r = num_pseudo_float_num(num_r, num_aux, count);
+
+        uint64_t checksum_new = num_checksum(num_r);
+        if(checksum_new == checksum_last)
+            break;
+
+        checksum_last = checksum_new;
+    }
+    num_free(num);
+    num_free(num_2);
+    return num_r;
+}
+
+num_p num_div_newton(num_p num_1, num_p num_2)
+{
+    uint64_t count = num_1->count - num_2->count;
+    return num_pseudo_float_num(num_1, num_newton_inv(num_2, count), count);
+}
+
+static uint16_t rand_16()
+{
+    return rand();
+}
+
+static uint32_t rand_32()
+{
+    return ((uint32_t)rand_16() << 16) | rand_16();
+}
+
+static uint64_t rand_64()
+{
+    return (U64(rand_32()) << 32) | rand_32();
+}
+
+static num_p num_rand(uint64_t count)
+{
+    num_p num = num_wrap(1);
+    num = num_head_grow(num, count - 1);
+    for(uint64_t i=0; i<count; i++){
+        num->chunk[i] = rand_64();}
+    
+    if(count)
+        while(num->chunk[count - 1] == 0)
+            num->chunk[count - 1] = rand();
+    
+    return num;
+}
+
+#include <time.h>
+
+void del() // TODO DELETE
+{
+    srand(time(NULL));
+
+    for(uint64_t i=0; ; i++)
+    {
+        if(i%1000000 == 0)
+            printf("\ni: %lu", i);
+
+        num_p num = num_rand(1);
+        if(num->chunk[0] > (1UL << 63))
+            num = num_newton_inv(num, 10000);
+
+        num_free(num);
+        // num_display_tag("FINAL", num);
+    }
+}
+
+// num_p num_div_newton(num_p num_1, num_p num_2)
+// {
+
+// }
 
 
 bool num_is_zero(num_p num)
@@ -1283,7 +1389,7 @@ void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
     assert(num_2);
 
     num_p num_q, num_r;
-    uint64_t bits = num_div_mod_unajusted(&num_q, &num_r, num_1, num_2);
+    uint64_t bits = num_div_mod_inner(&num_q, &num_r, num_1, num_2);
 
     *out_num_q = num_q;
     *out_num_r = num_shr_uint(num_r, bits);
@@ -1297,7 +1403,7 @@ num_p num_div(num_p num_1, num_p num_2)
     assert(num_2);
 
     num_p num_q, num_r;
-    num_div_mod_unajusted(&num_q, &num_r, num_1, num_2);
+    num_div_mod_inner(&num_q, &num_r, num_1, num_2);
     num_free(num_r);
 
     return num_q;
@@ -1311,7 +1417,7 @@ num_p num_mod(num_p num_1, num_p num_2)
     assert(num_2);
 
     num_p num_q, num_r;
-    uint64_t bits = num_div_mod_unajusted(&num_q, &num_r, num_1, num_2);
+    uint64_t bits = num_div_mod_inner(&num_q, &num_r, num_1, num_2);
     num_free(num_q);
 
     return num_shr_uint(num_r, bits);

@@ -19,6 +19,20 @@ int64_t get_arg(int argc, char** argv)
     return atoi(argv[1]);
 }
 
+uint16_t rand_16()
+{
+    return rand();
+}
+
+uint32_t rand_32()
+{
+    return ((uint32_t)rand_16() << 16) | rand_16();
+}
+
+uint64_t rand_64()
+{
+    return (U64(rand_32()) << 32) | rand_32();
+}
 
 
 num_p num_generate(uint64_t max, uint64_t salt)
@@ -45,11 +59,6 @@ num_p num_generate_2(uint64_t index, uint64_t salt)
         num = num_generate_2_step(num, salt);
 
     return num;
-}
-
-uint64_t rand_64()
-{
-    return (U64(rand()) << 32) | rand();
 }
 
 num_p num_rand(uint64_t count)
@@ -585,10 +594,10 @@ void sqrt_2()
             break;
     }
 
-    for(uint64_t pos = 2; ; pos *= 2)
+    for(uint64_t i = 2; ; i *= 2)
     {
-        fix_x = fix_num_reposition(fix_x, pos);
-        fix_x = fix_step(fix_x, pos);
+        fix_x = fix_num_reposition(fix_x, i);
+        fix_x = fix_step(fix_x, i);
 
         if(fork())
             continue;
@@ -596,7 +605,7 @@ void sqrt_2()
         printf("\n\n");
         fix_num_display_full("hex", fix_x);
         fix_num_display_dec(fix_x);
-        printf("\n\npos: " U64P() "", pos * 2);
+        printf("\n\npos: " U64P() "", i * 2);
 
         exit(EXIT_SUCCESS);
     }
@@ -620,7 +629,7 @@ int main()
     // clu_set_log(true);
 
     // num_generate(21, 2);
-    time_1(16, 23);
+    // time_1(16, 23);
     // time_2(argc, argv, 19);
     // time_3();
     // time_4();
@@ -633,8 +642,7 @@ int main()
     // float_num_pi_3(1000);
     // float_num_pi_4(1000);
 
-    // num_p num = num_rand(10);
-    // printf("\n");num_display_full("AAA", num);
+    del();
 
     // assert(clu_mem_is_empty("FINAL"));
 
