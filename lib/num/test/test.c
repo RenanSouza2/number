@@ -192,8 +192,6 @@ void test_uint128(bool show)
 
 
 
-
-
 void test_num_create(bool show)
 {
     TEST_FN_OPEN
@@ -1163,7 +1161,6 @@ void test_num_fft_inv(bool show)
 
 
 
-
 void test_num_is_zero(bool show)
 {
     TEST_FN_OPEN
@@ -1245,7 +1242,6 @@ void test_num_shr(bool show)
 
     TEST_FN_CLOSE
 }
-
 
 
 

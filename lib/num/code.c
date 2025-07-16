@@ -936,9 +936,10 @@ num_p num_sqr_simple(num_p num)
 }
 
 
-#define PRIME_1 4179340454199820289ULL
-#define ROOT_W_1 68630377364883ULL
-#define ROOT_W_INV_1 182099332568824125ULL
+
+#define PRIME_1         4179340454199820289ULL
+#define ROOT_W_1        68630377364883ULL
+#define ROOT_W_INV_1    182099332568824125ULL
 
 static uint64_t mod_add(uint64_t a, uint64_t b, uint64_t p)
 {
