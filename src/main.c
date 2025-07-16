@@ -168,33 +168,33 @@ void time_3()
     }
 }
 
-void time_4()
-{
-    uint64_t tam = 1;
-    for(uint64_t i=tam; i<50000; i += tam)
-    {
-        num_p num_1 = num_rand(i);
-        num_p num_2 = num_rand(i);
+// void time_4()
+// {
+//     uint64_t tam = 1;
+//     for(uint64_t i=tam; i<50000; i += tam)
+//     {
+//         num_p num_1 = num_rand(i);
+//         num_p num_2 = num_rand(i);
 
-        num_p num_1_cpy = num_copy(num_1);
-        num_p num_2_cpy = num_copy(num_2);
+//         num_p num_1_cpy = num_copy(num_1);
+//         num_p num_2_cpy = num_copy(num_2);
 
-        TIME_SETUP
-        num_1_cpy = num_mul_simple(num_1_cpy, num_2_cpy);
-        TIME_END(t1)
-        num_free(num_1_cpy);
+//         TIME_SETUP
+//         num_1_cpy = num_mul_simple(num_1_cpy, num_2_cpy);
+//         TIME_END(t1)
+//         num_free(num_1_cpy);
 
-        num_1_cpy = num_copy(num_1);
-        num_2_cpy = num_copy(num_2);
+//         num_1_cpy = num_copy(num_1);
+//         num_2_cpy = num_copy(num_2);
 
-        TIME_BEGIN
-        num_1_cpy = num_mul(num_1_cpy, num_2_cpy);
-        TIME_END(t2)
-        num_free(num_1_cpy);
+//         TIME_BEGIN
+//         num_1_cpy = num_mul(num_1_cpy, num_2_cpy);
+//         TIME_END(t2)
+//         num_free(num_1_cpy);
 
-        printf("\n%lu,\t%.4f,\t%.4f", i, t1/1e9, t2/1e9);
-    }
-}
+//         printf("\n%lu,\t%.4f,\t%.4f", i, t1/1e9, t2/1e9);
+//     }
+// }
 
 
 
@@ -620,10 +620,10 @@ int main()
     // clu_set_log(true);
 
     // num_generate(21, 2);
-    // time_1(16, 23);
+    time_1(16, 23);
     // time_2(argc, argv, 19);
     // time_3();
-    time_4();
+    // time_4();
     // fibonacci();
     // fibonacci_2(16, 23);
     // fibonacci_3(16, 23);

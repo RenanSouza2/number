@@ -713,22 +713,22 @@ void num_mul_uint(num_p num_res, num_p num, uint64_t value) // TODO TEST
 
 
 
-int64_t num_cmp_offset(num_p num_1, uint64_t pos_1, num_p num_2, uint64_t pos_2) // TODO TEST
+int64_t num_cmp_offset(num_p num_1, uint64_t pos_1, num_p num_2) // TODO TEST
 {
     CLU_HANDLER_IS_SAFE(num_1);
     CLU_HANDLER_IS_SAFE(num_2);
     assert(num_1);
     assert(num_2);
 
-    if(num_1->count - pos_1 > num_2->count - pos_2)
+    if(num_1->count - pos_1 > num_2->count)
         return 1;
 
-    if(num_1->count - pos_1 < num_2->count - pos_2)
+    if(num_1->count - pos_1 < num_2->count)
         return -1;
 
-    for(uint64_t i = num_2->count-1; i != pos_2-1; i--)
+    for(uint64_t i = num_2->count-1; i != UINT64_MAX; i--)
     {
-        uint64_t value_1 = num_1->chunk[pos_1 - pos_2 + i];
+        uint64_t value_1 = num_1->chunk[pos_1 + i];
         uint64_t value_2 = num_2->chunk[i];
 
         if(value_1 > value_2)
@@ -829,7 +829,7 @@ num_p num_div_mod_general(num_p num_1, num_p num_2)
         }
 
         uint64_t r = 0;
-        while(num_cmp_offset(num_1, i, num_2, 0) >= 0)
+        while(num_cmp_offset(num_1, i, num_2) >= 0)
         {
             uint64_t r_aux;
             if(num_1->count > num_2->count + i)
@@ -898,6 +898,47 @@ uint64_t num_div_mod_unajusted(
 
 
 
+num_p num_mul_simple(num_p num_1, num_p num_2)
+{
+    CLU_HANDLER_IS_SAFE(num_1);
+    CLU_HANDLER_IS_SAFE(num_2);
+    assert(num_1);
+    assert(num_2);
+
+    return num_mul_high(num_1, num_2, 0);
+}
+
+num_p num_sqr_simple(num_p num)
+{
+    CLU_HANDLER_IS_SAFE(num);
+    assert(num);
+
+    if(num->count == 0)
+        return num;
+
+    num_p num_res = num_create(2 * num->count + 1, 0);
+    for(uint64_t i=0; i<num->count; i++)
+    {
+        uint64_t value = num->chunk[i];
+
+        uint128_t u = MUL(value, value);
+        num_res = num_add_uint_offset(num_res, 2 * i, LOW(u));
+        num_res = num_add_uint_offset(num_res, 2 * i + 1, HIGH(u));
+
+        num_res = num_add_mul_uint_offset(num_res, 2 * i + 1, num, i + 1, value << 1);
+
+        if(value >= 0x8000000000000000)
+            num_res = num_add_offset(num_res, 2 * i + 2, num, i + 1);
+    }
+
+    num_free(num);
+    return num_res;
+}
+
+
+#define PRIME_1 4179340454199820289ULL
+#define ROOT_W_1 68630377364883ULL
+#define ROOT_W_INV_1 182099332568824125ULL
 
 static uint64_t mod_add(uint64_t a, uint64_t b, uint64_t p)
 {
@@ -919,7 +960,7 @@ static uint64_t mod_mul(uint64_t a, uint64_t b, uint64_t p)
 static uint64_t mod_pow(uint64_t a, uint64_t b, uint64_t p)
 {
     uint64_t res = 1;
-    for(uint64_t mask = ((uint64_t)1) << 63; mask; mask >>= 1)
+    for(uint64_t mask = stdc_bit_ceil(b); mask; mask >>= 1)
     {
         res = mod_mul(res, res, p);
         if(b & mask)
@@ -976,7 +1017,7 @@ num_p num_depad(num_p num) // TODO TEST
     return num;
 }
 
-num_p num_shuflfe(num_p num, uint64_t n) // TODO TEST
+num_p num_shuffle(num_p num, uint64_t n) // TODO TEST
 {
     num = num_expand_to(num, n);
     num->count = n;
@@ -997,11 +1038,9 @@ num_p num_shuflfe(num_p num, uint64_t n) // TODO TEST
 
 void fft_rec(uint64_t vec[], uint64_t n, uint64_t w)
 {
-    uint64_t p = 4179340454199820289;
-
     if(n > 2)
     {
-        uint64_t w_next = mod_mul(w, w, p);
+        uint64_t w_next = mod_mul(w, w, PRIME_1);
         fft_rec( vec     , n/2, w_next);
         fft_rec(&vec[n/2], n/2, w_next);
     }
@@ -1013,12 +1052,12 @@ void fft_rec(uint64_t vec[], uint64_t n, uint64_t w)
         uint64_t i_b = i + n/2;
 
         uint64_t a = vec[i_a];
-        uint64_t b = mod_mul(wi, vec[i_b], p);
+        uint64_t b = mod_mul(wi, vec[i_b], PRIME_1);
 
-        vec[i_a] = mod_add(a, b, p);
-        vec[i_b] = mod_sub(a, b, p);
+        vec[i_a] = mod_add(a, b, PRIME_1);
+        vec[i_b] = mod_sub(a, b, PRIME_1);
 
-        wi = mod_mul(wi, w, p);
+        wi = mod_mul(wi, w, PRIME_1);
     }
 }
 
@@ -1027,11 +1066,8 @@ num_p num_fft(num_p num, uint64_t n) // TODO TEST
     if(n == 1)
         return num;
 
-    uint64_t p = 4179340454199820289;
-    uint64_t w0 = 68630377364883;
-
-    uint64_t q = ((uint64_t)1 << 57) / n;
-    uint64_t w = mod_pow(w0, q, p);
+    uint64_t q = (1ULL << 57) / n;
+    uint64_t w = mod_pow(ROOT_W_1, q, PRIME_1);
     fft_rec(num->chunk, n, w);
 
     return num;
@@ -1044,28 +1080,15 @@ num_p num_fft_inv(num_p num, uint64_t n) // TODO TEST
 
     num = num_expand_to(num, n);
 
-    uint64_t p = 4179340454199820289;
-    uint64_t w0 = 182099332568824125;
-
-    uint64_t q = ((uint64_t)1 << 57) / n;
-    uint64_t w = mod_pow(w0, q, p);
+    uint64_t q = (1ULL << 57) / n;
+    uint64_t w = mod_pow(ROOT_W_INV_1, q, PRIME_1);
     fft_rec(num->chunk, n, w);
 
-    uint64_t n_inv = mod_div(1, n, p);
+    uint64_t n_inv = mod_div(1, n, PRIME_1);
     for(uint64_t i=0; i<n; i++)
-        num->chunk[i] = mod_mul(num->chunk[i], n_inv, p);
+        num->chunk[i] = mod_mul(num->chunk[i], n_inv, PRIME_1);
 
     return num;
-}
-
-num_p num_mul_simple(num_p num_1, num_p num_2)
-{
-    CLU_HANDLER_IS_SAFE(num_1);
-    CLU_HANDLER_IS_SAFE(num_2);
-    assert(num_1);
-    assert(num_2);
-
-    return num_mul_high(num_1, num_2, 0);
 }
 
 num_p num_mul_fft(num_p num_1, num_p num_2)
@@ -1079,24 +1102,43 @@ num_p num_mul_fft(num_p num_1, num_p num_2)
     num_2 = num_pad(num_2);
     
     uint64_t n = stdc_bit_ceil(num_1->count + num_2->count);
-    num_1 = num_shuflfe(num_1, n);
-    num_2 = num_shuflfe(num_2, n);
+    num_1 = num_shuffle(num_1, n);
+    num_2 = num_shuffle(num_2, n);
 
     num_1 = num_fft(num_1, n);
     num_2 = num_fft(num_2, n);
 
-    uint64_t p = 4179340454199820289;
-
     for(uint64_t i=0; i<n; i++)
-        num_1->chunk[i] = mod_mul(num_1->chunk[i], num_2->chunk[i], p);
+        num_1->chunk[i] = mod_mul(num_1->chunk[i], num_2->chunk[i], PRIME_1);
 
     num_free(num_2);
 
-    num_1 = num_shuflfe(num_1, n);
+    num_1 = num_shuffle(num_1, n);
     num_1 = num_fft_inv(num_1, n);
     num_1 = num_depad(num_1);
 
     return num_1;
+}
+
+num_p num_sqr_fft(num_p num)
+{
+    CLU_HANDLER_IS_SAFE(num);
+    assert(num);
+
+    num = num_pad(num);
+
+    uint64_t n = stdc_bit_ceil(2 * num->count);
+    num = num_shuffle(num, n);
+    num = num_fft(num, n);
+
+    for(uint64_t i=0; i<n; i++)
+        num->chunk[i] = mod_mul(num->chunk[i], num->chunk[i], PRIME_1);
+
+    num = num_shuffle(num, n);
+    num = num_fft_inv(num, n);
+    num = num_depad(num);
+
+    return num;
 }
 
 
@@ -1114,7 +1156,7 @@ int64_t num_cmp(num_p num_1, num_p num_2) // TODO TEST
     CLU_HANDLER_IS_SAFE(num_1);
     CLU_HANDLER_IS_SAFE(num_2);
 
-    return num_cmp_offset(num_1, 0, num_2, 0);
+    return num_cmp_offset(num_1, 0, num_2);
 }
 
 
@@ -1223,51 +1265,14 @@ num_p num_mul(num_p num_1, num_p num_2)
 
 num_p num_sqr(num_p num)
 {
-    CLU_HANDLER_IS_SAFE(num);
-    assert(num);
-
     if(num->count == 0)
         return num;
 
-    num_p num_res = num_create(2 * num->count + 1, 0);
-    for(uint64_t i=0; i<num->count; i++)
-    {
-        uint64_t value = num->chunk[i];
+    if(num->count < 1500)
+        return num_sqr_simple(num);
 
-        uint128_t u = MUL(value, value);
-        num_res = num_add_uint_offset(num_res, 2 * i, LOW(u));
-        num_res = num_add_uint_offset(num_res, 2 * i + 1, HIGH(u));
-
-        num_res = num_add_mul_uint_offset(num_res, 2 * i + 1, num, i + 1, value << 1);
-
-        if(value >= 0x8000000000000000)
-            num_res = num_add_offset(num_res, 2 * i + 2, num, i + 1);
-    }
-
-    num_free(num);
-    return num_res;
+    return num_sqr_fft(num);
 }
-
-// num_t num_exp(num_t num, uint64_t value) // TODO TEST
-// {
-//     CLU_HANDLER_IS_SAFE(num.head);
-//
-//     if(num.count == 0)
-//     {
-//         assert(value);
-//         return num;
-//     }
-//
-//     num_t num_res = num_wrap(1);
-//     for(uint64_t mask = 0x8000000000000000; mask; mask >>= 1)
-//     {
-//         num_res = num_sqr(num_res);
-//         if(value & mask)
-//             num_res = num_mul(num_res, num_copy(num));
-//     }
-//     num_free(num);
-//     return num_res;
-// }
 
 void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
 {
@@ -1334,14 +1339,15 @@ num_p num_base_to(num_p num, uint64_t base)
 {
     CLU_HANDLER_IS_SAFE(num);
     assert(num);
+    assert(base > 1);
 
     num_p num_res = num_create(num->count, 0);
-    for(uint64_t pos=0; num->count; pos++)
+    for(uint64_t i=0; num->count; i++)
     {
         num_p num_q, num_r;
         num_div_mod(&num_q, &num_r, num, num_wrap(base));
         uint64_t value = num_unwrap(num_r);
-        num_res = num_chunk_set(num_res, pos, value);
+        num_res = num_chunk_set(num_res, i, value);
         num = num_q;
     }
     num_free(num);
@@ -1352,12 +1358,13 @@ num_p num_base_from(num_p num, uint64_t base)
 {
     CLU_HANDLER_IS_SAFE(num);
     assert(num);
+    assert(base > 1);
 
     num_p num_res = num_create(2 * num->count, 0);
-    for(uint64_t pos=num->count-1; pos!=UINT64_MAX; pos--)
+    for(uint64_t i=num->count-1; i!=UINT64_MAX; i--)
     {
-        assert(num->chunk[pos] < base);
-        num_p num_aux = num_add_mul_uint(num_wrap(num->chunk[pos]), num_res, base);
+        assert(num->chunk[i] < base);
+        num_p num_aux = num_add_mul_uint(num_wrap(num->chunk[i]), num_res, base);
         num_free(num_res);
         num_res = num_aux;
     }

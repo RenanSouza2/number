@@ -695,7 +695,7 @@ void test_num_cmp_offset(bool show)
         {                                                       \
             num_p num_1 = num_create_immed(ARG_OPEN NUM_1);     \
             num_p num_2 = num_create_immed(ARG_OPEN NUM_2);     \
-            int64_t cmp = num_cmp_offset(num_1, POS, num_2, 0); \
+            int64_t cmp = num_cmp_offset(num_1, POS, num_2);    \
             assert(cmp RELATION 0);                             \
             num_free(num_1);                                    \
             num_free(num_2);                                    \
@@ -1085,7 +1085,7 @@ void test_num_shuffle(bool show)
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
             num_p num = num_create_immed(ARG_OPEN NUM_BEF); \
-            num = num_shuflfe(num, N);                      \
+            num = num_shuffle(num, N);                      \
             assert(num_immed(num, ARG_OPEN NUM_AFT));       \
         }                                                   \
         TEST_CASE_CLOSE                                     \
@@ -1110,7 +1110,7 @@ void test_num_fft(bool show)
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
             num_p num = num_create_immed(ARG_OPEN NUM_BEF); \
-            num = num_shuflfe(num, N);                      \
+            num = num_shuffle(num, N);                      \
             num = num_fft(num, N);                          \
             assert(num_immed(num, ARG_OPEN NUM_AFT));       \
         }                                                   \
@@ -1141,7 +1141,7 @@ void test_num_fft_inv(bool show)
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
             num_p num = num_create_immed(ARG_OPEN NUM_BEF); \
-            num = num_shuflfe(num, N);                      \
+            num = num_shuffle(num, N);                      \
             num = num_fft_inv(num, N);                      \
             assert(num_immed(num, ARG_OPEN NUM_AFT));       \
         }                                                   \
@@ -1377,21 +1377,23 @@ void test_num_mul(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_NUM_MUL(TAG, NUM_1, NUM_2, NUM_OUT)        \
-    {                                                       \
-        TEST_CASE_OPEN(TAG)                                 \
-        {                                                   \
-            num_p num_1 = num_create_immed(ARG_OPEN NUM_1); \
-            num_p num_2 = num_create_immed(ARG_OPEN NUM_2); \
-            num_p num_res = num_mul_simple(                 \
-                num_copy(num_1),                            \
-                num_copy(num_2)                             \
-            );                                              \
-            assert(num_immed(num_res, ARG_OPEN NUM_OUT))    \
-            num_res = num_mul_fft(num_1, num_2);            \
-            assert(num_immed(num_res, ARG_OPEN NUM_OUT));   \
-        }                                                   \
-        TEST_CASE_CLOSE                                     \
+    #define TEST_NUM_MUL_FN(FN, NUM_1, NUM_2, RES)      \
+    {                                                   \
+        num_p num_1 = num_create_immed(ARG_OPEN NUM_1); \
+        num_p num_2 = num_create_immed(ARG_OPEN NUM_2); \
+        num_1 = FN(num_1, num_2);                       \
+        assert(num_immed(num_1, ARG_OPEN RES))          \
+    }                                                   \
+
+    #define TEST_NUM_MUL(TAG, NUM_1, NUM_2, RES)                \
+    {                                                           \
+        TEST_CASE_OPEN(TAG)                                     \
+        {                                                       \
+            TEST_NUM_MUL_FN(num_mul_simple, NUM_1, NUM_2, RES)  \
+            TEST_NUM_MUL_FN(num_mul_fft, NUM_1, NUM_2, RES)     \
+            TEST_NUM_MUL_FN(num_mul, NUM_1, NUM_2, RES)         \
+        }                                                       \
+        TEST_CASE_CLOSE                                         \
     }
 
     TEST_NUM_MUL(1,
@@ -1479,15 +1481,22 @@ void test_num_sqr(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_NUM_SQR(TAG, NUM_IN, NUM_OUT)              \
-    {                                                       \
-        TEST_CASE_OPEN(TAG)                                 \
-        {                                                   \
-            num_p num = num_create_immed(ARG_OPEN NUM_IN);  \
-            num = num_sqr(num);                             \
-            assert(num_immed(num, ARG_OPEN NUM_OUT));       \
-        }                                                   \
-        TEST_CASE_CLOSE                                     \
+    #define TEST_NUM_SQR_FN(FN, NUM, RES)           \
+    {                                               \
+        num_p num = num_create_immed(ARG_OPEN NUM); \
+        num = FN(num);                              \
+        assert(num_immed(num, ARG_OPEN RES))        \
+    }                                               \
+
+    #define TEST_NUM_SQR(TAG, NUM, RES)                 \
+    {                                                   \
+        TEST_CASE_OPEN(TAG)                             \
+        {                                               \
+            TEST_NUM_SQR_FN(num_sqr_simple, NUM, RES)   \
+            TEST_NUM_SQR_FN(num_sqr_fft, NUM, RES)      \
+            TEST_NUM_SQR_FN(num_sqr, NUM, RES)          \
+        }                                               \
+        TEST_CASE_CLOSE                                 \
     }
 
     TEST_NUM_SQR(1,
@@ -1507,7 +1516,7 @@ void test_num_sqr(bool show)
         (1, 0xfffffffe00000001)
     );
     TEST_NUM_SQR(5,
-        (1, (uint64_t)1 << 32),
+        (1, 1ULL << 32),
         (2, 1, 0)
     );
     TEST_NUM_SQR(6,
@@ -1850,7 +1859,7 @@ void test_num()
 {
     TEST_LIB
 
-    bool show = true;
+    bool show = false;
 
     test_uint_from_char(show);
     test_uint_inv(show);
