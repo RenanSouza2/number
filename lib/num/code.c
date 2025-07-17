@@ -786,7 +786,6 @@ num_p num_sub_offset(num_p num_1, uint64_t pos_1, num_p num_2)
     return num_1;
 }
 
-/* RES remainder */
 uint64_t num_div_mod_uint(num_p *out_num_q, num_p num, uint64_t value)
 {
     CLU_HANDLER_IS_SAFE(num);
@@ -796,7 +795,7 @@ uint64_t num_div_mod_uint(num_p *out_num_q, num_p num, uint64_t value)
     num_p num_q = num_create(num->count, num->count);
     for(uint64_t i = num->count - 1; i != UINT64_MAX; i--)
     {
-        if(num_normalize(num))
+        if((num->count < i) || ((num->count - 1 == i) && (num->chunk[i] < value)))
         {
             num_q->chunk[i] = 0;
             continue;
@@ -804,21 +803,18 @@ uint64_t num_div_mod_uint(num_p *out_num_q, num_p num, uint64_t value)
 
         if(num->count - 1 == i)
         {
-            uint64_t value_1 = num->chunk[i];
-            num->chunk[i]   = value_1 % value;
-            num_q->chunk[i] = value_1 / value;
-
-            num_normalize(num);
+            uint64_t r = num->chunk[i] / value;
+            num_q->chunk[i] = r;
+            num = num_sub_uint_offset(num, i, r * value);
             continue;
         }
 
-        uint128_t value_1 = U128_IMMED(num->chunk[num->count - 1], num->chunk[num->count - 2]);
-        num->chunk[i+1] = 0;
-        num->chunk[i]   = value_1 % value;
-        num_q->chunk[i] = value_1 / value;
-
-        num_normalize(num);
-        num_normalize(num);
+        uint128_t value_1 = U128_IMMED(num->chunk[i + 1], num->chunk[i]);
+        uint64_t r = value_1 / value;
+        value_1 = MUL(r, value);
+        num = num_sub_uint_offset(num, i+1, HIGH(value_1));
+        num = num_sub_uint_offset(num, i  , LOW(value_1));
+        num_q->chunk[i] = r;
     }
     num_normalize(num_q);
 
@@ -826,7 +822,6 @@ uint64_t num_div_mod_uint(num_p *out_num_q, num_p num, uint64_t value)
     return num_unwrap(num);
 }
 
-/* RES is quocient NUM_1 is remainder */
 void num_div_mod_classic(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_1);
@@ -873,6 +868,8 @@ void num_div_mod_classic(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p 
         num_q->chunk[i] = r;
         num_1 = num_sub_offset(num_1, i, num_aux);
     }
+    num_free(num_2);
+    num_free(num_aux);
 
     num_normalize(num_q);
     *out_num_q = num_q;
