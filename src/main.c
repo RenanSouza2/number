@@ -103,11 +103,9 @@ void time_1(uint64_t begin, uint64_t end)
         num_p num_2_copy = num_copy(num_2);
 
         begin = get_time();
-        num_p num = num_div_newton(num_1_copy, num_2_copy);
+        num_p num = num_div(num_1_copy, num_2_copy);
         end = get_time();
         printf("\t%10.3f", (end - begin) / 1e9);
-
-        printf("\tn: %lu", num->count);
 
         num_free(num);
     }
@@ -621,6 +619,8 @@ void sqrt_2()
 
 
 
+#include "../lib/num/debug.h"
+
 // int main(int argc, char** argv)
 int main()
 {
@@ -632,7 +632,7 @@ int main()
     // clu_set_log(true);
 
     // num_generate(21, 2);
-    time_1(16, 30);
+    time_1(16, 23);
     // time_2(argc, argv, 19);
     // time_3();
     // time_4();
@@ -646,6 +646,10 @@ int main()
     // float_num_pi_4(1000);
 
     // assert(clu_mem_is_empty("FINAL"));
+
+    // uint128_t val_1 = U128_IMMED(UINT64_MAX - 1, 1);
+    // uint64_t c = val_1 / UINT64_MAX;
+    // printf("\nc: %lx", c);
 
     printf("\n");
     return 0;

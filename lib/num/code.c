@@ -837,8 +837,7 @@ void num_div_mod_classic(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p 
     uint64_t count = num_1->count - num_2->count + 1;
     num_p num_q = num_create(count, count);
     num_p num_aux = num_create(num_2->count + 1, 0);
-    uint128_t val_2 = num_2->chunk[num_2->count-1];
-
+    uint64_t val_2 = num_2->chunk[num_2->count-1];
     for(uint64_t i = count - 1; i != UINT64_MAX; i--)
     {
         if(num_cmp_offset(num_1, i, num_2) < 0)
@@ -854,7 +853,7 @@ void num_div_mod_classic(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p 
             continue;
         }
 
-        if(num_1->chunk[num_1->count-1] == num_2->chunk[num_2->count-1])
+        if(num_1->chunk[num_1->count-1] == val_2)
         {
             num_q->chunk[i] = UINT64_MAX;
             num_1 = num_add_offset(num_1, i  , num_2, 0);
@@ -865,19 +864,15 @@ void num_div_mod_classic(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p 
         uint128_t val_1 = U128_IMMED(num_1->chunk[num_1->count-1], num_1->chunk[num_1->count-2]);
         uint64_t r = val_1 / val_2;
         num_mul_uint_inner(num_aux, num_2, r);
-        if(num_cmp(num_1, num_aux) >= 0)
+        while(num_cmp_offset(num_1, i, num_aux) < 0)
         {
-            num_q->chunk[i] = r;
-            num_1 = num_sub_offset(num_1, i, num_aux);
-            continue;
+            r--;
+            num_aux = num_sub_offset(num_aux, 0, num_2);
         }
 
-        num_q->chunk[i] = r - 1;
-        num_1 = num_add_offset(num_1, i, num_2, 0);
+        num_q->chunk[i] = r;
         num_1 = num_sub_offset(num_1, i, num_aux);
     }
-    num_free(num_2);
-    num_free(num_aux);
 
     num_normalize(num_q);
     *out_num_q = num_q;
@@ -925,10 +920,6 @@ uint64_t num_div_mod_inner(
     
     uint64_t bits = num_div_normalize(&num_1, &num_2);
     num_div_mod_classic(out_num_q, out_num_r, num_1, num_2);
-    
-    CLU_HANDLER_IS_SAFE(*out_num_q);
-    CLU_HANDLER_IS_SAFE(*out_num_r);
-
     return bits;
 }
 
