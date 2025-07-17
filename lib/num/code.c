@@ -1261,45 +1261,33 @@ void num_div_mod_rec(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_
     assert(k > num_2->count);
     num_p num_1_1, num_1_0, num_2_1, num_2_0;
     num_break(&num_1_1, &num_1_0, num_1, 2 * k);
-    num_break(&num_2_1, &num_2_0, num_2, k);
+    num_break(&num_2_1, &num_2_0, num_copy(num_2), k);
     
-    
-    num_p num_q_1, num_2_1_plus_1 = num_add_uint(num_2_1, 1);
-    while(num_cmp(num_1_1, num_2_1) > 0)
-    {
-        num_p num_q_tmp;
-        num_div_mod_rec(&num_q_tmp, &num_1_1, num_1_1, num_copy(num_2_1_plus_1));
-        
-        num_p num_aux = num_mul(num_copy(num_q_tmp), num_2_1);
-        num_1_1 = num_add(num_1_1, num_copy(num_q_tmp));
-        num_1 = num_join(num_1_1, num_1_0);
-        num_1 = num_sub(num_1, num_aux);
-        num_break(&num_1_1, &num_1_0, num_1, 2 * k);
-
-        num_q_1 = num_add(num_q_1, num_q_tmp);
-    }
+    num_p num_q_1;
+    num_div_mod_rec(&num_q_1, &num_1_1, num_1_1, num_copy(num_2_1));
+    num_p num_tmp = num_mul(num_copy(num_q_1), num_copy(num_2_0));
     num_1 = num_join(num_1_1, num_1_0);
-    num_2 = num_join(num_2_1, num_2_0);
-    if(num_cmp(num_1, num_2) >= 0)
+    while(num_cmp_offset(num_1, k, num_tmp) < 0)
     {
-        num_q_1 = num_add_uint(num_q_1, 1);
-        num_1 = num_sub(num_1, num_copy(num_2));
+        num_q_1 = num_sub_uint(num_q_1, 1);
+        num_1 = num_add_offset(num_1, k, num_copy(num_2), 0);
     }
+    num_1 = num_sub_offset(num_1, k, num_tmp);
+    while(num_normalize(num_1)); // TODO
 
-    num_p num_q_0, num_r_0;
-    while(num_cmp(num_1_1, num_2_1) >= 0)
+    num_p num_q_0;
+    num_break(&num_1_1, &num_1_0, num_1, k);
+    num_div_mod_rec(&num_q_0, &num_1_1, num_1_1, num_2_1);
+    num_tmp = num_mul(num_copy(num_q_0), num_copy(num_2_0));
+    num_1 = num_join(num_1_1, num_1_0);
+    while(num_cmp(num_1, num_tmp) < 0)
     {
-        num_p num_q_tmp, num_r_tmp;
-        num_div_mod_rec(&num_q_tmp, &num_r_tmp, num_1_1, num_copy(num_2_1));
-        
-        num_p num_aux = num_mul(num_copy(num_q_tmp), num_2_1);
-        num_1 = num_join(num_r_tmp, num_1_0);
-        num_1 = num_sub(num_1, num_aux);
-        num_break(&num_1_1, &num_1_0, num_1, 2 * k);
-
-        num_q_1 = num_add(num_q_1, num_q_tmp);
+        num_q_0 = num_sub_uint(num_q_0, 1);
+        num_1 = num_add_offset(num_1, 0, num_copy(num_2), 0);
     }
-    num_div_mod_rec(&num_q_0, &num_r_0, )
+    num_1 = num_sub(num_1, num_tmp);
+    *out_num_q = num_join(num_q_1, num_q_0);
+    *out_num_r = num_1;
 }
 
 
