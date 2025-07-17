@@ -848,24 +848,34 @@ num_p num_div_mod_classic(num_p num_1, num_p num_2)
             continue;
         }
 
-        uint64_t r = 0;
-        while(num_1->count > num_2->count + i)
+        if(num_1->count == num_2->count + i)
         {
-            uint64_t r_aux;
-            uint128_t val_1 = U128_IMMED(num_1->chunk[num_1->count-1], num_1->chunk[num_1->count-2]);
-            r_aux = val_1 / (val_2 + 1);
-            num_mul_uint_inner(num_aux, num_2, r_aux);
-            num_1 = num_sub_offset(num_1, i, num_aux);
-            r += r_aux;
-        }
-        
-        if(num_cmp_offset(num_1, i, num_2) >= 0)
-        {
-            r++;
+            num_q->chunk[i] = 1;
             num_1 = num_sub_offset(num_1, i, num_2);
+            continue;
         }
 
-        num_q = num_chunk_set(num_q, i, r);
+        if(num_1->chunk[num_1->count-1] == num_2->chunk[num_1->count-1])
+        {
+            num_q->chunk[i] = UINT64_MAX - 1;
+            num_1 = num_add_offset(num_1, i+1, num_2, 0);
+            num_1 = num_sub_offset(num_1, i, num_2);
+            continue;
+        }
+
+        uint128_t val_1 = U128_IMMED(num_1->chunk[num_1->count-1], num_1->chunk[num_1->count-2]);
+        uint64_t r = val_1 / val_2;
+        num_mul_uint_inner(num_aux, num_2, r);
+        if(num_cmp(num_1, num_aux) >= 0)
+        {
+            num_q->chunk[i] = r;
+            num_1 = num_sub_offset(num_1, i, num_aux);
+            continue;
+        }
+
+        num_q->chunk[i] = r - 1;
+        num_1 = num_add_offset(num_1, i, num_2, 0);
+        num_1 = num_sub_offset(num_1, i, num_aux);
     }
     num_free(num_2);
     num_free(num_aux);
