@@ -737,10 +737,10 @@ int64_t num_cmp_offset(num_p num_1, uint64_t pos_1, num_p num_2) // TODO TEST
     assert(num_1);
     assert(num_2);
 
-    if(num_1->count - pos_1 > num_2->count)
+    if(num_1->count > num_2->count + pos_1)
         return 1;
 
-    if(num_1->count - pos_1 < num_2->count)
+    if(num_1->count < num_2->count + pos_1)
         return -1;
 
     for(uint64_t i = num_2->count-1; i != UINT64_MAX; i--)
@@ -857,7 +857,7 @@ void num_div_mod_classic(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p 
         if(num_1->chunk[num_1->count-1] == num_2->chunk[num_2->count-1])
         {
             num_q->chunk[i] = UINT64_MAX;
-            num_1 = num_add_offset(num_1, i, num_2, 0);
+            num_1 = num_add_offset(num_1, i  , num_2, 0);
             num_1 = num_sub_offset(num_1, i+1, num_2);
             continue;
         }
@@ -878,9 +878,6 @@ void num_div_mod_classic(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p 
     }
     num_free(num_2);
     num_free(num_aux);
-
-    CLU_HANDLER_IS_SAFE(num_1);
-    CLU_HANDLER_IS_SAFE(num_q);
 
     num_normalize(num_q);
     *out_num_q = num_q;
