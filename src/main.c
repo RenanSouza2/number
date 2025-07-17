@@ -187,30 +187,30 @@ void time_3()
 //     {
 //         num_p num_1 = num_rand(i);
 //         num_p num_2 = num_rand(i);
-
+//
 //         num_p num_1_cpy = num_copy(num_1);
 //         num_p num_2_cpy = num_copy(num_2);
-
+//
 //         TIME_SETUP
 //         num_1_cpy = num_mul_simple(num_1_cpy, num_2_cpy);
 //         TIME_END(t1)
 //         num_free(num_1_cpy);
-
+//
 //         num_1_cpy = num_copy(num_1);
 //         num_2_cpy = num_copy(num_2);
-
+//
 //         TIME_BEGIN
 //         num_1_cpy = num_mul(num_1_cpy, num_2_cpy);
 //         TIME_END(t2)
 //         num_free(num_1_cpy);
-
+//
 //         printf("\n%lu,\t%.4f,\t%.4f", i, t1/1e9, t2/1e9);
 //     }
 // }
 
 
 
-void fibonacci()
+void fibonacci_1()
 {
     num_p num_a = num_wrap(1);
     num_p num_b = num_wrap(1);

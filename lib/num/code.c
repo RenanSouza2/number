@@ -431,6 +431,34 @@ void num_break(num_p *out_num_hi, num_p *out_num_lo, num_p num, uint64_t count)
     *out_num_lo = num;
 }
 
+num_p num_join(num_p num_hi, num_p num_lo) // TODO TEST
+{
+    CLU_HANDLER_IS_SAFE(num_hi);
+    CLU_HANDLER_IS_SAFE(num_lo);
+    assert(num_hi);
+    assert(num_lo);
+
+    if(num_hi->count == 0)
+    {
+        num_free(num_hi);
+        return num_lo;
+    }
+
+    if(num_lo->count == 0)
+    {
+        num_free(num_lo);
+        return num_hi;
+    }
+
+    uint64_t count = num_lo->count + num_hi->count;
+    num_lo = num_expand_to(num_lo, count);
+    memcpy(&num_lo->chunk[num_lo->count], num_hi, num_hi->count * sizeof(uint64_t));
+    num_lo->count = count;
+
+    num_free(num_hi);
+    return num_lo;
+}
+
 
 
 num_p num_wrap(uint64_t value)
@@ -821,23 +849,22 @@ num_p num_div_mod_classic(num_p num_1, num_p num_2)
         }
 
         uint64_t r = 0;
-        while(num_cmp_offset(num_1, i, num_2) >= 0)
+        while(num_1->count > num_2->count + i)
         {
             uint64_t r_aux;
-            if(num_1->count > num_2->count + i)
-            {
-                uint128_t val_1 = U128_IMMED(num_1->chunk[num_1->count-1], num_1->chunk[num_1->count-2]);
-                r_aux = val_1 / (val_2 + 1);
-                num_mul_uint_inner(num_aux, num_2, r_aux);
-                num_1 = num_sub_offset(num_1, i, num_aux);
-            }
-            else
-            {
-                r_aux = 1;
-                num_1 = num_sub_offset(num_1, i, num_2);
-            }
+            uint128_t val_1 = U128_IMMED(num_1->chunk[num_1->count-1], num_1->chunk[num_1->count-2]);
+            r_aux = val_1 / (val_2 + 1);
+            num_mul_uint_inner(num_aux, num_2, r_aux);
+            num_1 = num_sub_offset(num_1, i, num_aux);
             r += r_aux;
         }
+        
+        if(num_cmp_offset(num_1, i, num_2) >= 0)
+        {
+            r++;
+            num_1 = num_sub_offset(num_1, i, num_2);
+        }
+
         num_q = num_chunk_set(num_q, i, r);
     }
     num_free(num_2);
@@ -1219,6 +1246,64 @@ num_p num_div_newton(num_p num_1, num_p num_2)
 
 
 
+void num_div_mod_rec(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
+{
+    // assert(num_1->count >= num_2->count);
+    // num_div_normalize(&num_1, &num_2);
+
+    if(num_1->count - num_2->count < 2)
+    {
+        num_div_mod(out_num_q, out_num_r, num_1, num_2);
+        return;
+    }
+
+    uint64_t k = (num_1->count - num_2->count) / 2;
+    assert(k > num_2->count);
+    num_p num_1_1, num_1_0, num_2_1, num_2_0;
+    num_break(&num_1_1, &num_1_0, num_1, 2 * k);
+    num_break(&num_2_1, &num_2_0, num_2, k);
+    
+    
+    num_p num_q_1, num_2_1_plus_1 = num_add_uint(num_2_1, 1);
+    while(num_cmp(num_1_1, num_2_1) > 0)
+    {
+        num_p num_q_tmp;
+        num_div_mod_rec(&num_q_tmp, &num_1_1, num_1_1, num_copy(num_2_1_plus_1));
+        
+        num_p num_aux = num_mul(num_copy(num_q_tmp), num_2_1);
+        num_1_1 = num_add(num_1_1, num_copy(num_q_tmp));
+        num_1 = num_join(num_1_1, num_1_0);
+        num_1 = num_sub(num_1, num_aux);
+        num_break(&num_1_1, &num_1_0, num_1, 2 * k);
+
+        num_q_1 = num_add(num_q_1, num_q_tmp);
+    }
+    num_1 = num_join(num_1_1, num_1_0);
+    num_2 = num_join(num_2_1, num_2_0);
+    if(num_cmp(num_1, num_2) >= 0)
+    {
+        num_q_1 = num_add_uint(num_q_1, 1);
+        num_1 = num_sub(num_1, num_copy(num_2));
+    }
+
+    num_p num_q_0, num_r_0;
+    while(num_cmp(num_1_1, num_2_1) >= 0)
+    {
+        num_p num_q_tmp, num_r_tmp;
+        num_div_mod_rec(&num_q_tmp, &num_r_tmp, num_1_1, num_copy(num_2_1));
+        
+        num_p num_aux = num_mul(num_copy(num_q_tmp), num_2_1);
+        num_1 = num_join(num_r_tmp, num_1_0);
+        num_1 = num_sub(num_1, num_aux);
+        num_break(&num_1_1, &num_1_0, num_1, 2 * k);
+
+        num_q_1 = num_add(num_q_1, num_q_tmp);
+    }
+    num_div_mod_rec(&num_q_0, &num_r_0, )
+}
+
+
+
 bool num_is_zero(num_p num)
 {
     CLU_HANDLER_IS_SAFE(num);
@@ -1287,6 +1372,7 @@ num_p num_mul_uint(num_p num, uint64_t value)
     num_free(num);
     return num_res;
 }
+
 
 
 num_p num_add(num_p num_1, num_p num_2)

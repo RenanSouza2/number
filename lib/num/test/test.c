@@ -246,8 +246,8 @@ void test_num_expand_to(bool show)
     }
 
     TEST_NUM_EXPAND_TO(1, (0), 2, 4, (0));
-    TEST_NUM_EXPAND_TO(1, (2, 1, 2), 2, 4, (2, 1, 2));
-    TEST_NUM_EXPAND_TO(1, (2, 1, 2), 10, 20, (2, 1, 2));
+    TEST_NUM_EXPAND_TO(2, (2, 1, 2), 2, 4, (2, 1, 2));
+    TEST_NUM_EXPAND_TO(3, (2, 1, 2), 10, 20, (2, 1, 2));
 
     #undef TEST_NUM_EXPAND_TO
 
@@ -805,9 +805,9 @@ void test_num_sub_uint_offset(bool show)
         TEST_CASE_CLOSE                                     \
     }
 
-    TEST_NUM_SUB_UINT_OFFSET(9, (0), 0, 1);
-    TEST_NUM_SUB_UINT_OFFSET(10, (1, 2), 0, 3);
-    TEST_NUM_SUB_UINT_OFFSET(11, (1, 2), 1, 1);
+    TEST_NUM_SUB_UINT_OFFSET(15, (0), 0, 1);
+    TEST_NUM_SUB_UINT_OFFSET(16, (1, 2), 0, 3);
+    TEST_NUM_SUB_UINT_OFFSET(17, (1, 2), 1, 1);
 
     #undef TEST_NUM_SUB_UINT_OFFSET
 
@@ -1334,8 +1334,8 @@ void test_num_is_zero(bool show)
     }
 
     TEST_NUM_IS_ZERO(1, (0), true);
-    TEST_NUM_IS_ZERO(1, (1, 1), false);
-    TEST_NUM_IS_ZERO(1, (2, 1, 2), false);
+    TEST_NUM_IS_ZERO(2, (1, 1), false);
+    TEST_NUM_IS_ZERO(3, (2, 1, 2), false);
 
     #undef TEST_NUM_IS_ZERO
 
@@ -2094,43 +2094,42 @@ void test_num()
 {
     TEST_LIB
 
-    bool show = true;
+    bool show = false;
 
-    // test_uint_from_char(show);
-    // test_uint_inv(show);
-    // test_uint128(show);
+    test_uint_from_char(show);
+    test_uint_inv(show);
+    test_uint128(show);
 
-    // test_num_create(show);
-    // test_num_expand_to(show);
-    // test_num_chunk_get(show);
-    // test_num_chunk_set(show);
+    test_num_create(show);
+    test_num_expand_to(show);
+    test_num_chunk_get(show);
+    test_num_chunk_set(show);
 
-    // test_num_normalize(show);
-    // test_num_break(show);
+    test_num_normalize(show);
+    test_num_break(show);
 
-    // test_num_wrap(show);
-    // test_num_wrap_dec(show);
-    // test_num_wrap_hex(show);
-    // test_num_wrap_str(show);
-    // test_num_read_dec(show);
-    // test_num_unwrap(show);
-    // test_num_copy(show);
+    test_num_wrap(show);
+    test_num_wrap_dec(show);
+    test_num_wrap_hex(show);
+    test_num_wrap_str(show);
+    test_num_read_dec(show);
+    test_num_unwrap(show);
+    test_num_copy(show);
 
-    // test_num_add_uint_offset(show);
-    // test_num_sub_uint_offset(show);
-    // test_num_cmp_offset(show);
-    // test_num_sub_offset(show);
+    test_num_add_uint_offset(show);
+    test_num_sub_uint_offset(show);
+    test_num_cmp_offset(show);
+    test_num_sub_offset(show);
 
-    // test_num_shl_inner(show);
-    // test_num_shr_inner(show);
-    // test_num_mul_uint(show);
-    // test_num_add_mul_uint(show);
+    test_num_shl_inner(show);
+    test_num_shr_inner(show);
+    test_num_mul_uint(show);
 
-    // test_num_pad(show);
-    // test_num_depad(show);
-    // test_num_shuffle(show);
-    // test_num_fft(show);
-    // test_num_fft_inv(show);
+    test_num_pad(show);
+    test_num_depad(show);
+    test_num_shuffle(show);
+    test_num_fft(show);
+    test_num_fft_inv(show);
     test_num_div_newton(show);
 
     test_num_is_zero(show);
