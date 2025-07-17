@@ -783,10 +783,10 @@ void test_num_sub_uint_offset(bool show)
     TEST_NUM_SUB_UINT_OFFSET(7, (2, 2, 3), 0, 1, (2, 2, 2));
     TEST_NUM_SUB_UINT_OFFSET(8, (2, 2, 3), 1, 1, (2, 1, 3));
     TEST_NUM_SUB_UINT_OFFSET(9, (2, 1, 3), 1, 1, (1, 3));
-    TEST_NUM_SUB_UINT_OFFSET(10, (2, 1, 0), 1, 1, (1, 0));
-    TEST_NUM_SUB_UINT_OFFSET(11, (3, 1, 0, 1), 2, 1, (2, 0, 1));
+    TEST_NUM_SUB_UINT_OFFSET(10, (2, 1, 0), 1, 1, (0));
+    TEST_NUM_SUB_UINT_OFFSET(11, (3, 1, 0, 1), 2, 1, (1, 1));
     TEST_NUM_SUB_UINT_OFFSET(12, (3, 1, 0, 1), 1, 1, (2, UINT64_MAX, 1));
-    TEST_NUM_SUB_UINT_OFFSET(13, (2, 1, 0), 1, 1, (1, 0));
+    TEST_NUM_SUB_UINT_OFFSET(13, (2, 1, 0), 1, 1, (0));
     TEST_NUM_SUB_UINT_OFFSET(14, (0), 0, 0, (0));
 
     #undef TEST_NUM_SUB_UINT_OFFSET
@@ -834,7 +834,7 @@ void test_num_sub_offset(bool show)
     TEST_NUM_SUB_OFFSET(1, (0), 0, (0), (0));
     TEST_NUM_SUB_OFFSET(2, (0), 0, (0), (0));
     TEST_NUM_SUB_OFFSET(3, (2, 1, 2), 1, (1, 1), (1, 2));
-    TEST_NUM_SUB_OFFSET(4, (2, 1, 0), 1, (1, 1), (1, 0));
+    TEST_NUM_SUB_OFFSET(4, (2, 1, 0), 1, (1, 1), (0));
     TEST_NUM_SUB_OFFSET(5, (3, 1, 2, 3), 1, (2, 1, 2), (1, 3));
     TEST_NUM_SUB_OFFSET(6, (3, 1, 2, 3), 1, (2, 1, 1), (2, 1, 3));
 

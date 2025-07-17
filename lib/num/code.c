@@ -628,7 +628,7 @@ num_p num_sub_uint_offset(num_p num, uint64_t pos, uint64_t value)
         value = next;
     }
 
-    num_normalize(num);
+    while(num_normalize(num));
     return num;
 }
 
@@ -772,10 +772,7 @@ num_p num_add_offset(num_p num_1, uint64_t pos_1, num_p num_2, uint64_t pos_2) /
     return num_1;
 }
 
-/*
-keeps NUM2,
-NUM_RES may not be normalized
-*/
+/* keeps NUM2 */
 num_p num_sub_offset(num_p num_1, uint64_t pos_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_1);
@@ -830,21 +827,23 @@ uint64_t num_div_mod_uint(num_p *out_num_q, num_p num, uint64_t value)
 }
 
 /* RES is quocient NUM_1 is remainder */
-num_p num_div_mod_classic(num_p num_1, num_p num_2)
+void num_div_mod_classic(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_1);
     CLU_HANDLER_IS_SAFE(num_2);
     assert(num_1);
     assert(num_2);
 
-    num_p num_q = num_create(num_1->count - num_2->count + 1, 0);
+    uint64_t count = num_1->count - num_2->count + 1;
+    num_p num_q = num_create(count, count);
     num_p num_aux = num_create(num_2->count + 1, 0);
     uint128_t val_2 = num_2->chunk[num_2->count-1];
-    for(uint64_t i = num_1->count - num_2->count; i != UINT64_MAX; i--)
+
+    for(uint64_t i = count - 1; i != UINT64_MAX; i--)
     {
-        if(num_normalize(num_1))
+        if(num_cmp_offset(num_1, i, num_2) < 0)
         {
-            num_q = num_chunk_set(num_q, i, 0);
+            num_q->chunk[i] = 0;
             continue;
         }
 
@@ -855,11 +854,11 @@ num_p num_div_mod_classic(num_p num_1, num_p num_2)
             continue;
         }
 
-        if(num_1->chunk[num_1->count-1] == num_2->chunk[num_1->count-1])
+        if(num_1->chunk[num_1->count-1] == num_2->chunk[num_2->count-1])
         {
-            num_q->chunk[i] = UINT64_MAX - 1;
-            num_1 = num_add_offset(num_1, i+1, num_2, 0);
-            num_1 = num_sub_offset(num_1, i, num_2);
+            num_q->chunk[i] = UINT64_MAX;
+            num_1 = num_add_offset(num_1, i, num_2, 0);
+            num_1 = num_sub_offset(num_1, i+1, num_2);
             continue;
         }
 
@@ -880,7 +879,12 @@ num_p num_div_mod_classic(num_p num_1, num_p num_2)
     num_free(num_2);
     num_free(num_aux);
 
-    return num_q;
+    CLU_HANDLER_IS_SAFE(num_1);
+    CLU_HANDLER_IS_SAFE(num_q);
+
+    num_normalize(num_q);
+    *out_num_q = num_q;
+    *out_num_r = num_1;
 }
 
 uint64_t num_div_normalize(num_p *num_1, num_p *num_2) // TODO TEST
@@ -921,10 +925,13 @@ uint64_t num_div_mod_inner(
         *out_num_r = num_wrap(value);
         return 0;
     }
-
+    
     uint64_t bits = num_div_normalize(&num_1, &num_2);
-    *out_num_q = num_div_mod_classic(num_1, num_2);
-    *out_num_r = num_1;
+    num_div_mod_classic(out_num_q, out_num_r, num_1, num_2);
+    
+    CLU_HANDLER_IS_SAFE(*out_num_q);
+    CLU_HANDLER_IS_SAFE(*out_num_r);
+
     return bits;
 }
 
@@ -1283,7 +1290,6 @@ void num_div_mod_rec(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_
         num_1 = num_add_offset(num_1, k, num_copy(num_2), 0);
     }
     num_1 = num_sub_offset(num_1, k, num_tmp);
-    while(num_normalize(num_1)); // TODO
 
     num_p num_q_0;
     num_break(&num_1_1, &num_1_0, num_1, k);
@@ -1392,7 +1398,7 @@ num_p num_sub(num_p num_1, num_p num_2)
     assert(num_1);
     assert(num_2);
 
-    num_1 =  num_sub_offset(num_1, 0, num_2);
+    num_1 = num_sub_offset(num_1, 0, num_2);
     num_free(num_2);
     return num_1;
 }
