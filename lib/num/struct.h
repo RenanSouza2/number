@@ -11,6 +11,7 @@ STRUCT(num)
     uint64_t size;
     uint64_t count;
     chunk_p chunk;
+    bool cannot_expand;
 };
 
 #endif

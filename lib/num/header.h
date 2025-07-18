@@ -34,6 +34,7 @@ num_p num_shr(num_p num, uint64_t bits);
 num_p num_add_uint(num_p num, uint64_t value);
 num_p num_sub_uint(num_p num, uint64_t value);
 num_p num_mul_uint(num_p num, uint64_t value);
+num_p num_div_mod_uint(num_p num, uint64_t value);
 
 num_p num_add(num_p num_1, num_p num_2);
 num_p num_sub(num_p num_1, num_p num_2);
@@ -45,14 +46,12 @@ num_p num_div(num_p num_1, num_p num_2);
 num_p num_mod(num_p num_1, num_p num_2);
 num_p num_gcd(num_p num_1, num_p num_2);
 
-uint64_t num_div_mod_uint(num_p *out_num_q, num_p num, uint64_t value);
-
 num_p num_base_to(num_p num, uint64_t base);
 num_p num_base_from(num_p num, uint64_t base);
 
 
 num_p num_div_newton(num_p num_1, num_p num_2); // TODO DELETE
-void num_div_mod_rec(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2);
-void num_div_mod_unbalanced(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2);
+num_p num_div_mod_rec(num_p num_1, num_p num_2);
+num_p num_div_mod_unbalanced(num_p num_1, num_p num_2);
 
 #endif
