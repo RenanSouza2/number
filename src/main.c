@@ -676,14 +676,25 @@ int main()
     // num_tmp_q = num_add(num_tmp_q, num_tmp_r);
     // printf("\nres: %ld", num_cmp(num_tmp_q, num_tmp_1));
 
-
-    for(uint64_t i=0; i<1e3; i++)
+    uint64_t tam = 1e6;
+    uint64_t a = 1e5;
+    for(uint64_t i=0; i<tam; i++)
     {
-        num_p num_1 = num_rand(16);
-        num_p num_2 = num_rand(8);
+        if(i%a == 0)
+            printf("\ni: %lu / %lu", i / a, tam / a);
+
+        num_p num_1 = num_rand(32);
+        num_p num_2 = num_rand(16);
+
+        num_div_normalize(&num_1, &num_2);
+
+        // num_display_full("num_1", num_1);
+        // num_display_full("num_2", num_2);
         
         num_p num_q, num_r;
+        // printf("\na");
         num_div_mod_rec(&num_q, &num_r, num_copy(num_1), num_copy(num_2));
+        // printf("\nb");
         num_q = num_mul(num_q, num_2);
         num_q = num_add(num_q, num_r);
         assert(num_cmp(num_q, num_1) == 0);
