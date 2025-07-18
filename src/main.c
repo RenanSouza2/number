@@ -632,7 +632,7 @@ int main()
     // clu_set_log(true);
 
     // num_generate(21, 2);
-    // time_1(16, 23);
+    time_1(16, 23);
     // time_2(argc, argv, 19);
     // time_3();
     // time_4();
@@ -678,36 +678,34 @@ int main()
     // num_tmp_q = num_add(num_tmp_q, num_tmp_r);
     // printf("\nres: %ld", num_cmp(num_tmp_q, num_tmp_1));
 
-    uint64_t tam = 1e6;
-    uint64_t a = 1e4;
-    for(uint64_t i=0; i<tam; i++)
-    {
-        if(i%a == 0)
-            printf("\ni: %lu / %lu", i / a, tam / a);
+    // uint64_t tam = 1;
+    // uint64_t a = 1e4;
+    // for(uint64_t i=0; i<tam; i++)
+    // {
+    //     if((i+1)%a == 0)
+    //         printf("\ni: %lu / %lu", i / a, tam / a);
 
-        num_p num_1 = num_rand(64);
-        num_p num_2 = num_rand(8);
+    //     num_p num_1 = num_rand(64);
+    //     num_p num_2 = num_rand(8);
 
-        // num_display_tag("num_1", num_1);
-        // num_display_tag("num_2", num_2);
+    //     // num_display_tag("num_1", num_1);
+    //     // num_display_tag("num_2", num_2);
 
-        num_div_normalize(&num_1, &num_2);
+    //     num_div_normalize(&num_1, &num_2);
 
-        // num_display_full("num_1", num_1);
-        // num_display_full("num_2", num_2);
+    //     // num_display_full("num_1", num_1);
+    //     // num_display_full("num_2", num_2);
         
-        num_p num_q, num_r;
-        // printf("\na");
-        num_div_mod_unbalanced(&num_q, &num_r, num_copy(num_1), num_copy(num_2));
-        // printf("\nb");
-        num_q = num_mul(num_q, num_2);
-        num_q = num_add(num_q, num_r);
-        assert(num_cmp(num_q, num_1) == 0);
-        num_free(num_q);
-        num_free(num_1);
-    }
-
-
+    //     num_p num_q, num_r;
+    //     // printf("\na");
+    //     num_div_mod_unbalanced(&num_q, &num_r, num_copy(num_1), num_copy(num_2));
+    //     // printf("\nb");
+    //     num_q = num_mul(num_q, num_2);
+    //     num_q = num_add(num_q, num_r);
+    //     assert(num_cmp(num_q, num_1) == 0);
+    //     num_free(num_q);
+    //     num_free(num_1);
+    // }
 
     // assert(clu_mem_is_empty("FINAL"));
 

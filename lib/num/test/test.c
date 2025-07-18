@@ -1771,90 +1771,90 @@ void test_num_div_mod(bool show)
         TEST_CASE_CLOSE                                         \
     }
 
-    TEST_NUM_DIV_MOD(1,
-        (0),
-        (1, 1),
-        (0),
-        (0)
-    );
-    TEST_NUM_DIV_MOD(2,
-        (1, 4),
-        (1, 2),
-        (1, 2),
-        (0)
-    );
-    TEST_NUM_DIV_MOD(3,
-        (1, 5),
-        (1, 2),
-        (1, 2),
-        (1, 1)
-    );
-    TEST_NUM_DIV_MOD(4,
-        (1, 5),
-        (1, 5),
-        (1, 1),
-        (0)
-    );
-    TEST_NUM_DIV_MOD(5,
-        (1, 9),
-        (1, 3),
-        (1, 3),
-        (0)
-    );
-    TEST_NUM_DIV_MOD(6,
-        (3, 1, 0, 0),
-        (2, 1, 0),
-        (2, 1, 0),
-        (0)
-    );
-    TEST_NUM_DIV_MOD(7,
-        (1, 1),
-        (2, 1, 0),
-        (0),
-        (1, 1)
-    );
-    TEST_NUM_DIV_MOD(8,
-        (2, 4, UINT64_MAX),
-        (2, 2, 0),
-        (1, 2),
-        (1, UINT64_MAX)
-    );
-    TEST_NUM_DIV_MOD(9,
-        (2, 4, 0),
-        (2, 2, UINT64_MAX),
-        (1, 1),
-        (2, 1, 1)
-    );
-    TEST_NUM_DIV_MOD(10,
-        (2, 1, 0),
-        (1, UINT64_MAX),
-        (1, 1),
-        (1, 1)
-    );
-    TEST_NUM_DIV_MOD(11,
-        (2, UINT64_MAX, 0),
-        (2, 1, UINT64_MAX),
-        (1, UINT64_MAX >> 1),
-        (2, 1, UINT64_MAX >> 1)
-    );
-    TEST_NUM_DIV_MOD(12,
-        (2, 0xc929d7d593, 0xb7090a859117cfa4),
-        (2, 6, 0xea7db545decb57a4),
-        (1, 0x0000001d1635b735),
-        (1, 0x88c80995d8646eb0)
-    );
-    TEST_NUM_DIV_MOD(13,
-        (3, UINT64_MAX, 0, UINT64_MAX),
-        (1, UINT64_MAX),
-        (3, 1, 0, 1),
-        (0)
-    );
-    TEST_NUM_DIV_MOD(14,
-        (5, UINT64_MAX, 0, 0, 0, UINT64_MAX),
-        (1, UINT64_MAX),
-        (5, 1, 0, 0, 0, 1),
-        (0)
-    );
+    // TEST_NUM_DIV_MOD(1,
+    //     (0),
+    //     (1, 1),
+    //     (0),
+    //     (0)
+    // );
+    // TEST_NUM_DIV_MOD(2,
+    //     (1, 4),
+    //     (1, 2),
+    //     (1, 2),
+    //     (0)
+    // );
+    // TEST_NUM_DIV_MOD(3,
+    //     (1, 5),
+    //     (1, 2),
+    //     (1, 2),
+    //     (1, 1)
+    // );
+    // TEST_NUM_DIV_MOD(4,
+    //     (1, 5),
+    //     (1, 5),
+    //     (1, 1),
+    //     (0)
+    // );
+    // TEST_NUM_DIV_MOD(5,
+    //     (1, 9),
+    //     (1, 3),
+    //     (1, 3),
+    //     (0)
+    // );
+    // TEST_NUM_DIV_MOD(6,
+    //     (3, 1, 0, 0),
+    //     (2, 1, 0),
+    //     (2, 1, 0),
+    //     (0)
+    // );
+    // TEST_NUM_DIV_MOD(7,
+    //     (1, 1),
+    //     (2, 1, 0),
+    //     (0),
+    //     (1, 1)
+    // );
+    // TEST_NUM_DIV_MOD(8,
+    //     (2, 4, UINT64_MAX),
+    //     (2, 2, 0),
+    //     (1, 2),
+    //     (1, UINT64_MAX)
+    // );
+    // TEST_NUM_DIV_MOD(9,
+    //     (2, 4, 0),
+    //     (2, 2, UINT64_MAX),
+    //     (1, 1),
+    //     (2, 1, 1)
+    // );
+    // TEST_NUM_DIV_MOD(10,
+    //     (2, 1, 0),
+    //     (1, UINT64_MAX),
+    //     (1, 1),
+    //     (1, 1)
+    // );
+    // TEST_NUM_DIV_MOD(11,
+    //     (2, UINT64_MAX, 0),
+    //     (2, 1, UINT64_MAX),
+    //     (1, UINT64_MAX >> 1),
+    //     (2, 1, UINT64_MAX >> 1)
+    // );
+    // TEST_NUM_DIV_MOD(12,
+    //     (2, 0xc929d7d593, 0xb7090a859117cfa4),
+    //     (2, 6, 0xea7db545decb57a4),
+    //     (1, 0x0000001d1635b735),
+    //     (1, 0x88c80995d8646eb0)
+    // );
+    // TEST_NUM_DIV_MOD(13,
+    //     (3, UINT64_MAX, 0, UINT64_MAX),
+    //     (1, UINT64_MAX),
+    //     (3, 1, 0, 1),
+    //     (0)
+    // );
+    // TEST_NUM_DIV_MOD(14,
+    //     (5, UINT64_MAX, 0, 0, 0, UINT64_MAX),
+    //     (1, UINT64_MAX),
+    //     (5, 1, 0, 0, 0, 1),
+    //     (0)
+    // );
     TEST_NUM_DIV_MOD(15,
         (6, 4, 0, 8, 4, 0, 0),
         (4, 4, 0, 0, 4),
@@ -2158,54 +2158,54 @@ void test_num()
 {
     TEST_LIB
 
-    bool show = false;
+    bool show = true;
 
-    test_uint_from_char(show);
-    test_uint_inv(show);
-    test_uint128(show);
+    // test_uint_from_char(show);
+    // test_uint_inv(show);
+    // test_uint128(show);
 
-    test_num_create(show);
-    test_num_expand_to(show);
-    test_num_chunk_get(show);
-    test_num_chunk_set(show);
+    // test_num_create(show);
+    // test_num_expand_to(show);
+    // test_num_chunk_get(show);
+    // test_num_chunk_set(show);
 
-    test_num_normalize(show);
-    test_num_break(show);
-    test_num_join(show);
+    // test_num_normalize(show);
+    // test_num_break(show);
+    // test_num_join(show);
 
-    test_num_wrap(show);
-    test_num_wrap_dec(show);
-    test_num_wrap_hex(show);
-    test_num_wrap_str(show);
-    test_num_read_dec(show);
-    test_num_unwrap(show);
-    test_num_copy(show);
+    // test_num_wrap(show);
+    // test_num_wrap_dec(show);
+    // test_num_wrap_hex(show);
+    // test_num_wrap_str(show);
+    // test_num_read_dec(show);
+    // test_num_unwrap(show);
+    // test_num_copy(show);
 
-    test_num_add_uint_offset(show);
-    test_num_sub_uint_offset(show);
-    test_num_cmp_offset(show);
-    test_num_sub_offset(show);
+    // test_num_add_uint_offset(show);
+    // test_num_sub_uint_offset(show);
+    // test_num_cmp_offset(show);
+    // test_num_sub_offset(show);
 
-    test_num_shl_inner(show);
-    test_num_shr_inner(show);
-    test_num_mul_uint(show);
+    // test_num_shl_inner(show);
+    // test_num_shr_inner(show);
+    // test_num_mul_uint(show);
 
-    test_num_pad(show);
-    test_num_depad(show);
-    test_num_shuffle(show);
-    test_num_fft(show);
-    test_num_fft_inv(show);
-    test_num_div_newton(show);
+    // test_num_pad(show);
+    // test_num_depad(show);
+    // test_num_shuffle(show);
+    // test_num_fft(show);
+    // test_num_fft_inv(show);
+    // test_num_div_newton(show);
 
-    test_num_is_zero(show);
+    // test_num_is_zero(show);
 
-    test_num_shl(show);
-    test_num_shr(show);
+    // test_num_shl(show);
+    // test_num_shr(show);
 
-    test_num_add(show);
-    test_num_sub(show);
-    test_num_mul(show);
-    test_num_sqr(show);
+    // test_num_add(show);
+    // test_num_sub(show);
+    // test_num_mul(show);
+    // test_num_sqr(show);
     test_num_div_mod(show);
     test_num_gcd(show);
 

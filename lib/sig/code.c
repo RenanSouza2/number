@@ -194,6 +194,7 @@ sig_num_t sig_num_wrap_str(char str[])
 sig_num_t sig_num_copy(sig_num_t sig)
 {
     CLU_SIG_IS_SAFE(sig);
+    assert(sig.num);
 
     num_p num = num_copy(sig.num);
     return sig_num_create(sig.signal, num);
@@ -202,6 +203,7 @@ sig_num_t sig_num_copy(sig_num_t sig)
 sig_num_t sig_num_head_grow(sig_num_t sig, uint64_t count) // TODO test
 {
     CLU_SIG_IS_SAFE(sig);
+    assert(sig.num);
 
     sig.num = num_head_grow(sig.num, count);
     return sig;
@@ -210,6 +212,7 @@ sig_num_t sig_num_head_grow(sig_num_t sig, uint64_t count) // TODO test
 sig_num_t sig_num_head_trim(sig_num_t sig, uint64_t count) // TODO test
 {
     CLU_SIG_IS_SAFE(sig);
+    assert(sig.num);
 
     num_p num = num_head_trim(sig.num, count);
     return sig_num_create(sig.signal, num);
@@ -220,6 +223,7 @@ sig_num_t sig_num_head_trim(sig_num_t sig, uint64_t count) // TODO test
 bool sig_num_is_zero(sig_num_t sig)
 {
     CLU_SIG_IS_SAFE(sig);
+    assert(sig.num);
 
     return sig.signal == ZERO;
 }
@@ -248,6 +252,7 @@ int64_t sig_num_cmp(sig_num_t sig_1, sig_num_t sig_2)
 sig_num_t sig_num_shl(sig_num_t sig, uint64_t bits)
 {
     CLU_SIG_IS_SAFE(sig);
+    assert(sig.num);
 
     sig.num = num_shl(sig.num, bits);
     return sig;
@@ -256,6 +261,7 @@ sig_num_t sig_num_shl(sig_num_t sig, uint64_t bits)
 sig_num_t sig_num_shr(sig_num_t sig, uint64_t bits)
 {
     CLU_SIG_IS_SAFE(sig);
+    assert(sig.num);
 
     num_p num = num_shr(sig.num, bits);
     return sig_num_create(sig.signal, num);

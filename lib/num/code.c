@@ -370,12 +370,15 @@ num_p num_head_grow(num_p num, uint64_t count) // TODO test
     if(count == 0)
         return num;
 
-    uint64_t size = num->count + count;
-    num_p num_res = num_create(size, size);
-    memcpy(&num_res->chunk[count], num->chunk, num->count * sizeof(uint64_t));
+    uint64_t count_res = num->count + count;
+    num = num_expand_to(num, count_res);
+    for(uint64_t i=num->count-1; i!=UINT64_MAX; i--)
+        num->chunk[i+count] = num->chunk[i];
+    
 
-    num_free(num);
-    return num_res;
+    memset(num->chunk, 0, count * sizeof(uint64_t));
+    num->count = count_res;
+    return num;
 }
 
 num_p num_head_trim(num_p num, uint64_t count) // TODO test
@@ -388,16 +391,18 @@ num_p num_head_trim(num_p num, uint64_t count) // TODO test
 
     if(count >= num->count)
     {
-        num_free(num);
-        return num_create(0, 0);
+        memset(num->chunk, 0, num->count * sizeof(uint64_t));
+        num->count = 0;
+        return num;
     }
 
-    uint64_t size = num->count - count;
-    num_p num_res = num_create(size, size);
-    memcpy(num_res->chunk, &num->chunk[count], size * sizeof(uint64_t));
+    uint64_t count_res = num->count - count;
+    for(uint64_t i=count; i<num->count; i++)
+        num->chunk[i-count] = num->chunk[i];
 
-    num_free(num);
-    return num_res;
+    memset(&num->chunk[num->count - count], 0, count * sizeof(uint64_t));
+    num->count = count_res;
+    return num;
 }
 
 void num_break(num_p *out_num_hi, num_p *out_num_lo, num_p num, uint64_t count)
@@ -444,7 +449,7 @@ num_p num_join(num_p num_hi, num_p num_lo, uint64_t count) // TODO TEST
         return num_lo;
     }
 
-    if(num_lo->count == 0)
+    if(num_lo->count == 0 && count == 0)
     {
         num_free(num_lo);
         return num_hi;
@@ -738,6 +743,18 @@ int64_t num_cmp_offset(num_p num_1, uint64_t pos_1, num_p num_2) // TODO TEST
     assert(num_1);
     assert(num_2);
 
+    if(num_1->count == 0)
+    {
+        if(num_2->count == 0)
+            return 0;
+
+        if(num_2->count != 0)
+            return -1;
+    }
+
+    if(num_2->count == 0)
+        return 1;
+
     if(num_1->count > num_2->count + pos_1)
         return 1;
 
@@ -878,6 +895,11 @@ num_p num_div_mod_classic(num_p num_1, num_p num_2)
 
 uint64_t num_div_normalize(num_p *num_1, num_p *num_2) // TODO TEST
 {
+    CLU_HANDLER_IS_SAFE(*num_1);
+    CLU_HANDLER_IS_SAFE(*num_2);
+    assert(*num_1);
+    assert(*num_2);
+
     uint64_t bits = 64 - stdc_bit_width((*num_2)->chunk[(*num_2)->count-1]);
     *num_1 = num_shl_inner((*num_1), bits);
     *num_2 = num_shl_inner((*num_2), bits);
@@ -914,11 +936,11 @@ uint64_t num_div_mod_inner(
         *out_num_r = num_wrap(value);
         return 0;
     }
-    
+
     uint64_t bits = num_div_normalize(&num_1, &num_2);
-    *out_num_q = num_div_mod_classic(num_1, num_2);
-    *out_num_r = num_1;
-    // num_div_mod_unbalanced(out_num_q, out_num_r, num_1, num_1);
+    // *out_num_q = num_div_mod_classic(num_1, num_2);
+    // *out_num_r = num_1;
+    num_div_mod_unbalanced(out_num_q, out_num_r, num_1, num_2);
     return bits;
 }
 
@@ -1290,28 +1312,62 @@ void num_div_mod_rec(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_
     assert(num_1);
     assert(num_2);
 
+    printf("\nnum_div_mod_rec\t| begin");
+    num_display_full("num_1", num_1);
+    num_display_full("num_2", num_2);
+
     if(num_1->count < num_2->count + 2 || num_2->count == 1)
     {
+        printf("\nnum_div_mod_rec\t| fallback");
         num_div_mod_fallback(out_num_q, out_num_r, num_1, num_2);
         return;
     }
+
+    num_p num_1_copy = num_copy(num_1);
+    num_p num_2_copy = num_copy(num_2);
 
     uint64_t k = (num_1->count - num_2->count) / 2;
     assert(k < num_2->count);
     num_p num_2_1, num_2_0;
     num_break(&num_2_1, &num_2_0, num_copy(num_2), k);
+    printf("\nnum_div_mod_rec\t| breaking num_2 at k: %lu", k);
+    num_display_full("num_2_1", num_2_1);
+    num_display_full("num_2_0", num_2_0);
 
     num_p num_q[2];
     for(uint64_t i=1; i!=UINT64_MAX; i--)
     {
+        printf("\n");
+        printf("\nnum_div_mod_rec\t| loop: %lu", i);
+        num_display_full("num_1", num_1);
+        num_display_full("num_2", num_2_1);
+
         num_p num_1_1, num_1_0, num_q_tmp;
         num_break(&num_1_1, &num_1_0, num_1, k * (i + 1));
+        printf("\nnum_div_mod_rec\t| breaking num_1 at k: %lu", k * (i + 1));
+        num_display_full("num_1_1", num_1_1);
+        num_display_full("num_1_0", num_1_0);
+
+        printf("\nnum_div_mod_rec\t| dividing");
+        num_display_full("num_1", num_1_1);
+        num_display_full("num_2", num_2_1);
 
         num_div_mod_rec(&num_q_tmp, &num_1_1, num_1_1, num_copy(num_2_1));
+        printf("\nnum_div_mod_rec\t| results");
+        num_display_full("num_q", num_q_tmp);
+        num_display_full("num_r", num_1_1);
+
         num_p num_aux = num_mul(num_copy(num_q_tmp), num_copy(num_2_0));
+        num_display_full("q*b0", num_aux);
+
+        printf("\nnum_div_mod_rec\t| joinin_1 at k: %lu", k);
+        num_display_full("num_1_1", num_1_1);
+        num_display_full("num_1_0", num_1_0);
         num_1 = num_join(num_1_1, num_1_0, k * (i + 1));
+        num_display_full("num_1", num_1);
         while(num_cmp_offset(num_1, k * i, num_aux) < 0)
         {
+            printf("\nnum_div_mod_rec\t| correcting");
             num_q_tmp = num_sub_uint(num_q_tmp, 1);
             num_1 = num_add_offset(num_1, k * i, num_2, 0);
         }
@@ -1319,6 +1375,7 @@ void num_div_mod_rec(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_
         num_free(num_aux);
 
         num_q[i] = num_q_tmp;
+        num_display_full("num_1", num_1);
     }
 
     num_free(num_2);
@@ -1327,29 +1384,115 @@ void num_div_mod_rec(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_
 
     *out_num_q = num_join(num_q[1], num_q[0], k);
     *out_num_r = num_1;
+
+    num_p num_aux = num_copy(num_2_copy);
+    num_aux = num_mul(num_aux, num_copy(*out_num_q));
+    num_aux = num_add(num_aux, num_copy(*out_num_r));
+    assert(num_cmp(num_aux, num_1_copy) == 0);
+    if(num_cmp(num_aux, num_1_copy))
+    {
+        printf("\n\n");
+        printf("\nERROR IN DIVISION");
+        printf("\ndividing");
+        num_display_full("num_1", num_1);
+        num_display_full("num_2", num_2);
+        printf("\nresulted in");
+        num_display_full("num_q", *out_num_q);
+        num_display_full("num_r", *out_num_r);
+        printf("\nbut resconstructing resulted in");
+        num_display_full("num_aux", num_aux);
+        assert(false);
+    }
+    num_free(num_1_copy);
+    num_free(num_2_copy);
+    num_free(num_aux);
 }
 
 void num_div_mod_unbalanced(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
 {
+    printf("\nnum_div_mod_unbalanced\t| begin");
+    num_display_full("num_1", num_1);
+    num_display_full("num_2", num_2);
+
+    num_p num_1_copy = num_copy(num_1);
+    num_p num_2_copy = num_copy(num_2);
+
+    uint64_t n_2 = num_2->count;
+    uint64_t n_1 = num_1->count;
+
     num_p num_q = num_create(num_1->count - num_2->count + 1, 0);
-    for(uint64_t i=0; num_1->count > 2 * num_2->count; i++)
+    for(uint64_t i=0; n_1 > 2 * n_2; i++)
     {
+        printf("\n");
+        printf("\nnum_div_mod_unbalanced\t| loop: %lu", i);
+        num_display_full("num_1", num_1);
+        num_display_full("num_2", num_2);
+
         num_p num_1_1, num_1_0;
-        uint64_t k = num_1->count - 2 * num_2->count;
-        num_break(&num_1_1, &num_1_0, num_1, k);
+        uint64_t k_q = num_2->count;
+        uint64_t k_1 = num_1->count - 2 * k_q;
+        num_break(&num_1_1, &num_1_0, num_1, k_1);
+        printf("\nnum_div_mod_unbalanced\t| breaking at k: %lu", k_1);
+        num_display_full("num_1_1", num_1_1);
+        num_display_full("num_1_0", num_1_0);
 
         num_p num_q_tmp;
+        printf("\nnum_div_mod_unbalanced\t| dividing");
+        num_display_full("num_1", num_1_1);
+        num_display_full("num_2", num_2);
+        printf("\nv------------------------------------------------------------");
         num_div_mod_rec(&num_q_tmp, &num_1_1, num_1_1, num_copy(num_2));
-        num_q = num_join(num_q, num_q_tmp, num_2->count);
-        num_1 = num_join(num_1_1, num_1_0, k);
+        printf("\n^------------------------------------------------------------");
+        printf("\nnum_div_mod_unbalanced\t| response");
+        num_display_full("num_q", num_q_tmp);
+        num_display_full("num_r", num_1_1);
+        num_q = num_join(num_q, num_q_tmp, k_q);
+        num_1 = num_join(num_1_1, num_1_0, k_1);
+
+        printf("\nnum_div_mod_unbalanced\t| joining");
+        num_display_full("num_q", num_q);
+        num_display_full("num_1", num_1);
+
+        n_1 -= n_2;
     }
 
-    uint64_t count = num_1->count - num_2->count;
+    printf("\nnum_div_mod_unbalanced\t| out of loop");
+    printf("\nnum_div_mod_unbalanced\t| dividing");
+    num_display_full("num_1", num_1);
+    num_display_full("num_2", num_2);
+    printf("\nV------------------------------------------------------------");
     num_div_mod_rec(&num_2, &num_1, num_1, num_2);
-    num_q = num_join(num_q, num_2, count);
+    printf("\n^------------------------------------------------------------");
+    num_display_full("num_q", num_2);
+    num_display_full("num_r", num_1);
+    num_q = num_join(num_q, num_2, n_1 - n_2);
+    printf("\nnum_div_mod_unbalanced\t| joining");
+    num_display_full("num_q", num_q);
+    num_display_full("num_1", num_1);
 
     *out_num_q = num_q;
     *out_num_r = num_1;
+
+    num_p num_aux = num_copy(num_2_copy);
+    num_aux = num_mul(num_aux, num_copy(*out_num_q));
+    num_aux = num_add(num_aux, num_copy(*out_num_r));
+    if(num_cmp(num_aux, num_1_copy))
+    {
+        printf("\n\n");
+        printf("\nERROR IN DIVISION");
+        printf("\ndividing");
+        num_display_full("num_1", num_1_copy);
+        num_display_full("num_2", num_2_copy);
+        printf("\nresulted in");
+        num_display_full("num_q", *out_num_q);
+        num_display_full("num_r", *out_num_r);
+        printf("\nbut resconstructing resulted in");
+        num_display_full("num_aux", num_aux);
+        assert(false);
+    }
+    num_free(num_1_copy);
+    num_free(num_2_copy);
+    num_free(num_aux);
 }
 
 

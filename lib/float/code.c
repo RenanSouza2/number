@@ -265,6 +265,7 @@ int64_t int64_sub(int64_t a, int64_t b) // TODO test
 float_num_t float_num_normalize(float_num_t flt)
 {
     CLU_FLOAT_IS_SAFE(flt);
+    assert(flt.sig.num);
 
     if(sig_num_is_zero(flt.sig))
         return flt;
@@ -272,7 +273,7 @@ float_num_t float_num_normalize(float_num_t flt)
     if(flt.sig.num->count < flt.size)
     {
         uint64_t diff = flt.size - flt.sig.num->count;
-        flt.exponent = int64_add(flt.exponent, -diff);
+        flt.exponent = int64_sub(flt.exponent, diff);
         flt.sig = sig_num_head_grow(flt.sig, diff);
     }
 
