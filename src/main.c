@@ -71,14 +71,14 @@ void time_1(uint64_t begin, uint64_t end)
         num_p num_1_copy = num_copy(num_1);
         num_p num_2_copy = num_copy(num_2);
 
-        // clu_log_enable(true);
+        clu_log_enable(true);
 
         TIME_RESET
         num_p num = num_div(num_1_copy, num_2_copy);
         TIME_END(t3)
         printf("\t%10.3f", t3 / 1e9);
 
-        // clu_log_enable(false);
+        clu_log_enable(false);
 
         num_free(num);
     }
@@ -603,7 +603,7 @@ int main()
     // clu_set_log(true);
 
     // num_generate(21, 2);
-    time_1(16, 23);
+    // time_1(16, 26);
     // time_2(argc, argv, 19);
     // time_3();
     // time_4();
@@ -616,7 +616,7 @@ int main()
     // float_num_pi_3(1000);
     // float_num_pi_4(1000);
     
-    // time_1(16, 17);
+    time_1(16, 17);
 
     // uint64_t value_1 = 0xaaaaaaaaaaaaaaaa;
     // uint64_t value_2 = 0xbbbbbbbbbbbbbbbb;
@@ -685,7 +685,3 @@ int main()
     printf("\n");
     return 0;
 }
-
-// this case breaks
-// num_1   : (    4) | 14e6aaafdb0722b2 39da0b26c8cf8d5d 1801ae1010a8c683 5b62e48dc0f63483 
-// num_2   : (    2) | 77e14ebc2ec481c4 dc03831296e1712e

@@ -1332,12 +1332,20 @@ num_p num_div_mod_fallback(num_p num_aux, num_p num_1, num_p num_2)
     return num_div_mod_classic(num_aux, num_1, num_2);
 }
 
+STRUCT(bz_frame)
+{
+    bool memoized;
+    num_t num_2_1, num_2_0;
+    num_p num_q;
+};
+
 // Input expected to be normalized
 // Returns quocient
 // NUM_1 becomes remainder
 // Keeps NUM_2
-num_p num_div_mod_rec(num_p num_aux, num_p num_1, num_p num_2)
+num_p num_div_mod_bz_rec(num_p num_aux, num_p num_1, num_p num_2, bz_frame_t f[])
 {
+
     CLU_HANDLER_IS_SAFE(num_1)
     CLU_HANDLER_IS_SAFE(num_2)
     assert(num_1)
@@ -1346,12 +1354,15 @@ num_p num_div_mod_rec(num_p num_aux, num_p num_1, num_p num_2)
     if(num_1->count < num_2->count + 2 || num_2->count == 1)
         return num_div_mod_fallback(num_aux, num_1, num_2);
 
-    uint64_t k = (num_1->count - num_2->count) / 2;
-    assert(k < num_2->count);
-    num_t num_2_0 = num_span(num_2, 0, k);
-    num_t num_2_1 = num_span(num_2, k, num_2->count);
-    CLU_HANDLER_REGISTER_STATIC(&num_2_0)
-    CLU_HANDLER_REGISTER_STATIC(&num_2_1)
+    uint64_t k = num_2->count / 2;
+    if(f->memoized == false)
+    {
+        f->memoized = true;
+        f->num_2_0 = num_span(num_2, 0, k);
+        f->num_2_1 = num_span(num_2, k, num_2->count);
+        CLU_HANDLER_REGISTER_STATIC(&f->num_2_0)
+        CLU_HANDLER_REGISTER_STATIC(&f->num_2_1)
+    }
 
     num_p num_q[2];
     for(uint64_t i=1; i!=UINT64_MAX; i--)
@@ -1359,9 +1370,9 @@ num_p num_div_mod_rec(num_p num_aux, num_p num_1, num_p num_2)
         num_t num_1_1 = num_span(num_1, k * (i + 1), num_1->count);
         CLU_HANDLER_REGISTER_STATIC(&num_1_1)
 
-        num_p num_q_tmp = num_div_mod_rec(num_aux, &num_1_1, &num_2_1);
+        num_p num_q_tmp = num_div_mod_bz_rec(num_aux, &num_1_1, &f->num_2_1, &f[1]);
         while(num_normalize(num_1));
-        num_aux = num_mul_inner(num_aux, num_q_tmp, &num_2_0);
+        num_mul_inner(num_aux, num_q_tmp, &f->num_2_0);
         while(num_cmp_offset(num_1, k * i, num_aux) < 0)
         {
             num_q_tmp = num_sub_uint(num_q_tmp, 1);
@@ -1373,6 +1384,15 @@ num_p num_div_mod_rec(num_p num_aux, num_p num_1, num_p num_2)
     }
 
     return num_join(num_q[1], num_q[0], k);
+}
+
+num_p num_div_mod_bz(num_p num_aux, num_p num_1, num_p num_2)
+{
+    uint64_t frame_count = stdc_bit_width(num_2->count);
+    bz_frame_t f[frame_count];
+    memset(f, 0, sizeof(f));
+
+    return num_div_mod_bz_rec(num_aux, num_1, num_2, f);
 }
 
 // Input expected to be normalized
@@ -1400,14 +1420,14 @@ num_p num_div_mod_unbalanced(num_p num_1, num_p num_2)
         num_t num_1_1 = num_span(num_1, k_1, num_1->count);
         CLU_HANDLER_REGISTER_STATIC(&num_1_1)
 
-        num_p num_q_tmp = num_div_mod_rec(num_aux, &num_1_1, num_2);
+        num_p num_q_tmp = num_div_mod_bz(num_aux, &num_1_1, num_2);
         while(num_normalize(num_1));
         num_q = num_join(num_q, num_q_tmp, k_q);
 
         n_1 -= n_2;
     }
 
-    num_p num_q_tmp = num_div_mod_rec(num_aux, num_1, num_2);
+    num_p num_q_tmp = num_div_mod_bz(num_aux, num_1, num_2);
     num_q = num_join(num_q, num_q_tmp, n_1 - n_2);
     num_free(num_aux);
 
