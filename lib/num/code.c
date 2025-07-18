@@ -452,7 +452,7 @@ num_p num_join(num_p num_hi, num_p num_lo) // TODO TEST
 
     uint64_t count = num_lo->count + num_hi->count;
     num_lo = num_expand_to(num_lo, count);
-    memcpy(&num_lo->chunk[num_lo->count], num_hi, num_hi->count * sizeof(uint64_t));
+    memcpy(&num_lo->chunk[num_lo->count], num_hi->chunk, num_hi->count * sizeof(uint64_t));
     num_lo->count = count;
 
     num_free(num_hi);
@@ -1250,9 +1250,6 @@ num_p num_div_newton(num_p num_1, num_p num_2)
 
 void num_div_mod_rec(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
 {
-    // assert(num_1->count >= num_2->count);
-    // num_div_normalize(&num_1, &num_2);
-
     if(num_1->count - num_2->count < 2)
     {
         num_div_mod(out_num_q, out_num_r, num_1, num_2);
@@ -1260,11 +1257,11 @@ void num_div_mod_rec(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_
     }
 
     uint64_t k = (num_1->count - num_2->count) / 2;
-    assert(k > num_2->count);
+    assert(k < num_2->count);
     num_p num_1_1, num_1_0, num_2_1, num_2_0;
     num_break(&num_1_1, &num_1_0, num_1, 2 * k);
     num_break(&num_2_1, &num_2_0, num_copy(num_2), k);
-    
+
     num_p num_q_1;
     num_div_mod_rec(&num_q_1, &num_1_1, num_1_1, num_copy(num_2_1));
     num_p num_tmp = num_mul(num_copy(num_q_1), num_copy(num_2_0));
@@ -1272,7 +1269,7 @@ void num_div_mod_rec(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_
     while(num_cmp_offset(num_1, k, num_tmp) < 0)
     {
         num_q_1 = num_sub_uint(num_q_1, 1);
-        num_1 = num_add_offset(num_1, k, num_copy(num_2), 0);
+        num_1 = num_add_offset(num_1, k, num_2, 0);
     }
     num_1 = num_sub_offset(num_1, k, num_tmp);
 
@@ -1284,9 +1281,10 @@ void num_div_mod_rec(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_
     while(num_cmp(num_1, num_tmp) < 0)
     {
         num_q_0 = num_sub_uint(num_q_0, 1);
-        num_1 = num_add_offset(num_1, 0, num_copy(num_2), 0);
+        num_1 = num_add_offset(num_1, 0, num_2, 0);
     }
     num_1 = num_sub(num_1, num_tmp);
+
     *out_num_q = num_join(num_q_1, num_q_0);
     *out_num_r = num_1;
 }
