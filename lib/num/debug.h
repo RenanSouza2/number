@@ -4,8 +4,6 @@
 #include "header.h"
 #include "struct.h"
 
-typedef __uint128_t uint128_t;
-
 #ifdef DEBUG
 
 #include <stdarg.h>

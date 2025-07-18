@@ -2,7 +2,7 @@
 #define __SIG_STRUCT_H__
 
 #include "../../mods/macros/struct.h"
-#include "../../mods/macros/U64.h"
+#include "../../mods/macros/uint.h"
 
 PLACEHOLDER(num)
 

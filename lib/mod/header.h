@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-#include "../../mods/macros/U64.h"
+#include "../../mods/macros/uint.h"
 
 #include "struct.h"
 
