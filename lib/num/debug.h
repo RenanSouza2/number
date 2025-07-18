@@ -56,8 +56,8 @@ num_p num_shuffle(num_p num, uint64_t n);
 num_p num_fft(num_p num, uint64_t n);
 num_p num_fft_inv(num_p num, uint64_t n);
 
-num_p num_mul_simple(num_p num_1, num_p num_2);
-num_p num_sqr_simple(num_p num);
+num_p num_mul_classic_out(num_p num_1, num_p num_2);
+num_p num_sqr_classic(num_p num);
 
 num_p num_mul_fft(num_p num_1, num_p num_2);
 num_p num_sqr_fft(num_p num);
