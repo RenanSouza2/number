@@ -1312,62 +1312,28 @@ void num_div_mod_rec(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_
     assert(num_1);
     assert(num_2);
 
-    printf("\nnum_div_mod_rec\t| begin");
-    num_display_full("num_1", num_1);
-    num_display_full("num_2", num_2);
-
     if(num_1->count < num_2->count + 2 || num_2->count == 1)
     {
-        printf("\nnum_div_mod_rec\t| fallback");
         num_div_mod_fallback(out_num_q, out_num_r, num_1, num_2);
         return;
     }
-
-    num_p num_1_copy = num_copy(num_1);
-    num_p num_2_copy = num_copy(num_2);
 
     uint64_t k = (num_1->count - num_2->count) / 2;
     assert(k < num_2->count);
     num_p num_2_1, num_2_0;
     num_break(&num_2_1, &num_2_0, num_copy(num_2), k);
-    printf("\nnum_div_mod_rec\t| breaking num_2 at k: %lu", k);
-    num_display_full("num_2_1", num_2_1);
-    num_display_full("num_2_0", num_2_0);
 
     num_p num_q[2];
     for(uint64_t i=1; i!=UINT64_MAX; i--)
     {
-        printf("\n");
-        printf("\nnum_div_mod_rec\t| loop: %lu", i);
-        num_display_full("num_1", num_1);
-        num_display_full("num_2", num_2_1);
-
         num_p num_1_1, num_1_0, num_q_tmp;
         num_break(&num_1_1, &num_1_0, num_1, k * (i + 1));
-        printf("\nnum_div_mod_rec\t| breaking num_1 at k: %lu", k * (i + 1));
-        num_display_full("num_1_1", num_1_1);
-        num_display_full("num_1_0", num_1_0);
-
-        printf("\nnum_div_mod_rec\t| dividing");
-        num_display_full("num_1", num_1_1);
-        num_display_full("num_2", num_2_1);
-
         num_div_mod_rec(&num_q_tmp, &num_1_1, num_1_1, num_copy(num_2_1));
-        printf("\nnum_div_mod_rec\t| results");
-        num_display_full("num_q", num_q_tmp);
-        num_display_full("num_r", num_1_1);
-
         num_p num_aux = num_mul(num_copy(num_q_tmp), num_copy(num_2_0));
-        num_display_full("q*b0", num_aux);
 
-        printf("\nnum_div_mod_rec\t| joinin_1 at k: %lu", k);
-        num_display_full("num_1_1", num_1_1);
-        num_display_full("num_1_0", num_1_0);
         num_1 = num_join(num_1_1, num_1_0, k * (i + 1));
-        num_display_full("num_1", num_1);
         while(num_cmp_offset(num_1, k * i, num_aux) < 0)
         {
-            printf("\nnum_div_mod_rec\t| correcting");
             num_q_tmp = num_sub_uint(num_q_tmp, 1);
             num_1 = num_add_offset(num_1, k * i, num_2, 0);
         }
@@ -1375,7 +1341,6 @@ void num_div_mod_rec(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_
         num_free(num_aux);
 
         num_q[i] = num_q_tmp;
-        num_display_full("num_1", num_1);
     }
 
     num_free(num_2);
@@ -1384,38 +1349,14 @@ void num_div_mod_rec(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_
 
     *out_num_q = num_join(num_q[1], num_q[0], k);
     *out_num_r = num_1;
-
-    num_p num_aux = num_copy(num_2_copy);
-    num_aux = num_mul(num_aux, num_copy(*out_num_q));
-    num_aux = num_add(num_aux, num_copy(*out_num_r));
-    assert(num_cmp(num_aux, num_1_copy) == 0);
-    if(num_cmp(num_aux, num_1_copy))
-    {
-        printf("\n\n");
-        printf("\nERROR IN DIVISION");
-        printf("\ndividing");
-        num_display_full("num_1", num_1);
-        num_display_full("num_2", num_2);
-        printf("\nresulted in");
-        num_display_full("num_q", *out_num_q);
-        num_display_full("num_r", *out_num_r);
-        printf("\nbut resconstructing resulted in");
-        num_display_full("num_aux", num_aux);
-        assert(false);
-    }
-    num_free(num_1_copy);
-    num_free(num_2_copy);
-    num_free(num_aux);
 }
 
 void num_div_mod_unbalanced(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
 {
-    printf("\nnum_div_mod_unbalanced\t| begin");
-    num_display_full("num_1", num_1);
-    num_display_full("num_2", num_2);
-
-    num_p num_1_copy = num_copy(num_1);
-    num_p num_2_copy = num_copy(num_2);
+    CLU_HANDLER_IS_SAFE(num_1);
+    CLU_HANDLER_IS_SAFE(num_2);
+    assert(num_1);
+    assert(num_2);
 
     uint64_t n_2 = num_2->count;
     uint64_t n_1 = num_1->count;
@@ -1423,76 +1364,21 @@ void num_div_mod_unbalanced(num_p *out_num_q, num_p *out_num_r, num_p num_1, num
     num_p num_q = num_create(num_1->count - num_2->count + 1, 0);
     for(uint64_t i=0; n_1 > 2 * n_2; i++)
     {
-        printf("\n");
-        printf("\nnum_div_mod_unbalanced\t| loop: %lu", i);
-        num_display_full("num_1", num_1);
-        num_display_full("num_2", num_2);
-
         num_p num_1_1, num_1_0;
         uint64_t k_q = num_2->count;
         uint64_t k_1 = num_1->count - 2 * k_q;
         num_break(&num_1_1, &num_1_0, num_1, k_1);
-        printf("\nnum_div_mod_unbalanced\t| breaking at k: %lu", k_1);
-        num_display_full("num_1_1", num_1_1);
-        num_display_full("num_1_0", num_1_0);
 
         num_p num_q_tmp;
-        printf("\nnum_div_mod_unbalanced\t| dividing");
-        num_display_full("num_1", num_1_1);
-        num_display_full("num_2", num_2);
-        printf("\nv------------------------------------------------------------");
         num_div_mod_rec(&num_q_tmp, &num_1_1, num_1_1, num_copy(num_2));
-        printf("\n^------------------------------------------------------------");
-        printf("\nnum_div_mod_unbalanced\t| response");
-        num_display_full("num_q", num_q_tmp);
-        num_display_full("num_r", num_1_1);
         num_q = num_join(num_q, num_q_tmp, k_q);
         num_1 = num_join(num_1_1, num_1_0, k_1);
-
-        printf("\nnum_div_mod_unbalanced\t| joining");
-        num_display_full("num_q", num_q);
-        num_display_full("num_1", num_1);
 
         n_1 -= n_2;
     }
 
-    printf("\nnum_div_mod_unbalanced\t| out of loop");
-    printf("\nnum_div_mod_unbalanced\t| dividing");
-    num_display_full("num_1", num_1);
-    num_display_full("num_2", num_2);
-    printf("\nV------------------------------------------------------------");
-    num_div_mod_rec(&num_2, &num_1, num_1, num_2);
-    printf("\n^------------------------------------------------------------");
-    num_display_full("num_q", num_2);
-    num_display_full("num_r", num_1);
-    num_q = num_join(num_q, num_2, n_1 - n_2);
-    printf("\nnum_div_mod_unbalanced\t| joining");
-    num_display_full("num_q", num_q);
-    num_display_full("num_1", num_1);
-
-    *out_num_q = num_q;
-    *out_num_r = num_1;
-
-    num_p num_aux = num_copy(num_2_copy);
-    num_aux = num_mul(num_aux, num_copy(*out_num_q));
-    num_aux = num_add(num_aux, num_copy(*out_num_r));
-    if(num_cmp(num_aux, num_1_copy))
-    {
-        printf("\n\n");
-        printf("\nERROR IN DIVISION");
-        printf("\ndividing");
-        num_display_full("num_1", num_1_copy);
-        num_display_full("num_2", num_2_copy);
-        printf("\nresulted in");
-        num_display_full("num_q", *out_num_q);
-        num_display_full("num_r", *out_num_r);
-        printf("\nbut resconstructing resulted in");
-        num_display_full("num_aux", num_aux);
-        assert(false);
-    }
-    num_free(num_1_copy);
-    num_free(num_2_copy);
-    num_free(num_aux);
+    num_div_mod_rec(&num_2, out_num_r, num_1, num_2);
+    *out_num_q = num_join(num_q, num_2, n_1 - n_2);
 }
 
 
