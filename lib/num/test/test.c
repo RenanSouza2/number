@@ -446,13 +446,13 @@ void test_num_join(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_NUM_JOIN(TAG, NUM_1, NUM_2, RES)           \
+    #define TEST_NUM_JOIN(TAG, NUM_1, NUM_2, COUNT, RES)    \
     {                                                       \
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
             num_p num_1 = num_create_immed(ARG_OPEN NUM_1); \
             num_p num_2 = num_create_immed(ARG_OPEN NUM_2); \
-            num_1 = num_join(num_1, num_2);                 \
+            num_1 = num_join(num_1, num_2, COUNT);          \
             assert(num_immed(num_1, ARG_OPEN RES));         \
         }                                                   \
         TEST_CASE_CLOSE                                     \
@@ -461,22 +461,44 @@ void test_num_join(bool show)
     TEST_NUM_JOIN(1,
         (0),
         (0),
+        0,
         (0)
     );
     TEST_NUM_JOIN(2,
         (0),
         (1, 0xf),
+        0,
         (1, 0xf)
     );
     TEST_NUM_JOIN(3,
         (1, 0xf),
         (0),
+        0,
         (1, 0xf)
     );
     TEST_NUM_JOIN(4,
         (1, 0xa),
         (1, 0xb),
+        0,
         (2, 0xa, 0xb)
+    );
+    TEST_NUM_JOIN(5,
+        (1, 0xa),
+        (1, 0xb),
+        1,
+        (2, 0xa, 0xb)
+    );
+    TEST_NUM_JOIN(6,
+        (1, 0xa),
+        (1, 0xb),
+        2,
+        (3, 0xa, 0, 0xb)
+    );
+    TEST_NUM_JOIN(2,
+        (1, 0xa),
+        (2, 0xb, 0xc),
+        2,
+        (3, 0xa, 0xb, 0xc)
     );
 
     #undef TEST_NUM_JOIN

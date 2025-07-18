@@ -652,16 +652,18 @@ int main()
     // uint64_t value_5 = 0xeeeeeeeeeeeeeeee;
     // uint64_t value_6 = 0xffffffffffffffff;
 
-    // num_p num_1 = num_create_immed(4, value_1, value_2, value_3, value_4);
+    // num_p num_1 = num_create_immed(8, value_1, value_2, value_3, value_4, value_1, value_2, value_3, value_4);
     // num_p num_2 = num_create_immed(2, value_5, value_6);
 
-    // num_display_tag("num_1", num_1);
-    // num_display_tag("num_2", num_2);
+    // // num_display_tag("num_1", num_1);
+    // // num_display_tag("num_2", num_2);
 
     // num_p num_q_1, num_rec_1, num_q_2, num_rec_2;
-    // num_div_mod_rec(&num_q_1, &num_rec_1, num_copy(num_1), num_copy(num_2));
+    // num_div_mod_unbalanced(&num_q_1, &num_rec_1, num_copy(num_1), num_copy(num_2));
     // num_div_mod(&num_q_2, &num_rec_2, num_copy(num_1), num_copy(num_2));
 
+    // printf("\n\n---------");
+    // printf("\nresults");
     // num_display_full("num_q_1", num_q_1);
     // num_display_full("num_q_2", num_q_2);
 
@@ -677,14 +679,17 @@ int main()
     // printf("\nres: %ld", num_cmp(num_tmp_q, num_tmp_1));
 
     uint64_t tam = 1e6;
-    uint64_t a = 1e5;
+    uint64_t a = 1e4;
     for(uint64_t i=0; i<tam; i++)
     {
         if(i%a == 0)
             printf("\ni: %lu / %lu", i / a, tam / a);
 
-        num_p num_1 = num_rand(32);
-        num_p num_2 = num_rand(16);
+        num_p num_1 = num_rand(64);
+        num_p num_2 = num_rand(8);
+
+        // num_display_tag("num_1", num_1);
+        // num_display_tag("num_2", num_2);
 
         num_div_normalize(&num_1, &num_2);
 
@@ -693,7 +698,7 @@ int main()
         
         num_p num_q, num_r;
         // printf("\na");
-        num_div_mod_rec(&num_q, &num_r, num_copy(num_1), num_copy(num_2));
+        num_div_mod_unbalanced(&num_q, &num_r, num_copy(num_1), num_copy(num_2));
         // printf("\nb");
         num_q = num_mul(num_q, num_2);
         num_q = num_add(num_q, num_r);
@@ -702,8 +707,14 @@ int main()
         num_free(num_1);
     }
 
+
+
     // assert(clu_mem_is_empty("FINAL"));
 
     printf("\n");
     return 0;
 }
+
+// this case breaks
+// num_1   : (    4) | 14e6aaafdb0722b2 39da0b26c8cf8d5d 1801ae1010a8c683 5b62e48dc0f63483 
+// num_2   : (    2) | 77e14ebc2ec481c4 dc03831296e1712e
