@@ -10,6 +10,7 @@
 
 num_p num_create_variadic(uint64_t n, va_list *args);
 num_p num_create_immed(uint64_t n, ...);
+num_p num_create_rand(uint64_t count);
 
 bool int64(int64_t i1, int64_t i2);
 bool uint64(uint64_t u1, uint64_t u2);
@@ -56,7 +57,8 @@ num_p num_shuffle(num_p num, uint64_t n);
 num_p num_fft(num_p num, uint64_t n);
 num_p num_fft_inv(num_p num, uint64_t n);
 
-num_p num_mul_classic_out(num_p num_1, num_p num_2);
+num_p num_mul_classic_inner(num_p num_res, num_p num_1, num_p num_2);
+num_p num_mul_classic(num_p num_1, num_p num_2);
 num_p num_sqr_classic(num_p num);
 
 num_p num_mul_fft(num_p num_1, num_p num_2);

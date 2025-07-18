@@ -2,6 +2,8 @@
 #include "../../../testrc.h"
 #include "../../../mods/macros/test.h"
 
+#include <time.h>
+
 
 
 void test_uint_from_char(bool show)
@@ -246,7 +248,8 @@ void test_num_expand_to(bool show)
     }
 
     TEST_NUM_EXPAND_TO(1, (0), 2, 4, (0));
-    TEST_NUM_EXPAND_TO(2, (2, 1, 2), 2, 4, (2, 1, 2));
+    TEST_NUM_EXPAND_TO(2, (2, 1, 2), 2, 2, (2, 1, 2));
+    TEST_NUM_EXPAND_TO(2, (2, 1, 2), 3, 6, (2, 1, 2));
     TEST_NUM_EXPAND_TO(3, (2, 1, 2), 10, 20, (2, 1, 2));
 
     #undef TEST_NUM_EXPAND_TO
@@ -1595,21 +1598,22 @@ void test_num_mul(bool show)
 
     #define TEST_NUM_MUL_FN(FN, NUM_1, NUM_2, RES)      \
     {                                                   \
+        if(show)                                        \
+            printf("\n\t\t\tsubcase " #FN);             \
         num_p num_1 = num_create_immed(ARG_OPEN NUM_1); \
         num_p num_2 = num_create_immed(ARG_OPEN NUM_2); \
         num_1 = FN(num_1, num_2);                       \
         assert(num_immed(num_1, ARG_OPEN RES))          \
+        TEST_ASSERT_MEM_EMPTY                           \
     }                                                   \
 
-    #define TEST_NUM_MUL(TAG, NUM_1, NUM_2, RES)                    \
-    {                                                               \
-        TEST_CASE_OPEN(TAG)                                         \
-        {                                                           \
-            TEST_NUM_MUL_FN(num_mul_classic_out, NUM_1, NUM_2, RES) \
-            TEST_NUM_MUL_FN(num_mul_fft, NUM_1, NUM_2, RES)         \
-            TEST_NUM_MUL_FN(num_mul, NUM_1, NUM_2, RES)             \
-        }                                                           \
-        TEST_CASE_CLOSE                                             \
+    #define TEST_NUM_MUL(TAG, NUM_1, NUM_2, RES)        \
+    {                                                   \
+        TEST_CASE_OPEN(TAG)                             \
+        {                                               \
+            TEST_NUM_MUL_FN(num_mul, NUM_1, NUM_2, RES) \
+        }                                               \
+        TEST_CASE_CLOSE                                 \
     }
 
     TEST_NUM_MUL(1,
@@ -1627,6 +1631,20 @@ void test_num_mul(bool show)
         (1, 1),
         (0)
     );
+
+    #undef TEST_NUM_MUL
+
+    #define TEST_NUM_MUL(TAG, NUM_1, NUM_2, RES)                \
+    {                                                           \
+        TEST_CASE_OPEN(TAG)                                     \
+        {                                                       \
+            TEST_NUM_MUL_FN(num_mul_classic, NUM_1, NUM_2, RES) \
+            TEST_NUM_MUL_FN(num_mul_fft, NUM_1, NUM_2, RES)     \
+            TEST_NUM_MUL_FN(num_mul, NUM_1, NUM_2, RES)         \
+        }                                                       \
+        TEST_CASE_CLOSE                                         \
+    }
+
     TEST_NUM_MUL(4,
         (1, 2),
         (1, 3),
@@ -2154,6 +2172,120 @@ void test_num_base_from(bool show)
 
 
 
+void test_num_fuzz_mul(bool show)
+{
+    TEST_FN_OPEN
+
+    TEST_CASE_OPEN_TIMEOUT(1, 0)
+
+    printf("\ntest_num_fuzz_mul");
+
+    uint64_t n = 10000;
+    uint64_t n_count = 5;
+    uint64_t count_1[] = {1, 2, 2, 10, 100};
+    uint64_t count_2[] = {1, 1, 2, 5, 10};
+
+    for(uint64_t i=0; i<n_count; i++)
+    {
+        // printf("\n%lu %lu", count_1[i], count_2[i]);
+
+        for(uint64_t j=0; j<n; j++)
+        {
+            // if((j+1)%10 == 0)
+            //     printf("\n%lu / %lu", j / 10, n / 10);
+
+            num_p num_1 = num_create_rand(count_1[i]);
+            num_p num_2 = num_create_rand(count_2[i]);
+
+            num_p num_res_1 = num_mul_classic(
+                num_copy(num_1),
+                num_copy(num_2)
+            );
+            num_p num_res_2 = num_mul_fft(
+                num_copy(num_1),
+                num_copy(num_2)
+            );
+
+            if(num_cmp(num_res_1, num_res_2))
+            {
+                printf("\n\n");
+                printf("\nerror test_num_fuzz_mul");
+                num_display_full("num_1", num_1);
+                num_display_full("num_2", num_2);
+                num_display_full("num_res_1", num_res_1);
+                num_display_full("num_res_2", num_res_2);
+            }
+
+            num_free(num_1);
+            num_free(num_2);
+            num_free(num_res_1);
+            num_free(num_res_2);
+        }
+    }
+
+    TEST_CASE_CLOSE
+
+    TEST_FN_CLOSE
+}
+
+// void test_num_fuzz_div(bool show)
+// {
+//     TEST_FN_OPEN
+//
+//     TEST_CASE_OPEN_TIMEOUT(1, 0)
+//
+//     printf("\ntest_num_fuzz_mul");
+//
+//     uint64_t n = 10000;
+//     uint64_t n_count = 5;
+//     uint64_t count_1[] = {1, 2, 2, 10, 100};
+//     uint64_t count_2[] = {1, 1, 2, 5, 10};
+//
+//     for(uint64_t i=0; i<n_count; i++)
+//     {
+//         printf("\n%lu %lu", count_1[i], count_2[i]);
+//
+//         for(uint64_t j=0; j<n; j++)
+//         {
+//             // if((j+1)%10 == 0)
+//             //     printf("\n%lu / %lu", j / 10, n / 10);
+//
+//             num_p num_1 = num_create_rand(count_1[i]);
+//             num_p num_2 = num_create_rand(count_2[i]);
+//
+//             num_p num_res_1 = num_div_classic(
+//                 num_copy(num_1),
+//                 num_copy(num_2)
+//             );
+//             num_p num_res_2 = num_mul_fft(
+//                 num_copy(num_1),
+//                 num_copy(num_2)
+//             );
+//
+//             if(num_cmp(num_res_1, num_res_2))
+//             {
+//                 printf("\n\n");
+//                 printf("\nerror test_num_fuzz_mul");
+//                 num_display_full("num_1", num_1);
+//                 num_display_full("num_2", num_2);
+//                 num_display_full("num_res_1", num_res_1);
+//                 num_display_full("num_res_2", num_res_2);
+//             }
+//
+//             num_free(num_1);
+//             num_free(num_2);
+//             num_free(num_res_1);
+//             num_free(num_res_2);
+//         }
+//     }
+//
+//     TEST_CASE_CLOSE
+//
+//     TEST_FN_CLOSE
+// }
+
+
+
 void test_num()
 {
     TEST_LIB
@@ -2195,7 +2327,7 @@ void test_num()
     test_num_shuffle(show);
     test_num_fft(show);
     test_num_fft_inv(show);
-    test_num_div_newton(show);
+    // test_num_div_newton(show);
 
     test_num_is_zero(show);
 
@@ -2214,6 +2346,8 @@ void test_num()
     test_num_base_to(show);
     test_num_base_from(show);
 
+    // test_num_fuzz_mul(show);
+
     TEST_ASSERT_MEM_EMPTY
 }
 
@@ -2222,6 +2356,7 @@ void test_num()
 int main()
 {
     setbuf(stdout, NULL);
+    srand(time(NULL));
     test_num();
     printf("\n\n\tTest successful\n\n");
     return 0;

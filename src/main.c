@@ -19,21 +19,6 @@ int64_t get_arg(int argc, char** argv)
     return atoi(argv[1]);
 }
 
-uint16_t rand_16()
-{
-    return rand();
-}
-
-uint32_t rand_32()
-{
-    return ((uint32_t)rand_16() << 16) | rand_16();
-}
-
-uint64_t rand_64()
-{
-    return (U64(rand_32()) << 32) | rand_32();
-}
-
 
 
 num_p num_generate(uint64_t max, uint64_t salt)
@@ -61,21 +46,6 @@ num_p num_generate_2(uint64_t index, uint64_t salt)
 
     return num;
 }
-
-num_p num_rand(uint64_t count)
-{
-    num_p num = num_wrap(1);
-    num = num_head_grow(num, count - 1);
-    for(uint64_t i=0; i<count; i++)
-        num->chunk[i] = rand_64();
-    
-    if(count)
-        while(num->chunk[count - 1] == 0)
-            num->chunk[count - 1] = rand();
-    
-    return num;
-}
-
 
 
 void time_1(uint64_t begin, uint64_t end)
@@ -621,8 +591,6 @@ void sqrt_2()
 }
 
 
-
-#include "../lib/num/debug.h"
 
 // int main(int argc, char** argv)
 int main()

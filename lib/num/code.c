@@ -31,6 +31,37 @@ num_p num_create_immed(uint64_t n, ...)
 
 
 
+uint16_t rand_16()
+{
+    return rand();
+}
+
+uint32_t rand_32()
+{
+    return ((uint32_t)rand_16() << 16) | rand_16();
+}
+
+uint64_t rand_64()
+{
+    return (U64(rand_32()) << 32) | rand_32();
+}
+
+num_p num_create_rand(uint64_t count)
+{
+    num_p num = num_wrap(1);
+    num = num_head_grow(num, count - 1);
+    for(uint64_t i=0; i<count; i++)
+        num->chunk[i] = rand_64();
+    
+    if(count)
+        while(num->chunk[count - 1] == 0)
+            num->chunk[count - 1] = rand();
+    
+    return num;
+}
+
+
+
 bool int64(int64_t i1, int64_t i2)
 {
     if(i1 != i2)
@@ -302,7 +333,7 @@ num_p num_expand_to(num_p num, uint64_t target)
     CLU_HANDLER_IS_SAFE(num);
     assert(num);
 
-    if(target < num->size)
+    if(target <= num->size)
         return num;
 
     assert(!num->cannot_expand);
@@ -327,7 +358,7 @@ num_p num_expand(num_p num)
     CLU_HANDLER_IS_SAFE(num);
     assert(num);
 
-    return num_expand_to(num, num->size);
+    return num_expand_to(num, num->size + 1);
 }
 
 num_p num_reset(num_p num) // TODO TEST
@@ -354,7 +385,7 @@ num_p num_chunk_set(num_p num, uint64_t pos, uint64_t value)
         return num;
 
     if(pos >= num->size)
-        num = num_expand_to(num, pos);
+        num = num_expand_to(num, pos + 1);
 
     num->chunk[pos] = value;
     if(pos >= num->count)
@@ -864,7 +895,7 @@ num_p num_mul_high_inner(num_p num_res, num_p num_1, num_p num_2, uint64_t pos) 
 
 // Keeps NUM_1
 // Keeps NUM_2
-num_p num_mul_classic(num_p num_res, num_p num_1, num_p num_2)
+num_p num_mul_classic_inner(num_p num_res, num_p num_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_1);
     CLU_HANDLER_IS_SAFE(num_2);
@@ -900,6 +931,7 @@ num_p num_sqr_classic(num_p num)
     num_free(num);
     return num_res;
 }
+
 
 
 
@@ -1013,7 +1045,7 @@ num_p num_fft_inv(num_p num, uint64_t n) // TODO TEST
     return num;
 }
 
-num_p num_mul_fft(num_p num_1, num_p num_2)
+num_p num_mul_fft_inner(num_p num_res, num_p num_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_1);
     CLU_HANDLER_IS_SAFE(num_2);
@@ -1030,16 +1062,20 @@ num_p num_mul_fft(num_p num_1, num_p num_2)
     num_1 = num_fft(num_1, n);
     num_2 = num_fft(num_2, n);
 
-    for(uint64_t i=0; i<n; i++)
-        num_1->chunk[i] = uint_mod_mul(num_1->chunk[i], num_2->chunk[i], PRIME_1);
 
+    assert(num_res->size >= n);
+    num_res->count = n;
+    for(uint64_t i=0; i<n; i++)
+        num_res->chunk[i] = uint_mod_mul(num_1->chunk[i], num_2->chunk[i], PRIME_1);
+
+    num_free(num_1);
     num_free(num_2);
 
-    num_1 = num_shuffle(num_1, n);
-    num_1 = num_fft_inv(num_1, n);
-    num_1 = num_depad(num_1);
+    num_res = num_shuffle(num_res, n);
+    num_res = num_fft_inv(num_res, n);
+    num_res = num_depad(num_res);
 
-    return num_1;
+    return num_res;
 }
 
 num_p num_sqr_fft(num_p num)
@@ -1063,6 +1099,9 @@ num_p num_sqr_fft(num_p num)
     return num;
 }
 
+
+
+
 // Keeps NUM_1
 // Keeps NUM_2
 num_p num_mul_inner(num_p num_res, num_p num_1, num_p num_2) // TODO TEST
@@ -1076,11 +1115,41 @@ num_p num_mul_inner(num_p num_res, num_p num_1, num_p num_2) // TODO TEST
     if(num_1->count == 0 || num_2->count == 0)
         return num_res;
 
-    if(num_1->count < 1500 || num_2->count < 1500)
-        return num_mul_classic(num_res, num_1, num_2);
+    // if(num_1->count < 1500 || num_2->count < 1500)
+    //     return num_mul_classic_inner(num_res, num_1, num_2);
 
-    return num_mul_fft(num_copy(num_1), num_copy(num_2));
+    return num_mul_fft_inner(num_res, num_copy(num_1), num_copy(num_2));
 }
+
+num_p num_mul_classic(num_p num_1, num_p num_2)
+{
+    CLU_HANDLER_IS_SAFE(num_1)
+    CLU_HANDLER_IS_SAFE(num_2)
+    assert(num_1)
+    assert(num_2)
+
+    num_p num_res = num_create(num_1->count + num_2->count + 1, 0);
+    num_res->cannot_expand = true;
+    num_mul_classic_inner(num_res, num_1, num_2);
+    num_free(num_1);
+    num_free(num_2);
+    return num_res;    
+}
+
+num_p num_mul_fft(num_p num_1, num_p num_2)
+{
+
+    CLU_HANDLER_IS_SAFE(num_1)
+    CLU_HANDLER_IS_SAFE(num_2)
+    assert(num_1)
+    assert(num_2)
+    
+    uint64_t count = stdc_bit_ceil(4 * (num_1->count + num_2->count));
+    num_p num_res = num_create(count, 0);
+    num_res->cannot_expand = true;
+    return num_mul_fft_inner(num_res, num_1, num_2);    
+}
+
 
 
 num_p num_pseudo_float_num(num_p num_1, num_p num_2, uint64_t count)
@@ -1320,8 +1389,9 @@ num_p num_div_mod_unbalanced(num_p num_1, num_p num_2)
     uint64_t n_2 = num_2->count;
     uint64_t n_1 = num_1->count;
 
+    uint64_t count = stdc_bit_ceil(8 * num_2->count);
+    num_p num_aux = num_create(count, 0);
     num_p num_q = num_create(num_1->count - num_2->count + 1, 0);
-    num_p num_aux = num_create(2 * num_2->count + 1, 0);
     num_aux->cannot_expand = true;
     for(uint64_t i=0; n_1 > 2 * n_2; i++)
     {
@@ -1338,8 +1408,10 @@ num_p num_div_mod_unbalanced(num_p num_1, num_p num_2)
     }
 
     num_p num_q_tmp = num_div_mod_rec(num_aux, num_1, num_2);
+    num_q = num_join(num_q, num_q_tmp, n_1 - n_2);
     num_free(num_aux);
-    return num_join(num_q, num_q_tmp, n_1 - n_2);
+
+    return num_q;
 }
 
 uint64_t num_div_normalize(num_p *num_1, num_p *num_2) // TODO TEST
@@ -1535,7 +1607,8 @@ num_p num_mul(num_p num_1, num_p num_2)
     assert(num_1)
     assert(num_2)
 
-    num_p num_res = num_create(num_1->count + num_2->count + 1, 0);
+    uint64_t count = stdc_bit_ceil(4 * (num_1->count + num_2->count));
+    num_p num_res = num_create(count, 0);
     num_mul_inner(num_res, num_1, num_2);
     num_free(num_1);
     num_free(num_2);
@@ -1640,20 +1713,4 @@ num_p num_base_from(num_p num, uint64_t base)
     }
     num_free(num);
     return num_res;
-}
-
-
-
-num_p num_mul_classic_out(num_p num_1, num_p num_2)
-{
-    CLU_HANDLER_IS_SAFE(num_1)
-    CLU_HANDLER_IS_SAFE(num_2)
-    assert(num_1)
-    assert(num_2)
-
-    num_p num_res = num_create(num_1->count + num_2->count + 1, 0);
-    num_mul_classic(num_res, num_1, num_2);
-    num_free(num_1);
-    num_free(num_2);
-    return num_res;    
 }
