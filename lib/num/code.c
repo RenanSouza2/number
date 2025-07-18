@@ -1017,8 +1017,8 @@ void fft_rec(uint64_t vec[], uint64_t n, uint64_t w)
 
 num_p num_fft(num_p num, uint64_t n) // TODO TEST
 {
-    if(n == 1)
-        return num;
+    num = num_pad(num);
+    num = num_shuffle(num, n);
 
     uint64_t q = (1UL << 57) / n;
     uint64_t w = uint_mod_pow(ROOT_W_1, q, PRIME_1);
@@ -1045,6 +1045,21 @@ num_p num_fft_inv(num_p num, uint64_t n) // TODO TEST
     return num;
 }
 
+num_p num_convolute(num_p num_res, num_p num_1, num_p num_2)
+{
+    uint64_t n = num_1->count;
+
+    assert(num_res->size >= n);
+    num_res->count = n;
+    for(uint64_t i=0; i<n; i++)
+        num_res->chunk[i] = uint_mod_mul(num_1->chunk[i], num_2->chunk[i], PRIME_1);
+
+    num_res = num_shuffle(num_res, n);
+    num_res = num_fft_inv(num_res, n);
+    num_res = num_depad(num_res);
+    return num_res;
+}
+
 num_p num_mul_fft_inner(num_p num_res, num_p num_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_1);
@@ -1052,29 +1067,13 @@ num_p num_mul_fft_inner(num_p num_res, num_p num_1, num_p num_2)
     assert(num_1);
     assert(num_2);
 
-    num_1 = num_pad(num_1);
-    num_2 = num_pad(num_2);
-    
-    uint64_t n = stdc_bit_ceil(num_1->count + num_2->count);
-    num_1 = num_shuffle(num_1, n);
-    num_2 = num_shuffle(num_2, n);
-
+    uint64_t n = stdc_bit_ceil(4 * (num_1->count + num_2->count));
     num_1 = num_fft(num_1, n);
     num_2 = num_fft(num_2, n);
 
-
-    assert(num_res->size >= n);
-    num_res->count = n;
-    for(uint64_t i=0; i<n; i++)
-        num_res->chunk[i] = uint_mod_mul(num_1->chunk[i], num_2->chunk[i], PRIME_1);
-
+    num_res = num_convolute(num_res, num_1, num_2);
     num_free(num_1);
     num_free(num_2);
-
-    num_res = num_shuffle(num_res, n);
-    num_res = num_fft_inv(num_res, n);
-    num_res = num_depad(num_res);
-
     return num_res;
 }
 
@@ -1083,20 +1082,9 @@ num_p num_sqr_fft(num_p num)
     CLU_HANDLER_IS_SAFE(num);
     assert(num);
 
-    num = num_pad(num);
-
-    uint64_t n = stdc_bit_ceil(2 * num->count);
-    num = num_shuffle(num, n);
+    uint64_t n = stdc_bit_ceil(8 * num->count);
     num = num_fft(num, n);
-
-    for(uint64_t i=0; i<n; i++)
-        num->chunk[i] = uint_mod_mul(num->chunk[i], num->chunk[i], PRIME_1);
-
-    num = num_shuffle(num, n);
-    num = num_fft_inv(num, n);
-    num = num_depad(num);
-
-    return num;
+    return num_convolute(num, num, num);
 }
 
 
@@ -1119,6 +1107,46 @@ num_p num_mul_inner(num_p num_res, num_p num_1, num_p num_2) // TODO TEST
         return num_mul_classic_inner(num_res, num_1, num_2);
 
     return num_mul_fft_inner(num_res, num_copy(num_1), num_copy(num_2));
+}
+
+STRUCT(num_fft_cache)
+{
+    bool memoized;
+    num_p num;
+
+    uint64_t n;
+    num_p num_fft;
+};
+
+// Keeps NUM_1
+// Keeps NUM_2
+num_p num_mul_memoized(num_p num_res, num_p num_1, num_fft_cache_p num_2) // TODO TEST
+{
+    CLU_HANDLER_IS_SAFE(num_1)
+    CLU_HANDLER_IS_SAFE(num_2)
+    assert(num_1)
+    assert(num_2)
+
+    num_reset(num_res);
+    if(num_1->count == 0 || num_2->num->count == 0)
+        return num_res;
+
+    if(num_1->count < 1500 || num_2->num->count < 1500)
+        return num_mul_classic_inner(num_res, num_1, num_2->num);
+
+    uint64_t n = stdc_bit_ceil(4 * (num_1->count + num_2->num->count));
+    assert(num_2->n >= n);
+    num_1 = num_fft(num_1, n);
+    
+    if(num_2->memoized == false)
+    {
+        num_2->memoized = true;
+        num_2->num_fft = num_fft(num_copy(num_2->num), num_2->n);
+    }
+
+    num_res = num_convolute(num_res, num_1, num_2->num_fft);
+    num_free(num_1);
+    return num_res;
 }
 
 num_p num_mul_classic(num_p num_1, num_p num_2)
@@ -1336,14 +1364,14 @@ STRUCT(bz_frame)
 {
     bool memoized;
     num_t num_2_1, num_2_0;
-    num_p num_q;
+    num_fft_cache_t num_2_1_cache;
 };
 
 // Input expected to be normalized
 // Returns quocient
 // NUM_1 becomes remainder
 // Keeps NUM_2
-num_p num_div_mod_bz_rec(num_p num_aux, num_p num_1, num_p num_2, bz_frame_t f[])
+num_p num_div_mod_bz(num_p num_aux, num_p num_1, num_p num_2, bz_frame_t f[])
 {
 
     CLU_HANDLER_IS_SAFE(num_1)
@@ -1358,10 +1386,18 @@ num_p num_div_mod_bz_rec(num_p num_aux, num_p num_1, num_p num_2, bz_frame_t f[]
     if(f->memoized == false)
     {
         f->memoized = true;
+    
         f->num_2_0 = num_span(num_2, 0, k);
         f->num_2_1 = num_span(num_2, k, num_2->count);
         CLU_HANDLER_REGISTER_STATIC(&f->num_2_0)
         CLU_HANDLER_REGISTER_STATIC(&f->num_2_1)
+
+        uint64_t n = stdc_bit_ceil(8 * k);
+        f->num_2_1_cache = (num_fft_cache_t)
+        {
+            .num = &f->num_2_1,
+            .n = n,
+        };
     }
 
     num_p num_q[2];
@@ -1370,9 +1406,10 @@ num_p num_div_mod_bz_rec(num_p num_aux, num_p num_1, num_p num_2, bz_frame_t f[]
         num_t num_1_1 = num_span(num_1, k * (i + 1), num_1->count);
         CLU_HANDLER_REGISTER_STATIC(&num_1_1)
 
-        num_p num_q_tmp = num_div_mod_bz_rec(num_aux, &num_1_1, &f->num_2_1, &f[1]);
+        num_p num_q_tmp = num_div_mod_bz(num_aux, &num_1_1, &f->num_2_1, &f[1]);
         while(num_normalize(num_1));
-        num_mul_inner(num_aux, num_q_tmp, &f->num_2_0);
+
+        num_mul_memoized(num_aux, num_q_tmp, &f->num_2_1_cache);
         while(num_cmp_offset(num_1, k * i, num_aux) < 0)
         {
             num_q_tmp = num_sub_uint(num_q_tmp, 1);
@@ -1384,15 +1421,6 @@ num_p num_div_mod_bz_rec(num_p num_aux, num_p num_1, num_p num_2, bz_frame_t f[]
     }
 
     return num_join(num_q[1], num_q[0], k);
-}
-
-num_p num_div_mod_bz(num_p num_aux, num_p num_1, num_p num_2)
-{
-    uint64_t frame_count = stdc_bit_width(num_2->count);
-    bz_frame_t f[frame_count];
-    memset(f, 0, sizeof(f));
-
-    return num_div_mod_bz_rec(num_aux, num_1, num_2, f);
 }
 
 // Input expected to be normalized
@@ -1409,6 +1437,10 @@ num_p num_div_mod_unbalanced(num_p num_1, num_p num_2)
     uint64_t n_2 = num_2->count;
     uint64_t n_1 = num_1->count;
 
+    uint64_t frame_count = stdc_bit_width(num_2->count);
+    bz_frame_t f[frame_count];
+    memset(f, 0, sizeof(f));
+
     uint64_t count = stdc_bit_ceil(8 * num_2->count);
     num_p num_aux = num_create(count, 0);
     num_p num_q = num_create(num_1->count - num_2->count + 1, 0);
@@ -1420,14 +1452,14 @@ num_p num_div_mod_unbalanced(num_p num_1, num_p num_2)
         num_t num_1_1 = num_span(num_1, k_1, num_1->count);
         CLU_HANDLER_REGISTER_STATIC(&num_1_1)
 
-        num_p num_q_tmp = num_div_mod_bz(num_aux, &num_1_1, num_2);
+        num_p num_q_tmp = num_div_mod_bz(num_aux, &num_1_1, num_2, f);
         while(num_normalize(num_1));
         num_q = num_join(num_q, num_q_tmp, k_q);
 
         n_1 -= n_2;
     }
 
-    num_p num_q_tmp = num_div_mod_bz(num_aux, num_1, num_2);
+    num_p num_q_tmp = num_div_mod_bz(num_aux, num_1, num_2, f);
     num_q = num_join(num_q, num_q_tmp, n_1 - n_2);
     num_free(num_aux);
 
