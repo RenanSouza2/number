@@ -287,6 +287,16 @@ num_p num_create(uint64_t size, uint64_t count)
     return num;
 }
 
+// num_p num_create_delete(uint64_t size, uint64_t count, char const func[], uint64_t line)
+// {
+//     num_p num = num_create(size, count);
+//     clu_handler_unregister(num, __func__, __LINE__);
+//     clu_handler_register(num, "f|%s|l|%d", func, line);
+//     return num;
+// }
+
+// #define num_create(size, count) num_create_delete(size, count, __func__, __LINE__)
+
 num_p num_expand_to(num_p num, uint64_t target)
 {
     CLU_HANDLER_IS_SAFE(num);
@@ -1182,7 +1192,7 @@ num_p num_div_mod_uint(num_p num, uint64_t value)
 // Returns quocient
 // NUM_1 becomes remainder
 // Keeps NUM_2
-num_p num_div_mod_classic(num_p num_1, num_p num_2)
+num_p num_div_mod_classic(num_p num_aux, num_p num_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_1);
     CLU_HANDLER_IS_SAFE(num_2);
@@ -1191,7 +1201,6 @@ num_p num_div_mod_classic(num_p num_1, num_p num_2)
 
     uint64_t count = num_1->count - num_2->count + 1;
     num_p num_q = num_create(count, count);
-    num_p num_aux = num_create(num_2->count + 1, 0);
     uint64_t val_2 = num_2->chunk[num_2->count-1];
     for(uint64_t i = count - 1; i != UINT64_MAX; i--)
     {
@@ -1228,7 +1237,6 @@ num_p num_div_mod_classic(num_p num_1, num_p num_2)
         num_q->chunk[i] = r;
         num_1 = num_sub_offset(num_1, i, num_aux);
     }
-    num_free(num_aux);
 
     num_normalize(num_q);
     return num_q;
@@ -1238,7 +1246,7 @@ num_p num_div_mod_classic(num_p num_1, num_p num_2)
 // Returns quocient
 // NUM_1 becomes remainder
 // Keeps NUM_2
-num_p num_div_mod_fallback(num_p num_1, num_p num_2)
+num_p num_div_mod_fallback(num_p num_aux, num_p num_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_1);
     CLU_HANDLER_IS_SAFE(num_2);
@@ -1247,19 +1255,19 @@ num_p num_div_mod_fallback(num_p num_1, num_p num_2)
     assert(num_2->count);
 
     if(num_cmp(num_1, num_2) < 0)
-        return num_create(0, 0);
+        return num_reset(num_1);
 
     if(num_2->count == 1)
         return num_div_mod_uint(num_1, num_2->chunk[0]);
     
-    return num_div_mod_classic(num_1, num_2);
+    return num_div_mod_classic(num_aux, num_1, num_2);
 }
 
 // Input expected to be normalized
 // Returns quocient
 // NUM_1 becomes remainder
 // Keeps NUM_2
-num_p num_div_mod_rec(num_p num_1, num_p num_2)
+num_p num_div_mod_rec(num_p num_aux, num_p num_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_1)
     CLU_HANDLER_IS_SAFE(num_2)
@@ -1267,7 +1275,7 @@ num_p num_div_mod_rec(num_p num_1, num_p num_2)
     assert(num_2)
     
     if(num_1->count < num_2->count + 2 || num_2->count == 1)
-        return num_div_mod_fallback(num_1, num_2);
+        return num_div_mod_fallback(num_aux, num_1, num_2);
 
     uint64_t k = (num_1->count - num_2->count) / 2;
     assert(k < num_2->count);
@@ -1277,13 +1285,12 @@ num_p num_div_mod_rec(num_p num_1, num_p num_2)
     CLU_HANDLER_REGISTER_STATIC(&num_2_1)
 
     num_p num_q[2];
-    num_p num_aux = num_create(2 * k + 1, 0);
     for(uint64_t i=1; i!=UINT64_MAX; i--)
     {
         num_t num_1_1 = num_span(num_1, k * (i + 1), num_1->count);
         CLU_HANDLER_REGISTER_STATIC(&num_1_1)
 
-        num_p num_q_tmp = num_div_mod_rec(&num_1_1, &num_2_1);
+        num_p num_q_tmp = num_div_mod_rec(num_aux, &num_1_1, &num_2_1);
         while(num_normalize(num_1));
         num_aux = num_mul_inner(num_aux, num_q_tmp, &num_2_0);
         while(num_cmp_offset(num_1, k * i, num_aux) < 0)
@@ -1295,7 +1302,6 @@ num_p num_div_mod_rec(num_p num_1, num_p num_2)
 
         num_q[i] = num_q_tmp;
     }
-    num_free(num_aux);
 
     return num_join(num_q[1], num_q[0], k);
 }
@@ -1315,6 +1321,8 @@ num_p num_div_mod_unbalanced(num_p num_1, num_p num_2)
     uint64_t n_1 = num_1->count;
 
     num_p num_q = num_create(num_1->count - num_2->count + 1, 0);
+    num_p num_aux = num_create(2 * num_2->count + 1, 0);
+    num_aux->cannot_expand = true;
     for(uint64_t i=0; n_1 > 2 * n_2; i++)
     {
         uint64_t k_q = num_2->count;
@@ -1322,14 +1330,15 @@ num_p num_div_mod_unbalanced(num_p num_1, num_p num_2)
         num_t num_1_1 = num_span(num_1, k_1, num_1->count);
         CLU_HANDLER_REGISTER_STATIC(&num_1_1)
 
-        num_p num_q_tmp = num_div_mod_rec(&num_1_1, num_2);
+        num_p num_q_tmp = num_div_mod_rec(num_aux, &num_1_1, num_2);
         while(num_normalize(num_1));
         num_q = num_join(num_q, num_q_tmp, k_q);
 
         n_1 -= n_2;
     }
 
-    num_p num_q_tmp = num_div_mod_rec(num_1, num_2);
+    num_p num_q_tmp = num_div_mod_rec(num_aux, num_1, num_2);
+    num_free(num_aux);
     return num_join(num_q, num_q_tmp, n_1 - n_2);
 }
 
