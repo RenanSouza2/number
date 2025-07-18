@@ -1115,7 +1115,7 @@ STRUCT(num_fft_cache)
     num_p num;
 
     uint64_t n;
-    num_p num_fft;
+    num_p fft;
 };
 
 // Keeps NUM_1
@@ -1123,7 +1123,6 @@ STRUCT(num_fft_cache)
 num_p num_mul_memoized(num_p num_res, num_p num_1, num_fft_cache_p num_2) // TODO TEST
 {
     CLU_HANDLER_IS_SAFE(num_1)
-    CLU_HANDLER_IS_SAFE(num_2)
     assert(num_1)
     assert(num_2)
 
@@ -1136,15 +1135,15 @@ num_p num_mul_memoized(num_p num_res, num_p num_1, num_fft_cache_p num_2) // TOD
 
     uint64_t n = stdc_bit_ceil(4 * (num_1->count + num_2->num->count));
     assert(num_2->n >= n);
-    num_1 = num_fft(num_1, n);
+    num_1 = num_fft(num_copy(num_1), num_2->n);
     
     if(num_2->memoized == false)
     {
         num_2->memoized = true;
-        num_2->num_fft = num_fft(num_copy(num_2->num), num_2->n);
+        num_2->fft = num_fft(num_copy(num_2->num), num_2->n);
     }
 
-    num_res = num_convolute(num_res, num_1, num_2->num_fft);
+    num_res = num_convolute(num_res, num_1, num_2->fft);
     num_free(num_1);
     return num_res;
 }
@@ -1364,14 +1363,14 @@ STRUCT(bz_frame)
 {
     bool memoized;
     num_t num_2_1, num_2_0;
-    num_fft_cache_t num_2_1_cache;
+    num_fft_cache_t num_2_0_cache;
 };
 
 // Input expected to be normalized
 // Returns quocient
 // NUM_1 becomes remainder
 // Keeps NUM_2
-num_p num_div_mod_bz(num_p num_aux, num_p num_1, num_p num_2, bz_frame_t f[])
+num_p num_div_mod_bz_rec(num_p num_aux, num_p num_1, num_p num_2, bz_frame_t f[])
 {
 
     CLU_HANDLER_IS_SAFE(num_1)
@@ -1393,9 +1392,9 @@ num_p num_div_mod_bz(num_p num_aux, num_p num_1, num_p num_2, bz_frame_t f[])
         CLU_HANDLER_REGISTER_STATIC(&f->num_2_1)
 
         uint64_t n = stdc_bit_ceil(8 * k);
-        f->num_2_1_cache = (num_fft_cache_t)
+        f->num_2_0_cache = (num_fft_cache_t)
         {
-            .num = &f->num_2_1,
+            .num = &f->num_2_0,
             .n = n,
         };
     }
@@ -1406,10 +1405,11 @@ num_p num_div_mod_bz(num_p num_aux, num_p num_1, num_p num_2, bz_frame_t f[])
         num_t num_1_1 = num_span(num_1, k * (i + 1), num_1->count);
         CLU_HANDLER_REGISTER_STATIC(&num_1_1)
 
-        num_p num_q_tmp = num_div_mod_bz(num_aux, &num_1_1, &f->num_2_1, &f[1]);
+        num_p num_q_tmp = num_div_mod_bz_rec(num_aux, &num_1_1, &f->num_2_1, &f[1]);
         while(num_normalize(num_1));
 
-        num_mul_memoized(num_aux, num_q_tmp, &f->num_2_1_cache);
+        num_mul_memoized(num_aux, num_q_tmp, &f->num_2_0_cache);
+        // num_mul_inner(num_aux, num_q_tmp, &f->num_2_0);
         while(num_cmp_offset(num_1, k * i, num_aux) < 0)
         {
             num_q_tmp = num_sub_uint(num_q_tmp, 1);
@@ -1420,14 +1420,17 @@ num_p num_div_mod_bz(num_p num_aux, num_p num_1, num_p num_2, bz_frame_t f[])
         num_q[i] = num_q_tmp;
     }
 
-    return num_join(num_q[1], num_q[0], k);
+    // printf("\nA");
+    num_p num_res = num_join(num_q[1], num_q[0], k);
+    // printf("\nB");
+    return num_res;
 }
 
 // Input expected to be normalized
 // Returns quocient
 // NUM_1 becomes remainder
 // Keeps NUM_2
-num_p num_div_mod_unbalanced(num_p num_1, num_p num_2)
+num_p num_div_mod_bz(num_p num_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_1)
     CLU_HANDLER_IS_SAFE(num_2)
@@ -1452,16 +1455,20 @@ num_p num_div_mod_unbalanced(num_p num_1, num_p num_2)
         num_t num_1_1 = num_span(num_1, k_1, num_1->count);
         CLU_HANDLER_REGISTER_STATIC(&num_1_1)
 
-        num_p num_q_tmp = num_div_mod_bz(num_aux, &num_1_1, num_2, f);
+        num_p num_q_tmp = num_div_mod_bz_rec(num_aux, &num_1_1, num_2, f);
         while(num_normalize(num_1));
         num_q = num_join(num_q, num_q_tmp, k_q);
 
         n_1 -= n_2;
     }
 
-    num_p num_q_tmp = num_div_mod_bz(num_aux, num_1, num_2, f);
+    num_p num_q_tmp = num_div_mod_bz_rec(num_aux, num_1, num_2, f);
     num_q = num_join(num_q, num_q_tmp, n_1 - n_2);
     num_free(num_aux);
+
+    for(uint64_t i=0; i<frame_count && f[i].memoized; i++)
+        if(f[i].num_2_0_cache.memoized)
+            num_free(f[i].num_2_0_cache.fft);
 
     return num_q;
 }
@@ -1536,7 +1543,7 @@ void num_div_mod_inner(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p nu
     }
 
     uint64_t bits = num_div_normalize(&num_1, &num_2);
-    num_p num_q = num_div_mod_unbalanced(num_1, num_2);
+    num_p num_q = num_div_mod_bz(num_1, num_2);
     num_div_mod_finalize(out_num_q, out_num_r, num_q, num_1, num_2, bits);
 }
 

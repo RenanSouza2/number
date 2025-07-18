@@ -600,10 +600,10 @@ int main()
 
     // uint64_t arg = get_arg(argc, argv);
 
-    // clu_set_log(true);
+    // clu_log_enable(true);
 
     // num_generate(21, 2);
-    time_1(16, 26);
+    time_1(16, 27);
     // time_1(16, 17);
     // time_2(argc, argv, 19);
     // time_3();
