@@ -1255,7 +1255,7 @@ num_p num_div_mod_fallback(num_p num_aux, num_p num_1, num_p num_2)
     assert(num_2->count);
 
     if(num_cmp(num_1, num_2) < 0)
-        return num_reset(num_1);
+        return num_create(0, 0);
 
     if(num_2->count == 1)
         return num_div_mod_uint(num_1, num_2->chunk[0]);
