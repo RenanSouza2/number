@@ -1115,8 +1115,8 @@ num_p num_mul_inner(num_p num_res, num_p num_1, num_p num_2) // TODO TEST
     if(num_1->count == 0 || num_2->count == 0)
         return num_res;
 
-    // if(num_1->count < 1500 || num_2->count < 1500)
-    //     return num_mul_classic_inner(num_res, num_1, num_2);
+    if(num_1->count < 1500 || num_2->count < 1500)
+        return num_mul_classic_inner(num_res, num_1, num_2);
 
     return num_mul_fft_inner(num_res, num_copy(num_1), num_copy(num_2));
 }
