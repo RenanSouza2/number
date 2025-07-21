@@ -1183,6 +1183,19 @@ void num_ssm_shl(
     num->count = num_count;
 }
 
+int64_t num_ssm_cmp(num_p num, uint64_t pos_1, uint64_t pos_2, uint64_t n)
+{
+    for(uint64_t i=n-1; i!=UINT64_MAX; i--)
+    {
+        if(num->chunk[pos_1 + i] < num->chunk[pos_2 + i])
+            return -1;
+            
+        if(num->chunk[pos_1 + i] > num->chunk[pos_2 + i])
+            return 1;
+    }
+    return 0;
+}
+
 void num_ssm_add(
     num_p num_res,
     num_p num,
@@ -1214,28 +1227,62 @@ void num_ssm_add(
     num_ssm_normalize(num_res, 0, n);
 }
 
-// void num_ssm_fft_fwd_rec(
-//     num_p num_aux,
-//     num_p num,
-//     uint64_t pos,
-//     uint64_t step,
-//     uint64_t n,
-//     uint64_t k,
-//     uint64_t bits
-// )
-// {
-//     if(k > 2)
-//     {
-//         num_ssm_fft_fwd_rec(num_aux, num, pos     , step * 2, n, k/2, bits+1);
-//         num_ssm_fft_fwd_rec(num_aux, num, pos+step, step * 2, n, k/2, bits+1);
-//     }
-//
-//     for(uint64_t i=0; i<k; k++)
-//     {
-//         num_ssm_shl(num_aux, num, (pos + 2 * step * i + 1) * n, n, i * bits);
-//         num_aux = 
-//     }
-// }
+void num_ssm_sub(
+    num_p num_res,
+    num_p num,
+    uint64_t pos_1,
+    uint64_t pos_2,
+    uint64_t n
+)
+{
+    memcpy(&num_res->chunk[n], &num->chunk[pos_1], n * sizeof(uint64_t));
+
+    if(num_ssm_cmp(num, pos_1, pos_2, n) < 0)
+    {
+        num_add_uint_offset(num_res,   n    , 1);
+        num_add_uint_offset(num_res, 2*n - 1, 1);
+    }
+
+    for(uint64_t i=0; i<n; i++)
+    {
+        uint64_t carry = num->chunk[pos_2 + i];
+        for(uint64_t j=i; j<n && carry; j++)
+        {
+            uint64_t value = num_res->chunk[n + j] - carry;
+            carry = value > num_res->chunk[n + j];
+            num_res->chunk[n + j] = value;
+        }
+    }
+}
+
+void num_ssm_fft_fwd_rec(
+    num_p num_aux,
+    num_p num,
+    uint64_t pos,
+    uint64_t step,
+    uint64_t n,
+    uint64_t k,
+    uint64_t bits
+)
+{
+    if(k > 2)
+    {
+        num_ssm_fft_fwd_rec(num_aux, num, pos     , step * 2, n, k/2, bits+1);
+        num_ssm_fft_fwd_rec(num_aux, num, pos+step, step * 2, n, k/2, bits+1);
+    }
+
+    for(uint64_t i=0; i<k; k++)
+    {
+        uint64_t pos_1 = (pos + 2 * step * i + 1) * n;
+        uint64_t pos_2 = (pos + 2 * step * i) * n;
+        num_ssm_shl(num_aux, num, pos_2, n, i * bits);
+        num_ssm_add(num_aux, num, pos_1, pos_2, n);
+        num_ssm_sub(num_aux, num, pos_1, pos_2, n);
+
+        memcpy(&num->chunk[pos_1],  num_aux->chunk   , n);
+        memcpy(&num->chunk[pos_2], &num_aux->chunk[n], n);
+    }
+}
 
 
 // Keeps NUM_1
