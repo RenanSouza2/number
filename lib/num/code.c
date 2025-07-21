@@ -1089,15 +1089,85 @@ num_p num_sqr_fft(num_p num)
 
 
 
-// // Separate number to a base 2^(64*b)
-// // Each place will be represented in n chunks
-// // the final vector is padded to k places
-// num_p num_pad_1(num_p num, uint64_t b, uint64_t n, uint64_t k) // TODO TEST
-// {
-//     uint64_t count = k * n;
-//     num = num_expand_to(num);
-//     for(uint64_t i=k)
-// }
+// Separate number to a base 2^(64*b)
+// Each place will be represented in n chunks
+// the final vector is padded to k places
+num_p num_ssm_pad(num_p num, uint64_t b, uint64_t n, uint64_t k)
+{
+    assert(num->count <= b * k);
+    uint64_t count = k * n;
+    num = num_expand_to(num, count);
+    num->count = count;
+    for(uint64_t i = k-1; i!=UINT64_MAX; i--) // TODO use a better starter
+    {
+        for(uint64_t j=n-1; j!=b-1; j--)
+            num->chunk[i*n + j] = 0;
+
+        for(uint64_t j=b-1; j!=UINT64_MAX; j--)
+            num->chunk[i*n + j] = num->chunk[i*b + j];
+    }
+    return num;
+}
+
+bool num_is_span_zero(num_p num, uint64_t pos, uint64_t count)
+{
+    for(uint64_t i=0; i<count; i++)
+        if(num->chunk[i + pos])
+            return false;
+
+    return true;
+}
+
+// Shifts a number by BITS
+// Index is the begining of the chunk span
+// n is the size of the number in chunks, the module is 2^(64*(n-1)) + 1
+void num_ssm_shl(
+    num_p num_aux,
+    num_p num,
+    uint64_t pos,
+    uint64_t n,
+    uint64_t bits
+)
+{
+    if(bits == 0)
+        return;
+
+    uint64_t count = bits >> 6;
+    num_aux->count = n;
+    memcpy(num_aux->chunk, &num->chunk[pos], n * sizeof(uint64_t));
+
+    memset(&num->chunk[pos], 0, count * sizeof(uint64_t));
+    memcpy(&num->chunk[count + pos], num_aux->chunk, (n-1 - count) * sizeof(uint64_t));
+    
+    uint64_t bits_l = bits & 0x3f;
+    if(bits_l)
+    {
+        uint64_t carry = 0;
+        for(uint64_t i=count; i<n-1; i++)
+        {
+            uint64_t value = num->chunk[i + pos];
+            num->chunk[i + pos] = (value << bits_l) | carry;
+            carry = value >> (64 - bits_l);
+        }
+        num->chunk[n-1 + pos] = carry;
+    }
+    num->chunk[n-1 + pos] &= 1;
+
+    num_shr(num_aux, 64*n-63 - bits);
+
+    if(num_is_span_zero(num_aux, 0, num_aux->count))
+        return;
+
+    if(num_is_span_zero(num, pos, n))
+    {
+        num->chunk[pos] = 1;
+        num->chunk[n-1 + pos] = 1;
+    }
+
+    uint64_t num_count = num->count;
+    num_sub_offset(num, pos, num_aux);
+    num->count = num_count;
+}
 
 
 

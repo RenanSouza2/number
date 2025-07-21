@@ -71,14 +71,14 @@ void time_1(uint64_t begin, uint64_t end)
         num_p num_1_copy = num_copy(num_1);
         num_p num_2_copy = num_copy(num_2);
 
-        clu_log_enable(true);
+        // clu_log_enable(true);
 
         TIME_RESET
         num_p num = num_div(num_1_copy, num_2_copy);
         TIME_END(t3)
         printf("\t%10.3f", t3 / 1e9);
 
-        clu_log_enable(false);
+        // clu_log_enable(false);
 
         num_free(num);
     }

@@ -57,6 +57,15 @@ num_p num_shuffle(num_p num, uint64_t n);
 num_p num_fft(num_p num, uint64_t n);
 num_p num_fft_inv(num_p num, uint64_t n);
 
+num_p num_ssm_pad(num_p num, uint64_t b, uint64_t n, uint64_t k);
+void num_ssm_shl(
+    num_p num_aux,
+    num_p num,
+    uint64_t pos,
+    uint64_t n,
+    uint64_t bits
+);
+
 num_p num_mul_classic_inner(num_p num_res, num_p num_1, num_p num_2);
 num_p num_mul_classic(num_p num_1, num_p num_2);
 num_p num_sqr_classic(num_p num);
