@@ -1129,7 +1129,7 @@ void num_ssm_shl(
     uint64_t bits
 )
 {
-    if(bits == 0)
+    if(bits == 0 || num_is_span_zero(num, pos, n))
         return;
 
     uint64_t count = bits >> 6;
@@ -1137,23 +1137,24 @@ void num_ssm_shl(
     memcpy(num_aux->chunk, &num->chunk[pos], n * sizeof(uint64_t));
 
     memset(&num->chunk[pos], 0, count * sizeof(uint64_t));
-    memcpy(&num->chunk[count + pos], num_aux->chunk, (n-1 - count) * sizeof(uint64_t));
-    
+    memcpy(&num->chunk[count + pos], num_aux->chunk, (n - count) * sizeof(uint64_t));
+
     uint64_t bits_l = bits & 0x3f;
     if(bits_l)
     {
         uint64_t carry = 0;
-        for(uint64_t i=count; i<n-1; i++)
+        for(uint64_t i=count; i<n; i++)
         {
             uint64_t value = num->chunk[i + pos];
             num->chunk[i + pos] = (value << bits_l) | carry;
             carry = value >> (64 - bits_l);
         }
-        num->chunk[n-1 + pos] = carry;
     }
     num->chunk[n-1 + pos] &= 1;
-
-    num_shr(num_aux, 64*n-63 - bits);
+    
+    uint64_t bits_r = 64*n-63 - bits - 1;
+    num_shr(num_aux, bits_r);
+    num_aux->chunk[0] &= 0xfffffffffffffffe;
 
     if(num_is_span_zero(num_aux, 0, num_aux->count))
         return;
