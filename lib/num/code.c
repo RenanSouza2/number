@@ -1089,6 +1089,17 @@ num_p num_sqr_fft(num_p num)
 
 
 
+// // Separate number to a base 2^(64*b)
+// // Each place will be represented in n chunks
+// // the final vector is padded to k places
+// num_p num_pad_1(num_p num, uint64_t b, uint64_t n, uint64_t k) // TODO TEST
+// {
+//     uint64_t count = k * n;
+//     num = num_expand_to(num);
+//     for(uint64_t i=k)
+// }
+
+
 
 // Keeps NUM_1
 // Keeps NUM_2
@@ -1175,75 +1186,6 @@ num_p num_mul_fft(num_p num_1, num_p num_2)
     num_p num_res = num_create(count, 0);
     num_res->cannot_expand = true;
     return num_mul_fft_inner(num_res, num_1, num_2);    
-}
-
-
-
-num_p num_pseudo_float_num(num_p num_1, num_p num_2, uint64_t count)
-{
-    num_1 = num_mul(num_1, num_2);
-    // num_display_tag("res", num_1);
-    num_1 = num_head_trim(num_1, count);
-    return num_1;
-}
-
-num_p num_newton_inv(num_p num, uint64_t count)
-{
-    num_p num_r = num_wrap(1);
-    num_r = num_head_grow(num_r, count);
-
-    num_p num_2 = num_wrap(2);
-    num_2 = num_head_grow(num_2, count);
-
-    uint64_t i=0;
-    for(i=0; i < 64 * num->count; i++)
-    {
-        num_p num_last = num_copy(num_r);
-
-        num_p num_aux = num_pseudo_float_num(num_copy(num), num_copy(num_r), num->count);
-        num_aux = num_sub(num_copy(num_2), num_aux);
-        num_r = num_pseudo_float_num(num_r, num_aux, count);
-
-        if(num_cmp(num_r, num_last) == 0)
-        {
-            num_free(num_last);
-            break;
-        }
-        num_free(num_last);
-    }
-    num_free(num);
-    num_free(num_2);
-    return num_r;
-}
-
-num_p num_div_newton(num_p num_1, num_p num_2)
-{
-    assert(num_1->count >= num_2->count);
-    uint64_t count = num_1->count - num_2->count +
-        (num_cmp_offset(num_1, num_1->count - num_2->count, num_2) >= 0);
-
-    num_div_normalize(&num_1, &num_2);
-    num_p num_res = num_copy(num_2);
-    num_res = num_newton_inv(num_res, count > num_res->count ? count : num_res->count);
-    num_res = num_mul(num_res, num_copy(num_1));
-    num_res = num_head_trim(num_res, num_res->count - count);
-
-    num_p num_adjust = num_mul(num_copy(num_2), num_copy(num_res));
-    if(num_cmp(num_1, num_adjust) < 0)
-    {
-        num_res = num_sub_uint(num_res, 1);
-        num_free(num_1);
-    }
-    else
-    {   
-        num_adjust = num_sub(num_1, num_adjust);
-        if(num_cmp(num_adjust, num_2) >= 0)
-            num_res = num_add_uint(num_res, 1);
-    }
-
-    num_free(num_adjust);
-    num_free(num_2);
-    return num_res;
 }
 
 

@@ -65,6 +65,5 @@ num_p num_mul_fft(num_p num_1, num_p num_2);
 num_p num_sqr_fft(num_p num);
 
 uint64_t num_div_normalize(num_p *num_1, num_p *num_2);
-num_p num_div_newton(num_p num_1, num_p num_2);
 
 #endif
