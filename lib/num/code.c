@@ -1156,6 +1156,14 @@ void num_ssm_shl(
     num_shr(num_aux, bits_r);
     num_aux->chunk[0] &= 0xfffffffffffffffe;
 
+    if(num->chunk[n-1 + pos] && !num_is_span_zero(num, pos, n-1))
+    {
+        uint64_t num_count = num->count;
+        num_sub_uint_offset(num, pos, 1);
+        num->count = num_count;
+        num->chunk[n-1 + pos] = 0;
+    }
+
     if(num_is_span_zero(num_aux, 0, num_aux->count))
         return;
 

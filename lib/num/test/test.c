@@ -1239,36 +1239,56 @@ void test_num_ssm_shl(bool show)
         TEST_CASE_CLOSE                                 \
     }
     
-    #define TEST_SSM_SHL_BATCH(TAG, COUNT, FORMAT, POS, N)  \
-    {                                                       \
-        TEST_SSM_SHL(10 * TAG + 1,                          \
-            FORMAT(COUNT, (0, 0, 0)), POS, N, 1,            \
-            FORMAT(COUNT, (0, 0, 0))                        \
-        );                                                  \
-        TEST_SSM_SHL(10 * TAG + 2,                          \
-            FORMAT(COUNT, (0, 0, 1)), POS, N, 0,            \
-            FORMAT(COUNT, (0, 0, 1))                        \
-        );                                                  \
-        TEST_SSM_SHL(10 * TAG + 3,                          \
-            FORMAT(COUNT, (0, 0, 1)), POS, N, 8,            \
-            FORMAT(COUNT, (0, 0, 0x100))                    \
-        );                                                  \
-        TEST_SSM_SHL(10 * TAG + 4,                          \
-            FORMAT(COUNT, (0, 0, 1)), POS, N, 64,           \
-            FORMAT(COUNT, (0, 1, 0))                        \
-        );                                                  \
-        TEST_SSM_SHL(10 * TAG + 5,                          \
-            FORMAT(COUNT, (0, 0, 1)), POS, N, 65,           \
-            FORMAT(COUNT, (0, 2, 0))                        \
-        );                                                  \
-        TEST_SSM_SHL(10 * TAG + 6,                          \
-            FORMAT(COUNT, (0, 0, 1)), POS, N, 128,          \
-            FORMAT(COUNT, (1, 0, 0))                        \
-        );                                                  \
-        TEST_SSM_SHL(10 * TAG + 7,                          \
-            FORMAT(COUNT, (1, 0, 0)), POS, N, 1,            \
-            FORMAT(COUNT, (0, UINT64_MAX, UINT64_MAX))      \
-        );                                                  \
+    #define TEST_SSM_SHL_BATCH(TAG, COUNT, FORMAT, POS, N)              \
+    {                                                                   \
+        TEST_SSM_SHL(100 * TAG + 1,                                     \
+            FORMAT(COUNT, (0, 0, 0)), POS, N, 1,                        \
+            FORMAT(COUNT, (0, 0, 0))                                    \
+        );                                                              \
+        TEST_SSM_SHL(100 * TAG + 2,                                     \
+            FORMAT(COUNT, (0, 0, 1)), POS, N, 0,                        \
+            FORMAT(COUNT, (0, 0, 1))                                    \
+        );                                                              \
+        TEST_SSM_SHL(100 * TAG + 3,                                     \
+            FORMAT(COUNT, (0, 0, 1)), POS, N, 8,                        \
+            FORMAT(COUNT, (0, 0, 0x100))                                \
+        );                                                              \
+        TEST_SSM_SHL(100 * TAG + 4,                                     \
+            FORMAT(COUNT, (0, 0, 1)), POS, N, 64,                       \
+            FORMAT(COUNT, (0, 1, 0))                                    \
+        );                                                              \
+        TEST_SSM_SHL(100 * TAG + 5,                                     \
+            FORMAT(COUNT, (0, 0, 1)), POS, N, 65,                       \
+            FORMAT(COUNT, (0, 2, 0))                                    \
+        );                                                              \
+        TEST_SSM_SHL(100 * TAG + 6,                                     \
+            FORMAT(COUNT, (0, 0, 1)), POS, N, 128,                      \
+            FORMAT(COUNT, (1, 0, 0))                                    \
+        );                                                              \
+        TEST_SSM_SHL(100 * TAG + 7,                                     \
+            FORMAT(COUNT, (1, 0, 0)), POS, N, 1,                        \
+            FORMAT(COUNT, (0, UINT64_MAX, UINT64_MAX))                  \
+        );                                                              \
+        TEST_SSM_SHL(100 * TAG + 8,                                     \
+            FORMAT(COUNT, (0, 1UL << 63, 1)), POS, N, 1,                \
+            FORMAT(COUNT, (0, 0, 1))                                    \
+        );                                                              \
+        TEST_SSM_SHL(100 * TAG + 9,                                     \
+            FORMAT(COUNT, (0, UINT64_MAX, UINT64_MAX)), POS, N, 1,      \
+            FORMAT(COUNT, (0, UINT64_MAX, UINT64_MAX - 2))              \
+        );                                                              \
+        TEST_SSM_SHL(100 * TAG + 10,                                    \
+            FORMAT(COUNT, (0, UINT64_MAX, UINT64_MAX)), POS, N, 64,     \
+            FORMAT(COUNT, (0, UINT64_MAX - 1, 1))                       \
+        );                                                              \
+        TEST_SSM_SHL(100 * TAG + 11,                                    \
+            FORMAT(COUNT, (0, UINT64_MAX, UINT64_MAX)), POS, N, 65,     \
+            FORMAT(COUNT, (0, UINT64_MAX - 3, 1))                       \
+        );                                                              \
+        TEST_SSM_SHL(100 * TAG + 12,                                    \
+            FORMAT(COUNT, (0, UINT64_MAX, UINT64_MAX)), POS, N, 128,    \
+            FORMAT(COUNT, (0, 0, 2))                                    \
+        );                                                              \
     }       
 
     #define BATCH_1_FORMAT(COUNT, NUM) (COUNT, ARG_OPEN NUM)
