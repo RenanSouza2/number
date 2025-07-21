@@ -1094,6 +1094,9 @@ num_p num_sqr_fft(num_p num)
 // the final vector is padded to k places
 num_p num_ssm_pad(num_p num, uint64_t b, uint64_t n, uint64_t k)
 {
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num)
+
     assert(num->count <= b * k);
     uint64_t count = k * n;
     num = num_expand_to(num, count);
@@ -1111,6 +1114,9 @@ num_p num_ssm_pad(num_p num, uint64_t b, uint64_t n, uint64_t k)
 
 bool num_is_span_zero(num_p num, uint64_t pos, uint64_t count)
 {
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num)
+
     for(uint64_t i=0; i<count; i++)
         if(num->chunk[i + pos])
             return false;
@@ -1120,6 +1126,9 @@ bool num_is_span_zero(num_p num, uint64_t pos, uint64_t count)
 
 void num_ssm_normalize(num_p num, uint64_t pos, uint64_t n)
 {
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num)
+
     if(num->chunk[n-1 + pos] && !num_is_span_zero(num, pos, n-1))
     {
         uint64_t num_count = num->count;
@@ -1140,6 +1149,11 @@ void num_ssm_shl(
     uint64_t bits
 )
 {
+    CLU_HANDLER_IS_SAFE(num_aux)
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num_aux)
+    assert(num)
+
     if(bits == 0 || num_is_span_zero(num, pos, n))
         return;
 
@@ -1204,6 +1218,11 @@ void num_ssm_add(
     uint64_t n
 )
 {
+    CLU_HANDLER_IS_SAFE(num_res)
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num_res)
+    assert(num)
+
     memcpy(num_res->chunk, &num->chunk[pos_1], n * sizeof(uint64_t));
     for(uint64_t i=0; i<n; i++)
     {
@@ -1235,6 +1254,11 @@ void num_ssm_sub(
     uint64_t n
 )
 {
+    CLU_HANDLER_IS_SAFE(num_res)
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num_res)
+    assert(num)
+
     memcpy(&num_res->chunk[n], &num->chunk[pos_1], n * sizeof(uint64_t));
 
     if(num_ssm_cmp(num, pos_1, pos_2, n) < 0)
@@ -1255,6 +1279,25 @@ void num_ssm_sub(
     }
 }
 
+void num_display_span(num_p num, uint64_t pos, uint64_t count)
+{
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num)
+    assert(num->count >= pos + count);
+
+    for(uint64_t i=count-1; i!=UINT64_MAX; i--)
+        printf("" U64PX " ", num->chunk[pos + i]);
+}
+
+void num_display_span_tag(char tag[], num_p num, uint64_t pos, uint64_t count)
+{
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num)
+
+    printf("\n%s\t: ", tag);
+    num_display_span(num, pos, count);
+}
+
 void num_ssm_fft_fwd_rec(
     num_p num_aux,
     num_p num,
@@ -1265,24 +1308,100 @@ void num_ssm_fft_fwd_rec(
     uint64_t bits
 )
 {
+    CLU_HANDLER_IS_SAFE(num_aux)
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num_aux)
+    assert(num)
+
     if(k > 2)
     {
-        num_ssm_fft_fwd_rec(num_aux, num, pos     , step * 2, n, k/2, bits+1);
-        num_ssm_fft_fwd_rec(num_aux, num, pos+step, step * 2, n, k/2, bits+1);
+        num_ssm_fft_fwd_rec(num_aux, num, pos     , 2*step, n, k/2, 2*bits);
+        num_ssm_fft_fwd_rec(num_aux, num, pos+step, 2*step, n, k/2, 2*bits);
     }
 
-    for(uint64_t i=0; i<k; k++)
+    for(uint64_t i=0; i<k/2; i++)
     {
-        uint64_t pos_1 = (pos + 2 * step * i + 1) * n;
-        uint64_t pos_2 = (pos + 2 * step * i) * n;
+        uint64_t pos_1 = (pos + step * (2 * i)) * n;
+        uint64_t pos_2 = (pos + step * (2 * i + 1)) * n;
+
         num_ssm_shl(num_aux, num, pos_2, n, i * bits);
+    
         num_ssm_add(num_aux, num, pos_1, pos_2, n);
         num_ssm_sub(num_aux, num, pos_1, pos_2, n);
 
-        memcpy(&num->chunk[pos_1],  num_aux->chunk   , n);
-        memcpy(&num->chunk[pos_2], &num_aux->chunk[n], n);
+        memcpy(&num->chunk[pos_1],  num_aux->chunk   , n * sizeof(uint64_t));
+        memcpy(&num->chunk[pos_2], &num_aux->chunk[n], n * sizeof(uint64_t));
     }
 }
+
+void num_ssm_fft_fwd(
+    num_p num_aux,
+    num_p num,
+    uint64_t n,
+    uint64_t k,
+    uint64_t bits
+)
+{
+    CLU_HANDLER_IS_SAFE(num_aux)
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num_aux)
+    assert(num)
+
+    num_ssm_fft_fwd_rec(num_aux, num, 0, 1, n, k, bits);
+}
+
+void num_ssm_prepare(num_p num_aux, num_p num)
+{
+    uint64_t M = 1 << (stdc_bit_width(num->count) / 2);
+    uint64_t K = stdc_bit_ceil(2 * num->count / M);
+    uint64_t P = 2 * M + 1;
+    uint64_t Q = 16 * P;
+    uint64_t n = P + 1;
+    
+    num = num_ssm_pad(num, M, n, K);
+
+    num_display_full("paded", num);
+    printf("\n\n");
+    for(uint64_t i=0; i<K; i++)
+    {
+        printf("\ncoeficient[%lu]: ", i);
+        num_display_span(num, n * i, n);
+    }
+
+    num_ssm_fft_fwd(num_aux, num, n, K, Q);
+
+    printf("\n\n");
+    printf("\nres:");
+    for(uint64_t i=0; i<K; i++)
+    {
+        printf("\ncoeficient[%lu]: ", i);
+        num_display_span(num, n * i, n);
+    }
+}
+
+void del()
+{
+    num_p num = num_create_immed(4, 3, 5, 9, 4);
+    
+    uint64_t M = 1 << (stdc_bit_width(num->count) / 2);
+    // uint64_t K = stdc_bit_ceil(2 * num->count / M);
+    // uint64_t k = stdc_trailing_zeros(K);
+    uint64_t P = 2 * M + 1;
+    // uint64_t Q = 16 * P;
+    uint64_t n = P + 1;
+
+    num_p num_aux = num_create(2 * n, 2 * n);
+    
+    // printf("\n M: %lu", M);
+    // printf("\n K: %lu", K);
+    // printf("\n k: %lu", k);
+    // printf("\n P: %lu", P);
+    // printf("\n Q: %lu", Q);
+    // printf("\n n: %lu", n);
+
+    num_ssm_prepare(num_aux, num);
+}
+
 
 
 // Keeps NUM_1

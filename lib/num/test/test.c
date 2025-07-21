@@ -1394,6 +1394,49 @@ void test_num_ssm_sub(bool show)
     TEST_FN_CLOSE
 }
 
+void test_num_ssm_sub(bool show)
+{
+    TEST_FN_OPEN
+
+    #define TEST_SSM_SUB(TAG, NUM, POS_1, POS_2, N, RES)    \
+    {                                                       \
+        TEST_CASE_OPEN(TAG)                                 \
+        {                                                   \
+            num_p num = num_create_immed(ARG_OPEN NUM);     \
+            num_p num_res = num_create(2 * N, 2 * N);       \
+            num_ssm_sub(num_res, num, POS_1, POS_2, N);     \
+            assert(num_immed(num_res, ARG_OPEN RES));       \
+            assert(num_immed(num, ARG_OPEN NUM, 0, 0, 0));  \
+        }                                                   \
+        TEST_CASE_CLOSE                                     \
+    }
+
+    TEST_SSM_SUB(1,
+        (6, 0, 0, 1, 0, 0, 2), 0, 3, 3,
+        (6, 0, 0, 1, 0, 0, 0)
+    );
+    TEST_SSM_SUB(2,
+        (6, 0, 0, 2, 0, 0, 2), 0, 3, 3,
+        (6, 0, 0, 0, 0, 0, 0)
+    );
+    TEST_SSM_SUB(3,
+        (6, 0, 0, 3, 0, 0, 2), 0, 3, 3,
+        (6, 1, 0, 0, 0, 0, 0)
+    );
+    TEST_SSM_SUB(4,
+        (6, 0, 0, 1, 1, 0, 0), 0, 3, 3,
+        (6, 0, UINT64_MAX, UINT64_MAX, 0, 0, 0)
+    );
+    TEST_SSM_SUB(5,
+        (6, 1, 0, 0, 0, 0, 1), 0, 3, 3,
+        (6, 0, 0, 2, 0, 0, 0)
+    );
+
+    #undef TEST_SSM_ADD
+
+    TEST_FN_CLOSE
+}
+
 
 
 void test_num_is_zero(bool show)
