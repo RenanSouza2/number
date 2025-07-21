@@ -65,6 +65,13 @@ void num_ssm_shl(
     uint64_t n,
     uint64_t bits
 );
+void num_ssm_add(
+    num_p num_res,
+    num_p num,
+    uint64_t pos_1,
+    uint64_t pos_2,
+    uint64_t n
+);
 
 num_p num_mul_classic_inner(num_p num_res, num_p num_1, num_p num_2);
 num_p num_mul_classic(num_p num_1, num_p num_2);

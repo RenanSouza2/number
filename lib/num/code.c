@@ -1118,6 +1118,17 @@ bool num_is_span_zero(num_p num, uint64_t pos, uint64_t count)
     return true;
 }
 
+void num_ssm_normalize(num_p num, uint64_t pos, uint64_t n)
+{
+    if(num->chunk[n-1 + pos] && !num_is_span_zero(num, pos, n-1))
+    {
+        uint64_t num_count = num->count;
+        num_sub_uint_offset(num, pos, 1);
+        num->count = num_count;
+        num->chunk[n-1 + pos] = 0;
+    }
+}
+
 // Shifts a number by BITS
 // Index is the begining of the chunk span
 // n is the size of the number in chunks, the module is 2^(64*(n-1)) + 1
@@ -1156,13 +1167,7 @@ void num_ssm_shl(
     num_shr(num_aux, bits_r);
     num_aux->chunk[0] &= 0xfffffffffffffffe;
 
-    if(num->chunk[n-1 + pos] && !num_is_span_zero(num, pos, n-1))
-    {
-        uint64_t num_count = num->count;
-        num_sub_uint_offset(num, pos, 1);
-        num->count = num_count;
-        num->chunk[n-1 + pos] = 0;
-    }
+    num_ssm_normalize(num, pos, n);
 
     if(num_is_span_zero(num_aux, 0, num_aux->count))
         return;
@@ -1178,6 +1183,59 @@ void num_ssm_shl(
     num->count = num_count;
 }
 
+void num_ssm_add(
+    num_p num_res,
+    num_p num,
+    uint64_t pos_1,
+    uint64_t pos_2,
+    uint64_t n
+)
+{
+    memcpy(num_res->chunk, &num->chunk[pos_1], n * sizeof(uint64_t));
+    for(uint64_t i=0; i<n; i++)
+    {
+        uint64_t carry = num->chunk[pos_2 + i];
+        for(uint64_t j=i; j<n && carry; j++)
+        {
+            uint64_t value = carry + num_res->chunk[j];
+            carry = value < carry;
+            num_res->chunk[j] = value;
+        }
+    }
+
+    if(num_res->chunk[n-1] == 2)
+    {
+        uint64_t count = num_res->count;
+        num_sub_uint(num_res, 2);
+        num_res->count = count;
+        num_res->chunk[n-1] = 0;
+    }
+
+    num_ssm_normalize(num_res, 0, n);
+}
+
+// void num_ssm_fft_fwd_rec(
+//     num_p num_aux,
+//     num_p num,
+//     uint64_t pos,
+//     uint64_t step,
+//     uint64_t n,
+//     uint64_t k,
+//     uint64_t bits
+// )
+// {
+//     if(k > 2)
+//     {
+//         num_ssm_fft_fwd_rec(num_aux, num, pos     , step * 2, n, k/2, bits+1);
+//         num_ssm_fft_fwd_rec(num_aux, num, pos+step, step * 2, n, k/2, bits+1);
+//     }
+//
+//     for(uint64_t i=0; i<k; k++)
+//     {
+//         num_ssm_shl(num_aux, num, (pos + 2 * step * i + 1) * n, n, i * bits);
+//         num_aux = 
+//     }
+// }
 
 
 // Keeps NUM_1
@@ -1567,7 +1625,6 @@ void num_div_mod_inner(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p nu
     num_p num_q = num_div_mod_bz(num_1, num_2);
     num_div_mod_finalize(out_num_q, out_num_r, num_q, num_1, num_2, bits);
 }
-
 
 
 
