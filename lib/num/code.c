@@ -1287,15 +1287,14 @@ void num_ssm_shr(
         return;
     }
 
-    uint64_t carry = 0;
-    for(uint64_t i=0; i!=n-count-1; i--)
+    for(uint64_t i=0; i!=n-count-1; i++)
     {
-        uint64_t value = num->chunk[pos + i + count];
-        num_res->chunk[pos_res + i] = (value >> bits) | carry;
-        carry = value << (64 - bits);
+        uint64_t value_0 = num->chunk[pos + i + count];
+        uint64_t value_1 = num->chunk[pos + i + count + 1];
+        num_res->chunk[pos_res + i] = (value_0 >> bits) | (value_1 << (64 - bits));
     }
-    num_res->chunk[pos_res + n - count] = carry;
-    memset(&num->chunk[pos], 0, count * sizeof(uint64_t));
+    num_res->chunk[pos_res + n - count - 1] = num->chunk[pos + n - 1] >> bits;
+    memset(&num_res->chunk[pos_res + n - count], 0, count * sizeof(uint64_t));
 }
 
 // Shifts a number by BITS and returns the module

@@ -1345,7 +1345,6 @@ void test_num_ssm_shl(bool show)
         (3, 0, 0, 1), 0, 3, 65,
         (3, 0, 2, 0)
     );
-
     TEST_SSM_SHL(5,
         (3, UINT64_MAX, UINT64_MAX, UINT64_MAX), 0, 3, 0,
         (3, UINT64_MAX, UINT64_MAX, UINT64_MAX)
@@ -1362,8 +1361,95 @@ void test_num_ssm_shl(bool show)
         (3, UINT64_MAX, UINT64_MAX, UINT64_MAX), 0, 3, 65,
         (3, UINT64_MAX, UINT64_MAX << 1, 0)
     );
+    TEST_SSM_SHL(9,
+        (3, 0x3333333333333333, 0x2222222222222222, 0x1111111111111111), 0, 3, 0,
+        (3, 0x3333333333333333, 0x2222222222222222, 0x1111111111111111)
+    );
+    TEST_SSM_SHL(10,
+        (3, 0x3333333333333333, 0x2222222222222222, 0x1111111111111111), 0, 3, 4,
+        (3, 0x3333333333333332, 0x2222222222222221, 0x1111111111111110)
+    );
+    TEST_SSM_SHL(11,
+        (3, 0x3333333333333333, 0x2222222222222222, 0x1111111111111111), 0, 3, 64,
+        (3, 0x2222222222222222, 0x1111111111111111, 0)
+    );
+    TEST_SSM_SHL(12,
+        (3, 0x3333333333333333, 0x2222222222222222, 0x1111111111111111), 0, 3, 68,
+        (3, 0x2222222222222221, 0x1111111111111110, 0)
+    );
 
     #undef TEST_SSM_SHL
+
+    TEST_FN_CLOSE
+}
+
+void test_num_ssm_shr(bool show)
+{
+    TEST_FN_OPEN
+
+    #define TEST_SSM_SHR(TAG, NUM, POS, N, BITS, RES)   \
+    {                                                   \
+        TEST_CASE_OPEN(TAG)                             \
+        {                                               \
+            num_p num = num_create_immed(ARG_OPEN NUM); \
+            num_p num_res = num_create(N, N);           \
+            num_ssm_shr(num_res, 0, num, POS, N, BITS); \
+            assert(num_immed(num_res, ARG_OPEN RES));   \
+            assert(num_immed(num, ARG_OPEN NUM));       \
+        }                                               \
+        TEST_CASE_CLOSE                                 \
+    }
+
+    TEST_SSM_SHR(1,
+        (3, 2, 0, 0), 0, 3, 0,
+        (3, 2, 0, 0)
+    );
+    TEST_SSM_SHR(2,
+        (3, 2, 0, 0), 0, 3, 1,
+        (3, 1, 0, 0)
+    );
+    TEST_SSM_SHR(3,
+        (3, 2, 0, 0), 0, 3, 64,
+        (3, 0, 2, 0)
+    );
+    TEST_SSM_SHR(4,
+        (3, 2, 0, 0), 0, 3, 65,
+        (3, 0, 1, 0)
+    );
+    TEST_SSM_SHR(5,
+        (3, UINT64_MAX, UINT64_MAX, UINT64_MAX), 0, 3, 0,
+        (3, UINT64_MAX, UINT64_MAX, UINT64_MAX)
+    );
+    TEST_SSM_SHR(6,
+        (3, UINT64_MAX, UINT64_MAX, UINT64_MAX), 0, 3, 1,
+        (3, UINT64_MAX >> 1, UINT64_MAX, UINT64_MAX)
+    );
+    TEST_SSM_SHR(7,
+        (3, UINT64_MAX, UINT64_MAX, UINT64_MAX), 0, 3, 64,
+        (3, 0, UINT64_MAX, UINT64_MAX)
+    );
+    TEST_SSM_SHR(8,
+        (3, UINT64_MAX, UINT64_MAX, UINT64_MAX), 0, 3, 65,
+        (3, 0, UINT64_MAX >> 1, UINT64_MAX)
+    );
+    TEST_SSM_SHR(9,
+        (3, 0x3333333333333333, 0x2222222222222222, 0x1111111111111111), 0, 3, 0,
+        (3, 0x3333333333333333, 0x2222222222222222, 0x1111111111111111)
+    );
+    TEST_SSM_SHR(10,
+        (3, 0x3333333333333333, 0x2222222222222222, 0x1111111111111111), 0, 3, 4,
+        (3, 0x0333333333333333, 0x3222222222222222, 0x2111111111111111)
+    );
+    TEST_SSM_SHR(11,
+        (3, 0x3333333333333333, 0x2222222222222222, 0x1111111111111111), 0, 3, 64,
+        (3, 0, 0x3333333333333333, 0x2222222222222222)
+    );
+    TEST_SSM_SHR(12,
+        (3, 0x3333333333333333, 0x2222222222222222, 0x1111111111111111), 0, 3, 68,
+        (3, 0, 0x0333333333333333, 0x3222222222222222)
+    );
+
+    #undef TEST_SSM_SHR
 
     TEST_FN_CLOSE
 }
@@ -2402,7 +2488,8 @@ void test_num()
     test_num_ssm_add_mod(show);
     test_num_ssm_sub_mod(show);
     test_num_ssm_shl(show);
-    // test_num_ssm_shl_mod(show);
+    test_num_ssm_shr(show);
+    test_num_ssm_shl_mod(show);
 
     // test_num_is_zero(show);
 
