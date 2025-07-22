@@ -1131,6 +1131,27 @@ num_p num_ssm_pad(num_p num, uint64_t b, uint64_t n, uint64_t k)
     return num;
 }
 
+// Separate number to a base 2^(64*b)
+// Each place will be represented in n chunks
+// the final vector is padded to k places
+void num_ssm_depad(num_p num, uint64_t b, uint64_t n, uint64_t K)
+{
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num)
+
+    for(uint64_t i=1; i<K; i++)
+    {
+        for(uint64_t j=0; j<n; j++)
+        {
+            uint64_t value = num->chunk[n * i + j];
+            num->chunk[n * i + j] = 0;
+
+            num_add_uint_offset(num, b * i + j, value);
+        }
+    }
+    while(num_normalize(num));
+}
+
 bool num_is_span_zero(num_p num, uint64_t pos, uint64_t count)
 {
     CLU_HANDLER_IS_SAFE(num)
@@ -1419,6 +1440,61 @@ void num_ssm_fft_fwd(
     num_ssm_fft_fwd_rec(num_aux, num, 0, 1, n, k, 2 * bits);
 }
 
+void num_ssm_fft_inv_rec(
+    num_p num_aux,
+    num_p num,
+    uint64_t pos,
+    uint64_t n,
+    uint64_t k,
+    uint64_t bits
+)
+{
+    CLU_HANDLER_IS_SAFE(num_aux)
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num_aux)
+    assert(num)
+
+    if(k > 2)
+    {
+        num_ssm_fft_inv_rec(num_aux, num, pos    , n, k/2, 2*bits);
+        num_ssm_fft_inv_rec(num_aux, num, pos+k/2, n, k/2, 2*bits);
+    }
+
+    for(uint64_t i=0; i<k/2; i++)
+    {
+        uint64_t pos_1 = (pos + i) * n;
+        uint64_t pos_2 = (pos + i + k/2) * n;
+
+        num_ssm_shr_mod(num_aux, num, pos_2, n, i * bits);
+    
+        num_ssm_add_mod(num_aux, 0, num, pos_1, pos_2, n);
+        num_ssm_sub_mod(num_aux, n, num, pos_1, num, pos_2, n);
+
+        memcpy(&num->chunk[pos_1],  num_aux->chunk   , n * sizeof(uint64_t));
+        memcpy(&num->chunk[pos_2], &num_aux->chunk[n], n * sizeof(uint64_t));
+    }
+}
+
+void num_ssm_fft_inv(
+    num_p num_aux,
+    num_p num,
+    uint64_t n,
+    uint64_t k,
+    uint64_t bits
+)
+{
+    CLU_HANDLER_IS_SAFE(num_aux)
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num_aux)
+    assert(num)
+
+    num_ssm_fft_inv_rec(num_aux, num, 0, n, k, 2 * bits);
+
+    uint64_t k_ = stdc_trailing_zeros(k);
+    for(uint64_t i=0; i<k; i++)
+        num_ssm_shr_mod(num_aux, num, n * i, n, bits * i + k_);
+}
+
 void num_ssm_prepare(num_p num_aux, num_p num)
 {
     uint64_t M = 1 << (stdc_bit_width(num->count) / 2);
@@ -1426,23 +1502,13 @@ void num_ssm_prepare(num_p num_aux, num_p num)
     uint64_t P = 2 * M + 1;
     uint64_t Q = 16 * P;
     uint64_t n = P + 1;
-    
+
     num = num_ssm_pad(num, M, n, K);
 
-    for(uint64_t i=0; ; i++)
-    {
-        num_ssm_fft_fwd(num_aux, num, n, K, Q);
+    num_ssm_fft_fwd(num_aux, num, n, K, Q);
+    num_ssm_fft_inv(num_aux, num, n, K, Q);
 
-        printf("\n");
-        // printf("\nres:");
-        for(uint64_t i=0; i<K; i++)
-        {
-            printf("\ncoeficient[%lu]: ", i);
-            num_display_span(num, n * i, n);
-        }
-
-        getchar();
-    }
+    num_ssm_depad(num, M, n, K);
 }
 
 void del()
