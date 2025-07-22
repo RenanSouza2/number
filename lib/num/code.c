@@ -1156,20 +1156,26 @@ void num_ssm_normalize(num_p num, uint64_t pos, uint64_t n)
     )
     {
         uint64_t num_count = num->count;
-        num_sub_uint_offset(num, pos, num->chunk[pos + n - 1]);
+        num_sub_uint_offset(num, pos        , 1);
+        num_sub_uint_offset(num, pos + n - 1, 1);
         num->count = num_count;
-        num->chunk[pos + n - 1] = 0;
     }
 }
 
-int64_t num_ssm_cmp(num_p num, uint64_t pos_1, uint64_t pos_2, uint64_t n)
+int64_t num_ssm_cmp(
+    num_p num_1,
+    uint64_t pos_1,
+    num_p num_2,
+    uint64_t pos_2,
+    uint64_t n
+)
 {
     for(uint64_t i=n-1; i!=UINT64_MAX; i--)
     {
-        if(num->chunk[pos_1 + i] < num->chunk[pos_2 + i])
+        if(num_1->chunk[pos_1 + i] < num_2->chunk[pos_2 + i])
             return -1;
             
-        if(num->chunk[pos_1 + i] > num->chunk[pos_2 + i])
+        if(num_1->chunk[pos_1 + i] > num_2->chunk[pos_2 + i])
             return 1;
     }
     return 0;
@@ -1217,10 +1223,10 @@ void num_ssm_sub_mod(
     assert(num_1)
     assert(num_2)
 
-    if(num_ssm_cmp(num_1, pos_1, pos_2, n) < 0)
+    if(num_ssm_cmp(num_1, pos_1, num_2, pos_2, n) < 0)
     {
-        num_1->chunk[pos_1 + n - 1] = 1;
-        num_add_uint_offset(num_1, pos_1, 1);
+        num_add_uint_offset(num_1, pos_1        , 1);
+        num_add_uint_offset(num_1, pos_1 + n - 1, 1);
     }
 
     uint128_t carry = 0;
@@ -1316,7 +1322,7 @@ void num_ssm_shl_mod(
     if(bits == 0 || num_is_span_zero(num, pos, n))
         return;
 
-    num_ssm_shr(num_aux, 0, num, pos, n, n - bits);
+    num_ssm_shr(num_aux, 0, num, pos, n, 64 * n - 64 - bits);
     num_ssm_shl(num, pos, num, pos, n, bits);
     num->chunk[pos + n - 1] = 0;
     num_ssm_sub_mod(num, pos, num, pos, num_aux, 0, n);
