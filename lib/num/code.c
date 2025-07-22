@@ -1138,65 +1138,6 @@ void num_ssm_normalize(num_p num, uint64_t pos, uint64_t n)
     }
 }
 
-// Shifts a number by BITS
-// Index is the begining of the chunk span
-// n is the size of the number in chunks, the module is 2^(64*(n-1)) + 1
-void num_ssm_shl(
-    num_p num_aux,
-    num_p num,
-    uint64_t pos,
-    uint64_t n,
-    uint64_t bits
-)
-{
-    CLU_HANDLER_IS_SAFE(num_aux)
-    CLU_HANDLER_IS_SAFE(num)
-    assert(num_aux)
-    assert(num)
-
-    if(bits == 0 || num_is_span_zero(num, pos, n))
-        return;
-
-    uint64_t count = bits >> 6;
-    num_aux->count = n;
-    memcpy(num_aux->chunk, &num->chunk[pos], n * sizeof(uint64_t));
-
-    memset(&num->chunk[pos], 0, count * sizeof(uint64_t));
-    memcpy(&num->chunk[count + pos], num_aux->chunk, (n - count) * sizeof(uint64_t));
-
-    uint64_t bits_l = bits & 0x3f;
-    if(bits_l)
-    {
-        uint64_t carry = 0;
-        for(uint64_t i=count; i<n; i++)
-        {
-            uint64_t value = num->chunk[i + pos];
-            num->chunk[i + pos] = (value << bits_l) | carry;
-            carry = value >> (64 - bits_l);
-        }
-    }
-    num->chunk[n-1 + pos] &= 1;
-    
-    uint64_t bits_r = 64*n-63 - bits - 1;
-    num_shr(num_aux, bits_r);
-    num_aux->chunk[0] &= 0xfffffffffffffffe;
-
-    num_ssm_normalize(num, pos, n);
-
-    if(num_is_span_zero(num_aux, 0, num_aux->count))
-        return;
-
-    if(num_is_span_zero(num, pos, n))
-    {
-        num->chunk[pos] = 1;
-        num->chunk[n-1 + pos] = 1;
-    }
-
-    uint64_t num_count = num->count;
-    num_sub_offset(num, pos, num_aux);
-    num->count = num_count;
-}
-
 int64_t num_ssm_cmp(num_p num, uint64_t pos_1, uint64_t pos_2, uint64_t n)
 {
     for(uint64_t i=n-1; i!=UINT64_MAX; i--)
@@ -1279,6 +1220,65 @@ void num_ssm_sub(
     }
 }
 
+// Shifts a number by BITS
+// Index is the begining of the chunk span
+// n is the size of the number in chunks, the module is 2^(64*(n-1)) + 1
+void num_ssm_shl(
+    num_p num_aux,
+    num_p num,
+    uint64_t pos,
+    uint64_t n,
+    uint64_t bits
+)
+{
+    CLU_HANDLER_IS_SAFE(num_aux)
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num_aux)
+    assert(num)
+
+    if(bits == 0 || num_is_span_zero(num, pos, n))
+        return;
+
+    uint64_t count = bits >> 6;
+    num_aux->count = n;
+    memcpy(num_aux->chunk, &num->chunk[pos], n * sizeof(uint64_t));
+
+    memset(&num->chunk[pos], 0, count * sizeof(uint64_t));
+    memcpy(&num->chunk[count + pos], num_aux->chunk, (n - count) * sizeof(uint64_t));
+
+    uint64_t bits_l = bits & 0x3f;
+    if(bits_l)
+    {
+        uint64_t carry = 0;
+        for(uint64_t i=count; i<n; i++)
+        {
+            uint64_t value = num->chunk[i + pos];
+            num->chunk[i + pos] = (value << bits_l) | carry;
+            carry = value >> (64 - bits_l);
+        }
+    }
+    num->chunk[n-1 + pos] &= 1;
+    
+    uint64_t bits_r = 64*n-63 - bits - 1;
+    num_shr(num_aux, bits_r);
+    num_aux->chunk[0] &= 0xfffffffffffffffe;
+
+    num_ssm_normalize(num, pos, n);
+
+    if(num_is_span_zero(num_aux, 0, num_aux->count))
+        return;
+
+    if(num_is_span_zero(num, pos, n))
+    {
+        num->chunk[pos] = 1;
+        num->chunk[n-1 + pos] = 1;
+    }
+
+    uint64_t num_count = num->count;
+    num_sub_offset(num, pos, num_aux);
+    num->count = num_count;
+}
+
 void num_display_span(num_p num, uint64_t pos, uint64_t count)
 {
     CLU_HANDLER_IS_SAFE(num)
@@ -1334,6 +1334,20 @@ void num_ssm_fft_fwd_rec(
     }
 }
 
+void ssm_calculate_parametrs(uint64_t res[], uint64_t count)
+{
+    uint64_t M = 1 << (stdc_bit_width(count) / 2);
+    uint64_t K = stdc_bit_ceil(2 * count / M);
+    uint64_t P = 2 * M + 1;
+    uint64_t Q = 16 * P;
+    uint64_t n = P + 1;
+
+    res[0] = M;
+    res[1] = K;
+    res[2] = Q;
+    res[3] = n;
+}
+
 void num_ssm_fft_fwd(
     num_p num_aux,
     num_p num,
@@ -1347,7 +1361,10 @@ void num_ssm_fft_fwd(
     assert(num_aux)
     assert(num)
 
-    num_ssm_fft_fwd_rec(num_aux, num, 0, 1, n, k, bits);
+    for(uint64_t i=0; i<k; i++)
+        num_ssm_shl(num_aux, num, n * i, n, bits * i);
+
+    num_ssm_fft_fwd_rec(num_aux, num, 0, 1, n, k, 2 * bits);
 }
 
 void num_ssm_prepare(num_p num_aux, num_p num)
@@ -1360,37 +1377,29 @@ void num_ssm_prepare(num_p num_aux, num_p num)
     
     num = num_ssm_pad(num, M, n, K);
 
-    num_display_full("paded", num);
-    printf("\n\n");
-    for(uint64_t i=0; i<K; i++)
+    for(uint64_t i=0; ; i++)
     {
-        printf("\ncoeficient[%lu]: ", i);
-        num_display_span(num, n * i, n);
-    }
+        num_ssm_fft_fwd(num_aux, num, n, K, Q);
 
-    num_ssm_fft_fwd(num_aux, num, n, K, Q);
+        printf("\n");
+        // printf("\nres:");
+        for(uint64_t i=0; i<K; i++)
+        {
+            printf("\ncoeficient[%lu]: ", i);
+            num_display_span(num, n * i, n);
+        }
 
-    printf("\n\n");
-    printf("\nres:");
-    for(uint64_t i=0; i<K; i++)
-    {
-        printf("\ncoeficient[%lu]: ", i);
-        num_display_span(num, n * i, n);
+        getchar();
     }
 }
 
 void del()
 {
     num_p num = num_create_immed(4, 3, 5, 9, 4);
-    
-    uint64_t M = 1 << (stdc_bit_width(num->count) / 2);
-    // uint64_t K = stdc_bit_ceil(2 * num->count / M);
-    // uint64_t k = stdc_trailing_zeros(K);
-    uint64_t P = 2 * M + 1;
-    // uint64_t Q = 16 * P;
-    uint64_t n = P + 1;
 
-    num_p num_aux = num_create(2 * n, 2 * n);
+    uint64_t params[4];
+    ssm_calculate_parametrs(params, num->count);
+    num_p num_aux = num_create(2 * params[3], 2 * params[3]);
     
     // printf("\n M: %lu", M);
     // printf("\n K: %lu", K);
