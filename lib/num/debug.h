@@ -82,6 +82,22 @@ void num_ssm_sub_mod(
     uint64_t pos_2,
     uint64_t n
 );
+void num_ssm_shl(
+    num_p num_res,
+    uint64_t pos_res,
+    num_p num,
+    uint64_t pos,
+    uint64_t n,
+    uint64_t bits
+);
+void num_ssm_shr(
+    num_p num_res,
+    uint64_t pos_res,
+    num_p num,
+    uint64_t pos,
+    uint64_t n,
+    uint64_t bits
+);
 
 num_p num_mul_classic_inner(num_p num_res, num_p num_1, num_p num_2);
 num_p num_mul_classic(num_p num_1, num_p num_2);

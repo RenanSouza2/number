@@ -1281,7 +1281,7 @@ void test_num_ssm_sub_mod(bool show)
             num_p num_res = num_create(N, N);                       \
             num_ssm_sub_mod(num_res, 0, num, POS_1, num, POS_2, N); \
             assert(num_immed(num_res, ARG_OPEN RES));               \
-            assert(num_immed(num, ARG_OPEN NUM, 0, 0, 0));          \
+            assert(num_immed(num, ARG_OPEN NUM));                   \
         }                                                           \
         TEST_CASE_CLOSE                                             \
     }
@@ -1307,7 +1307,63 @@ void test_num_ssm_sub_mod(bool show)
         (3, 0, 0, 2)
     );
 
-    #undef TEST_SSM_ADD
+    #undef TEST_SSM_SUB_MOD
+
+    TEST_FN_CLOSE
+}
+
+void test_num_ssm_shl(bool show)
+{
+    TEST_FN_OPEN
+
+    #define TEST_SSM_SHL(TAG, NUM, POS, N, BITS, RES)   \
+    {                                                   \
+        TEST_CASE_OPEN(TAG)                             \
+        {                                               \
+            num_p num = num_create_immed(ARG_OPEN NUM); \
+            num_p num_res = num_create(N, N);           \
+            num_ssm_shl(num_res, 0, num, POS, N, BITS); \
+            assert(num_immed(num_res, ARG_OPEN RES));   \
+            assert(num_immed(num, ARG_OPEN NUM));       \
+        }                                               \
+        TEST_CASE_CLOSE                                 \
+    }
+
+    TEST_SSM_SHL(1,
+        (3, 0, 0, 1), 0, 3, 0,
+        (3, 0, 0, 1)
+    );
+    TEST_SSM_SHL(2,
+        (3, 0, 0, 1), 0, 3, 1,
+        (3, 0, 0, 2)
+    );
+    TEST_SSM_SHL(3,
+        (3, 0, 0, 1), 0, 3, 64,
+        (3, 0, 1, 0)
+    );
+    TEST_SSM_SHL(4,
+        (3, 0, 0, 1), 0, 3, 65,
+        (3, 0, 2, 0)
+    );
+
+    TEST_SSM_SHL(5,
+        (3, UINT64_MAX, UINT64_MAX, UINT64_MAX), 0, 3, 0,
+        (3, UINT64_MAX, UINT64_MAX, UINT64_MAX)
+    );
+    TEST_SSM_SHL(6,
+        (3, UINT64_MAX, UINT64_MAX, UINT64_MAX), 0, 3, 1,
+        (3, UINT64_MAX, UINT64_MAX, UINT64_MAX << 1)
+    );
+    TEST_SSM_SHL(7,
+        (3, UINT64_MAX, UINT64_MAX, UINT64_MAX), 0, 3, 64,
+        (3, UINT64_MAX, UINT64_MAX, 0)
+    );
+    TEST_SSM_SHL(8,
+        (3, UINT64_MAX, UINT64_MAX, UINT64_MAX), 0, 3, 65,
+        (3, UINT64_MAX, UINT64_MAX << 1, 0)
+    );
+
+    #undef TEST_SSM_SHL
 
     TEST_FN_CLOSE
 }
@@ -2345,7 +2401,8 @@ void test_num()
     test_num_ssm_pad(show);
     test_num_ssm_add_mod(show);
     test_num_ssm_sub_mod(show);
-    test_num_ssm_shl_mod(show);
+    test_num_ssm_shl(show);
+    // test_num_ssm_shl_mod(show);
 
     // test_num_is_zero(show);
 

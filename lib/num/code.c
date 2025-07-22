@@ -1255,15 +1255,15 @@ void num_ssm_shl(
         return;
     }
 
-    uint64_t carry = 0;
     for(uint64_t i=n-1; i!=count; i--)
     {
-        uint64_t value = num->chunk[pos + i - count];
-        num_res->chunk[pos_res + i] = (value << bits) | carry;
-        carry = value >> (64 - bits);
+        uint64_t value_1 = num->chunk[pos + i - count];
+        uint64_t value_0 = num->chunk[pos + i - count - 1];
+        num_res->chunk[pos_res + i] = (value_1 << bits) | (value_0 >> (64 - bits));
     }
-    num_res->chunk[pos_res + count] = carry;
-    memset(&num->chunk[pos], 0, count * sizeof(uint64_t));
+    num_res->chunk[pos_res + count] = num->chunk[pos] << bits;
+
+    memset(&num_res->chunk[pos_res], 0, count * sizeof(uint64_t));
 }
 
 // operation can be done in place if num_res is the same as num and pos_res is pos
@@ -1278,7 +1278,7 @@ void num_ssm_shr(
 {
     uint64_t count = bits >> 6;
     bits &=0x3f;
-    if((bits) == 0)
+    if(bits == 0)
     {
         for(uint64_t i=0; i<n-count; i++)
             num_res->chunk[pos_res + i] = num->chunk[pos + i + count];
@@ -1319,6 +1319,7 @@ void num_ssm_shl_mod(
 
     num_ssm_shr(num_aux, 0, num, pos, n, n - bits);
     num_ssm_shl(num, pos, num, pos, n, bits);
+    num->chunk[pos + n - 1] = 0;
     num_ssm_sub_mod(num, pos, num, pos, num_aux, 0, n);
 }
 
