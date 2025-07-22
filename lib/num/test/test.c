@@ -1563,6 +1563,90 @@ void test_num_ssm_shl_mod(bool show)
     TEST_FN_CLOSE
 }
 
+void test_num_ssm_shr_mod(bool show)
+{
+    TEST_FN_OPEN
+
+    #define TEST_SSM_SHR_MOD(TAG, NUM, POS, N, BITS, RES)   \
+    {                                                       \
+        TEST_CASE_OPEN(TAG)                                 \
+        {                                                   \
+            num_p num = num_create_immed(ARG_OPEN NUM);     \
+            num_p num_aux = num_create(N, N);               \
+            num_ssm_shr_mod(num_aux, num, POS, N, BITS);    \
+            assert(num_immed(num, ARG_OPEN RES));           \
+            num_free(num_aux);                              \
+        }                                                   \
+        TEST_CASE_CLOSE                                     \
+    }
+    
+    #define TEST_SSM_SHR_MOD_BATCH(TAG, COUNT, FORMAT, POS, N)          \
+    {                                                                   \
+        TEST_SSM_SHR_MOD(100 * TAG + 1,                                 \
+            FORMAT(COUNT, (0, 0, 0)), POS, N, 1,                        \
+            FORMAT(COUNT, (0, 0, 0))                                    \
+        );                                                              \
+        TEST_SSM_SHR_MOD(100 * TAG + 2,                                 \
+            FORMAT(COUNT, (0, 2, 0)), POS, N, 0,                        \
+            FORMAT(COUNT, (0, 2, 0))                                    \
+        );                                                              \
+        TEST_SSM_SHR_MOD(100 * TAG + 3,                                 \
+            FORMAT(COUNT, (0, 2, 0)), POS, N, 1,                        \
+            FORMAT(COUNT, (0, 1, 0))                                    \
+        );                                                              \
+        TEST_SSM_SHR_MOD(100 * TAG + 4,                                 \
+            FORMAT(COUNT, (0, 2, 0)), POS, N, 64,                       \
+            FORMAT(COUNT, (0, 0, 2))                                    \
+        );                                                              \
+        TEST_SSM_SHR_MOD(100 * TAG + 5,                                 \
+            FORMAT(COUNT, (0, 2, 0)), POS, N, 65,                       \
+            FORMAT(COUNT, (0, 0, 1))                                    \
+        );                                                              \
+        TEST_SSM_SHR_MOD(100 * TAG + 6,                                 \
+            FORMAT(COUNT, (1, 0, 0)), POS, N, 128,                      \
+            FORMAT(COUNT, (0, 0, 1))                                    \
+        );                                                              \
+        TEST_SSM_SHR_MOD(100 * TAG + 7,                                 \
+            FORMAT(COUNT, (0, 0, 1)), POS, N, 1,                        \
+            FORMAT(COUNT, (0, 1UL << 63, 1))                            \
+        );                                                              \
+        TEST_SSM_SHR_MOD(100 * TAG + 8,                                 \
+            FORMAT(COUNT, (0, UINT64_MAX, UINT64_MAX)), POS, N, 1,      \
+            FORMAT(COUNT, (1, 0, 0))                                    \
+        );                                                              \
+        TEST_SSM_SHR_MOD(100 * TAG + 9,                                 \
+            FORMAT(COUNT, (0, UINT64_MAX, UINT64_MAX)), POS, N, 2,      \
+            FORMAT(COUNT, (0, 1UL << 63, 0))                            \
+        );                                                              \
+        TEST_SSM_SHR_MOD(100 * TAG + 10,                                \
+            FORMAT(COUNT, (0, UINT64_MAX, UINT64_MAX)), POS, N, 64,     \
+            FORMAT(COUNT, (0, 2, 0))                                    \
+        );                                                              \
+        TEST_SSM_SHR_MOD(100 * TAG + 11,                                \
+            FORMAT(COUNT, (0, UINT64_MAX, UINT64_MAX)), POS, N, 65,     \
+            FORMAT(COUNT, (0, 1, 0))                                    \
+        );                                                              \
+        TEST_SSM_SHR_MOD(100 * TAG + 12,                                \
+            FORMAT(COUNT, (0, UINT64_MAX, UINT64_MAX)), POS, N, 128,    \
+            FORMAT(COUNT, (0, 0, 2))                                \
+        );                                                              \
+    }       
+
+    #define BATCH_1_FORMAT(COUNT, NUM) (COUNT, ARG_OPEN NUM)
+    #define BATCH_2_FORMAT(COUNT, NUM) (COUNT, ARG_OPEN NUM, 1, 0, 0)
+    #define BATCH_3_FORMAT(COUNT, NUM) (COUNT, 0, 0, 1, ARG_OPEN NUM)
+    #define BATCH_4_FORMAT(COUNT, NUM) (COUNT, 0, 0, 1, ARG_OPEN NUM, 1, 0, 0)
+
+    TEST_SSM_SHR_MOD_BATCH(1, 3, BATCH_1_FORMAT, 0, 3)
+    TEST_SSM_SHR_MOD_BATCH(2, 6, BATCH_2_FORMAT, 3, 3)
+    TEST_SSM_SHR_MOD_BATCH(3, 6, BATCH_3_FORMAT, 0, 3)
+    TEST_SSM_SHR_MOD_BATCH(4, 9, BATCH_4_FORMAT, 3, 3)
+
+    #undef TEST_SSM_SHR_MOD
+
+    TEST_FN_CLOSE
+}
+
 
 
 void test_num_is_zero(bool show)
@@ -2515,6 +2599,7 @@ void test_num()
     test_num_ssm_shl(show);
     test_num_ssm_shr(show);
     test_num_ssm_shl_mod(show);
+    test_num_ssm_shr_mod(show);
 
     // test_num_is_zero(show);
 

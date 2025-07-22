@@ -1328,6 +1328,28 @@ void num_ssm_shl_mod(
     num_ssm_sub_mod(num, pos, num, pos, num_aux, 0, n);
 }
 
+void num_ssm_shr_mod(
+    num_p num_aux,
+    num_p num,
+    uint64_t pos,
+    uint64_t n,
+    uint64_t bits
+)
+{
+    CLU_HANDLER_IS_SAFE(num_aux)
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num_aux)
+    assert(num)
+
+    if(bits == 0 || num_is_span_zero(num, pos, n))
+        return;
+
+    num_ssm_shl(num_aux, 0, num, pos, n, 64 * n - 64 - bits);
+    num_ssm_shr(num, pos, num, pos, n, bits);
+    num_aux->chunk[n - 1] = 0;
+    num_ssm_sub_mod(num, pos, num, pos, num_aux, 0, n);
+}
+
 void num_ssm_fft_fwd_rec(
     num_p num_aux,
     num_p num,
