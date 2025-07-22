@@ -58,24 +58,27 @@ num_p num_fft(num_p num, uint64_t n);
 num_p num_fft_inv(num_p num, uint64_t n);
 
 num_p num_ssm_pad(num_p num, uint64_t b, uint64_t n, uint64_t k);
-void num_ssm_shl(
+void num_ssm_shl_mod(
     num_p num_aux,
     num_p num,
     uint64_t pos,
     uint64_t n,
     uint64_t bits
 );
-void num_ssm_add(
+void num_ssm_add_mod(
     num_p num_res,
+    uint64_t pos_res,
     num_p num,
     uint64_t pos_1,
     uint64_t pos_2,
     uint64_t n
 );
-void num_ssm_sub(
+void num_ssm_sub_mod(
     num_p num_res,
-    num_p num,
+    uint64_t pos_res,
+    num_p num_1,
     uint64_t pos_1,
+    num_p num_2,
     uint64_t pos_2,
     uint64_t n
 );

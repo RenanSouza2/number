@@ -1089,6 +1089,25 @@ num_p num_sqr_fft(num_p num)
 
 
 
+void num_display_span(num_p num, uint64_t pos, uint64_t count)
+{
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num)
+    assert(num->count >= pos + count);
+
+    for(uint64_t i=count-1; i!=UINT64_MAX; i--)
+        printf("" U64PX " ", num->chunk[pos + i]);
+}
+
+void num_display_span_tag(char tag[], num_p num, uint64_t pos, uint64_t count)
+{
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num)
+
+    printf("\n%s\t: ", tag);
+    num_display_span(num, pos, count);
+}
+
 // Separate number to a base 2^(64*b)
 // Each place will be represented in n chunks
 // the final vector is padded to k places
@@ -1124,17 +1143,22 @@ bool num_is_span_zero(num_p num, uint64_t pos, uint64_t count)
     return true;
 }
 
+// normalizes coeficient if it is less than 2 modulus
 void num_ssm_normalize(num_p num, uint64_t pos, uint64_t n)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
+    assert(num->chunk[pos + n - 1] <= 2)
 
-    if(num->chunk[n-1 + pos] && !num_is_span_zero(num, pos, n-1))
+    if(
+        num->chunk[pos + n - 1] == 2 ||
+        (num->chunk[pos + n - 1] && !num_is_span_zero(num, pos, n - 1))
+    )
     {
         uint64_t num_count = num->count;
-        num_sub_uint_offset(num, pos, 1);
+        num_sub_uint_offset(num, pos, num->chunk[pos + n - 1]);
         num->count = num_count;
-        num->chunk[n-1 + pos] = 0;
+        num->chunk[pos + n - 1] = 0;
     }
 }
 
@@ -1151,8 +1175,9 @@ int64_t num_ssm_cmp(num_p num, uint64_t pos_1, uint64_t pos_2, uint64_t n)
     return 0;
 }
 
-void num_ssm_add(
+void num_ssm_add_mod(
     num_p num_res,
+    uint64_t pos_res,
     num_p num,
     uint64_t pos_1,
     uint64_t pos_2,
@@ -1164,66 +1189,119 @@ void num_ssm_add(
     assert(num_res)
     assert(num)
 
-    memcpy(num_res->chunk, &num->chunk[pos_1], n * sizeof(uint64_t));
+    uint128_t carry = 0;
     for(uint64_t i=0; i<n; i++)
     {
-        uint64_t carry = num->chunk[pos_2 + i];
-        for(uint64_t j=i; j<n && carry; j++)
-        {
-            uint64_t value = carry + num_res->chunk[j];
-            carry = value < carry;
-            num_res->chunk[j] = value;
-        }
+        carry += (uint128_t)num->chunk[pos_1 + i] + num->chunk[pos_2 + i];
+        num_res->chunk[pos_res + i] = LOW(carry);
+        carry >>= 64;
     }
 
-    if(num_res->chunk[n-1] == 2)
-    {
-        uint64_t count = num_res->count;
-        num_sub_uint(num_res, 2);
-        num_res->count = count;
-        num_res->chunk[n-1] = 0;
-    }
-
-    num_ssm_normalize(num_res, 0, n);
+    num_ssm_normalize(num_res, pos_res, n);
 }
 
-void num_ssm_sub(
+void num_ssm_sub_mod(
     num_p num_res,
-    num_p num,
+    uint64_t pos_res,
+    num_p num_1,
     uint64_t pos_1,
+    num_p num_2,
     uint64_t pos_2,
     uint64_t n
 )
 {
     CLU_HANDLER_IS_SAFE(num_res)
-    CLU_HANDLER_IS_SAFE(num)
+    CLU_HANDLER_IS_SAFE(num_1)
+    CLU_HANDLER_IS_SAFE(num_2)
     assert(num_res)
-    assert(num)
+    assert(num_1)
+    assert(num_2)
 
-    memcpy(&num_res->chunk[n], &num->chunk[pos_1], n * sizeof(uint64_t));
-
-    if(num_ssm_cmp(num, pos_1, pos_2, n) < 0)
+    if(num_ssm_cmp(num_1, pos_1, pos_2, n) < 0)
     {
-        num_add_uint_offset(num_res,   n    , 1);
-        num_add_uint_offset(num_res, 2*n - 1, 1);
+        num_1->chunk[pos_1 + n - 1] = 1;
+        num_add_uint_offset(num_1, pos_1, 1);
     }
 
+    uint128_t carry = 0;
     for(uint64_t i=0; i<n; i++)
     {
-        uint64_t carry = num->chunk[pos_2 + i];
-        for(uint64_t j=i; j<n && carry; j++)
-        {
-            uint64_t value = num_res->chunk[n + j] - carry;
-            carry = value > num_res->chunk[n + j];
-            num_res->chunk[n + j] = value;
-        }
+        carry += (uint128_t)num_1->chunk[pos_1 + i] - num_2->chunk[pos_2 + i];
+        num_res->chunk[pos_res + i] = LOW(carry);
+        carry = (int128_t)carry >> 64;
     }
+
+    num_ssm_normalize(num_1, pos_1, n);
 }
 
-// Shifts a number by BITS
+// operation can be done in place if num_res is the same as num and pos_res is pos
+void num_ssm_shl(
+    num_p num_res,
+    uint64_t pos_res,
+    num_p num,
+    uint64_t pos,
+    uint64_t n,
+    uint64_t bits
+)
+{
+    uint64_t count = bits >> 6;
+    bits &=0x3f;
+    if((bits) == 0)
+    {
+        for(uint64_t i=n-1; i!=count-1; i--)
+            num_res->chunk[pos_res + i] = num->chunk[pos + i - count];
+
+        memset(&num_res->chunk[pos_res], 0, count * sizeof(uint64_t));
+        return;
+    }
+
+    uint64_t carry = 0;
+    for(uint64_t i=n-1; i!=count; i--)
+    {
+        uint64_t value = num->chunk[pos + i - count];
+        num_res->chunk[pos_res + i] = (value << bits) | carry;
+        carry = value >> (64 - bits);
+    }
+    num_res->chunk[pos_res + count] = carry;
+    memset(&num->chunk[pos], 0, count * sizeof(uint64_t));
+}
+
+// operation can be done in place if num_res is the same as num and pos_res is pos
+void num_ssm_shr(
+    num_p num_res,
+    uint64_t pos_res,
+    num_p num,
+    uint64_t pos,
+    uint64_t n,
+    uint64_t bits
+)
+{
+    uint64_t count = bits >> 6;
+    bits &=0x3f;
+    if((bits) == 0)
+    {
+        for(uint64_t i=0; i<n-count; i++)
+            num_res->chunk[pos_res + i] = num->chunk[pos + i + count];
+
+        memset(&num_res->chunk[pos_res + n - count], 0, count * sizeof(uint64_t));
+        return;
+    }
+
+    uint64_t carry = 0;
+    for(uint64_t i=0; i!=n-count-1; i--)
+    {
+        uint64_t value = num->chunk[pos + i + count];
+        num_res->chunk[pos_res + i] = (value >> bits) | carry;
+        carry = value << (64 - bits);
+    }
+    num_res->chunk[pos_res + n - count] = carry;
+    memset(&num->chunk[pos], 0, count * sizeof(uint64_t));
+}
+
+// Shifts a number by BITS and returns the module
 // Index is the begining of the chunk span
 // n is the size of the number in chunks, the module is 2^(64*(n-1)) + 1
-void num_ssm_shl(
+void num_ssm_shl_mod(
     num_p num_aux,
     num_p num,
     uint64_t pos,
@@ -1239,63 +1317,9 @@ void num_ssm_shl(
     if(bits == 0 || num_is_span_zero(num, pos, n))
         return;
 
-    uint64_t count = bits >> 6;
-    num_aux->count = n;
-    memcpy(num_aux->chunk, &num->chunk[pos], n * sizeof(uint64_t));
-
-    memset(&num->chunk[pos], 0, count * sizeof(uint64_t));
-    memcpy(&num->chunk[count + pos], num_aux->chunk, (n - count) * sizeof(uint64_t));
-
-    uint64_t bits_l = bits & 0x3f;
-    if(bits_l)
-    {
-        uint64_t carry = 0;
-        for(uint64_t i=count; i<n; i++)
-        {
-            uint64_t value = num->chunk[i + pos];
-            num->chunk[i + pos] = (value << bits_l) | carry;
-            carry = value >> (64 - bits_l);
-        }
-    }
-    num->chunk[n-1 + pos] &= 1;
-    
-    uint64_t bits_r = 64*n-63 - bits - 1;
-    num_shr(num_aux, bits_r);
-    num_aux->chunk[0] &= 0xfffffffffffffffe;
-
-    num_ssm_normalize(num, pos, n);
-
-    if(num_is_span_zero(num_aux, 0, num_aux->count))
-        return;
-
-    if(num_is_span_zero(num, pos, n))
-    {
-        num->chunk[pos] = 1;
-        num->chunk[n-1 + pos] = 1;
-    }
-
-    uint64_t num_count = num->count;
-    num_sub_offset(num, pos, num_aux);
-    num->count = num_count;
-}
-
-void num_display_span(num_p num, uint64_t pos, uint64_t count)
-{
-    CLU_HANDLER_IS_SAFE(num)
-    assert(num)
-    assert(num->count >= pos + count);
-
-    for(uint64_t i=count-1; i!=UINT64_MAX; i--)
-        printf("" U64PX " ", num->chunk[pos + i]);
-}
-
-void num_display_span_tag(char tag[], num_p num, uint64_t pos, uint64_t count)
-{
-    CLU_HANDLER_IS_SAFE(num)
-    assert(num)
-
-    printf("\n%s\t: ", tag);
-    num_display_span(num, pos, count);
+    num_ssm_shr(num_aux, 0, num, pos, n, n - bits);
+    num_ssm_shl(num, pos, num, pos, n, bits);
+    num_ssm_sub_mod(num, pos, num, pos, num_aux, 0, n);
 }
 
 void num_ssm_fft_fwd_rec(
@@ -1324,10 +1348,10 @@ void num_ssm_fft_fwd_rec(
         uint64_t pos_1 = (pos + step * (2 * i)) * n;
         uint64_t pos_2 = (pos + step * (2 * i + 1)) * n;
 
-        num_ssm_shl(num_aux, num, pos_2, n, i * bits);
+        num_ssm_shl_mod(num_aux, num, pos_2, n, i * bits);
     
-        num_ssm_add(num_aux, num, pos_1, pos_2, n);
-        num_ssm_sub(num_aux, num, pos_1, pos_2, n);
+        num_ssm_add_mod(num_aux, 0, num, pos_1, pos_2, n);
+        num_ssm_sub_mod(num_aux, n, num, pos_1, num, pos_2, n);
 
         memcpy(&num->chunk[pos_1],  num_aux->chunk   , n * sizeof(uint64_t));
         memcpy(&num->chunk[pos_2], &num_aux->chunk[n], n * sizeof(uint64_t));
@@ -1362,7 +1386,7 @@ void num_ssm_fft_fwd(
     assert(num)
 
     for(uint64_t i=0; i<k; i++)
-        num_ssm_shl(num_aux, num, n * i, n, bits * i);
+        num_ssm_shl_mod(num_aux, num, n * i, n, bits * i);
 
     num_ssm_fft_fwd_rec(num_aux, num, 0, 1, n, k, 2 * bits);
 }
@@ -1400,13 +1424,6 @@ void del()
     uint64_t params[4];
     ssm_calculate_parametrs(params, num->count);
     num_p num_aux = num_create(2 * params[3], 2 * params[3]);
-    
-    // printf("\n M: %lu", M);
-    // printf("\n K: %lu", K);
-    // printf("\n k: %lu", k);
-    // printf("\n P: %lu", P);
-    // printf("\n Q: %lu", Q);
-    // printf("\n n: %lu", n);
 
     num_ssm_prepare(num_aux, num);
 }
