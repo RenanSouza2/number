@@ -108,6 +108,7 @@ void num_ssm_shr_mod(
 
 num_p num_mul_classic_inner(num_p num_res, num_p num_1, num_p num_2);
 num_p num_mul_classic(num_p num_1, num_p num_2);
+num_p num_mul_ssm(num_p num_1, num_p num_2);
 num_p num_sqr_classic(num_p num);
 
 num_p num_mul_fft(num_p num_1, num_p num_2);

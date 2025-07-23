@@ -1545,21 +1545,18 @@ void num_ssm_mul_tmp(
     uint64_t n
 )
 {
-    static num_p num_m = NULL;
-    if(num_m == NULL)
-    {
-        num_m = num_wrap(1);
-        num_m = num_head_grow(num_m, n - 1);
-        num_m = num_add_uint(num_m, 1);
-    }
-
     num_t num_t_1 = num_span(num_1, pos, pos + n);
     num_t num_t_2 = num_span(num_2, pos, pos + n);
     CLU_HANDLER_REGISTER_STATIC(&num_t_1);
     CLU_HANDLER_REGISTER_STATIC(&num_t_2);
 
     num_mul_inner(num_res, &num_t_1, &num_t_2);
-    num_mod(num_res, num_copy(num_m));
+
+    
+    num_p num_m = num_wrap(1);
+    num_m = num_head_grow(num_m, n - 1);
+    num_m = num_add_uint(num_m, 1);
+    num_mod(num_res, num_m);
 }
 
 num_p num_mul_ssm(num_p num_1, num_p num_2)
@@ -1576,22 +1573,7 @@ num_p num_mul_ssm(num_p num_1, num_p num_2)
 
     num_1 = num_ssm_pad(num_1, M, n, K);
     num_2 = num_ssm_pad(num_2, M, n, K);
-
-    printf("\n");
-    for(uint64_t i=0; i<K; i++)
-    {
-        printf("\nc[%lu]\t: ", i);
-        num_display_span(num_1, i * n, n);
-    }
-    printf("\n");
-    printf("\n");
-    for(uint64_t i=0; i<K; i++)
-    {
-        printf("\nc[%lu]\t: ", i);
-        num_display_span(num_2, i * n, n);
-    }
-    printf("\n");
-
+    
     num_ssm_fft_fwd(num_aux, num_1, n, K, Q);
     num_ssm_fft_fwd(num_aux, num_2, n, K, Q);
 
@@ -1600,31 +1582,23 @@ num_p num_mul_ssm(num_p num_1, num_p num_2)
         num_ssm_mul_tmp(num_aux, num_1, num_2, i * n, n);
         memcpy(&num_1->chunk[i * n], num_aux->chunk, n * sizeof(uint64_t));
     }
-    num_aux->count = 2 * n;
     num_ssm_fft_inv(num_aux, num_1, n, K, Q);
 
-    printf("\n");
-    for(uint64_t i=0; i<K; i++)
-    {
-        printf("\nc[%lu]\t: ", i);
-        num_display_span(num_1, i * n, n);
-    }
-    printf("\n");
-    
     num_ssm_depad(num_1, M, n, K);
 
+    num_free(num_2);
     num_free(num_aux);
     return num_1;
 }
 
-// void del()
-// {
-//     num_p num_1 = num_create_immed(4, 3, 6, 9, 5);
-//     num_p num_2 = num_create_immed(4, 8, 7, 2, 3);
+void del()
+{
+    num_p num_1 = num_create_immed(4, 8, 4, 7, 5);
+    num_p num_2 = num_create_immed(4, 8, 4, 9, 3);
 
-//     num_1 = num_mul_ssm(num_1, num_2);
-//     num_display_full("num_1", num_1);
-// }
+    num_1 = num_mul_ssm(num_1, num_2);
+    num_display_full("num_1", num_1);
+}
 
 
 

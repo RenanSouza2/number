@@ -1861,111 +1861,101 @@ void test_num_mul(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_NUM_MUL_FN(FN, NUM_1, NUM_2, RES)      \
-    {                                                   \
-        if(show)                                        \
-            printf("\n\t\t\tsubcase " #FN);             \
-        num_p num_1 = num_create_immed(ARG_OPEN NUM_1); \
-        num_p num_2 = num_create_immed(ARG_OPEN NUM_2); \
-        num_1 = FN(num_1, num_2);                       \
-        assert(num_immed(num_1, ARG_OPEN RES))          \
-        TEST_ASSERT_MEM_EMPTY                           \
-    }                                                   \
-
-    #define TEST_NUM_MUL(TAG, NUM_1, NUM_2, RES)        \
-    {                                                   \
-        TEST_CASE_OPEN(TAG)                             \
-        {                                               \
-            TEST_NUM_MUL_FN(num_mul, NUM_1, NUM_2, RES) \
-        }                                               \
-        TEST_CASE_CLOSE                                 \
-    }
+    #define TEST_NUM_MUL(TAG, FN, NUM_1, NUM_2, RES)        \
+    {                                                       \
+        TEST_CASE_OPEN(TAG)                                 \
+        {                                                   \
+            num_p num_1 = num_create_immed(ARG_OPEN NUM_1); \
+            num_p num_2 = num_create_immed(ARG_OPEN NUM_2); \
+            num_1 = FN(num_1, num_2);                       \
+            assert(num_immed(num_1, ARG_OPEN RES))          \
+        }                                                   \
+        TEST_CASE_CLOSE                                     \
+    }                                                       \
 
     TEST_NUM_MUL(1,
+        num_mul,
         (0),
         (0),
         (0)
     );
     TEST_NUM_MUL(2,
+        num_mul,
         (1, 1),
         (0),
         (0)
     );
     TEST_NUM_MUL(3,
+        num_mul,
         (0),
         (1, 1),
         (0)
     );
 
-    #undef TEST_NUM_MUL
-
-    #define TEST_NUM_MUL(TAG, NUM_1, NUM_2, RES)                \
-    {                                                           \
-        TEST_CASE_OPEN(TAG)                                     \
-        {                                                       \
-            TEST_NUM_MUL_FN(num_mul_classic, NUM_1, NUM_2, RES) \
-            TEST_NUM_MUL_FN(num_mul_fft, NUM_1, NUM_2, RES)     \
-            TEST_NUM_MUL_FN(num_mul, NUM_1, NUM_2, RES)         \
-        }                                                       \
-        TEST_CASE_CLOSE                                         \
+    #define TEST_NUM_MUL_BATCH(TAG, NUM_1, NUM_2, RES)                  \
+    {                                                                   \
+        TEST_NUM_MUL(10 * TAG + 1, num_mul_classic, NUM_1, NUM_2, RES)  \
+        TEST_NUM_MUL(10 * TAG + 2, num_mul_fft, NUM_1, NUM_2, RES)      \
+        TEST_NUM_MUL(10 * TAG + 3, num_mul, NUM_1, NUM_2, RES)          \
+        TEST_NUM_MUL(10 * TAG + 4, num_mul_ssm, NUM_1, NUM_2, RES)      \
     }
 
-    TEST_NUM_MUL(4,
+    TEST_NUM_MUL_BATCH(4,
         (1, 2),
         (1, 3),
         (1, 6)
     );
-    TEST_NUM_MUL(5,
+    TEST_NUM_MUL_BATCH(5,
         (1, UINT64_MAX),
         (1, UINT64_MAX),
         (2, UINT64_MAX - 1, 1)
     );
-    TEST_NUM_MUL(6,
+    TEST_NUM_MUL_BATCH(6,
         (2, 2, 3),
         (1, 4),
         (2, 8, 12)
     );
-    TEST_NUM_MUL(7,
+    TEST_NUM_MUL_BATCH(7,
         (1, 2),
         (2, 3, 4),
         (2, 6, 8)
     );
-    TEST_NUM_MUL(8,
+    TEST_NUM_MUL_BATCH(8,
         (2, 2, 3),
         (2, 4, 5),
         (3, 8, 22, 15)
     );
-    TEST_NUM_MUL(9,
+    TEST_NUM_MUL_BATCH(9,
         (2, 1, 0),
         (1, 1),
         (2, 1, 0)
     );
-    TEST_NUM_MUL(10,
+    TEST_NUM_MUL_BATCH(10,
         (1, 1),
         (2, 1, 0),
         (2, 1, 0)
     );
-    TEST_NUM_MUL(11,
+    TEST_NUM_MUL_BATCH(11,
         (2, 1, 0),
         (2, 1, 0),
         (3, 1, 0, 0)
     );
-    TEST_NUM_MUL(12,
+    TEST_NUM_MUL_BATCH(12,
         (1, 2),
         (2, 2, UINT64_MAX),
         (2, 5, UINT64_MAX - 1)
     );
-    TEST_NUM_MUL(13,
+    TEST_NUM_MUL_BATCH(13,
         (2, UINT64_MAX, UINT64_MAX),
         (2, UINT64_MAX, UINT64_MAX),
         (4, UINT64_MAX, UINT64_MAX - 1, 0, 1)
     );
-    TEST_NUM_MUL(14,
+    TEST_NUM_MUL_BATCH(14,
         (3, 2, 3, 4),
         (3, 5, 6, 7),
         (5, 10, 27, 52, 45, 28)
     );
-    TEST_NUM_MUL(14,
+    TEST_NUM_MUL_BATCH(14,
         (3, 2, 3, 4),
         (3, 5, 6, 7),
         (5, 10, 27, 52, 45, 28)
