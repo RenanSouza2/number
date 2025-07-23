@@ -47,7 +47,6 @@ num_p num_generate_2(uint64_t index, uint64_t salt)
     return num;
 }
 
-
 void time_1(uint64_t begin, uint64_t end)
 {
     assert(begin);
@@ -114,70 +113,6 @@ void time_2(int argc, char** argv, uint64_t max)
         printf("\t%10.3lf", (end - begin) / 1e3);
     }
 }
-
-void time_3()
-{
-    num_p num_1 = num_wrap(0xe6503424c62eef89);
-    num_p num_2 = num_wrap(0xe6503424c62eef89);
-    num_p num_3 = num_wrap(0xe6503424c62eef89);
-
-    for(uint64_t i=1; i<10000; i++)
-    {
-        printf("\ni: %lu\t", i);
-
-        num_1 = num_generate_2_step(num_1, 2);
-        num_2 = num_generate_2_step(num_2, 3);
-
-        num_p num_1_cpy = num_copy(num_1);
-        num_p num_2_cpy = num_copy(num_2);
-
-        uint64_t begin = get_time();
-        num_1_cpy = num_mul(num_1_cpy, num_2_cpy);
-        uint64_t end = get_time();
-        uint64_t t_mul = end - begin;
-        num_free(num_1_cpy);
-
-        num_1_cpy = num_head_grow(num_copy(num_1), i);
-        num_3 = num_head_grow(num_3, 1);
-        num_p num_3_cpy = num_copy(num_3);
-
-        begin = get_time();
-        num_1_cpy = num_div(num_1_cpy, num_3_cpy);
-        end = get_time();
-        uint64_t t_div = end - begin;
-
-        printf("\t%.1f", (double)t_div / t_mul);
-        num_free(num_1_cpy);
-    }
-}
-
-// void time_4()
-// {
-//     uint64_t tam = 1;
-//     for(uint64_t i=tam; i<50000; i += tam)
-//     {
-//         num_p num_1 = num_rand(i);
-//         num_p num_2 = num_rand(i);
-//
-//         num_p num_1_cpy = num_copy(num_1);
-//         num_p num_2_cpy = num_copy(num_2);
-//
-//         TIME_SETUP
-//         num_1_cpy = num_mul_simple(num_1_cpy, num_2_cpy);
-//         TIME_END(t1)
-//         num_free(num_1_cpy);
-//
-//         num_1_cpy = num_copy(num_1);
-//         num_2_cpy = num_copy(num_2);
-//
-//         TIME_BEGIN
-//         num_1_cpy = num_mul(num_1_cpy, num_2_cpy);
-//         TIME_END(t2)
-//         num_free(num_1_cpy);
-//
-//         printf("\n%lu,\t%.4f,\t%.4f", i, t1/1e9, t2/1e9);
-//     }
-// }
 
 
 
@@ -603,11 +538,9 @@ int main()
     // clu_log_enable(true);
 
     // num_generate(21, 2);
-    // time_1(16, 27);
+    time_1(16, 25);
     // time_1(16, 17);
     // time_2(argc, argv, 19);
-    // time_3();
-    // time_4();
     // fibonacci();
     // fibonacci_2(16, 23);
     // fibonacci_3(16, 23);
@@ -616,31 +549,8 @@ int main()
     // float_num_pi_2(1000);
     // float_num_pi_3(1000);
     // float_num_pi_4(1000);
-    
 
-    // uint64_t value_1 = 0xaaaaaaaaaaaaaaaa;
-    // uint64_t value_2 = 0xbbbbbbbbbbbbbbbb;
-    // uint64_t value_3 = 0xcccccccccccccccc;
-    // uint64_t value_4 = 0xdddddddddddddddd;
-    // uint64_t value_5 = 0xeeeeeeeeeeeeeeee;
-    // uint64_t value_6 = 0xffffffffffffffff;
-
-    // num_p num_1 = num_create_immed(8, value_1, value_2, value_3, value_4, value_1, value_2, value_3, value_4);
-    // num_p num_2 = num_create_immed(2, value_5, value_6);
-
-    // // num_display_tag("num_1", num_1);
-    // // num_display_tag("num_2", num_2);
-
-    // num_p num_q_1, num_rec_1, num_q_2, num_rec_2;
-    // num_div_mod_unbalanced(&num_q_1, &num_rec_1, num_copy(num_1), num_copy(num_2));
-    // num_div_mod(&num_q_2, &num_rec_2, num_copy(num_1), num_copy(num_2));
-
-    // printf("\n\n---------");
-    // printf("\nresults");
-    // num_display_full("num_q_1", num_q_1);
-    // num_display_full("num_q_2", num_q_2);
-
-    del();
+    // del();
 
     // assert(clu_mem_is_empty("FINAL"));
 
