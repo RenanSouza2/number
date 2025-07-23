@@ -1123,6 +1123,22 @@ void num_display_span_tag(char tag[], num_p num, uint64_t pos, uint64_t count)
     num_display_span(num, pos, count);
 }
 
+void num_display_span_full(char tag[], num_p num, uint64_t n)
+{
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num)
+
+    uint64_t k = num->count / n;
+
+    printf("\n");
+    printf("\n%s\t: ", tag);
+    for(uint64_t i=0; i<k; i++)
+    {
+        printf("\nc[%lu]\t:", i);
+        num_display_span(num, i * n, n);
+    }
+}
+
 // Separate number to a base 2^(64*b)
 // Each place will be represented in n chunks
 // the final vector is padded to k places
@@ -1455,8 +1471,8 @@ void num_ssm_fft_fwd(
     assert(num_aux)
     assert(num)
 
-    for(uint64_t i=0; i<k; i++)
-        num_ssm_shl_mod(num_aux, num, n * i, n, bits * i);
+    // for(uint64_t i=0; i<k; i++)
+    //     num_ssm_shl_mod(num_aux, num, n * i, n, bits * i);
 
     num_ssm_fft_fwd_rec(num_aux, num, 0, 1, n, k, 2 * bits);
 }
@@ -1513,7 +1529,10 @@ void num_ssm_fft_inv(
 
     uint64_t k_ = stdc_trailing_zeros(k);
     for(uint64_t i=0; i<k; i++)
-        num_ssm_shr_mod(num_aux, num, n * i, n, bits * i + k_);
+        num_ssm_shr_mod(num_aux, num, n * i, n, k_);
+
+    // for(uint64_t i=0; i<k; i++)
+    //     num_ssm_shr_mod(num_aux, num, n * i, n, bits * i + k_);
 }
 
 num_p num_mul_inner(num_p num_res, num_p num_1, num_p num_2);
@@ -1534,8 +1553,8 @@ void num_ssm_mul_tmp(
         num_m = num_add_uint(num_m, 1);
     }
 
-    num_t num_t_1 = num_span(num_1, pos, n);
-    num_t num_t_2 = num_span(num_2, pos, n);
+    num_t num_t_1 = num_span(num_1, pos, pos + n);
+    num_t num_t_2 = num_span(num_2, pos, pos + n);
     CLU_HANDLER_REGISTER_STATIC(&num_t_1);
     CLU_HANDLER_REGISTER_STATIC(&num_t_2);
 
