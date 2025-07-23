@@ -797,15 +797,15 @@ void test_num_add_uint_offset(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_NUM_ADD_UINT_OFFSET(TAG, NUM_BEF, OFFSET, VALUE, NUM_AFT)  \
-    {                                                                       \
-        TEST_CASE_OPEN(TAG)                                                 \
-        {                                                                   \
-            num_p num = num_create_immed(ARG_OPEN NUM_BEF);                 \
-            num = num_add_uint_offset(num, OFFSET, VALUE);                  \
-            assert(num_immed(num, ARG_OPEN NUM_AFT));                       \
-        }                                                                   \
-        TEST_CASE_CLOSE                                                     \
+    #define TEST_NUM_ADD_UINT_OFFSET(TAG, NUM, OFFSET, VALUE, RES)  \
+    {                                                               \
+        TEST_CASE_OPEN(TAG)                                         \
+        {                                                           \
+            num_p num = num_create_immed(ARG_OPEN NUM);             \
+            num = num_add_uint_offset(num, OFFSET, VALUE);          \
+            assert(num_immed(num, ARG_OPEN RES));                   \
+        }                                                           \
+        TEST_CASE_CLOSE                                             \
     }
 
     TEST_NUM_ADD_UINT_OFFSET(1, (0), 0, 0, (0));
@@ -2557,41 +2557,41 @@ void test_num()
 
     bool show = true;
 
-    // test_uint_from_char(show);
-    // test_uint_inv(show);
-    // test_uint128(show);
+    test_uint_from_char(show);
+    test_uint_inv(show);
+    test_uint128(show);
 
-    // test_num_create(show);
-    // test_num_expand_to(show);
-    // test_num_chunk_get(show);
-    // test_num_chunk_set(show);
+    test_num_create(show);
+    test_num_expand_to(show);
+    test_num_chunk_get(show);
+    test_num_chunk_set(show);
 
-    // test_num_normalize(show);
-    // test_num_break(show);
-    // test_num_join(show);
+    test_num_normalize(show);
+    test_num_break(show);
+    test_num_join(show);
 
-    // test_num_wrap(show);
-    // test_num_wrap_dec(show);
-    // test_num_wrap_hex(show);
-    // test_num_wrap_str(show);
-    // test_num_read_dec(show);
-    // test_num_unwrap(show);
-    // test_num_copy(show);
+    test_num_wrap(show);
+    test_num_wrap_dec(show);
+    test_num_wrap_hex(show);
+    test_num_wrap_str(show);
+    test_num_read_dec(show);
+    test_num_unwrap(show);
+    test_num_copy(show);
 
-    // test_num_add_uint_offset(show);
-    // test_num_sub_uint_offset(show);
-    // test_num_cmp_offset(show);
-    // test_num_sub_offset(show);
+    test_num_add_uint_offset(show);
+    test_num_sub_uint_offset(show);
+    test_num_cmp_offset(show);
+    test_num_sub_offset(show);
 
-    // test_num_shl_inner(show);
-    // test_num_shr_inner(show);
-    // test_num_mul_uint(show);
+    test_num_shl_inner(show);
+    test_num_shr_inner(show);
+    test_num_mul_uint(show);
 
-    // test_num_pad(show);
-    // test_num_depad(show);
-    // test_num_shuffle(show);
-    // // test_num_fft(show);
-    // test_num_fft_inv(show);
+    test_num_pad(show);
+    test_num_depad(show);
+    test_num_shuffle(show);
+    // test_num_fft(show);
+    test_num_fft_inv(show);
 
     test_num_ssm_pad(show);
     test_num_ssm_add_mod(show);
@@ -2601,22 +2601,22 @@ void test_num()
     test_num_ssm_shl_mod(show);
     test_num_ssm_shr_mod(show);
 
-    // test_num_is_zero(show);
+    test_num_is_zero(show);
 
-    // test_num_shl(show);
-    // test_num_shr(show);
+    test_num_shl(show);
+    test_num_shr(show);
 
-    // test_num_add(show);
-    // test_num_sub(show);
-    // test_num_mul(show);
-    // test_num_sqr(show);
-    // test_num_div_mod(show);
-    // test_num_gcd(show);
+    test_num_add(show);
+    test_num_sub(show);
+    test_num_mul(show);
+    test_num_sqr(show);
+    test_num_div_mod(show);
+    test_num_gcd(show);
 
-    // test_num_div_mod_uint(show);
+    test_num_div_mod_uint(show);
 
-    // test_num_base_to(show);
-    // test_num_base_from(show);
+    test_num_base_to(show);
+    test_num_base_from(show);
 
     // test_num_fuzz_mul(show);
 

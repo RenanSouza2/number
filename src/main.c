@@ -603,7 +603,7 @@ int main()
     // clu_log_enable(true);
 
     // num_generate(21, 2);
-    // time_1(16, 27);
+    time_1(16, 27);
     // time_1(16, 17);
     // time_2(argc, argv, 19);
     // time_3();
@@ -640,7 +640,7 @@ int main()
     // num_display_full("num_q_1", num_q_1);
     // num_display_full("num_q_2", num_q_2);
 
-    del();
+    // del();
 
     // assert(clu_mem_is_empty("FINAL"));
 

@@ -672,12 +672,18 @@ num_p num_add_uint_offset(num_p num, uint64_t pos, uint64_t value)
     CLU_HANDLER_IS_SAFE(num);
     assert(num);
 
-    for(; value; pos++)
+    uint128_t carry = value;
+    for(uint64_t i=pos; i<num->count && carry; i++)
     {
-        uint64_t cur = num_chunk_get(num, pos);
-        cur += value;
-        num = num_chunk_set(num, pos, cur);
-        value = cur < value;
+        carry += num->chunk[i];
+        num->chunk[i] = LOW(carry);
+        carry >>= 64;
+    }
+    
+    if(carry)
+    {
+        pos = pos > num->count ? pos : num->count;
+        num = num_chunk_set(num, pos , LOW(carry));
     }
 
     return num;
@@ -688,19 +694,14 @@ num_p num_sub_uint_offset(num_p num, uint64_t pos, uint64_t value)
     CLU_HANDLER_IS_SAFE(num);
     assert(num);
 
-    for(; value; pos++)
+    uint128_t carry = -(uint128_t)value;
+    for(uint64_t i=pos; i<num->count && carry; i++)
     {
-        if(pos >= num->count)
-        {
-            int *p = NULL;
-            *p = 1;
-        }
-        assert(pos < num->count);
-
-        uint64_t next = num->chunk[pos] < value;
-        num->chunk[pos] -= value;
-        value = next;
+        carry += num->chunk[i];
+        num->chunk[i] = LOW(carry);
+        carry = (int128_t)carry >> 64;
     }
+    assert(carry == 0);
 
     while(num_normalize(num));
     return num;
@@ -827,8 +828,22 @@ num_p num_add_offset(num_p num_1, uint64_t pos_1, num_p num_2, uint64_t pos_2) /
     assert(num_1);
     assert(num_2);
 
+    uint64_t delta = pos_1 - pos_2;
+    uint64_t count_max = delta + num_2->count;
+    num_1 = num_expand_to(num_1, count_max + 1);
+
+    uint128_t carry = 0;
     for(uint64_t i=pos_2; i<num_2->count; i++)
-        num_1 = num_add_uint_offset(num_1, pos_1 + i - pos_2, num_2->chunk[i]);
+    {
+        carry += (uint128_t)num_1->chunk[delta + i] + num_2->chunk[i];
+        num_1->chunk[delta + i] = LOW(carry);
+        carry >>= 64;
+    }
+
+    if(carry)
+        num_1 = num_add_uint_offset(num_1, count_max, LOW(carry));
+    else
+        num_1->count = num_1->count > count_max ? num_1->count : count_max;
 
     return num_1;
 }
@@ -1177,9 +1192,10 @@ void num_ssm_normalize(num_p num, uint64_t pos, uint64_t n)
     )
     {
         uint64_t num_count = num->count;
-        num_sub_uint_offset(num, pos        , 1);
-        num_sub_uint_offset(num, pos + n - 1, 1);
+        num_sub_uint_offset(num, pos , 1);
         num->count = num_count;
+
+        num->chunk[ pos + n - 1] = 0;
     }
 }
 
@@ -1191,6 +1207,11 @@ int64_t num_ssm_cmp(
     uint64_t n
 )
 {
+    CLU_HANDLER_IS_SAFE(num_1)
+    CLU_HANDLER_IS_SAFE(num_2)
+    assert(num_1)
+    assert(num_2)
+
     for(uint64_t i=n-1; i!=UINT64_MAX; i--)
     {
         if(num_1->chunk[pos_1 + i] < num_2->chunk[pos_2 + i])
@@ -1495,32 +1516,96 @@ void num_ssm_fft_inv(
         num_ssm_shr_mod(num_aux, num, n * i, n, bits * i + k_);
 }
 
-void num_ssm_prepare(num_p num_aux, num_p num)
+num_p num_mul_inner(num_p num_res, num_p num_1, num_p num_2);
+
+void num_ssm_mul_tmp(
+    num_p num_res,
+    num_p num_1,
+    num_p num_2,
+    uint64_t pos,
+    uint64_t n
+)
 {
-    uint64_t M = 1 << (stdc_bit_width(num->count) / 2);
-    uint64_t K = stdc_bit_ceil(2 * num->count / M);
+    static num_p num_m = NULL;
+    if(num_m == NULL)
+    {
+        num_m = num_wrap(1);
+        num_m = num_head_grow(num_m, n - 1);
+        num_m = num_add_uint(num_m, 1);
+    }
+
+    num_t num_t_1 = num_span(num_1, pos, n);
+    num_t num_t_2 = num_span(num_2, pos, n);
+    CLU_HANDLER_REGISTER_STATIC(&num_t_1);
+    CLU_HANDLER_REGISTER_STATIC(&num_t_2);
+
+    num_mul_inner(num_res, &num_t_1, &num_t_2);
+    num_mod(num_res, num_copy(num_m));
+}
+
+num_p num_mul_ssm(num_p num_1, num_p num_2)
+{
+    uint64_t count = num_1->count > num_2->count ? num_1->count : num_2->count;
+    uint64_t M = 1 << (stdc_bit_width(count) / 2);
+    uint64_t K = stdc_bit_ceil((num_1->count + num_2->count) / M);
+    // uint64_t K = 1 << stdc_bit_width((num_1->count + num_2->count) / M);
     uint64_t P = 2 * M + 1;
     uint64_t Q = 16 * P;
     uint64_t n = P + 1;
 
-    num = num_ssm_pad(num, M, n, K);
+    num_p num_aux = num_create(2 * n, 2 * n);
 
-    num_ssm_fft_fwd(num_aux, num, n, K, Q);
-    num_ssm_fft_inv(num_aux, num, n, K, Q);
+    num_1 = num_ssm_pad(num_1, M, n, K);
+    num_2 = num_ssm_pad(num_2, M, n, K);
 
-    num_ssm_depad(num, M, n, K);
+    printf("\n");
+    for(uint64_t i=0; i<K; i++)
+    {
+        printf("\nc[%lu]\t: ", i);
+        num_display_span(num_1, i * n, n);
+    }
+    printf("\n");
+    printf("\n");
+    for(uint64_t i=0; i<K; i++)
+    {
+        printf("\nc[%lu]\t: ", i);
+        num_display_span(num_2, i * n, n);
+    }
+    printf("\n");
+
+    num_ssm_fft_fwd(num_aux, num_1, n, K, Q);
+    num_ssm_fft_fwd(num_aux, num_2, n, K, Q);
+
+    for(uint64_t i=0; i<K; i++)
+    {
+        num_ssm_mul_tmp(num_aux, num_1, num_2, i * n, n);
+        memcpy(&num_1->chunk[i * n], num_aux->chunk, n);
+    }
+    num_aux->count = 2 * n;
+    num_ssm_fft_inv(num_aux, num_1, n, K, Q);
+
+    printf("\n");
+    for(uint64_t i=0; i<K; i++)
+    {
+        printf("\nc[%lu]\t: ", i);
+        num_display_span(num_1, i * n, n);
+    }
+    printf("\n");
+    
+    num_ssm_depad(num_1, M, n, K);
+
+    num_free(num_aux);
+    return num_1;
 }
 
-void del()
-{
-    num_p num = num_create_immed(4, 3, 5, 9, 4);
+// void del()
+// {
+//     num_p num_1 = num_create_immed(4, 3, 6, 9, 5);
+//     num_p num_2 = num_create_immed(4, 8, 7, 2, 3);
 
-    uint64_t params[4];
-    ssm_calculate_parametrs(params, num->count);
-    num_p num_aux = num_create(2 * params[3], 2 * params[3]);
-
-    num_ssm_prepare(num_aux, num);
-}
+//     num_1 = num_mul_ssm(num_1, num_2);
+//     num_display_full("num_1", num_1);
+// }
 
 
 
@@ -2078,9 +2163,8 @@ num_p num_mod(num_p num_1, num_p num_2)
     assert(num_1);
     assert(num_2);
 
-    num_p num_r;
-    num_div_mod_inner(NULL, &num_r, num_1, num_2);
-    return num_r;
+    num_div_mod_inner(NULL, &num_1, num_1, num_2);
+    return num_1;
 }
 
 num_p num_gcd(num_p num_1, num_p num_2)
