@@ -1598,7 +1598,7 @@ num_p num_mul_ssm(num_p num_1, num_p num_2)
     for(uint64_t i=0; i<K; i++)
     {
         num_ssm_mul_tmp(num_aux, num_1, num_2, i * n, n);
-        memcpy(&num_1->chunk[i * n], num_aux->chunk, n);
+        memcpy(&num_1->chunk[i * n], num_aux->chunk, n * sizeof(uint64_t));
     }
     num_aux->count = 2 * n;
     num_ssm_fft_inv(num_aux, num_1, n, K, Q);
