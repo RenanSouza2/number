@@ -1443,33 +1443,6 @@ void num_ssm_fft_fwd_rec(
     }
 }
 
-// res[0] = M, res[1] = K, res[2] = Q, res[3] = n
-void ssm_get_params(uint64_t res[4], uint64_t count_1, uint64_t count_2)
-{
-    uint64_t count = count_1 > count_2 ? count_1 : count_2;
-    uint64_t M = 1 << (stdc_bit_width(count) / 2);
-    uint64_t K = stdc_bit_ceil(((count_1 + M - 1) / M) + ((count_2 + M - 1) / M));
-    
-    uint64_t Q;
-    uint64_t n;
-    if(K < 64)
-    {
-        uint64_t P = 2 * M + 1;
-        Q = 64 * P / K;
-        n = P + 1;
-    }
-    else
-    {
-        Q = (128 * M / K) + 1;
-        n = (K * Q / 64) + 1;
-    }
-
-    res[0] = M;
-    res[1] = K;
-    res[2] = Q;
-    res[3] = n;
-}
-
 void num_ssm_fft_fwd(
     num_p num_aux,
     num_p num,
@@ -1573,10 +1546,63 @@ void num_ssm_mul_tmp(
     num_ssm_sub_mod(num_res, 0, num_res, 0, num_res, n, n);
 }
 
-num_p num_mul_ssm_inner(num_p num_res, num_p num_1, num_p num_2)
+// res[0] = M, res[1] = K, res[2] = Q, res[3] = n
+void ssm_get_params_no_wrap(uint64_t res[4], uint64_t count_1, uint64_t count_2)
 {
-    uint64_t params[4];
-    ssm_get_params(params, num_1->count, num_2->count);
+    uint64_t count = count_1 > count_2 ? count_1 : count_2;
+    uint64_t M = 1 << (stdc_bit_width(count) / 2);
+    uint64_t K = stdc_bit_ceil(((count_1 + M - 1) / M) + ((count_2 + M - 1) / M));
+    
+    uint64_t Q;
+    uint64_t n;
+    if(K < 64)
+    {
+        uint64_t P = 2 * M + 1;
+        Q = 64 * P / K;
+        n = P + 1;
+    }
+    else
+    {
+        Q = (128 * M / K) + 1;
+        n = (K * Q / 64) + 1;
+    }
+
+    res[0] = M;
+    res[1] = K;
+    res[2] = Q;
+    res[3] = n;
+}
+
+// res[0] = M, res[1] = K, res[2] = Q, res[3] = n
+void ssm_get_params_wrap(uint64_t res[4], uint64_t n_1)
+{
+    uint64_t M = 1 << (stdc_bit_width(n_1) / 2);
+    uint64_t K = n_1 / M;
+    assert((K & -K) == K);
+    assert(K * M == n_1);
+    
+    uint64_t Q;
+    uint64_t n;
+    if(K < 64)
+    {
+        uint64_t P = 2 * M + 1;
+        Q = 64 * P / K;
+        n = P + 1;
+    }
+    else
+    {
+        Q = (128 * M / K) + 1;
+        n = (K * Q / 64) + 1;
+    }
+
+    res[0] = M;
+    res[1] = K;
+    res[2] = Q;
+    res[3] = n;
+}
+
+num_p num_mul_ssm_params(num_p num_res, num_p num_1, num_p num_2, uint64_t params[4])
+{
     uint64_t M = params[0];
     uint64_t K = params[1];
     uint64_t Q = params[2];
@@ -1611,6 +1637,20 @@ num_p num_mul_ssm_inner(num_p num_res, num_p num_1, num_p num_2)
     num_free(num_2);
     num_free(num_aux);
     return num_res;
+}
+
+num_p num_mul_ssm_rec(num_p num_res, num_p num_1, num_p num_2, uint64_t n)
+{
+    uint64_t params[4];
+    ssm_get_params_wrap(params, n);
+    return num_mul_ssm_params(num_res, num_1, num_2, params);
+}
+
+num_p num_mul_ssm_inner(num_p num_res, num_p num_1, num_p num_2)
+{
+    uint64_t params[4];
+    ssm_get_params_no_wrap(params, num_1->count, num_2->count);
+    return num_mul_ssm_params(num_res, num_1, num_2, params);
 }
 
 // void del()
@@ -1716,7 +1756,7 @@ num_p num_mul_fft(num_p num_1, num_p num_2)
 num_p num_mul_ssm(num_p num_1, num_p num_2)
 {
     uint64_t params[4];
-    ssm_get_params(params, num_1->count, num_2->count);
+    ssm_get_params_no_wrap(params, num_1->count, num_2->count);
     uint64_t count = params[1] * params[3];
     num_p num_res = num_create(count, count);
     num_res->cannot_expand = true;

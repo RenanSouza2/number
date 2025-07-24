@@ -116,7 +116,7 @@ void time_2(int argc, char** argv, uint64_t max)
 
 void time_3()
 {
-    for(uint64_t i=1000; i<50000; i+=1000)
+    for(uint64_t i=1000; i<50000; i*=101 / 100)
     {
         printf("\n%lu", i);
 
