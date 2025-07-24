@@ -6,3 +6,4 @@ nested mutex display
 iterating variable is I
 simplify division
 test: get commit mid commit and run with no monitoring
+remove return if not expected to expand

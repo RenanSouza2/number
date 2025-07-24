@@ -265,6 +265,7 @@ int64_t int64_sub(int64_t a, int64_t b) // TODO test
 float_num_t float_num_normalize(float_num_t flt)
 {
     CLU_FLOAT_IS_SAFE(flt);
+    assert(flt.sig.num);
 
     if(sig_num_is_zero(flt.sig))
         return flt;
@@ -272,7 +273,7 @@ float_num_t float_num_normalize(float_num_t flt)
     if(flt.sig.num->count < flt.size)
     {
         uint64_t diff = flt.size - flt.sig.num->count;
-        flt.exponent = int64_add(flt.exponent, -diff);
+        flt.exponent = int64_sub(flt.exponent, diff);
         flt.sig = sig_num_head_grow(flt.sig, diff);
     }
 
@@ -448,12 +449,12 @@ float_num_t float_num_shr(float_num_t flt, uint64_t bits) // TODO TEST
     if(flt.sig.num->chunk[flt.size - 1] >> rem)
     {
         flt.exponent = int64_sub(flt.exponent, bits >> 6);
-        flt.sig.num = num_shr_uint(flt.sig.num, rem);
+        flt.sig.num = num_shr(flt.sig.num, rem);
         return flt;
     }
 
     flt.exponent = int64_sub(flt.exponent, 1 + (bits >> 6));
-    flt.sig.num = num_shl_uint(flt.sig.num, 64 - rem);
+    flt.sig.num = num_shl(flt.sig.num, 64 - rem);
     return flt;
 }
 
@@ -500,10 +501,10 @@ float_num_t float_num_mul(float_num_t flt_1, float_num_t flt_2) // TODO TEST
     CLU_FLOAT_IS_SAFE(flt_1);
     CLU_FLOAT_IS_SAFE(flt_2);
 
-    uint64_t pos = flt_1.size - 2;
+    uint64_t pos = 0;
     flt_1.exponent = int64_add(flt_1.exponent, flt_2.exponent);
     flt_1.exponent = int64_add(flt_1.exponent, pos);
-    flt_1.sig = sig_num_mul_high(flt_1.sig, flt_2.sig, pos);
+    flt_1.sig = sig_num_mul(flt_1.sig, flt_2.sig);
     return float_num_normalize(flt_1);
 }
 

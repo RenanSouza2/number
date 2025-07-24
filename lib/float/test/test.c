@@ -470,7 +470,7 @@ void test_float_num_div_sig(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_FLOAT_NUM_DIV_SIG(TAG, FLT, SIG, RES)                  \
+    #define TEST_FLOAT_NUM_DIV_SIG(TAG, FLT, SIG, RES)              \
     {                                                               \
         TEST_CASE_OPEN(TAG)                                         \
         {                                                           \

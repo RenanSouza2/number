@@ -5,7 +5,7 @@
 #include "../../mods/clu/header.h"
 
 #include "../../mods/macros/assert.h"
-#include "../../mods/macros/U64.h"
+#include "../../mods/macros/uint.h"
 
 #include "../num/header.h"
 #include "../num/struct.h"

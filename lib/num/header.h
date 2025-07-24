@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 #include "../../mods/macros/struct.h"
-#include "../../mods/macros/U64.h"
+#include "../../mods/macros/uint.h"
 
 PLACEHOLDER(num)
 
@@ -17,6 +17,7 @@ void num_display_full(char *tag, num_p num);
 num_p num_head_grow(num_p num, uint64_t count);
 num_p num_head_trim(num_p num, uint64_t count);
 void num_break(num_p *out_num_ih, num_p *out_num_lo,num_p num, uint64_t count);
+num_p num_join(num_p num_hi, num_p num_lo, uint64_t count);
 
 num_p num_wrap(uint64_t value);
 num_p num_wrap_str(char str[]);
@@ -28,11 +29,12 @@ void num_free(num_p num);
 bool num_is_zero(num_p num);
 int64_t num_cmp(num_p num_1, num_p num_2);
 
-num_p num_shl_uint(num_p num, uint64_t bits);
-num_p num_shr_uint(num_p num, uint64_t bits);
 num_p num_shl(num_p num, uint64_t bits);
 num_p num_shr(num_p num, uint64_t bits);
-// num_p num_exp(num_p num, uint64_t value);
+num_p num_add_uint(num_p num, uint64_t value);
+num_p num_sub_uint(num_p num, uint64_t value);
+num_p num_mul_uint(num_p num, uint64_t value);
+num_p num_div_mod_uint(num_p num, uint64_t value);
 
 num_p num_add(num_p num_1, num_p num_2);
 num_p num_sub(num_p num_1, num_p num_2);
@@ -46,5 +48,13 @@ num_p num_gcd(num_p num_1, num_p num_2);
 
 num_p num_base_to(num_p num, uint64_t base);
 num_p num_base_from(num_p num, uint64_t base);
+
+num_p num_div_mod_unbalanced(num_p num_1, num_p num_2);
+
+num_p num_mul_ssm(num_p num_1, num_p num_2);
+num_p num_mul_fft(num_p num_1, num_p num_2);
+num_p num_mul_classic(num_p num_1, num_p num_2);
+
+void del();
 
 #endif
