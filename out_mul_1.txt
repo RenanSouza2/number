@@ -2,6 +2,7 @@ make build --directory=src -s
  linking num object lib
 building num exec src
 
+time_3, naive, fft, ssm
 1000, 0.008, 0.009, 0.002
 2000, 0.031, 0.018, 0.005
 3000, 0.069, 0.039, 0.017

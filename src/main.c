@@ -119,30 +119,15 @@ void time_3()
     for(uint64_t i=1000; i<50000; i*=101 / 100)
     {
         printf("\n%lu", i);
+        TIME_SETUP
 
         num_p num_1 = num_generate_2(i, 2);
         num_p num_2 = num_generate_2(i, 3);
 
         num_p num_1_copy = num_copy(num_1);
         num_p num_2_copy = num_copy(num_2);
-        TIME_SETUP
-        num_p num_res = num_mul_classic(num_1_copy, num_2_copy);
-        TIME_END(t1);
-        printf(", %.3f", t1 / 1e9);
-        num_free(num_res);
-    
-        num_1_copy = num_copy(num_1);
-        num_2_copy = num_copy(num_2);
         TIME_RESET
-        num_res = num_mul_fft(num_1_copy, num_2_copy);
-        TIME_END(t2);
-        printf(", %.3f", t2 / 1e9);
-        num_free(num_res);
-
-        num_1_copy = num_copy(num_1);
-        num_2_copy = num_copy(num_2);
-        TIME_RESET
-        num_res = num_mul_ssm(num_1_copy, num_2_copy);
+        num_p num_res = num_mul_ssm(num_1_copy, num_2_copy);
         TIME_END(t3);
         printf(", %.3f", t3 / 1e9);
         num_free(num_res);
