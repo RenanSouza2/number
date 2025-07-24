@@ -269,15 +269,7 @@ void num_display_opts(num_p num, char *tag, bool length, bool full)
             4 : num->count;
 
     for(uint64_t i=0; i<max; i++)
-    {
-        uint64_t value = num->chunk[num->count-1-i];
-        if(value == 0)
-            printf("0 ");
-        else if(value == 1UL << 63)
-            printf("M ");
-        else
-            printf("%lx ", num->chunk[num->count-1-i]);
-    }
+        printf("" U64PX " ", num->chunk[num->count-1-i]);
 
     if(!full && num->count > 4)
         printf("...");
@@ -965,12 +957,12 @@ void num_display_span_tag(char tag[], num_p num, uint64_t pos, uint64_t count)
     num_display_span(num, pos, count);
 }
 
-void num_display_span_full(char tag[], num_p num, uint64_t n)
+void num_display_span_full(char tag[], num_p num, uint64_t n, uint64_t k)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
 
-    uint64_t k = num->count / n;
+    // uint64_t k = num->count / n;
 
     printf("\n");
     printf("\n%s\t: ", tag);
@@ -1052,7 +1044,7 @@ void num_ssm_normalize(num_p num, uint64_t pos, uint64_t n)
         num_sub_uint_offset(num, pos , 1);
         num->count = num_count;
 
-        num->chunk[ pos + n - 1] = 0;
+        num->chunk[pos + n - 1] = 0;
     }
 }
 
@@ -1409,10 +1401,9 @@ void num_ssm_mul_tmp(
     num_set_count(num_res, 0);
     num_mul_classic_buffer(num_res, &num_t_1, &num_t_2);
 
-    for(uint64_t i=n-1; i!=UINT64_MAX; i--)
-        num_res->chunk[n + i] = num_res->chunk[n + i - 1];
-    num_res->chunk[n-1] = 0;
+    num_display_full("num_res", num_res);
 
+    num_ssm_pad(num_res, n-1, n, 2);
     num_ssm_sub_mod(num_res, 0, num_res, 0, num_res, n, n);
 }
 
@@ -1492,11 +1483,11 @@ void num_mul_ssm_params(num_p num_res, num_p num_1, num_p num_2, uint64_t params
 
     assert(num_res->size >= K * n);
 
-    // printf("\ncount: %lu", num_1->count);
-    // printf("\tM: %lu", M);
-    // printf("\tK: %lu", K);
-    // printf("\tQ: %lu", Q);
-    // printf("\tn: %lu", n);
+    printf("\ncount: %lu", num_1->count);
+    printf("\tM: %lu", M);
+    printf("\tK: %lu", K);
+    printf("\tQ: %lu", Q);
+    printf("\tn: %lu", n);
 
     uint64_t aux_count = K > 2 ? K * n : 2 * n + 1;
     num_p num_aux = num_create(aux_count, aux_count);
@@ -1504,17 +1495,29 @@ void num_mul_ssm_params(num_p num_res, num_p num_1, num_p num_2, uint64_t params
 
     num_1 = num_ssm_pad(num_1, M, n, K);
     num_2 = num_ssm_pad(num_2, M, n, K);
+
+    printf("\npad");
+    num_display_span_full("num_1", num_1, n, K);
+    num_display_span_full("num_2", num_2, n, K);
     
     num_ssm_fft_fwd(num_aux, num_1, n, K, Q);
     num_ssm_fft_fwd(num_aux, num_2, n, K, Q);
 
+    printf("\nfft");
+    num_display_span_full("num_1", num_1, n, K);
+    num_display_span_full("num_2", num_2, n, K);
+
     for(uint64_t i=0; i<K; i++)
     {
+        printf("\n");
+        printf("\ni: %lu", i);
         num_ssm_mul_tmp(num_aux, num_1, num_2, i * n, n);
         memcpy(&num_res->chunk[i * n], num_aux->chunk, n * sizeof(uint64_t));
     }
-    num_ssm_fft_inv(num_aux, num_res, n, K, Q);
 
+    printf("\nconvoluted");
+
+    num_ssm_fft_inv(num_aux, num_res, n, K, Q);
     num_ssm_depad_no_wrap(num_res, M, n, K);
 
     num_free(num_1);
@@ -1531,6 +1534,10 @@ void num_mul_ssm_rec(num_p num_res, num_p num_1, num_p num_2, uint64_t n)
 
 void num_mul_ssm_buffer(num_p num_res, num_p num_1, num_p num_2)
 {
+    printf("\nnum_mul_ssm_buffer\t| begin");
+    num_display_full("num_1", num_1);
+    num_display_full("num_2", num_2);
+
     uint64_t params[4];
     ssm_get_params_no_wrap(params, num_1->count, num_2->count);
     return num_mul_ssm_params(num_res, num_1, num_2, params);
@@ -2028,6 +2035,7 @@ num_p num_mul(num_p num_1, num_p num_2)
 
     uint64_t count = stdc_bit_ceil(4 * (num_1->count + num_2->count));
     num_p num_res = num_create(count, 0);
+    num_res->cannot_expand = true;
     num_mul_buffer(num_res, num_1, num_2);
     num_free(num_1);
     num_free(num_2);
