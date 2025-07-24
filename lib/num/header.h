@@ -15,7 +15,7 @@ void num_display_tag(char *tag, num_p num);
 void num_display_full(char *tag, num_p num);
 
 num_p num_head_grow(num_p num, uint64_t count);
-num_p num_head_trim(num_p num, uint64_t count);
+void num_head_trim(num_p num, uint64_t count);
 void num_break(num_p *out_num_ih, num_p *out_num_lo,num_p num, uint64_t count);
 num_p num_join(num_p num_hi, num_p num_lo, uint64_t count);
 

@@ -340,6 +340,7 @@ num_p num_expand_to(num_p num, uint64_t target)
     uint64_t size = target * 2;
     num = realloc(num, sizeof(num_t) + size * sizeof(uint64_t));
     assert(num);
+
     uint64_t size_old = num->size;
     *num = (num_t)
     {
@@ -360,11 +361,14 @@ num_p num_expand(num_p num)
     return num_expand_to(num, num->size + 1);
 }
 
-num_p num_reset(num_p num) // TODO TEST
+void num_set_count(num_p num, uint64_t count)
 {
-    memset(num->chunk, 0, num->size * sizeof(uint64_t));
-    num->count = 0;
-    return num;
+    uint64_t count_old = num->count;
+    num->count = count;
+    assert(num->count >= count);
+
+    num->count = count;
+    memset(&num->chunk[count], 0, (count_old - count) * sizeof(uint64_t));
 }
 
 uint64_t num_chunk_get(num_p num, uint64_t pos)
@@ -431,13 +435,16 @@ num_p num_head_grow(num_p num, uint64_t count) // TODO test
     return num;
 }
 
-num_p num_head_trim(num_p num, uint64_t count) // TODO test
+void num_head_trim(num_p num, uint64_t count) // TODO test
 {
     if(num->count == 0 || count == 0)
-        return num;
+        return;
 
     if(count >= num->count)
-        return num_reset(num);
+    {
+        num_set_count(num, 0);
+        return;
+    }
 
     uint64_t count_res = num->count - count;
     for(uint64_t i=count; i<num->count; i++)
@@ -445,7 +452,6 @@ num_p num_head_trim(num_p num, uint64_t count) // TODO test
 
     memset(&num->chunk[num->count - count], 0, count * sizeof(uint64_t));
     num->count = count_res;
-    return num;
 }
 
 void num_break(num_p *out_num_hi, num_p *out_num_lo, num_p num, uint64_t count)
@@ -876,7 +882,7 @@ void num_mul_uint_buffer(num_p num_res, num_p num, uint64_t value) // TODO TEST
 
     if(value == 0 || num->count == 0)
     {
-        num_reset(num_res);
+        num_set_count(num_res, 0);
         return;
     }
 
@@ -1421,7 +1427,7 @@ void num_ssm_mul_tmp(
     num_span(&num_t_1, num_1, pos, pos + n);
     num_span(&num_t_2, num_2, pos, pos + n);
 
-    num_reset(num_res);
+    num_set_count(num_res, 0);
     num_mul_classic_buffer(num_res, &num_t_1, &num_t_2);
 
     for(uint64_t i=n-1; i!=UINT64_MAX; i--)
@@ -1486,14 +1492,26 @@ void ssm_get_params_wrap(uint64_t res[4], uint64_t n_1)
     res[3] = n;
 }
 
-num_p num_mul_ssm_params(num_p num_res, num_p num_1, num_p num_2, uint64_t params[4])
+num_p ssm_get_buffer(uint64_t count_1, uint64_t count_2)
 {
-    assert(num_res->size >= 3 * (num_1->size + num_2->size))
+    uint64_t params[4];
+    ssm_get_params_no_wrap(params, count_1, count_2);
+    uint64_t K = params[1];
+    uint64_t n = params[3];
+    uint64_t count =  K * n;
+    num_p num_res = num_create(count, count);
+    num_res->cannot_expand = true;
+    return num_res;
+}
 
+void num_mul_ssm_params(num_p num_res, num_p num_1, num_p num_2, uint64_t params[4])
+{
     uint64_t M = params[0];
     uint64_t K = params[1];
     uint64_t Q = params[2];
     uint64_t n = params[3];
+
+    assert(num_res->size >= K * n);
 
     // printf("\ncount: %lu", num_1->count);
     // printf("\tM: %lu", M);
@@ -1501,7 +1519,8 @@ num_p num_mul_ssm_params(num_p num_res, num_p num_1, num_p num_2, uint64_t param
     // printf("\tQ: %lu", Q);
     // printf("\tn: %lu", n);
 
-    num_p num_aux = num_create(2 * n, 2 * n);
+    uint64_t aux_count = K > 2 ? K * n : 2 * n + 1;
+    num_p num_aux = num_create(aux_count, aux_count);
     num_aux->cannot_expand = true;
 
     num_1 = num_ssm_pad(num_1, M, n, K);
@@ -1522,17 +1541,16 @@ num_p num_mul_ssm_params(num_p num_res, num_p num_1, num_p num_2, uint64_t param
     num_free(num_1);
     num_free(num_2);
     num_free(num_aux);
-    return num_res;
 }
 
-num_p num_mul_ssm_rec(num_p num_res, num_p num_1, num_p num_2, uint64_t n)
+void num_mul_ssm_rec(num_p num_res, num_p num_1, num_p num_2, uint64_t n)
 {
     uint64_t params[4];
     ssm_get_params_wrap(params, n);
     return num_mul_ssm_params(num_res, num_1, num_2, params);
 }
 
-num_p num_mul_ssm_buffer(num_p num_res, num_p num_1, num_p num_2)
+void num_mul_ssm_buffer(num_p num_res, num_p num_1, num_p num_2)
 {
     uint64_t params[4];
     ssm_get_params_no_wrap(params, num_1->count, num_2->count);
@@ -1559,7 +1577,7 @@ void num_mul_buffer(num_p num_res, num_p num_1, num_p num_2) // TODO TEST
     assert(num_1)
     assert(num_2)
 
-    num_reset(num_res);
+    num_set_count(num_res, 0);
     if(num_1->count == 0 || num_2->count == 0)
         return;
 
@@ -1598,12 +1616,9 @@ num_p num_mul_classic(num_p num_1, num_p num_2)
 
 num_p num_mul_ssm(num_p num_1, num_p num_2)
 {
-    uint64_t params[4];
-    ssm_get_params_no_wrap(params, num_1->count, num_2->count);
-    uint64_t count = params[1] * params[3];
-    num_p num_res = num_create(count, count);
-    num_res->cannot_expand = true;
-    return num_mul_ssm_buffer(num_res, num_1, num_2);
+    num_p num_res = ssm_get_buffer(num_1->count, num_2->count);
+    num_mul_ssm_buffer(num_res, num_1, num_2);
+    return num_res;
 }
 
 
@@ -1949,7 +1964,7 @@ num_p num_shr(num_p num, uint64_t bits) // TODO TEST
     if(num->count == 0)
         return num;
 
-    num = num_head_trim(num, bits >> 6);
+    num_head_trim(num, bits >> 6);
     return num_shr_inner(num, bits & 0x3f);
 }
 

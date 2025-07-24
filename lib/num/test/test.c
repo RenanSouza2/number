@@ -1047,153 +1047,6 @@ void test_num_mul_uint(bool show)
 
 
 
-void test_num_pad(bool show)
-{
-    TEST_FN_OPEN
-
-    #define TEST_NUM_PAD(TAG, NUM_BEF, NUM_AFT)             \
-    {                                                       \
-        TEST_CASE_OPEN(TAG)                                 \
-        {                                                   \
-            num_p num = num_create_immed(ARG_OPEN NUM_BEF); \
-            num = num_pad(num);                             \
-            assert(num_immed(num, ARG_OPEN NUM_AFT));       \
-        }                                                   \
-        TEST_CASE_CLOSE                                     \
-    }
-
-    TEST_NUM_PAD(1, (0), (0));
-    TEST_NUM_PAD(2, (1, 1), (1, 1));
-    TEST_NUM_PAD(3, (1, 0xddddccccbbbbaaaa), (4, 0xdddd, 0xcccc, 0xbbbb, 0xaaaa));
-    TEST_NUM_PAD(4,
-        (2, 0xddddccccbbbbaaaa, 0x4444333322221111),
-        (8, 0xdddd, 0xcccc, 0xbbbb, 0xaaaa, 0x4444, 0x3333, 0x2222, 0x1111)
-    );
-
-    #undef TEST_NUM_PAD
-
-    TEST_FN_CLOSE
-}
-
-void test_num_depad(bool show)
-{
-    TEST_FN_OPEN
-
-    #define TEST_NUM_DEPAD(TAG, NUM_BEF, NUM_AFT)           \
-    {                                                       \
-        TEST_CASE_OPEN(TAG)                                 \
-        {                                                   \
-            num_p num = num_create_immed(ARG_OPEN NUM_BEF); \
-            num = num_depad(num);                           \
-            assert(num_immed(num, ARG_OPEN NUM_AFT));       \
-        }                                                   \
-        TEST_CASE_CLOSE                                     \
-    }
-
-    TEST_NUM_DEPAD(1, (0), (0));
-    TEST_NUM_DEPAD(2, (1, 1), (1, 1));
-    TEST_NUM_DEPAD(3, (4, 0xdddd, 0xcccc, 0xbbbb, 0xaaaa), (1, 0xddddccccbbbbaaaa));
-    TEST_NUM_DEPAD(4,
-        (8, 0xdddd, 0xcccc, 0xbbbb, 0xaaaa, 0x4444, 0x3333, 0x2222, 0x1111),
-        (2, 0xddddccccbbbbaaaa, 0x4444333322221111)
-    );
-    TEST_NUM_DEPAD(5,
-        (4, 0, 0, 0x22222222, 0x11111111),
-        (1, 0x222233331111)
-    );
-
-    #undef TEST_NUM_DEPAD
-
-    TEST_FN_CLOSE
-}
-
-void test_num_shuffle(bool show)
-{
-    TEST_FN_OPEN
-
-    #define TEST_NUM_SHUFFLE(TAG, NUM_BEF, N, NUM_AFT)      \
-    {                                                       \
-        TEST_CASE_OPEN(TAG)                                 \
-        {                                                   \
-            num_p num = num_create_immed(ARG_OPEN NUM_BEF); \
-            num = num_shuffle(num, N);                      \
-            assert(num_immed(num, ARG_OPEN NUM_AFT));       \
-        }                                                   \
-        TEST_CASE_CLOSE                                     \
-    }
-
-    TEST_NUM_SHUFFLE(1, (2, 1, 2), 2, (2, 1, 2));
-    TEST_NUM_SHUFFLE(2, (4, 1, 2, 3, 4), 4, (4, 1, 3, 2, 4));
-
-    #undef TEST_NUM_SHUFFLE
-
-    TEST_FN_CLOSE
-}
-
-void test_num_fft(bool show)
-{
-    TEST_FN_OPEN
-
-    uint64_t p = 4179340454199820289;
-
-    #define TEST_NUM_FFT(TAG, NUM_BEF, N, NUM_AFT)          \
-    {                                                       \
-        TEST_CASE_OPEN(TAG)                                 \
-        {                                                   \
-            num_p num = num_create_immed(ARG_OPEN NUM_BEF); \
-            num = num_shuffle(num, N);                      \
-            num = num_fft(num, N);                          \
-            assert(num_immed(num, ARG_OPEN NUM_AFT));       \
-        }                                                   \
-        TEST_CASE_CLOSE                                     \
-    }
-
-    TEST_NUM_FFT(1, (1, 1), 4, (1, 1));
-    TEST_NUM_FFT(2, (2, 1, 0), 2, (2, p - 1, 1));
-    TEST_NUM_FFT(3, (2, 1, 2), 2, (2, 1, 3));
-    TEST_NUM_FFT(4,
-        (4, 0, 0, 3, 4), 4,
-        (4, 0x221bf1403ca1e969, 1, 0x17e40ebfc35e16a0, 7)
-    );
-
-    #undef TEST_NUM_FFT
-
-    TEST_FN_CLOSE
-}
-
-void test_num_fft_inv(bool show)
-{
-    TEST_FN_OPEN
-
-    uint64_t p = 4179340454199820289;
-
-    #define TEST_NUM_FFT_INV(TAG, NUM_BEF, N, NUM_AFT)      \
-    {                                                       \
-        TEST_CASE_OPEN(TAG)                                 \
-        {                                                   \
-            num_p num = num_create_immed(ARG_OPEN NUM_BEF); \
-            num = num_shuffle(num, N);                      \
-            num = num_fft_inv(num, N);                      \
-            assert(num_immed(num, ARG_OPEN NUM_AFT));       \
-        }                                                   \
-        TEST_CASE_CLOSE                                     \
-    }
-
-    TEST_NUM_FFT_INV(1, (1, 1), 1, (1, 1));
-    TEST_NUM_FFT_INV(2, (2, p - 1, 1), 2, (2, 1, 0));
-    TEST_NUM_FFT_INV(3, (2, 1, 3), 2, (2, 1, 2));
-    TEST_NUM_FFT_INV(4,
-        (4, 0x221bf1403ca1e969, 1, 0x17e40ebfc35e16a0, 7), 4,
-        (4, 0, 0, 3, 4)
-    );
-
-    #undef TEST_NUM_FFT_INV
-
-    TEST_FN_CLOSE
-}
-
-
-
 void test_num_ssm_pad(bool show)
 {
     TEST_FN_OPEN
@@ -1895,9 +1748,8 @@ void test_num_mul(bool show)
     #define TEST_NUM_MUL_BATCH(TAG, NUM_1, NUM_2, RES)                  \
     {                                                                   \
         TEST_NUM_MUL(10 * TAG + 1, num_mul_classic, NUM_1, NUM_2, RES)  \
-        TEST_NUM_MUL(10 * TAG + 2, num_mul_fft, NUM_1, NUM_2, RES)      \
-        TEST_NUM_MUL(10 * TAG + 3, num_mul, NUM_1, NUM_2, RES)          \
-        TEST_NUM_MUL(10 * TAG + 4, num_mul_ssm, NUM_1, NUM_2, RES)      \
+        TEST_NUM_MUL(10 * TAG + 2, num_mul, NUM_1, NUM_2, RES)          \
+        TEST_NUM_MUL(10 * TAG + 3, num_mul_ssm, NUM_1, NUM_2, RES)      \
     }
 
     TEST_NUM_MUL_BATCH(4,
@@ -1982,7 +1834,6 @@ void test_num_sqr(bool show)
         TEST_CASE_OPEN(TAG)                             \
         {                                               \
             TEST_NUM_SQR_FN(num_sqr_classic, NUM, RES)  \
-            TEST_NUM_SQR_FN(num_sqr_fft, NUM, RES)      \
             TEST_NUM_SQR_FN(num_sqr, NUM, RES)          \
         }                                               \
         TEST_CASE_CLOSE                                 \
@@ -2427,120 +2278,6 @@ void test_num_base_from(bool show)
 
 
 
-void test_num_fuzz_mul(bool show)
-{
-    TEST_FN_OPEN
-
-    TEST_CASE_OPEN_TIMEOUT(1, 0)
-
-    printf("\ntest_num_fuzz_mul");
-
-    uint64_t n = 10000;
-    uint64_t n_count = 5;
-    uint64_t count_1[] = {1, 2, 2, 10, 100};
-    uint64_t count_2[] = {1, 1, 2, 5, 10};
-
-    for(uint64_t i=0; i<n_count; i++)
-    {
-        // printf("\n%lu %lu", count_1[i], count_2[i]);
-
-        for(uint64_t j=0; j<n; j++)
-        {
-            // if((j+1)%10 == 0)
-            //     printf("\n%lu / %lu", j / 10, n / 10);
-
-            num_p num_1 = num_create_rand(count_1[i]);
-            num_p num_2 = num_create_rand(count_2[i]);
-
-            num_p num_res_1 = num_mul_classic(
-                num_copy(num_1),
-                num_copy(num_2)
-            );
-            num_p num_res_2 = num_mul_fft(
-                num_copy(num_1),
-                num_copy(num_2)
-            );
-
-            if(num_cmp(num_res_1, num_res_2))
-            {
-                printf("\n\n");
-                printf("\nerror test_num_fuzz_mul");
-                num_display_full("num_1", num_1);
-                num_display_full("num_2", num_2);
-                num_display_full("num_res_1", num_res_1);
-                num_display_full("num_res_2", num_res_2);
-            }
-
-            num_free(num_1);
-            num_free(num_2);
-            num_free(num_res_1);
-            num_free(num_res_2);
-        }
-    }
-
-    TEST_CASE_CLOSE
-
-    TEST_FN_CLOSE
-}
-
-// void test_num_fuzz_div(bool show)
-// {
-//     TEST_FN_OPEN
-//
-//     TEST_CASE_OPEN_TIMEOUT(1, 0)
-//
-//     printf("\ntest_num_fuzz_mul");
-//
-//     uint64_t n = 10000;
-//     uint64_t n_count = 5;
-//     uint64_t count_1[] = {1, 2, 2, 10, 100};
-//     uint64_t count_2[] = {1, 1, 2, 5, 10};
-//
-//     for(uint64_t i=0; i<n_count; i++)
-//     {
-//         printf("\n%lu %lu", count_1[i], count_2[i]);
-//
-//         for(uint64_t j=0; j<n; j++)
-//         {
-//             // if((j+1)%10 == 0)
-//             //     printf("\n%lu / %lu", j / 10, n / 10);
-//
-//             num_p num_1 = num_create_rand(count_1[i]);
-//             num_p num_2 = num_create_rand(count_2[i]);
-//
-//             num_p num_res_1 = num_div_classic(
-//                 num_copy(num_1),
-//                 num_copy(num_2)
-//             );
-//             num_p num_res_2 = num_mul_fft(
-//                 num_copy(num_1),
-//                 num_copy(num_2)
-//             );
-//
-//             if(num_cmp(num_res_1, num_res_2))
-//             {
-//                 printf("\n\n");
-//                 printf("\nerror test_num_fuzz_mul");
-//                 num_display_full("num_1", num_1);
-//                 num_display_full("num_2", num_2);
-//                 num_display_full("num_res_1", num_res_1);
-//                 num_display_full("num_res_2", num_res_2);
-//             }
-//
-//             num_free(num_1);
-//             num_free(num_2);
-//             num_free(num_res_1);
-//             num_free(num_res_2);
-//         }
-//     }
-//
-//     TEST_CASE_CLOSE
-//
-//     TEST_FN_CLOSE
-// }
-
-
-
 void test_num()
 {
     TEST_LIB
@@ -2576,12 +2313,6 @@ void test_num()
     test_num_shl_inner(show);
     test_num_shr_inner(show);
     test_num_mul_uint(show);
-
-    test_num_pad(show);
-    test_num_depad(show);
-    test_num_shuffle(show);
-    // test_num_fft(show);
-    test_num_fft_inv(show);
 
     test_num_ssm_pad(show);
     test_num_ssm_add_mod(show);
