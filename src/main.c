@@ -114,6 +114,44 @@ void time_2(int argc, char** argv, uint64_t max)
     }
 }
 
+void time_3()
+{
+    for(uint64_t i=1000; i<50000; i+=1000)
+    {
+        printf("\n%lu", i);
+
+        num_p num_1 = num_generate_2(i, 2);
+        num_p num_2 = num_generate_2(i, 3);
+
+        num_p num_1_copy = num_copy(num_1);
+        num_p num_2_copy = num_copy(num_2);
+        TIME_SETUP
+        num_p num_res = num_mul_classic(num_1_copy, num_2_copy);
+        TIME_END(t1);
+        printf(", %.3f", t1 / 1e9);
+        num_free(num_res);
+    
+        num_1_copy = num_copy(num_1);
+        num_2_copy = num_copy(num_2);
+        TIME_RESET
+        num_res = num_mul_fft(num_1_copy, num_2_copy);
+        TIME_END(t2);
+        printf(", %.3f", t2 / 1e9);
+        num_free(num_res);
+
+        num_1_copy = num_copy(num_1);
+        num_2_copy = num_copy(num_2);
+        TIME_RESET
+        num_res = num_mul_ssm(num_1_copy, num_2_copy);
+        TIME_END(t3);
+        printf(", %.3f", t3 / 1e9);
+        num_free(num_res);
+
+        num_free(num_1);
+        num_free(num_2);
+    }
+}
+
 
 
 void fibonacci_1()
@@ -538,9 +576,11 @@ int main()
     // clu_log_enable(true);
 
     // num_generate(21, 2);
-    time_1(16, 25);
+    // time_1(16, 25);
     // time_1(16, 17);
     // time_2(argc, argv, 19);
+    time_3();
+    // time_3_params();
     // fibonacci();
     // fibonacci_2(16, 23);
     // fibonacci_3(16, 23);

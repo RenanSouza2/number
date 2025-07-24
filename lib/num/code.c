@@ -1461,7 +1461,7 @@ void ssm_get_params(uint64_t res[4], uint64_t count_1, uint64_t count_2)
     else
     {
         Q = (128 * M / K) + 1;
-        n = K * Q + 1;
+        n = (K * Q / 64) + 1;
     }
 
     res[0] = M;
@@ -1570,9 +1570,7 @@ void num_ssm_mul_tmp(
         num_res->chunk[n + i] = num_res->chunk[n + i - 1];
     num_res->chunk[n-1] = 0;
 
-    // num_res->count = num_res->size;
     num_ssm_sub_mod(num_res, 0, num_res, 0, num_res, n, n);
-    // printf("\nB");
 }
 
 num_p num_mul_ssm_inner(num_p num_res, num_p num_1, num_p num_2)
@@ -1583,6 +1581,12 @@ num_p num_mul_ssm_inner(num_p num_res, num_p num_1, num_p num_2)
     uint64_t K = params[1];
     uint64_t Q = params[2];
     uint64_t n = params[3];
+
+    // printf("\ncount: %lu", num_1->count);
+    // printf("\tM: %lu", M);
+    // printf("\tK: %lu", K);
+    // printf("\tQ: %lu", Q);
+    // printf("\tn: %lu", n);
 
     assert(num_res->size >= K * n);
 
