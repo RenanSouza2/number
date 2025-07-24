@@ -269,7 +269,15 @@ void num_display_opts(num_p num, char *tag, bool length, bool full)
             4 : num->count;
 
     for(uint64_t i=0; i<max; i++)
-        printf("" U64PX " ", num->chunk[num->count-1-i]);
+    {
+        uint64_t value = num->chunk[num->count-1-i];
+        if(value == 0)
+            printf("0 ");
+        else if(value == 1UL << 63)
+            printf("M ");
+        else
+            printf("%lx ", num->chunk[num->count-1-i]);
+    }
 
     if(!full && num->count > 4)
         printf("...");
@@ -483,35 +491,6 @@ void num_break(num_p *out_num_hi, num_p *out_num_lo, num_p num, uint64_t count)
 
     *out_num_hi = num_hi;
     *out_num_lo = num;
-}
-
-num_p num_join(num_p num_hi, num_p num_lo, uint64_t count) // TODO TEST
-{
-    CLU_HANDLER_IS_SAFE(num_hi);
-    CLU_HANDLER_IS_SAFE(num_lo);
-    assert(num_hi);
-    assert(num_lo);
-
-    if(num_hi->count == 0)
-    {
-        num_free(num_hi);
-        return num_lo;
-    }
-
-    if(num_lo->count == 0 && count == 0)
-    {
-        num_free(num_lo);
-        return num_hi;
-    }
-
-    count = count > num_lo->count ? count : num_lo->count;
-    uint64_t count_res = count + num_hi->count;
-    num_lo = num_expand_to(num_lo, count_res);
-    memcpy(&num_lo->chunk[count], num_hi->chunk, num_hi->count * sizeof(uint64_t));
-    num_lo->count = count_res;
-
-    num_free(num_hi);
-    return num_lo;
 }
 
 // NUM_RES should be static memory
@@ -1752,8 +1731,33 @@ num_p num_div_mod_bz_rec(num_p num_aux, num_p num_1, num_p num_2, bz_frame_t f[]
     assert(num_1)
     assert(num_2)
 
+    printf("\nnum_div_mod_bz_rec\t| begin");
+    num_display_full("num_1", num_1);
+    num_display_full("num_2", num_2);
+
+    num_p num_1_copy = num_copy(num_1);
+    num_p num_2_copy = num_copy(num_2);
+
     if(num_1->count < num_2->count + 2 || num_2->count == 1)
-        return num_div_mod_fallback(num_aux, num_1, num_2);
+    {
+        CLU_HANDLER_IS_SAFE(num_1);
+        num_p num_res = num_div_mod_fallback(num_aux, num_1, num_2);
+        printf("\nnum_div_mod_bz_rec\t| num_div_mod_fallback return");
+        num_display_full("num_q", num_res);
+        num_display_full("num_r", num_1);
+
+        num_p num_del = num_mul_classic(num_copy(num_res), num_2_copy);
+        num_del = num_add_offset(num_del, 0, num_1, 0);
+        if(num_cmp(num_del, num_1_copy))
+        {
+            printf("\nOPOHA");
+            assert(false);
+        }
+        num_free(num_del);
+        num_free(num_1_copy);
+
+        return num_res;
+    }
 
     uint64_t k = num_2->count / 2;
     if(f->memoized == false)
@@ -1774,12 +1778,19 @@ num_p num_div_mod_bz_rec(num_p num_aux, num_p num_1, num_p num_2, bz_frame_t f[]
     num_p num_q[2];
     for(uint64_t i=1; i!=UINT64_MAX; i--)
     {
+        printf("\n");
+        printf("\nnum_div_mod_bz_rec\t| k: %lu | loop: %lu", k, i);
         num_t num_1_1;
-        num_span(&num_1_1, num_1, k * (i + 1), num_1->count);
+        uint64_t pos = k * (i + 1);
+        num_span(&num_1_1, num_1, pos, num_1->count);
+        num_display_full("N1 ", num_1);
+        num_display_full("N1H", &num_1_1);
 
         num_p num_q_tmp = num_div_mod_bz_rec(num_aux, &num_1_1, &f->num_2_1, &f[1]);
         while(num_normalize(num_1));
-
+        printf("\nnum_div_mod_bz_rec\t| k: %lu | returned rec", k);
+        num_display_full("num_q", num_q_tmp);
+        num_display_full("num_1", num_1);
         // num_mul_memoized(num_aux, num_q_tmp, &f->num_2_0_cache);
 
         uint64_t size = 10 * (num_q_tmp->size + f->num_2_0.size);
@@ -1799,7 +1810,34 @@ num_p num_div_mod_bz_rec(num_p num_aux, num_p num_1, num_p num_2, bz_frame_t f[]
         num_q[i] = num_q_tmp;
     }
 
-    num_p num_res = num_join(num_q[1], num_q[0], k);
+    printf("\nk: %lu", k);
+    num_display_full("num_q[1]", num_q[1]);
+    num_display_full("num_q[0]", num_q[0]);
+    num_p num_res = num_add_offset(num_q[0], k, num_q[1], 0);
+    num_free(num_q[1]);
+    num_display_full("num_res", num_res);
+
+    
+    num_p num_del = num_mul_classic(num_copy(num_res), num_copy(num_2_copy));
+    num_del = num_add_offset(num_del, 0, num_1, 0);
+    if(num_cmp(num_del, num_1_copy))
+    {
+        printf("\n\n\n");
+        printf("\nOPOHA");
+        printf("\ndivision of");
+        num_display_full("num_1", num_1_copy);
+        num_display_full("num_2", num_2_copy);
+        printf("\nresulted in");
+        num_display_full("num_q", num_res);
+        num_display_full("num_r", num_1);
+        printf("\nbut reconstructing gave");
+        num_display_full("num_del", num_del);
+        assert(false);
+    }
+    num_free(num_del);
+    num_free(num_1_copy);
+    num_free(num_2_copy);
+
     return num_res;
 }
 
@@ -1834,20 +1872,23 @@ num_p num_div_mod_bz(num_p num_1, num_p num_2)
 
         num_p num_q_tmp = num_div_mod_bz_rec(num_aux, &num_1_1, num_2, f);
         while(num_normalize(num_1));
-        num_q = num_join(num_q, num_q_tmp, k_q);
+        num_p num_tmp = num_add_offset(num_q_tmp, k_q, num_q, 0);
+        num_free(num_q);
+        num_q = num_tmp;
 
         n_1 -= n_2;
     }
 
     num_p num_q_tmp = num_div_mod_bz_rec(num_aux, num_1, num_2, f);
-    num_q = num_join(num_q, num_q_tmp, n_1 - n_2);
+    num_q_tmp = num_add_offset(num_q_tmp, n_1 - n_2, num_q, 0);
     num_free(num_aux);
+    num_free(num_q);
 
     for(uint64_t i=0; i<frame_count && f[i].memoized; i++)
         if(f[i].num_2_0_cache.memoized)
             num_free(f[i].num_2_0_cache.fft);
 
-    return num_q;
+    return num_q_tmp;
 }
 
 uint64_t num_div_normalize(num_p *num_1, num_p *num_2) // TODO TEST

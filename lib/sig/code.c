@@ -214,8 +214,8 @@ sig_num_t sig_num_head_trim(sig_num_t sig, uint64_t count) // TODO test
     CLU_SIG_IS_SAFE(sig);
     assert(sig.num);
 
-    num_p num = num_head_trim(sig.num, count);
-    return sig_num_create(sig.signal, num);
+    num_head_trim(sig.num, count);
+    return sig_num_create(sig.signal, sig.num);
 }
 
 
