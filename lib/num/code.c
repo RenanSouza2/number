@@ -1731,33 +1731,8 @@ num_p num_div_mod_bz_rec(num_p num_aux, num_p num_1, num_p num_2, bz_frame_t f[]
     assert(num_1)
     assert(num_2)
 
-    printf("\nnum_div_mod_bz_rec\t| begin");
-    num_display_full("num_1", num_1);
-    num_display_full("num_2", num_2);
-
-    num_p num_1_copy = num_copy(num_1);
-    num_p num_2_copy = num_copy(num_2);
-
     if(num_1->count < num_2->count + 2 || num_2->count == 1)
-    {
-        CLU_HANDLER_IS_SAFE(num_1);
-        num_p num_res = num_div_mod_fallback(num_aux, num_1, num_2);
-        printf("\nnum_div_mod_bz_rec\t| num_div_mod_fallback return");
-        num_display_full("num_q", num_res);
-        num_display_full("num_r", num_1);
-
-        num_p num_del = num_mul_classic(num_copy(num_res), num_2_copy);
-        num_del = num_add_offset(num_del, 0, num_1, 0);
-        if(num_cmp(num_del, num_1_copy))
-        {
-            printf("\nOPOHA");
-            assert(false);
-        }
-        num_free(num_del);
-        num_free(num_1_copy);
-
-        return num_res;
-    }
+        return num_div_mod_fallback(num_aux, num_1, num_2);
 
     uint64_t k = num_2->count / 2;
     if(f->memoized == false)
@@ -1778,65 +1753,31 @@ num_p num_div_mod_bz_rec(num_p num_aux, num_p num_1, num_p num_2, bz_frame_t f[]
     num_p num_q[2];
     for(uint64_t i=1; i!=UINT64_MAX; i--)
     {
-        printf("\n");
-        printf("\nnum_div_mod_bz_rec\t| k: %lu | loop: %lu", k, i);
         num_t num_1_1;
         uint64_t pos = k * (i + 1);
         num_span(&num_1_1, num_1, pos, num_1->count);
-        num_display_full("N1 ", num_1);
-        num_display_full("N1H", &num_1_1);
 
         num_p num_q_tmp = num_div_mod_bz_rec(num_aux, &num_1_1, &f->num_2_1, &f[1]);
         while(num_normalize(num_1));
-        printf("\nnum_div_mod_bz_rec\t| k: %lu | returned rec", k);
-        num_display_full("num_q", num_q_tmp);
-        num_display_full("num_1", num_1);
-        // num_mul_memoized(num_aux, num_q_tmp, &f->num_2_0_cache);
 
         uint64_t size = 10 * (num_q_tmp->size + f->num_2_0.size);
         num_p num_aux_2 = num_create(size, 0);
         num_aux_2->cannot_expand = true;
         num_mul_buffer(num_aux_2, num_q_tmp, &f->num_2_0);
-        // num_display_full("num_res_1", num_aux);
-        // num_display_full("num_res_1", num_aux_2);
 
-        while(num_cmp_offset(num_1, k * i, num_aux) < 0)
+        while(num_cmp_offset(num_1, k * i, num_aux_2) < 0)
         {
             num_q_tmp = num_sub_uint(num_q_tmp, 1);
             num_1 = num_add_offset(num_1, k * i, num_2, 0);
         }
-        num_1 = num_sub_offset(num_1, k * i, num_aux);
+        num_1 = num_sub_offset(num_1, k * i, num_aux_2);
+        num_free(num_aux_2);
 
         num_q[i] = num_q_tmp;
     }
 
-    printf("\nk: %lu", k);
-    num_display_full("num_q[1]", num_q[1]);
-    num_display_full("num_q[0]", num_q[0]);
     num_p num_res = num_add_offset(num_q[0], k, num_q[1], 0);
     num_free(num_q[1]);
-    num_display_full("num_res", num_res);
-
-    
-    num_p num_del = num_mul_classic(num_copy(num_res), num_copy(num_2_copy));
-    num_del = num_add_offset(num_del, 0, num_1, 0);
-    if(num_cmp(num_del, num_1_copy))
-    {
-        printf("\n\n\n");
-        printf("\nOPOHA");
-        printf("\ndivision of");
-        num_display_full("num_1", num_1_copy);
-        num_display_full("num_2", num_2_copy);
-        printf("\nresulted in");
-        num_display_full("num_q", num_res);
-        num_display_full("num_r", num_1);
-        printf("\nbut reconstructing gave");
-        num_display_full("num_del", num_del);
-        assert(false);
-    }
-    num_free(num_del);
-    num_free(num_1_copy);
-    num_free(num_2_copy);
 
     return num_res;
 }
