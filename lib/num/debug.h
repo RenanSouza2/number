@@ -8,6 +8,8 @@
 
 #include <stdarg.h>
 
+uint64_t rand_64();
+
 num_p num_create_variadic(uint64_t n, va_list *args);
 num_p num_create_immed(uint64_t n, ...);
 num_p num_create_rand(uint64_t count);
