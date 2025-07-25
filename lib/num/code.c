@@ -51,11 +51,11 @@ num_p num_create_rand(uint64_t count)
     num = num_head_grow(num, count - 1);
     for(uint64_t i=0; i<count; i++)
         num->chunk[i] = rand_64();
-    
+
     if(count)
         while(num->chunk[count - 1] == 0)
             num->chunk[count - 1] = rand();
-    
+
     return num;
 }
 
@@ -428,7 +428,7 @@ num_p num_head_grow(num_p num, uint64_t count) // TODO test
     num = num_expand_to(num, count_res);
     for(uint64_t i=num->count-1; i!=UINT64_MAX; i--)
         num->chunk[i+count] = num->chunk[i];
-    
+
 
     memset(num->chunk, 0, count * sizeof(uint64_t));
     num->count = count_res;
@@ -655,7 +655,7 @@ num_p num_add_uint_offset(num_p num, uint64_t pos, uint64_t value)
         num->chunk[i] = LOW(carry);
         carry >>= 64;
     }
-    
+
     if(carry)
     {
         pos = pos > num->count ? pos : num->count;
@@ -1065,7 +1065,7 @@ int64_t num_ssm_cmp(
     {
         if(num_1->chunk[pos_1 + i] < num_2->chunk[pos_2 + i])
             return -1;
-            
+
         if(num_1->chunk[pos_1 + i] > num_2->chunk[pos_2 + i])
             return 1;
     }
@@ -1285,7 +1285,7 @@ void num_ssm_fft_fwd_rec(
         uint64_t pos_2 = (pos + step * (2 * i + 1)) * n;
 
         num_ssm_shl_mod(num_aux, num, pos_2, n, i * bits);
-    
+
         num_ssm_add_mod(num_aux, 0, num, pos_1, pos_2, n);
         num_ssm_sub_mod(num_aux, n, num, pos_1, num, pos_2, n);
 
@@ -1343,7 +1343,7 @@ void num_ssm_fft_inv_rec(
         uint64_t pos_2 = (pos + i + k/2) * n;
 
         num_ssm_shr_mod(num_aux, num, pos_2, n, i * bits);
-    
+
         num_ssm_add_mod(num_aux, 0, num, pos_1, pos_2, n);
         num_ssm_sub_mod(num_aux, n, num, pos_1, num, pos_2, n);
 
@@ -1392,7 +1392,7 @@ void num_ssm_mul_tmp(
     assert(num_res)
     assert(num_1)
     assert(num_2)
-    assert(num_res->size >= 2*n + 1)
+    assert(num_res->size >= 3*n)
 
     num_t num_t_1, num_t_2;
     num_span(&num_t_1, num_1, pos, pos + n);
@@ -1401,9 +1401,8 @@ void num_ssm_mul_tmp(
     num_set_count(num_res, 0);
     num_mul_classic_buffer(num_res, &num_t_1, &num_t_2);
 
-    num_display_full("num_res", num_res);
-
-    num_ssm_pad(num_res, n-1, n, 2);
+    num_ssm_pad(num_res, n-1, n, 3);
+    num_ssm_add_mod(num_res, 0, num_res, 0, 2 * n, n);
     num_ssm_sub_mod(num_res, 0, num_res, 0, num_res, n, n);
 }
 
@@ -1413,7 +1412,7 @@ void ssm_get_params_no_wrap(uint64_t res[4], uint64_t count_1, uint64_t count_2)
     uint64_t count = count_1 > count_2 ? count_1 : count_2;
     uint64_t M = 1 << (stdc_bit_width(count) / 2);
     uint64_t K = stdc_bit_ceil(((count_1 + M - 1) / M) + ((count_2 + M - 1) / M));
-    
+
     uint64_t Q;
     uint64_t n;
     if(K < 64)
@@ -1441,7 +1440,7 @@ void ssm_get_params_wrap(uint64_t res[4], uint64_t n_1)
     uint64_t K = n_1 / M;
     assert((K & -K) == K);
     assert(K * M == n_1);
-    
+
     uint64_t Q;
     uint64_t n;
     if(K < 64)
@@ -1483,39 +1482,38 @@ void num_mul_ssm_params(num_p num_res, num_p num_1, num_p num_2, uint64_t params
 
     assert(num_res->size >= K * n);
 
-    printf("\ncount: %lu", num_1->count);
-    printf("\tM: %lu", M);
-    printf("\tK: %lu", K);
-    printf("\tQ: %lu", Q);
-    printf("\tn: %lu", n);
+    // printf("\ncount: %lu", num_1->count);
+    // printf("\tM: %lu", M);
+    // printf("\tK: %lu", K);
+    // printf("\tQ: %lu", Q);
+    // printf("\tn: %lu", n);
 
-    uint64_t aux_count = K > 2 ? K * n : 2 * n + 1;
+    uint64_t aux_count = K > 3 ? K * n : 3 * n;
     num_p num_aux = num_create(aux_count, aux_count);
     num_aux->cannot_expand = true;
 
     num_1 = num_ssm_pad(num_1, M, n, K);
     num_2 = num_ssm_pad(num_2, M, n, K);
 
-    printf("\npad");
-    num_display_span_full("num_1", num_1, n, K);
-    num_display_span_full("num_2", num_2, n, K);
-    
+    // printf("\npad");
+    // num_display_span_full("num_1", num_1, n, K);
+    // num_display_span_full("num_2", num_2, n, K);
+
     num_ssm_fft_fwd(num_aux, num_1, n, K, Q);
     num_ssm_fft_fwd(num_aux, num_2, n, K, Q);
 
-    printf("\nfft");
-    num_display_span_full("num_1", num_1, n, K);
-    num_display_span_full("num_2", num_2, n, K);
+    // printf("\nfft");
+    // num_display_span_full("num_1", num_1, n, K);
+    // num_display_span_full("num_2", num_2, n, K);
 
     for(uint64_t i=0; i<K; i++)
     {
-        printf("\n");
-        printf("\ni: %lu", i);
         num_ssm_mul_tmp(num_aux, num_1, num_2, i * n, n);
         memcpy(&num_res->chunk[i * n], num_aux->chunk, n * sizeof(uint64_t));
     }
 
-    printf("\nconvoluted");
+    // printf("\nconvoluted");
+    // num_display_span_full("num_res", num_res, n, K);
 
     num_ssm_fft_inv(num_aux, num_res, n, K, Q);
     num_ssm_depad_no_wrap(num_res, M, n, K);
@@ -1534,9 +1532,9 @@ void num_mul_ssm_rec(num_p num_res, num_p num_1, num_p num_2, uint64_t n)
 
 void num_mul_ssm_buffer(num_p num_res, num_p num_1, num_p num_2)
 {
-    printf("\nnum_mul_ssm_buffer\t| begin");
-    num_display_full("num_1", num_1);
-    num_display_full("num_2", num_2);
+    // printf("\nnum_mul_ssm_buffer\t| begin");
+    // num_display_full("num_1", num_1);
+    // num_display_full("num_2", num_2);
 
     uint64_t params[4];
     ssm_get_params_no_wrap(params, num_1->count, num_2->count);
@@ -1597,12 +1595,18 @@ num_p num_mul_classic(num_p num_1, num_p num_2)
     num_mul_classic_buffer(num_res, num_1, num_2);
     num_free(num_1);
     num_free(num_2);
-    return num_res;    
+    return num_res;
 }
 
 num_p num_mul_ssm(num_p num_1, num_p num_2)
 {
+    CLU_HANDLER_IS_SAFE(num_1)
+    CLU_HANDLER_IS_SAFE(num_2)
+    assert(num_1)
+    assert(num_2)
+
     num_p num_res = ssm_get_buffer(num_1->count, num_2->count);
+    num_res->cannot_expand = true;
     num_mul_ssm_buffer(num_res, num_1, num_2);
     return num_res;
 }
@@ -1716,7 +1720,7 @@ num_p num_div_mod_fallback(num_p num_aux, num_p num_1, num_p num_2)
 
     if(num_2->count == 1)
         return num_div_mod_uint(num_1, num_2->chunk[0]);
-    
+
     return num_div_mod_classic(num_aux, num_1, num_2);
 }
 
@@ -1745,7 +1749,7 @@ num_p num_div_mod_bz_rec(num_p num_aux, num_p num_1, num_p num_2, bz_frame_t f[]
     if(f->memoized == false)
     {
         f->memoized = true;
-    
+
         num_span(&f->num_2_0, num_2, 0, k);
         num_span(&f->num_2_1, num_2, k, num_2->count);
 
@@ -2023,7 +2027,7 @@ num_p num_mul_high(num_p num_1, num_p num_2, uint64_t pos)
     num_mul_high_buffer(num_res, num_1, num_2, pos);
     num_free(num_1);
     num_free(num_2);
-    return num_res;    
+    return num_res;
 }
 
 num_p num_mul(num_p num_1, num_p num_2)
@@ -2039,7 +2043,7 @@ num_p num_mul(num_p num_1, num_p num_2)
     num_mul_buffer(num_res, num_1, num_2);
     num_free(num_1);
     num_free(num_2);
-    return num_res;    
+    return num_res;
 }
 
 num_p num_sqr(num_p num)

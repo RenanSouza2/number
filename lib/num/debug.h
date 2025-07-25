@@ -99,6 +99,20 @@ void num_ssm_shr_mod(
     uint64_t n,
     uint64_t bits
 );
+void num_ssm_fft_fwd(
+    num_p num_aux,
+    num_p num,
+    uint64_t n,
+    uint64_t k,
+    uint64_t bits
+);
+void num_ssm_mul_tmp(
+    num_p num_res,
+    num_p num_1,
+    num_p num_2,
+    uint64_t pos,
+    uint64_t n
+);
 
 num_p num_mul_classic(num_p num_1, num_p num_2);
 num_p num_sqr_classic(num_p num);

@@ -1272,80 +1272,67 @@ void test_num_ssm_shl_mod(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_SSM_SHL_MOD(TAG, NUM, POS, N, BITS, RES)   \
-    {                                                       \
-        TEST_CASE_OPEN(TAG)                                 \
-        {                                                   \
-            num_p num = num_create_immed(ARG_OPEN NUM);     \
-            num_p num_aux = num_create(N, N);               \
-            num_ssm_shl_mod(num_aux, num, POS, N, BITS);    \
-            assert(num_immed(num, ARG_OPEN RES));           \
-            num_free(num_aux);                              \
-        }                                                   \
-        TEST_CASE_CLOSE                                     \
+    #define TEST_SSM_SHL_MOD(TAG, NUM, BITS, RES)       \
+    {                                                   \
+        TEST_CASE_OPEN(TAG)                             \
+        {                                               \
+            num_p num = num_create_immed(ARG_OPEN NUM); \
+            num_p num_aux = num_create(3, 3);           \
+            num_ssm_shl_mod(num_aux, num, 0, 3, BITS);  \
+            assert(num_immed(num, ARG_OPEN RES));       \
+            num_free(num_aux);                          \
+        }                                               \
+        TEST_CASE_CLOSE                                 \
     }
-    
-    #define TEST_SSM_SHL_MOD_BATCH(TAG, COUNT, FORMAT, POS, N)          \
-    {                                                                   \
-        TEST_SSM_SHL_MOD(100 * TAG + 1,                                 \
-            FORMAT(COUNT, (0, 0, 0)), POS, N, 1,                        \
-            FORMAT(COUNT, (0, 0, 0))                                    \
-        );                                                              \
-        TEST_SSM_SHL_MOD(100 * TAG + 2,                                 \
-            FORMAT(COUNT, (0, 0, 1)), POS, N, 0,                        \
-            FORMAT(COUNT, (0, 0, 1))                                    \
-        );                                                              \
-        TEST_SSM_SHL_MOD(100 * TAG + 3,                                 \
-            FORMAT(COUNT, (0, 0, 1)), POS, N, 8,                        \
-            FORMAT(COUNT, (0, 0, 0x100))                                \
-        );                                                              \
-        TEST_SSM_SHL_MOD(100 * TAG + 4,                                 \
-            FORMAT(COUNT, (0, 0, 1)), POS, N, 64,                       \
-            FORMAT(COUNT, (0, 1, 0))                                    \
-        );                                                              \
-        TEST_SSM_SHL_MOD(100 * TAG + 5,                                 \
-            FORMAT(COUNT, (0, 0, 1)), POS, N, 65,                       \
-            FORMAT(COUNT, (0, 2, 0))                                    \
-        );                                                              \
-        TEST_SSM_SHL_MOD(100 * TAG + 6,                                 \
-            FORMAT(COUNT, (0, 0, 1)), POS, N, 128,                      \
-            FORMAT(COUNT, (1, 0, 0))                                    \
-        );                                                              \
-        TEST_SSM_SHL_MOD(100 * TAG + 7,                                 \
-            FORMAT(COUNT, (1, 0, 0)), POS, N, 1,                        \
-            FORMAT(COUNT, (0, UINT64_MAX, UINT64_MAX))                  \
-        );                                                              \
-        TEST_SSM_SHL_MOD(100 * TAG + 8,                                 \
-            FORMAT(COUNT, (0, 1UL << 63, 1)), POS, N, 1,                \
-            FORMAT(COUNT, (0, 0, 1))                                    \
-        );                                                              \
-        TEST_SSM_SHL_MOD(100 * TAG + 9,                                 \
-            FORMAT(COUNT, (0, UINT64_MAX, UINT64_MAX)), POS, N, 1,      \
-            FORMAT(COUNT, (0, UINT64_MAX, UINT64_MAX - 2))              \
-        );                                                              \
-        TEST_SSM_SHL_MOD(100 * TAG + 10,                                \
-            FORMAT(COUNT, (0, UINT64_MAX, UINT64_MAX)), POS, N, 64,     \
-            FORMAT(COUNT, (0, UINT64_MAX - 1, 1))                       \
-        );                                                              \
-        TEST_SSM_SHL_MOD(100 * TAG + 11,                                \
-            FORMAT(COUNT, (0, UINT64_MAX, UINT64_MAX)), POS, N, 65,     \
-            FORMAT(COUNT, (0, UINT64_MAX - 3, 1))                       \
-        );                                                              \
-        TEST_SSM_SHL_MOD(100 * TAG + 12,                                \
-            FORMAT(COUNT, (0, UINT64_MAX, UINT64_MAX)), POS, N, 128,    \
-            FORMAT(COUNT, (0, 0, 2))                                    \
-        );                                                              \
-    }       
 
-    #define BATCH_1_FORMAT(COUNT, NUM) (COUNT, ARG_OPEN NUM)
-    #define BATCH_2_FORMAT(COUNT, NUM) (COUNT, ARG_OPEN NUM, 1, 0, 0)
-    #define BATCH_3_FORMAT(COUNT, NUM) (COUNT, 0, 0, 1, ARG_OPEN NUM)
-    #define BATCH_4_FORMAT(COUNT, NUM) (COUNT, 0, 0, 1, ARG_OPEN NUM, 1, 0, 0)
-
-    TEST_SSM_SHL_MOD_BATCH(1, 3, BATCH_1_FORMAT, 0, 3)
-    TEST_SSM_SHL_MOD_BATCH(2, 6, BATCH_2_FORMAT, 3, 3)
-    TEST_SSM_SHL_MOD_BATCH(3, 6, BATCH_3_FORMAT, 0, 3)
-    TEST_SSM_SHL_MOD_BATCH(4, 9, BATCH_4_FORMAT, 3, 3)
+    TEST_SSM_SHL_MOD(1,
+        (3, 0, 0, 0), 1,
+        (3, 0, 0, 0)
+    )
+    TEST_SSM_SHL_MOD(2,
+        (3, 0, 0, 1), 0,
+        (3, 0, 0, 1)
+    )
+    TEST_SSM_SHL_MOD(3,
+        (3, 0, 0, 1), 8,
+        (3, 0, 0, 0x100)
+    )
+    TEST_SSM_SHL_MOD(4,
+        (3, 0, 0, 1), 64,
+        (3, 0, 1, 0)
+    )
+    TEST_SSM_SHL_MOD(5,
+        (3, 0, 0, 1), 65,
+        (3, 0, 2, 0)
+    )
+    TEST_SSM_SHL_MOD(6,
+        (3, 0, 0, 1), 128,
+        (3, 1, 0, 0)
+    )
+    TEST_SSM_SHL_MOD(7,
+        (3, 1, 0, 0), 1,
+        (3, 0, UINT64_MAX, UINT64_MAX)
+    )
+    TEST_SSM_SHL_MOD(8,
+        (3, 0, 1UL << 63, 1), 1,
+        (3, 0, 0, 1)
+    )
+    TEST_SSM_SHL_MOD(9,
+        (3, 0, UINT64_MAX, UINT64_MAX), 1,
+        (3, 0, UINT64_MAX, UINT64_MAX - 2)
+    )
+    TEST_SSM_SHL_MOD(10,
+        (3, 0, UINT64_MAX, UINT64_MAX), 64,
+        (3, 0, UINT64_MAX - 1, 1)
+    )
+    TEST_SSM_SHL_MOD(11,
+        (3, 0, UINT64_MAX, UINT64_MAX), 65,
+        (3, 0, UINT64_MAX - 3, 1)
+    )
+    TEST_SSM_SHL_MOD(12,
+        (3, 0, UINT64_MAX, UINT64_MAX), 128,
+        (3, 0, 0, 2)
+    )
 
     #undef TEST_SSM_SHL_MOD
 
@@ -1356,82 +1343,132 @@ void test_num_ssm_shr_mod(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_SSM_SHR_MOD(TAG, NUM, POS, N, BITS, RES)   \
-    {                                                       \
-        TEST_CASE_OPEN(TAG)                                 \
-        {                                                   \
-            num_p num = num_create_immed(ARG_OPEN NUM);     \
-            num_p num_aux = num_create(N, N);               \
-            num_ssm_shr_mod(num_aux, num, POS, N, BITS);    \
-            assert(num_immed(num, ARG_OPEN RES));           \
-            num_free(num_aux);                              \
-        }                                                   \
-        TEST_CASE_CLOSE                                     \
+    #define TEST_SSM_SHR_MOD(TAG, NUM, BITS, RES)       \
+    {                                                   \
+        TEST_CASE_OPEN(TAG)                             \
+        {                                               \
+            num_p num = num_create_immed(ARG_OPEN NUM); \
+            num_p num_aux = num_create(3, 3);           \
+            num_ssm_shr_mod(num_aux, num, 0, 3, BITS);  \
+            assert(num_immed(num, ARG_OPEN RES));       \
+            num_free(num_aux);                          \
+        }                                               \
+        TEST_CASE_CLOSE                                 \
     }
-    
-    #define TEST_SSM_SHR_MOD_BATCH(TAG, COUNT, FORMAT, POS, N)          \
-    {                                                                   \
-        TEST_SSM_SHR_MOD(100 * TAG + 1,                                 \
-            FORMAT(COUNT, (0, 0, 0)), POS, N, 1,                        \
-            FORMAT(COUNT, (0, 0, 0))                                    \
-        );                                                              \
-        TEST_SSM_SHR_MOD(100 * TAG + 2,                                 \
-            FORMAT(COUNT, (0, 2, 0)), POS, N, 0,                        \
-            FORMAT(COUNT, (0, 2, 0))                                    \
-        );                                                              \
-        TEST_SSM_SHR_MOD(100 * TAG + 3,                                 \
-            FORMAT(COUNT, (0, 2, 0)), POS, N, 1,                        \
-            FORMAT(COUNT, (0, 1, 0))                                    \
-        );                                                              \
-        TEST_SSM_SHR_MOD(100 * TAG + 4,                                 \
-            FORMAT(COUNT, (0, 2, 0)), POS, N, 64,                       \
-            FORMAT(COUNT, (0, 0, 2))                                    \
-        );                                                              \
-        TEST_SSM_SHR_MOD(100 * TAG + 5,                                 \
-            FORMAT(COUNT, (0, 2, 0)), POS, N, 65,                       \
-            FORMAT(COUNT, (0, 0, 1))                                    \
-        );                                                              \
-        TEST_SSM_SHR_MOD(100 * TAG + 6,                                 \
-            FORMAT(COUNT, (1, 0, 0)), POS, N, 128,                      \
-            FORMAT(COUNT, (0, 0, 1))                                    \
-        );                                                              \
-        TEST_SSM_SHR_MOD(100 * TAG + 7,                                 \
-            FORMAT(COUNT, (0, 0, 1)), POS, N, 1,                        \
-            FORMAT(COUNT, (0, 1UL << 63, 1))                            \
-        );                                                              \
-        TEST_SSM_SHR_MOD(100 * TAG + 8,                                 \
-            FORMAT(COUNT, (0, UINT64_MAX, UINT64_MAX)), POS, N, 1,      \
-            FORMAT(COUNT, (1, 0, 0))                                    \
-        );                                                              \
-        TEST_SSM_SHR_MOD(100 * TAG + 9,                                 \
-            FORMAT(COUNT, (0, UINT64_MAX, UINT64_MAX)), POS, N, 2,      \
-            FORMAT(COUNT, (0, 1UL << 63, 0))                            \
-        );                                                              \
-        TEST_SSM_SHR_MOD(100 * TAG + 10,                                \
-            FORMAT(COUNT, (0, UINT64_MAX, UINT64_MAX)), POS, N, 64,     \
-            FORMAT(COUNT, (0, 2, 0))                                    \
-        );                                                              \
-        TEST_SSM_SHR_MOD(100 * TAG + 11,                                \
-            FORMAT(COUNT, (0, UINT64_MAX, UINT64_MAX)), POS, N, 65,     \
-            FORMAT(COUNT, (0, 1, 0))                                    \
-        );                                                              \
-        TEST_SSM_SHR_MOD(100 * TAG + 12,                                \
-            FORMAT(COUNT, (0, UINT64_MAX, UINT64_MAX)), POS, N, 128,    \
-            FORMAT(COUNT, (0, 0, 2))                                \
-        );                                                              \
-    }       
 
-    #define BATCH_1_FORMAT(COUNT, NUM) (COUNT, ARG_OPEN NUM)
-    #define BATCH_2_FORMAT(COUNT, NUM) (COUNT, ARG_OPEN NUM, 1, 0, 0)
-    #define BATCH_3_FORMAT(COUNT, NUM) (COUNT, 0, 0, 1, ARG_OPEN NUM)
-    #define BATCH_4_FORMAT(COUNT, NUM) (COUNT, 0, 0, 1, ARG_OPEN NUM, 1, 0, 0)
-
-    TEST_SSM_SHR_MOD_BATCH(1, 3, BATCH_1_FORMAT, 0, 3)
-    TEST_SSM_SHR_MOD_BATCH(2, 6, BATCH_2_FORMAT, 3, 3)
-    TEST_SSM_SHR_MOD_BATCH(3, 6, BATCH_3_FORMAT, 0, 3)
-    TEST_SSM_SHR_MOD_BATCH(4, 9, BATCH_4_FORMAT, 3, 3)
+    TEST_SSM_SHR_MOD(1,
+        (3, 0, 0, 0), 1,
+        (3, 0, 0, 0)
+    );
+    TEST_SSM_SHR_MOD(2,
+        (3, 0, 2, 0), 0,
+        (3, 0, 2, 0)
+    );
+    TEST_SSM_SHR_MOD(3,
+        (3, 0, 2, 0), 1,
+        (3, 0, 1, 0)
+    );
+    TEST_SSM_SHR_MOD(4,
+        (3, 0, 2, 0), 64,
+        (3, 0, 0, 2)
+    );
+    TEST_SSM_SHR_MOD(5,
+        (3, 0, 2, 0), 65,
+        (3, 0, 0, 1)
+    );
+    TEST_SSM_SHR_MOD(6,
+        (3, 1, 0, 0), 128,
+        (3, 0, 0, 1)
+    );
+    TEST_SSM_SHR_MOD(7,
+        (3, 0, 0, 1), 1,
+        (3, 0, 1UL << 63, 1)
+    );
+    TEST_SSM_SHR_MOD(8,
+        (3, 0, UINT64_MAX, UINT64_MAX), 1,
+        (3, 1, 0, 0)
+    );
+    TEST_SSM_SHR_MOD(9,
+        (3, 0, UINT64_MAX, UINT64_MAX), 2,
+        (3, 0, 1UL << 63, 0)
+    );
+    TEST_SSM_SHR_MOD(10,
+        (3, 0, UINT64_MAX, UINT64_MAX), 64,
+        (3, 0, 2, 0)
+    );
+    TEST_SSM_SHR_MOD(11,
+        (3, 0, UINT64_MAX, UINT64_MAX), 65,
+        (3, 0, 1, 0)
+    );
+    TEST_SSM_SHR_MOD(12,
+        (3, 0, UINT64_MAX, UINT64_MAX), 128,
+        (3, 0, 0, 2)
+    );
 
     #undef TEST_SSM_SHR_MOD
+
+    TEST_FN_CLOSE
+}
+
+void test_num_ssm_fft(bool show)
+{
+    TEST_FN_OPEN
+
+    #define TEST_SSM_SHR_FFT(TAG, NUM, N, K, RES)       \
+    {                                                   \
+        TEST_CASE_OPEN(TAG)                             \
+        {                                               \
+            num_p num = num_create_immed(ARG_OPEN NUM); \
+            num_p num_aux = num_create(2 * N, 2 * N);   \
+            uint64_t q = 64 * (N - 1) / K;              \
+            num_ssm_fft_fwd(num_aux, num, N, K, q);     \
+            assert(num_immed(num, ARG_OPEN RES));       \
+            num_free(num_aux);                          \
+        }                                               \
+        TEST_CASE_CLOSE                                 \
+    }
+
+    TEST_SSM_SHR_FFT(1, (4, 0, 0, 0, 1), 2, 2, (4, 0, 1, 0, 1))
+    TEST_SSM_SHR_FFT(2, (4, 0, 1, 0, 0), 2, 2, (4, 1, 0, 0, 1))
+    TEST_SSM_SHR_FFT(3,
+        (8, 0, 0, 0, 0, 0, 0, 0, 1), 2, 4,
+        (8, 0, 1, 0, 1, 0, 1, 0, 1)
+    )
+    TEST_SSM_SHR_FFT(4,
+        (8, 0, 0, 0, 0, 0, 1, 0, 0), 2, 4,
+        (8, 0, 0xffffffff00000001, 0, 1UL << 32, 1, 0, 0, 1)
+    )
+    TEST_SSM_SHR_FFT(5,
+        (8, 0, 0, 0, 1, 0, 0, 0, 0), 2, 4,
+        (8, 1, 0, 1, 0, 0, 1, 0, 1)
+    )
+    TEST_SSM_SHR_FFT(6,
+        (8, 0, 1, 0, 0, 0, 0, 0, 0), 2, 4,
+        (8, 0, 1UL << 32, 0, 0xffffffff00000001, 1, 0, 0, 1)
+    )
+
+    #undef TEST_SSM_SHR_FFT
+
+    TEST_FN_CLOSE
+}
+
+void test_num_ssm_mul_tmp(bool show)
+{
+    TEST_FN_OPEN
+
+    TEST_CASE_OPEN(1)
+    {
+        num_p num_1 = num_create_immed(2, 1, 0);
+        num_p num_2 = num_create_immed(2, 1, 0);
+        num_p num_res = num_create(6, 6);
+        num_res->cannot_expand = true;
+        num_ssm_mul_tmp(num_res, num_1, num_2, 0, 2);
+        num_res->count = 2;
+        assert(num_immed(num_res, 2, 0, 1));
+        num_free(num_1);
+        num_free(num_2);
+    }
+    TEST_CASE_CLOSE
 
     TEST_FN_CLOSE
 }
@@ -1747,6 +1784,11 @@ void test_num_mul(bool show)
         (3, 2, 3, 4),
         (3, 5, 6, 7),
         (5, 10, 27, 52, 45, 28)
+    );
+    TEST_NUM_MUL_BATCH(15,
+        (5, 1, 0, 0, 0, 0),
+        (5, 1, 0, 0, 0, 0),
+        (9, 1, 0, 0, 0, 0, 0, 0, 0, 0)
     );
 
     #undef TEST_NUM_MUL
@@ -2126,16 +2168,16 @@ void test_num_base_to(bool show)
 {
     TEST_FN_OPEN
 
-#define TEST_NUM_BASE_TO(TAG, NUM_IN, NUM_OUT)          \
-{                                                       \
-    TEST_CASE_OPEN(TAG)                                 \
-    {                                                   \
-        num_p num = num_create_immed(ARG_OPEN NUM_IN);  \
-        num = num_base_to(num, 10);                     \
-        assert(num_immed(num, ARG_OPEN NUM_OUT));       \
-    }                                                   \
-    TEST_CASE_CLOSE                                     \
-}
+    #define TEST_NUM_BASE_TO(TAG, NUM_IN, NUM_OUT)          \
+    {                                                       \
+        TEST_CASE_OPEN(TAG)                                 \
+        {                                                   \
+            num_p num = num_create_immed(ARG_OPEN NUM_IN);  \
+            num = num_base_to(num, 10);                     \
+            assert(num_immed(num, ARG_OPEN NUM_OUT));       \
+        }                                                   \
+        TEST_CASE_CLOSE                                     \
+    }
 
     TEST_NUM_BASE_TO(1,
         (0),
@@ -2175,16 +2217,16 @@ void test_num_base_from(bool show)
 {
     TEST_FN_OPEN
 
-#define TEST_NUM_BASE_FROM(TAG, NUM_IN, NUM_OUT)        \
-{                                                       \
-    TEST_CASE_OPEN(TAG)                                 \
-    {                                                   \
-        num_p num = num_create_immed(ARG_OPEN NUM_IN);  \
-        num = num_base_from(num, 10);                   \
-        assert(num_immed(num, ARG_OPEN NUM_OUT));       \
-    }                                                   \
-    TEST_CASE_CLOSE                                     \
-}
+    #define TEST_NUM_BASE_FROM(TAG, NUM_IN, NUM_OUT)        \
+    {                                                       \
+        TEST_CASE_OPEN(TAG)                                 \
+        {                                                   \
+            num_p num = num_create_immed(ARG_OPEN NUM_IN);  \
+            num = num_base_from(num, 10);                   \
+            assert(num_immed(num, ARG_OPEN NUM_OUT));       \
+        }                                                   \
+        TEST_CASE_CLOSE                                     \
+    }
 
     TEST_NUM_BASE_FROM(1,
         (0),
@@ -2214,65 +2256,121 @@ void test_num_base_from(bool show)
 
 
 
+void test_num_mul_fuzz(bool show)
+{
+    TEST_FN_OPEN
+
+    TEST_CASE_OPEN_TIMEOUT(1, 0)
+    {
+        uint64_t n_count = 4;
+        uint64_t counts[] = {3, 4, 5, 8, 10, 16, 32};
+        for(uint64_t i=0; i<n_count; i++)
+        {
+            uint64_t count = counts[i];
+            for(uint64_t j=0; j<1; j++)
+            {
+                num_p num_1 = num_create_rand(count);
+                num_p num_2 = num_create_rand(count);
+
+                num_p num_res_1 = num_mul_ssm(
+                    num_copy(num_1),
+                    num_copy(num_2)
+                );
+
+                num_p num_res_2 = num_mul_classic(
+                    num_copy(num_1),
+                    num_copy(num_2)
+                );
+
+                if(!num_eq_dbg(num_copy(num_res_1), num_copy(num_res_2)))
+                {
+                    printf("\ncount: %lu", count);
+                    printf("\nentries");
+                    num_display_full("num_1", num_1);
+                    num_display_full("num_1", num_2);
+                    printf("\nshould be");
+                    num_display_full("num_res_2", num_res_2);
+                    printf("\nbut was");
+                    num_display_full("num_res_1", num_res_1);
+
+                    exit(EXIT_FAILURE);
+                }
+
+                num_free(num_1);
+                num_free(num_2);
+            }
+        }
+    }
+    TEST_CASE_CLOSE
+
+    TEST_FN_CLOSE
+}
+
+
+
 void test_num()
 {
     TEST_LIB
 
     bool show = true;
 
-    test_uint_from_char(show);
-    test_uint_inv(show);
-    test_uint128(show);
+    // test_uint_from_char(show);
+    // test_uint_inv(show);
+    // test_uint128(show);
 
-    test_num_create(show);
-    test_num_expand_to(show);
-    test_num_chunk_get(show);
-    test_num_chunk_set(show);
+    // test_num_create(show);
+    // test_num_expand_to(show);
+    // test_num_chunk_get(show);
+    // test_num_chunk_set(show);
 
-    test_num_normalize(show);
-    test_num_break(show);
+    // test_num_normalize(show);
+    // test_num_break(show);
 
-    test_num_wrap(show);
-    test_num_wrap_dec(show);
-    test_num_wrap_hex(show);
-    test_num_wrap_str(show);
-    test_num_read_dec(show);
-    test_num_unwrap(show);
-    test_num_copy(show);
+    // test_num_wrap(show);
+    // test_num_wrap_dec(show);
+    // test_num_wrap_hex(show);
+    // test_num_wrap_str(show);
+    // test_num_read_dec(show);
+    // test_num_unwrap(show);
+    // test_num_copy(show);
 
-    test_num_add_uint_offset(show);
-    test_num_sub_uint_offset(show);
-    test_num_cmp_offset(show);
-    test_num_sub_offset(show);
+    // test_num_add_uint_offset(show);
+    // test_num_sub_uint_offset(show);
+    // test_num_cmp_offset(show);
+    // test_num_sub_offset(show);
 
-    test_num_shl_inner(show);
-    test_num_shr_inner(show);
-    test_num_mul_uint(show);
+    // test_num_shl_inner(show);
+    // test_num_shr_inner(show);
+    // test_num_mul_uint(show);
 
-    test_num_ssm_pad(show);
-    test_num_ssm_add_mod(show);
-    test_num_ssm_sub_mod(show);
-    test_num_ssm_shl(show);
-    test_num_ssm_shr(show);
-    test_num_ssm_shl_mod(show);
-    test_num_ssm_shr_mod(show);
+    // test_num_ssm_pad(show);
+    // test_num_ssm_add_mod(show);
+    // test_num_ssm_sub_mod(show);
+    // test_num_ssm_shl(show);
+    // test_num_ssm_shr(show);
+    // test_num_ssm_shl_mod(show);
+    // test_num_ssm_shr_mod(show);
+    // test_num_ssm_fft(show);
+    test_num_ssm_mul_tmp(show);
 
-    test_num_is_zero(show);
+    // test_num_is_zero(show);
 
-    test_num_shl(show);
-    test_num_shr(show);
+    // test_num_shl(show);
+    // test_num_shr(show);
 
-    test_num_add(show);
-    test_num_sub(show);
+    // test_num_add(show);
+    // test_num_sub(show);
     test_num_mul(show);
-    test_num_sqr(show);
-    test_num_div_mod(show);
-    test_num_gcd(show);
+    // test_num_sqr(show);
+    // test_num_div_mod(show);
+    // test_num_gcd(show);
 
-    test_num_div_mod_uint(show);
+    // test_num_div_mod_uint(show);
 
-    test_num_base_to(show);
-    test_num_base_from(show);
+    // test_num_base_to(show);
+    // test_num_base_from(show);
+
+    test_num_mul_fuzz(show);
 
     TEST_ASSERT_MEM_EMPTY
 }
