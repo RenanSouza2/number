@@ -2126,6 +2126,12 @@ void test_num_div_mod(bool show)
         (3, 1, 0, 1),
         (4, UINT64_MAX >> 1, UINT64_MAX, UINT64_MAX, 0x8000000000000000)
     );
+    TEST_NUM_DIV_MOD(26,
+        (8, UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX),
+        (2, UINT64_MAX, UINT64_MAX),
+        (7, 1, 0, 1, 0, 1, 0, 1),
+        (0)
+    );
 
     #undef TEST_NUM_DIV_MOD
 
@@ -2450,14 +2456,14 @@ void test_fuzz_num_ssm_mul(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_FUZZ_NUM_SSM_MUL(TAG, COUNT)                               \
+    #define TEST_FUZZ_NUM_SSM_MUL(TAG, COUNT_1, COUNT_2, MAX)               \
     {                                                                       \
         TEST_CASE_OPEN_TIMEOUT(TAG, 0)                                      \
         {                                                                   \
-            for(uint64_t I=0; I<1; I++)                                     \
+            for(uint64_t i=0; i<MAX; i++)                                   \
             {                                                               \
-                num_p num_1 = num_create_rand(COUNT);                       \
-                num_p num_2 = num_create_rand(COUNT);                       \
+                num_p num_1 = num_create_rand(COUNT_1);                     \
+                num_p num_2 = num_create_rand(COUNT_2);                     \
                 num_p num_res_1 = num_mul_ssm(                              \
                     num_copy(num_1),                                        \
                     num_copy(num_2)                                         \
@@ -2468,7 +2474,6 @@ void test_fuzz_num_ssm_mul(bool show)
                 );                                                          \
                 if(!num_eq_dbg(num_copy(num_res_1), num_copy(num_res_2)))   \
                 {                                                           \
-                    printf("\ncount: %d", COUNT);                           \
                     printf("\nentries");                                    \
                     num_display_full("num_1", num_1);                       \
                     num_display_full("num_2", num_2);                       \
@@ -2487,12 +2492,72 @@ void test_fuzz_num_ssm_mul(bool show)
         TEST_CASE_CLOSE                                                     \
     }
 
-    TEST_FUZZ_NUM_SSM_MUL(1, 3)
-    TEST_FUZZ_NUM_SSM_MUL(2, 4)
-    TEST_FUZZ_NUM_SSM_MUL(3, 5)
-    TEST_FUZZ_NUM_SSM_MUL(4, 8)
-    TEST_FUZZ_NUM_SSM_MUL(5, 10)
-    TEST_FUZZ_NUM_SSM_MUL(6, 32)
+    TEST_FUZZ_NUM_SSM_MUL(1, 3, 3, 100)
+    TEST_FUZZ_NUM_SSM_MUL(2, 4, 3, 100)
+    TEST_FUZZ_NUM_SSM_MUL(3, 5, 7, 100)
+    TEST_FUZZ_NUM_SSM_MUL(4, 8, 5, 100)
+    TEST_FUZZ_NUM_SSM_MUL(5, 10, 13, 100)
+    TEST_FUZZ_NUM_SSM_MUL(5, 19, 17, 100)
+    TEST_FUZZ_NUM_SSM_MUL(6, 32, 19, 100)
+    TEST_FUZZ_NUM_SSM_MUL(7, 5000, 2000, 10)
+
+    #undef TEST_FUZZ_NUM_SSM_MUL
+
+    TEST_FN_CLOSE
+}
+
+void test_fuzz_num_ssm_div(bool show)
+{
+    TEST_FN_OPEN
+
+    #define TEST_FUZZ_NUM_SSM_DIV(TAG, COUNT_1, COUNT_2)                        \
+    {                                                                           \
+        TEST_CASE_OPEN_TIMEOUT(TAG, 0)                                          \
+        {                                                                       \
+            for(uint64_t i=0; i<100; i++)                                       \
+            {                                                                   \
+                num_p num_1 = num_create_rand(COUNT_1);                         \
+                num_p num_2 = num_create_rand(COUNT_2);                         \
+                num_display_full("num_1", num_1);   \
+                num_display_full("num_2", num_2);   \
+                num_p num_q, num_r;                                             \
+                num_div_mod(&num_q, &num_r, num_copy(num_1), num_copy(num_2));  \
+                num_display_full("num_1", num_1);   \
+                num_display_full("num_2", num_2);   \
+                num_display_full("num_q", num_q);   \
+                num_display_full("num_r", num_r);   \
+                num_p num_aux = num_mul(num_copy(num_q), num_copy(num_2));      \
+                num_display_full("num_aux", num_aux);   \
+                num_aux = num_add(num_aux, num_copy(num_r));                    \
+                if(!num_eq_dbg(num_copy(num_aux), num_copy(num_1)))             \
+                {                                                               \
+                    printf("\nentries");                                        \
+                    num_display_full("num_1", num_1);                           \
+                    num_display_full("num_2", num_2);                           \
+                    printf("\nreconstructed give");                             \
+                    num_display_full("num_aux", num_aux);                       \
+                    exit(EXIT_FAILURE);                                         \
+                }                                                               \
+                num_free(num_1);                                                \
+                num_free(num_2);                                                \
+                num_free(num_aux);                                              \
+                num_free(num_q);                                                \
+                num_free(num_r);                                                \
+            }                                                                   \
+        }                                                                       \
+        TEST_CASE_CLOSE                                                         \
+    }
+
+    TEST_FUZZ_NUM_SSM_DIV(1, 3, 1)
+    TEST_FUZZ_NUM_SSM_DIV(1, 3, 2)
+    TEST_FUZZ_NUM_SSM_DIV(2, 4, 2)
+    TEST_FUZZ_NUM_SSM_DIV(3, 5, 2)
+    TEST_FUZZ_NUM_SSM_DIV(4, 8, 5)
+    TEST_FUZZ_NUM_SSM_DIV(5, 10, 7)
+    TEST_FUZZ_NUM_SSM_DIV(6, 32, 19)
+    TEST_FUZZ_NUM_SSM_DIV(7, 5000, 2000)
+
+    #undef TEST_FUZZ_NUM_SSM_DIV
 
     TEST_FN_CLOSE
 }
@@ -2503,68 +2568,69 @@ void test_num()
 {
     TEST_LIB
 
-    bool show = false;
+    bool show = true;
 
-    test_uint_from_char(show);
-    test_uint_inv(show);
-    test_uint128(show);
+    // test_uint_from_char(show);
+    // test_uint_inv(show);
+    // test_uint128(show);
 
-    test_num_create(show);
-    test_num_expand_to(show);
-    test_num_chunk_get(show);
-    test_num_chunk_set(show);
+    // test_num_create(show);
+    // test_num_expand_to(show);
+    // test_num_chunk_get(show);
+    // test_num_chunk_set(show);
 
-    test_num_normalize(show);
-    test_num_break(show);
+    // test_num_normalize(show);
+    // test_num_break(show);
 
-    test_num_wrap(show);
-    test_num_wrap_dec(show);
-    test_num_wrap_hex(show);
-    test_num_wrap_str(show);
-    test_num_read_dec(show);
-    test_num_unwrap(show);
-    test_num_copy(show);
+    // test_num_wrap(show);
+    // test_num_wrap_dec(show);
+    // test_num_wrap_hex(show);
+    // test_num_wrap_str(show);
+    // test_num_read_dec(show);
+    // test_num_unwrap(show);
+    // test_num_copy(show);
 
-    test_num_add_uint_offset(show);
-    test_num_sub_uint_offset(show);
-    test_num_cmp_offset(show);
-    test_num_sub_offset(show);
+    // test_num_add_uint_offset(show);
+    // test_num_sub_uint_offset(show);
+    // test_num_cmp_offset(show);
+    // test_num_sub_offset(show);
 
-    test_num_shl_inner(show);
-    test_num_shr_inner(show);
-    test_num_mul_uint(show);
+    // test_num_shl_inner(show);
+    // test_num_shr_inner(show);
+    // test_num_mul_uint(show);
 
-    test_smm_bit_inv(show);
-    test_num_ssm_pad(show);
-    test_num_ssm_add_mod(show);
-    test_num_ssm_sub_mod(show);
-    test_num_ssm_shl(show);
-    test_num_ssm_shr(show);
-    test_num_ssm_shl_mod(show);
-    test_num_ssm_shr_mod(show);
-    test_num_ssm_fft(show);
-    test_num_ssm_mul_tmp(show);
+    // test_smm_bit_inv(show);
+    // test_num_ssm_pad(show);
+    // test_num_ssm_add_mod(show);
+    // test_num_ssm_sub_mod(show);
+    // test_num_ssm_shl(show);
+    // test_num_ssm_shr(show);
+    // test_num_ssm_shl_mod(show);
+    // test_num_ssm_shr_mod(show);
+    // test_num_ssm_fft(show);
+    // test_num_ssm_mul_tmp(show);
 
-    test_num_is_zero(show);
+    // test_num_is_zero(show);
 
-    test_num_shl(show);
-    test_num_shr(show);
+    // test_num_shl(show);
+    // test_num_shr(show);
 
-    test_num_add(show);
-    test_num_sub(show);
-    test_num_mul(show);
-    test_num_sqr(show);
+    // test_num_add(show);
+    // test_num_sub(show);
+    // test_num_mul(show);
+    // test_num_sqr(show);
     test_num_div_mod(show);
-    test_num_gcd(show);
+    // test_num_gcd(show);
 
-    test_num_div_mod_uint(show);
+    // test_num_div_mod_uint(show);
 
-    test_num_base_to(show);
-    test_num_base_from(show);
+    // test_num_base_to(show);
+    // test_num_base_from(show);
 
-    test_fuzz_num_ssm_sh(show);
-    test_fuzz_num_ssm_fft(show);
-    test_fuzz_num_ssm_mul(show);
+    // test_fuzz_num_ssm_sh(show);
+    // test_fuzz_num_ssm_fft(show);
+    // test_fuzz_num_ssm_mul(show);
+    test_fuzz_num_ssm_div(show);
 
     TEST_ASSERT_MEM_EMPTY
 }

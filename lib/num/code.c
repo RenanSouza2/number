@@ -1805,8 +1805,8 @@ num_p num_div_mod_bz(num_p num_1, num_p num_2)
     assert(num_1)
     assert(num_2)
 
-    uint64_t n_2 = num_2->count;
     uint64_t n_1 = num_1->count;
+    uint64_t n_2 = num_2->count;
 
     uint64_t frame_count = stdc_bit_width(num_2->count);
     bz_frame_t f[frame_count];
@@ -1819,13 +1819,18 @@ num_p num_div_mod_bz(num_p num_1, num_p num_2)
     for(uint64_t i=0; n_1 > 2 * n_2; i++)
     {
         num_t num_1_1;
-        uint64_t k_q = num_2->count;
-        uint64_t k_1 = num_1->count - 2 * k_q;
-        num_span(&num_1_1, num_1, k_1, num_1->count);
+        num_span(&num_1_1, num_1, n_1 - 2 * n_2, num_1->count);
+
+        printf("\n");
+        dprintf("loop: %lu %lu", n_1, n_2);
+
+        num_display_full("num_1", num_1);
+        num_display_full("num_1H", &num_1_1);
+        num_display_full("num_2", num_2);
 
         num_p num_q_tmp = num_div_mod_bz_rec(num_aux, &num_1_1, num_2, f);
         while(num_normalize(num_1));
-        num_p num_tmp = num_add_offset(num_q_tmp, k_q, num_q, 0);
+        num_p num_tmp = num_add_offset(num_q_tmp, n_2, num_q, 0);
         num_free(num_q);
         num_q = num_tmp;
 
