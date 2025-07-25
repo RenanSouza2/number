@@ -938,6 +938,17 @@ num_p num_sqr_classic(num_p num)
 
 
 
+uint64_t ssm_bit_inv(uint64_t i, uint64_t K)
+{
+    uint64_t res = 0;
+    for(; K > 1; K>>=1)
+    {
+        res = (res << 1) | (i & 1);
+        i >>= 1; 
+    }
+    return res;
+}
+
 void num_display_span(num_p num, uint64_t pos, uint64_t count)
 {
     CLU_HANDLER_IS_SAFE(num)
@@ -1284,7 +1295,8 @@ void num_ssm_fft_fwd_rec(
         uint64_t pos_1 = (pos + step * (2 * i)) * n;
         uint64_t pos_2 = (pos + step * (2 * i + 1)) * n;
 
-        num_ssm_shl_mod(num_aux, num, pos_2, n, i * bits);
+        uint64_t shift = ssm_bit_inv(i, k / 2) * bits;
+        num_ssm_shl_mod(num_aux, num, pos_2, n, shift);
 
         num_ssm_add_mod(num_aux, 0, num, pos_1, pos_2, n);
         num_ssm_sub_mod(num_aux, n, num, pos_1, num, pos_2, n);
@@ -1495,25 +1507,14 @@ void num_mul_ssm_params(num_p num_res, num_p num_1, num_p num_2, uint64_t params
     num_1 = num_ssm_pad(num_1, M, n, K);
     num_2 = num_ssm_pad(num_2, M, n, K);
 
-    // printf("\npad");
-    // num_display_span_full("num_1", num_1, n, K);
-    // num_display_span_full("num_2", num_2, n, K);
-
     num_ssm_fft_fwd(num_aux, num_1, n, K, Q);
     num_ssm_fft_fwd(num_aux, num_2, n, K, Q);
-
-    // printf("\nfft");
-    // num_display_span_full("num_1", num_1, n, K);
-    // num_display_span_full("num_2", num_2, n, K);
 
     for(uint64_t i=0; i<K; i++)
     {
         num_ssm_mul_tmp(num_aux, num_1, num_2, i * n, n);
         memcpy(&num_res->chunk[i * n], num_aux->chunk, n * sizeof(uint64_t));
     }
-
-    // printf("\nconvoluted");
-    // num_display_span_full("num_res", num_res, n, K);
 
     num_ssm_fft_inv(num_aux, num_res, n, K, Q);
     num_ssm_depad_no_wrap(num_res, M, n, K);
