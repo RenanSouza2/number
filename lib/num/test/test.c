@@ -1696,34 +1696,33 @@ void test_num_mul_ssm_wrap(bool show)
         (1, 1)
     )
     TEST_NUM_MUL_SSM_WRAP(2,
-        (1, B(32)), (1, B(32)), 2,
+        (2, 0, B(32)), (2, 0, B(32)), 2,
         (2, 1, 0)
     )
-    // TEST_NUM_MUL_SSM_WRAP(3, (2, 1, 0), (2, 1, 0), 2, (1, 1))
     TEST_NUM_MUL_SSM_WRAP(3,
-        (3, 0, 0, 1), (3, 0, 0, 1), 3,
-        (1, 1)
+        (2, 0, UINT64_MAX), (2, 0, UINT64_MAX), 2,
+        (2, 0, 4)
     )
     TEST_NUM_MUL_SSM_WRAP(4,
-        (3, 0, 1, 0), (3, 0, 1, 0), 3,
-        (3, 1, 0, 0)
+        (2, 1, 0), (2, 0, UINT64_MAX), 2,
+        (2, 0, 2)
     )
-    // TEST_NUM_MUL_SSM_WRAP(4, (2, 0, UINT64_MAX), (2, 0, UINT64_MAX), 2, (1, 4))
-    // TEST_NUM_MUL_SSM_WRAP(1,
-    //     (4, 0, 0, 0, 1), (4, 0, 0, 0, 1), 2,
-    //     (1, 1)
-    // )
-    // TEST_NUM_MUL_SSM_WRAP(2,
-    //     (4, 0, 0, 1, 0), (4, 0, 0, 1, 0), 2,
-    //     (3, 1, 0, 0)
-    // )
-    // TEST_NUM_MUL_SSM_WRAP(3,
-    //     (4, 1, 0, 0, 0), (4, 1, 0, 0, 0), 2,
-    //     (1, 1)
-    // )
+    TEST_NUM_MUL_SSM_WRAP(5,
+        (2, 1, 0), (2, 1, 0), 2,
+        (2, 0, 1)
+    )
+    TEST_NUM_MUL_SSM_WRAP(6,
+        (3, 0, 0, 1), (3, 0, 0, 1), 2,
+        (3, 0, 0, 1)
+    )
+    TEST_NUM_MUL_SSM_WRAP(7,
+        (3, 0, 0, 1), (3, 0, 0, 1), 2,
+        (3, 0, 0, 1)
+    )
 
     TEST_FN_CLOSE
 }
+
 
 
 void test_num_div_normalize(bool show)
@@ -2589,43 +2588,39 @@ void test_fuzz_num_ssm_sh(bool show)
 {
     TEST_FN_OPEN
 
-    TEST_CASE_OPEN_TIMEOUT(1, 0)
-    {
-        uint64_t cases_count = 4;
-        num_p num_aux = num_create(10, 10);
-        uint64_t ns[] = {2, 3, 4, 5};
-        uint64_t bits[] = {1, 65, 80, 80};
-        for(uint64_t i=0; i<cases_count; i++)
-        {
-            uint64_t n = ns[i];
-            uint64_t bit = bits[i];
-            for(uint64_t j=0; j<100; j++)
-            {
-                num_p num = num_create_rand((n-1) * 1);
-                num = num_ssm_pad(num, n-1, n, 1);
-                
-                num_p num_res = num_copy(num);
-                num_ssm_shl_mod(num_aux, num_res, 0, n, bit);
-                num_ssm_shr_mod(num_aux, num_res, 0, n, bit);
-
-                if(!num_eq_dbg(num_copy(num_res), num_copy(num)))
-                {
-                    printf("\ncase: (n: %lu) (bits: %lu)", n, bit);
-                    printf("\nentrie");
-                    num_display_span_full("num", num, n, 1);
-                    printf("\nroundrip results in");
-                    num_display_span_full("num_res", num_res, n, 1);
-
-                    exit(EXIT_FAILURE);
-                }
-
-                num_free(num_res);
-                num_free(num);
-            }
-        }
-        num_free(num_aux);
+    #define TEST_FUZZ_NUM_SSM_SH(TAG, N, BITS)                          \
+    {                                                                   \
+        TEST_CASE_OPEN_TIMEOUT(TAG, 0)                                  \
+        {                                                               \
+            num_p num_aux = num_create(10, 10);                         \
+            for(uint64_t id_t=0; id_t<100; id_t++)                      \
+            {                                                           \
+                num_p num = num_create_rand((N-1) * 1);                 \
+                num = num_ssm_pad(num, N-1, N, 1);                      \
+                num_p num_res = num_copy(num);                          \
+                num_ssm_shl_mod(num_aux, num_res, 0, N, BITS);          \
+                num_ssm_shr_mod(num_aux, num_res, 0, N, BITS);          \
+                if(!num_eq_dbg(num_copy(num_res), num_copy(num)))       \
+                {                                                       \
+                    printf("\ncase: (n: %d) (bits: %d)", N, BITS);      \
+                    printf("\nentrie");                                 \
+                    num_display_span_full("num", num, N, 1);            \
+                    printf("\nroundrip results in");                    \
+                    num_display_span_full("num_res", num_res, N, 1);    \
+                    exit(EXIT_FAILURE);                                 \
+                }                                                       \
+                num_free(num_res);                                      \
+                num_free(num);                                          \
+            }                                                           \
+            num_free(num_aux);                                          \
+        }                                                               \
+        TEST_CASE_CLOSE                                                 \
     }
-    TEST_CASE_CLOSE
+
+    TEST_FUZZ_NUM_SSM_SH(1, 2, 1)
+    TEST_FUZZ_NUM_SSM_SH(1, 3, 65)
+    TEST_FUZZ_NUM_SSM_SH(1, 4, 80)
+    TEST_FUZZ_NUM_SSM_SH(1, 5, 80)
 
     TEST_FN_CLOSE
 }
@@ -2719,10 +2714,10 @@ void test_fuzz_num_ssm_mul(bool show)
     TEST_FUZZ_NUM_SSM_MUL(3, 5, 7, 100)
     TEST_FUZZ_NUM_SSM_MUL(4, 8, 5, 100)
     TEST_FUZZ_NUM_SSM_MUL(5, 10, 13, 100)
-    TEST_FUZZ_NUM_SSM_MUL(5, 19, 14, 100)
-    TEST_FUZZ_NUM_SSM_MUL(5, 19, 17, 100)
-    TEST_FUZZ_NUM_SSM_MUL(6, 32, 19, 100)
-    // TEST_FUZZ_NUM_SSM_MUL(7, 5000, 2000, 10)
+    TEST_FUZZ_NUM_SSM_MUL(6, 19, 14, 100)
+    TEST_FUZZ_NUM_SSM_MUL(7, 19, 17, 100)
+    TEST_FUZZ_NUM_SSM_MUL(8, 32, 19, 100)
+    TEST_FUZZ_NUM_SSM_MUL(7, 1000, 500, 10)
 
     #undef TEST_FUZZ_NUM_SSM_MUL
     
@@ -2764,8 +2759,8 @@ void test_fuzz_num_ssm_mul(bool show)
         TEST_CASE_CLOSE                                                     \
     }
 
-    TEST_FUZZ_NUM_SSM_MUL(8, 10, 20, 100);
-    TEST_FUZZ_NUM_SSM_MUL(9, 50, 100, 100);
+    TEST_FUZZ_NUM_SSM_MUL(9, 10, 20, 100);
+    TEST_FUZZ_NUM_SSM_MUL(10, 50, 100, 100);
 
     #undef TEST_FUZZ_NUM_SSM_MUL
 
@@ -2872,7 +2867,7 @@ void test_num()
     test_num_ssm_shr_mod(show);
     // test_num_ssm_fft(show);
     test_num_ssm_mul_tmp(show);
-    // test_num_mul_ssm_wrap(show);
+    test_num_mul_ssm_wrap(show);
 
     test_num_div_normalize(show);
 

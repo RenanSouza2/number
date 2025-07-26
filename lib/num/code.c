@@ -1254,7 +1254,7 @@ void num_ssm_depad_no_wrap(num_p num, uint64_t M, uint64_t n, uint64_t K)
 // Separate number to a base 2^(64*b)
 // Each place will be represented in n chunks
 // the final vector is padded to k places
-num_p num_ssm_depad_wrap(
+void num_ssm_depad_wrap(
     num_p num,
     uint64_t M,
     uint64_t n,
@@ -1278,7 +1278,9 @@ num_p num_ssm_depad_wrap(
         num_ssm_sub_offset(num_res, n0, M * i, num, n * i, n);
     }
     while(num_normalize(num_res));
-    return num_res;
+    num_set_count(num, 0);
+    memcpy(num->chunk, num_res->chunk, num_res->count * sizeof(uint64_t));
+    num->count = num_res->count;
 }
 
 // operation can be done in place if num_res is the same as num and pos_res is pos
@@ -1678,8 +1680,6 @@ void num_mul_ssm_params(num_p num_res, num_p num_1, num_p num_2, uint64_t params
 
     // num_display_span_full("num_res", num_res, n, K);
 
-    num_ssm_depad_no_wrap(num_res, M, n, K);
-
     num_free(num_1);
     num_free(num_2);
     num_free(num_aux);
@@ -1689,14 +1689,24 @@ void num_mul_ssm_wrap(num_p num_res, num_p num_1, num_p num_2, uint64_t n)
 {
     uint64_t params[4];
     ssm_get_params_wrap(params, n);
-    return num_mul_ssm_params(num_res, num_1, num_2, params);
+    uint64_t M = params[0];
+    uint64_t K = params[1];
+    uint64_t n1 = params[3];
+
+    num_mul_ssm_params(num_res, num_1, num_2, params);
+    num_ssm_depad_wrap(num_res, M, n1, K, n);
 }
 
 void num_mul_ssm_buffer(num_p num_res, num_p num_1, num_p num_2)
 {
     uint64_t params[4];
     ssm_get_params_no_wrap(params, num_1->count, num_2->count);
-    return num_mul_ssm_params(num_res, num_1, num_2, params);
+    uint64_t M = params[0];
+    uint64_t K = params[1];
+    uint64_t n = params[3];
+
+    num_mul_ssm_params(num_res, num_1, num_2, params);
+    num_ssm_depad_no_wrap(num_res, M, n, K);
 }
 
 
