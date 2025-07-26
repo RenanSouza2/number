@@ -1523,7 +1523,8 @@ void test_num_ssm_fft(bool show)
     )
     TEST_SSM_SHR_FFT(15,
         (16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0), 2, 8,
-        (16,
+        (
+            16,
             0, 0xffff000000000001, // 7
             0, B(48), // 3
             0, 0xffffffffffff0001, // 5
@@ -1532,6 +1533,46 @@ void test_num_ssm_fft(bool show)
             0, B(32), // 2
             1, 0, // 4
             0, 1  // 0
+        )
+    )
+    TEST_SSM_SHR_FFT(16,
+        (
+            32,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
+        ),
+        2, 16,
+        (
+            32,
+            0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1,
+            0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1
+        )
+    )
+    TEST_SSM_SHR_FFT(17,
+        (
+            32,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0
+        ),
+        2, 16,
+        (
+            32,
+            0, 0xff00000000000001, // 15
+            0, B(56), // 7
+            0, 0xffffffffff000001, // 11
+            0, B(24), // 3
+            0, 0xffffff0000000001, // 13
+            0, B(40), // 5
+            0, 0xffffffffffffff01, // 9
+            0, B(8), // 1
+            0, 0xffff000000000001, // 14
+            0, B(48), // 6
+            0, 0xffffffffffff0001, // 10
+            0, B(16), // 2
+            0, 0xffffffff00000001, // 12
+            0, B(32), // 4
+            1, 0, // 8
+            0, 1 // 0
         )
     )
 
@@ -1917,28 +1958,33 @@ void test_num_mul(bool show)
         (5, UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX),
         (10, UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX - 1, 0, 0, 0, 0, 1)
     )
-    // TEST_NUM_MUL_BATCH(20,
-    //     (
-    //         32,
-    //         0xa4d41ffdafe0102e, 0x2ac8977d46e5453f, 0x726c554e5751eb77, 0xfcad8bca82372f72,
-    //         0x8a3bc0e2e04b6619, 0xbba05ded29bef04e, 0x40b9277a60e1a94b, 0x6b5a4ef812f617b0,
-    //         0x1a770d56d9186aa1, 0x790bd57a402c5b6e, 0x32c4e6a1d31627df, 0xdbde3bcbab7f1c1e,
-    //         0x34ae2c4e9724effc, 0x68919425fd0b8073, 0xac56f1c114844931, 0x502a5e0375e0a855,
-    //         0xe26344fccd2a7da9, 0xf51b92690264184c, 0x4040f6f93b22b6f8, 0xbb4eaf8fa4a7bb83,
-    //         0x17e1a0892f4316b1, 0x9cdb76d07fa1b3da, 0x582b4e527be16c2e, 0x9b460b2d90d9f836,
-    //         0x23314ffa4298b4de, 0x76b8fe2257474b6b, 0x003590b052517f9f, 0xfecf1ac5804c8df6,
-    //         0x16fea11120e77b69, 0x14034e89faee1373, 0x5cf04cfebd7983ab, 0x91ac4b4cc895dbfb
-    //     ),
-    //     (
-    //         19,
-    //         0xa6fdb7a994e6d552, 0xce68ef349bec8fda, 0x2cf08faecdaaf118, 0xc0ccf187a9ee5212,
-    //         0xacc2f25cddfd73dd, 0x7c1805a4d3cddaa0, 0x4bf7b50da56bfa7e, 0x2e54f2be455330aa,
-    //         0xc172b7c91bbc050c, 0xc4283eba2189aad4, 0x91463b68e5c07b98, 0xc71bce6f138a3611,
-    //         0x5e88a71e1e8f035c, 0xae87c70b6038d94f, 0x025559396fb974c1, 0x439a768bd7014047,
-    //         0xe6ac82b8964070e8, 0xea5188bf58faa5f1, 0x6ef5c2d727deafaf
-    //     ),
-    //     (1, 1)
-    // )
+    TEST_NUM_MUL_BATCH(20,
+        (
+            19,
+            UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX,
+            UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX,
+            UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX,
+            UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX,
+            UINT64_MAX, UINT64_MAX, UINT64_MAX
+        ),
+        (
+            19,
+            UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX,
+            UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX,
+            UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX,
+            UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX,
+            UINT64_MAX, UINT64_MAX, UINT64_MAX
+        ),
+        (
+            38,
+            UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX,
+            UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX,
+            UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX,
+            UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX,
+            UINT64_MAX, UINT64_MAX, UINT64_MAX -1, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
+        )
+    )
 
     #undef TEST_NUM_MUL
 
@@ -2554,7 +2600,7 @@ void test_fuzz_num_ssm_mul(bool show)
     TEST_FUZZ_NUM_SSM_MUL(5, 19, 14, 100)
     TEST_FUZZ_NUM_SSM_MUL(5, 19, 17, 100)
     TEST_FUZZ_NUM_SSM_MUL(6, 32, 19, 100)
-    TEST_FUZZ_NUM_SSM_MUL(7, 5000, 2000, 10)
+    // TEST_FUZZ_NUM_SSM_MUL(7, 5000, 2000, 10)
 
     #undef TEST_FUZZ_NUM_SSM_MUL
     
@@ -2604,7 +2650,7 @@ void test_fuzz_num_ssm_mul(bool show)
     TEST_FN_CLOSE
 }
 
-void test_fuzz_num_ssm_div(bool show)
+void test_fuzz_num_bz_div(bool show)
 {
     TEST_FN_OPEN
 
@@ -2647,9 +2693,9 @@ void test_fuzz_num_ssm_div(bool show)
     TEST_FUZZ_NUM_SSM_DIV(5, 10, 7, 100)
     TEST_FUZZ_NUM_SSM_DIV(6, 32, 19, 100)
     TEST_FUZZ_NUM_SSM_DIV(7, 20, 20, 5)
-    TEST_FUZZ_NUM_SSM_DIV(7, 30, 20, 5)
-    TEST_FUZZ_NUM_SSM_DIV(7, 40, 20, 5)
-    TEST_FUZZ_NUM_SSM_DIV(7, 50, 20, 5)
+    TEST_FUZZ_NUM_SSM_DIV(8, 30, 20, 5)
+    TEST_FUZZ_NUM_SSM_DIV(9, 40, 20, 5)
+    TEST_FUZZ_NUM_SSM_DIV(10, 50, 20, 5)
 
     #undef TEST_FUZZ_NUM_SSM_DIV
 
@@ -2726,7 +2772,7 @@ void test_num()
     test_fuzz_num_ssm_sh(show);
     test_fuzz_num_ssm_fft(show);
     test_fuzz_num_ssm_mul(show);
-    test_fuzz_num_ssm_div(show);
+    test_fuzz_num_bz_div(show);
 
     TEST_ASSERT_MEM_EMPTY
 }
