@@ -65,8 +65,9 @@ void num_ssm_shl_mod(
 void num_ssm_add_mod(
     num_p num_res,
     uint64_t pos_res,
-    num_p num,
+    num_p num_1,
     uint64_t pos_1,
+    num_p num_2,
     uint64_t pos_2,
     uint64_t n
 );
