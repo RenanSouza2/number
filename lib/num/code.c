@@ -1144,6 +1144,7 @@ void num_ssm_sub_mod(
     }
 
     num_ssm_normalize(num_1, pos_1, n);
+    num_ssm_normalize(num_res, pos_res, n);
 }
 
 void num_ssm_opposite(num_p num, uint64_t pos, uint64_t n)
@@ -1232,23 +1233,22 @@ num_p num_ssm_pad(num_p num, uint64_t M, uint64_t n, uint64_t K)
 // Separate number to a base 2^(64*M)
 // Each place will be represented in n chunks
 // the final vector is padded to K places
-num_p num_ssm_depad_no_wrap(num_p num, uint64_t M, uint64_t n, uint64_t K)
+void num_ssm_depad_no_wrap(num_p num, uint64_t M, uint64_t n, uint64_t K)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
 
-    uint64_t count = K * n;
-    num = num_expand_to(num, count);
-    num->count = count;
-    for(uint64_t i = K-1; i!=UINT64_MAX; i--)
+    for(uint64_t i=1; i<K; i++)
     {
-        for(uint64_t j=n-1; j!=M-1; j--)
-            num->chunk[i*n + j] = 0;
+        for(uint64_t j=0; j<n; j++)
+        {
+            uint64_t value = num->chunk[n * i + j];
+            num->chunk[n * i + j] = 0;
 
-        for(uint64_t j=M-1; j!=UINT64_MAX; j--)
-            num->chunk[i*n + j] = num->chunk[i*M + j];
+            num_add_uint_offset(num, M * i + j, value);
+        }
     }
-    return num;
+    while(num_normalize(num));
 }
 
 // Separate number to a base 2^(64*b)
@@ -1644,11 +1644,11 @@ void num_mul_ssm_params(num_p num_res, num_p num_1, num_p num_2, uint64_t params
     assert(num_res->size >= K * n);
     num_res->count = K * n;
 
-    printf("\ncount: %lu", num_1->count);
-    printf("\tM: %lu", M);
-    printf("\tK: %lu", K);
-    printf("\tQ: %lu", Q);
-    printf("\tn: %lu", n);
+    // printf("\ncount: %lu", num_1->count);
+    // printf("\tM: %lu", M);
+    // printf("\tK: %lu", K);
+    // printf("\tQ: %lu", Q);
+    // printf("\tn: %lu", n);
 
     uint64_t aux_count = K > 3 ? K * n : 3 * n;
     num_p num_aux = num_create(aux_count, aux_count);
@@ -1657,14 +1657,14 @@ void num_mul_ssm_params(num_p num_res, num_p num_1, num_p num_2, uint64_t params
     num_1 = num_ssm_pad(num_1, M, n, K);
     num_2 = num_ssm_pad(num_2, M, n, K);
     
-    num_display_span_full("num_1 pad", num_1, n, K);
-    num_display_span_full("num_2 pad", num_2, n, K);
+    // num_display_span_full("num_1 pad", num_1, n, K);
+    // num_display_span_full("num_2 pad", num_2, n, K);
 
     num_ssm_fft_fwd(num_aux, num_1, n, K, Q);
     num_ssm_fft_fwd(num_aux, num_2, n, K, Q);
 
-    num_display_span_full("num_1 fft", num_1, n, K);
-    num_display_span_full("num_2 fft", num_2, n, K);
+    // num_display_span_full("num_1 fft", num_1, n, K);
+    // num_display_span_full("num_2 fft", num_2, n, K);
 
     for(uint64_t i=0; i<K; i++)
     {
@@ -1672,11 +1672,11 @@ void num_mul_ssm_params(num_p num_res, num_p num_1, num_p num_2, uint64_t params
         memcpy(&num_res->chunk[i * n], num_aux->chunk, n * sizeof(uint64_t));
     }
 
-    num_display_span_full("num_res conv", num_res, n, K);
+    // num_display_span_full("num_res conv", num_res, n, K);
 
     num_ssm_fft_inv(num_aux, num_res, n, K, Q);
 
-    num_display_span_full("num_res", num_res, n, K);
+    // num_display_span_full("num_res", num_res, n, K);
 
     num_ssm_depad_no_wrap(num_res, M, n, K);
 

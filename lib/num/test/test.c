@@ -2870,7 +2870,7 @@ void test_num()
     test_num_ssm_shr(show);
     test_num_ssm_shl_mod(show);
     test_num_ssm_shr_mod(show);
-    test_num_ssm_fft(show);
+    // test_num_ssm_fft(show);
     test_num_ssm_mul_tmp(show);
     // test_num_mul_ssm_wrap(show);
 
@@ -2894,9 +2894,9 @@ void test_num()
     test_num_base_from(show);
 
     test_fuzz_num_ssm_sh(show);
-    // test_fuzz_num_ssm_fft(show);
-    // test_fuzz_num_ssm_mul(show);
-    // test_fuzz_num_bz_div(show);
+    test_fuzz_num_ssm_fft(show);
+    test_fuzz_num_ssm_mul(show);
+    test_fuzz_num_bz_div(show);
 
     TEST_ASSERT_MEM_EMPTY
 }
