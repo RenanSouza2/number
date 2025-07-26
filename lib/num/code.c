@@ -1230,39 +1230,24 @@ void num_ssm_depad_wrap(
     assert(num)
     assert(n < n0);
 
-    dprintf("begin");
-
     num_p num_res = num_create(n0, n0);
     num_p num_tmp = num_create(n0, n0);
     num_p num_aux = num_create(n0, n0);
     for(uint64_t i=0; i<K; i++)
     {
-        printf("\n");
-        dprintf("loop: %lu", i);
-
-            num_display_span_tag("bef ze", num_tmp, 0, n0);
         num_set_count(num_tmp, 0);
-            num_display_span_tag("aft ze", num_tmp, 0, n0);
         num_set_count(num_aux, 0);
         if(num_ssm_cmp_uint_offset(num, n * i + 2 * M, i + 1, n - 2 * M) < 0)
         {
-            dprintf("add");
-            num_display_span_tag("coef", num, i * n, n);
-
             memcpy(num_tmp->chunk, &num->chunk[i * n], n * sizeof(uint64_t));
-            num_display_span_tag("copy n", num_tmp, 0, n);
-            num_display_span_tag("copy n0", num_tmp, 0, n0);
-            dprintf("shifiting by %lu", 64 * i * M)
             num_ssm_shl_mod(num_aux, num_tmp, 0, n0, 64 * i * M);
-            num_display_span_tag("sift", num_tmp, 0, n0);
             num_ssm_add_mod(num_res, 0, num_res, 0, num_tmp, 0, n0);
-            num_display_span_tag("end loop", num_res, 0, n0);
             continue;
         }
 
         num_ssm_opposite(num, n * i, n);
-        // assert(num_ssm_cmp_uint_offset(num, n * i + 2 * M, i + 1, n - 2 * M) < 0);
         memcpy(num_tmp->chunk, &num->chunk[i * n], n * sizeof(uint64_t));
+        num_ssm_shl_mod(num_aux, num_tmp, 0, n0, 64 * i * M);
         num_ssm_sub_mod(num_res, 0, num_res, 0, num_tmp, 0, n0);
     }
     while(num_normalize(num_res));
@@ -1639,11 +1624,11 @@ void num_mul_ssm_params(num_p num_res, num_p num_1, num_p num_2, uint64_t params
     assert(num_res->size >= K * n);
     num_res->count = K * n;
 
-    printf("\ncount: %lu", num_1->count);
-    printf("\tM: %lu", M);
-    printf("\tK: %lu", K);
-    printf("\tQ: %lu", Q);
-    printf("\tn: %lu", n);
+    // printf("\ncount: %lu", num_1->count);
+    // printf("\tM: %lu", M);
+    // printf("\tK: %lu", K);
+    // printf("\tQ: %lu", Q);
+    // printf("\tn: %lu", n);
 
     uint64_t aux_count = K > 3 ? K * n : 3 * n;
     num_p num_aux = num_create(aux_count, aux_count);
@@ -1652,14 +1637,14 @@ void num_mul_ssm_params(num_p num_res, num_p num_1, num_p num_2, uint64_t params
     num_1 = num_ssm_pad(num_1, M, n, K);
     num_2 = num_ssm_pad(num_2, M, n, K);
     
-    num_display_span_full("num_1 pad", num_1, n, K);
-    num_display_span_full("num_2 pad", num_2, n, K);
+    // num_display_span_full("num_1 pad", num_1, n, K);
+    // num_display_span_full("num_2 pad", num_2, n, K);
 
     num_ssm_fft_fwd(num_aux, num_1, n, K, Q);
     num_ssm_fft_fwd(num_aux, num_2, n, K, Q);
 
-    num_display_span_full("num_1 fft", num_1, n, K);
-    num_display_span_full("num_2 fft", num_2, n, K);
+    // num_display_span_full("num_1 fft", num_1, n, K);
+    // num_display_span_full("num_2 fft", num_2, n, K);
 
     for(uint64_t i=0; i<K; i++)
     {
@@ -1667,11 +1652,11 @@ void num_mul_ssm_params(num_p num_res, num_p num_1, num_p num_2, uint64_t params
         memcpy(&num_res->chunk[i * n], num_aux->chunk, n * sizeof(uint64_t));
     }
 
-    num_display_span_full("num_res conv", num_res, n, K);
+    // num_display_span_full("num_res conv", num_res, n, K);
 
     num_ssm_fft_inv(num_aux, num_res, n, K, Q);
 
-    num_display_span_full("num_res", num_res, n, K);
+    // num_display_span_full("num_res", num_res, n, K);
 
     num_free(num_1);
     num_free(num_2);
