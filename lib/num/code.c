@@ -1041,6 +1041,20 @@ bool num_is_span_zero(num_p num, uint64_t pos, uint64_t count)
     return true;
 }
 
+void num_ssm_sub_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value)
+{
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num)
+
+    uint128_t carry = -(uint128_t)value;
+    for(uint64_t i=0; i<n && carry; i++)
+    {
+        carry += num->chunk[pos + i];
+        num->chunk[pos + i] = LOW(carry);
+        carry = (int128_t)carry >> 64;
+    }
+}
+
 // normalizes coeficient if it is less than 2 modulus
 void num_ssm_normalize(num_p num, uint64_t pos, uint64_t n)
 {
@@ -1053,10 +1067,7 @@ void num_ssm_normalize(num_p num, uint64_t pos, uint64_t n)
         (num->chunk[pos + n - 1] == 1 && !num_is_span_zero(num, pos, n - 1))
     )
     {
-        uint64_t num_count = num->count;
-        num_sub_uint_offset(num, pos , 1);
-        num->count = num_count;
-
+        num_ssm_sub_uint(num, pos, n, 1);
         num->chunk[pos + n - 1] = 0;
     }
 }
@@ -1179,7 +1190,6 @@ void num_ssm_shl(
         num_res->chunk[pos_res + i] = (value_1 << bits) | (value_0 >> (64 - bits));
     }
     num_res->chunk[pos_res + count] = num->chunk[pos] << bits;
-
     memset(&num_res->chunk[pos_res], 0, count * sizeof(uint64_t));
 }
 
@@ -1390,8 +1400,6 @@ void num_ssm_fft_inv(
     // for(uint64_t i=0; i<k; i++)
     //     num_ssm_shr_mod(num_aux, num, n * i, n, bits * i + k_);
 }
-
-num_p num_div_mod_classic(num_p num_aux, num_p num_1, num_p num_2);
 
 num_p num_mod_del(num_p num_1, num_p num_2)
 {
