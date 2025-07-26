@@ -2641,9 +2641,9 @@ void test_fuzz_num_ssm_sh(bool show)
     }
 
     TEST_FUZZ_NUM_SSM_SH(1, 2, 1)
-    TEST_FUZZ_NUM_SSM_SH(1, 3, 65)
-    TEST_FUZZ_NUM_SSM_SH(1, 4, 80)
-    TEST_FUZZ_NUM_SSM_SH(1, 5, 80)
+    TEST_FUZZ_NUM_SSM_SH(2, 3, 65)
+    TEST_FUZZ_NUM_SSM_SH(3, 4, 80)
+    TEST_FUZZ_NUM_SSM_SH(4, 5, 80)
 
     TEST_FN_CLOSE
 }
@@ -2912,9 +2912,9 @@ void test_num()
     test_num_base_from(show);
 
     test_fuzz_num_ssm_sh(show);
-    // test_fuzz_num_ssm_fft(show);
-    // test_fuzz_num_ssm_mul(show);
-    // test_fuzz_num_bz_div(show);
+    test_fuzz_num_ssm_fft(show);
+    test_fuzz_num_ssm_mul(show);
+    test_fuzz_num_bz_div(show);
 
     TEST_ASSERT_MEM_EMPTY
 }

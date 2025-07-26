@@ -1528,6 +1528,9 @@ void num_ssm_mul_tmp(
     num_span(&num_t_1, num_1, pos, pos + n);
     num_span(&num_t_2, num_2, pos, pos + n);
 
+    if(n > 8 && (((n - 1) & (1 - n)) > 4))
+        return num_mul_ssm_wrap(num_res, num_copy(&num_t_1), num_copy(&num_t_2), n);
+
     num_set_count(num_res, 0);
     num_mul_classic_buffer(num_res, &num_t_1, &num_t_2);
 
@@ -1565,9 +1568,15 @@ void ssm_get_params_no_wrap(uint64_t res[4], uint64_t count_1, uint64_t count_2)
 // res[0] = M, res[1] = K, res[2] = Q, res[3] = n
 void ssm_get_params_wrap(uint64_t res[4], uint64_t n)
 {
-    uint64_t K = 1 << (stdc_bit_width(n-1) / 2);
+    uint64_t K1 = 1UL << (stdc_bit_width(n-1) / 2);
+    uint64_t K2 = (n - 1) & (1 - n);
+    uint64_t K = K1 < K2 ? K1 : K2;
     uint64_t M = (n - 1) / K;
-    assert((K & -K) == K);
+
+    // printf("\nn0: %lu %lx", n, n);
+    // printf("\nK: %lu", K);
+    // printf("\nM %lu", M);
+
     assert(K * M == n - 1);
 
     uint64_t Q;
@@ -1624,7 +1633,7 @@ void num_mul_ssm_params(num_p num_res, num_p num_1, num_p num_2, uint64_t params
     assert(num_res->size >= K * n);
     num_res->count = K * n;
 
-    // printf("\ncount: %lu", num_1->count);
+    // printf("\nN: %lu", num_1->count);
     // printf("\tM: %lu", M);
     // printf("\tK: %lu", K);
     // printf("\tQ: %lu", Q);

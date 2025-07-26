@@ -116,9 +116,9 @@ void time_2(int argc, char** argv, uint64_t max)
 
 void time_3()
 {
-    num_p num_1 = num_generate_2(1000, 2);
-    num_p num_2 = num_generate_2(1000, 3);
-    uint64_t i_last = 1000;
+    uint64_t i_last = 1;
+    num_p num_1 = num_generate_2(i_last, 2);
+    num_p num_2 = num_generate_2(i_last, 3);
     for(uint64_t i=1; i<1000; i++)
     {
         printf("\n%lu", i);
@@ -136,7 +136,7 @@ void time_3()
         TIME_RESET
         num_p num_res = num_mul_ssm(num_1_copy, num_2_copy);
         TIME_END(t3);
-        printf(", %.4f", t3 / 1e9);
+        printf(", %.5f", t3 / 1e9);
         num_free(num_res);
     }
     for(uint64_t i=1000; i<200000; i = i * 102 / 100)
@@ -156,7 +156,7 @@ void time_3()
         TIME_RESET
         num_p num_res = num_mul_ssm(num_1_copy, num_2_copy);
         TIME_END(t3);
-        printf(", %.4f", t3 / 1e9);
+        printf(", %.5f", t3 / 1e9);
         num_free(num_res);
     }
 }
