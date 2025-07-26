@@ -1620,6 +1620,7 @@ void test_num_mul_ssm_wrap(bool show)
     }
 
     TEST_NUM_MUL_SSM_WRAP(1, (1, 1), (1, 1), 2, (1, 1))
+    TEST_NUM_MUL_SSM_WRAP(1, (1, B(32)), (1, B(32)), 2, (2, 1, 0))
 
     TEST_FN_CLOSE
 }
