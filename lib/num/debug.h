@@ -53,9 +53,8 @@ num_p num_sub_uint_offset(num_p num, uint64_t pos, uint64_t value);
 int64_t num_cmp_offset(num_p num_1, uint64_t pos_1, num_p num_2);
 num_p num_sub_offset(num_p num_1, uint64_t pos_1, num_p num_2);
 
-uint64_t ssm_bit_inv(uint64_t i, uint64_t K);
 void num_display_span_full(char tag[], num_p num, uint64_t n, uint64_t k);
-num_p num_ssm_pad(num_p num, uint64_t M, uint64_t n, uint64_t K);
+uint64_t ssm_bit_inv(uint64_t i, uint64_t K);
 void num_ssm_shl_mod(
     num_p num_aux,
     num_p num,
@@ -80,6 +79,9 @@ void num_ssm_sub_mod(
     uint64_t pos_2,
     uint64_t n
 );
+void num_ssm_opposite(num_p num, uint64_t pos, uint64_t n);
+num_p num_ssm_pad(num_p num, uint64_t M, uint64_t n, uint64_t K);
+void num_ssm_depad_wrap(num_p num, uint64_t M, uint64_t n, uint64_t K);
 void num_ssm_shl(
     num_p num_res,
     uint64_t pos_res,

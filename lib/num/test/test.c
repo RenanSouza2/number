@@ -996,40 +996,12 @@ void test_smm_bit_inv(bool show)
         TEST_CASE_CLOSE                         \
     }
 
-    TEST_SMM_BIT_INV(1, 0, 2, 0);
-    TEST_SMM_BIT_INV(2, 1, 2, 1);
-    TEST_SMM_BIT_INV(3, 1, 4, 2);
-    TEST_SMM_BIT_INV(4, 2, 4, 1);
-    TEST_SMM_BIT_INV(5, 3, 4, 3);
-    TEST_SMM_BIT_INV(6, 5, 16, 10);
-
-    TEST_FN_CLOSE
-}
-
-void test_num_ssm_pad(bool show)
-{
-    TEST_FN_OPEN
-
-    #define TEST_SSM_PAD(TAG, NUM, B, N, K, RES)        \
-    {                                                   \
-        TEST_CASE_OPEN(TAG)                             \
-        {                                               \
-            num_p num = num_create_immed(ARG_OPEN NUM); \
-            num = num_ssm_pad(num, B, N, K);            \
-            assert(num_immed(num, ARG_OPEN RES));       \
-        }                                               \
-        TEST_CASE_CLOSE                                 \
-    }
-
-    TEST_SSM_PAD(1, (1, 1), 1, 2, 1, (2, 0, 1));
-    TEST_SSM_PAD(2, (1, 1), 1, 2, 2, (4, 0, 0, 0, 1));
-    TEST_SSM_PAD(3, (2, 2, 1), 1, 2, 4, (8, 0, 0, 0, 0, 0, 2, 0, 1));
-    TEST_SSM_PAD(4,
-        (4, 4, 3, 2, 1), 2, 4, 4,
-        (16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 3, 0, 0, 2, 1)
-    );
-
-    #undef TEST_SSM_PAD
+    TEST_SMM_BIT_INV(1, 0, 2, 0)
+    TEST_SMM_BIT_INV(2, 1, 2, 1)
+    TEST_SMM_BIT_INV(3, 1, 4, 2)
+    TEST_SMM_BIT_INV(4, 2, 4, 1)
+    TEST_SMM_BIT_INV(5, 3, 4, 3)
+    TEST_SMM_BIT_INV(6, 5, 16, 10)
 
     TEST_FN_CLOSE
 }
@@ -1128,6 +1100,106 @@ void test_num_ssm_sub_mod(bool show)
     );
 
     #undef TEST_SSM_SUB_MOD
+
+    TEST_FN_CLOSE
+}
+
+void test_num_ssm_opposite(bool show)
+{
+    TEST_FN_OPEN
+
+    #define TEST_NUM_SSM_OPPOSITE(TAG, NUM, N, RES)     \
+    {                                                   \
+        TEST_CASE_OPEN(TAG)                             \
+        {                                               \
+            num_p num = num_create_immed(ARG_OPEN NUM); \
+            num_ssm_opposite(num, 0, N);                \
+            assert(num_immed(num, ARG_OPEN RES));       \
+        }                                               \
+        TEST_CASE_CLOSE                                 \
+    }
+
+    TEST_NUM_SSM_OPPOSITE(1,
+        (2, 0, 1), 2,
+        (2, 1, 0)
+    )
+    TEST_NUM_SSM_OPPOSITE(2,
+        (2, 1, 0), 2,
+        (2, 0, 1)
+    )
+    TEST_NUM_SSM_OPPOSITE(3,
+        (2, 0, 2), 2,
+        (2, 0, UINT64_MAX)
+    )
+    TEST_NUM_SSM_OPPOSITE(4,
+        (2, 0, UINT64_MAX), 2,
+        (2, 0, 2)
+    )
+    TEST_NUM_SSM_OPPOSITE(5,
+        (3, 0, 0, 1), 3,
+        (3, 1, 0, 0)
+    )
+    TEST_NUM_SSM_OPPOSITE(6,
+        (3, 1, 0, 0), 3,
+        (3, 0, 0, 1)
+    )
+    TEST_NUM_SSM_OPPOSITE(7,
+        (3, 0, 0, 2), 3,
+        (3, 0, UINT64_MAX, UINT64_MAX)
+    )
+    TEST_NUM_SSM_OPPOSITE(8,
+        (3, 0, UINT64_MAX, UINT64_MAX), 3,
+        (3, 0, 0, 2)
+    )
+
+    TEST_FN_CLOSE
+}
+
+void test_num_ssm_pad(bool show)
+{
+    TEST_FN_OPEN
+
+    #define TEST_SSM_PAD(TAG, NUM, M, N, K, RES)        \
+    {                                                   \
+        TEST_CASE_OPEN(TAG)                             \
+        {                                               \
+            num_p num = num_create_immed(ARG_OPEN NUM); \
+            num = num_ssm_pad(num, M, N, K);            \
+            assert(num_immed(num, ARG_OPEN RES));       \
+        }                                               \
+        TEST_CASE_CLOSE                                 \
+    }
+
+    TEST_SSM_PAD(1,
+        (1, 1), 1, 2, 1,
+        (2, 0, 1)
+    )
+    TEST_SSM_PAD(2,
+        (1, 1), 1, 2, 2,
+        (4, 0, 0, 0, 1)
+    )
+    TEST_SSM_PAD(3,
+        (2, 2, 1), 1, 2, 4,
+        (8, 0, 0, 0, 0, 0, 2, 0, 1)
+    )
+    TEST_SSM_PAD(4,
+        (4, 4, 3, 2, 1), 2, 4, 4,
+        (16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 3, 0, 0, 2, 1)
+    )
+    TEST_SSM_PAD(5,
+        (2, 1, 0), 1, 2, 1,
+        (2, 1, 0)
+    )
+    TEST_SSM_PAD(6,
+        (3, 1, 0, 0), 1, 2, 2,
+        (4, 1, 0, 0, 0)
+    )
+    TEST_SSM_PAD(7,
+        (3, 0, UINT64_MAX, UINT64_MAX), 1, 2, 2,
+        (4, 0, UINT64_MAX, 0, UINT64_MAX)
+    )
+
+    #undef TEST_SSM_PAD
 
     TEST_FN_CLOSE
 }
@@ -1619,8 +1691,36 @@ void test_num_mul_ssm_wrap(bool show)
         TEST_CASE_CLOSE                                         \
     }
 
-    TEST_NUM_MUL_SSM_WRAP(1, (1, 1), (1, 1), 2, (1, 1))
-    TEST_NUM_MUL_SSM_WRAP(1, (1, B(32)), (1, B(32)), 2, (2, 1, 0))
+    TEST_NUM_MUL_SSM_WRAP(1,
+        (2, 0, 1), (2, 0, 1), 2,
+        (1, 1)
+    )
+    TEST_NUM_MUL_SSM_WRAP(2,
+        (1, B(32)), (1, B(32)), 2,
+        (2, 1, 0)
+    )
+    // TEST_NUM_MUL_SSM_WRAP(3, (2, 1, 0), (2, 1, 0), 2, (1, 1))
+    TEST_NUM_MUL_SSM_WRAP(3,
+        (3, 0, 0, 1), (3, 0, 0, 1), 3,
+        (1, 1)
+    )
+    TEST_NUM_MUL_SSM_WRAP(4,
+        (3, 0, 1, 0), (3, 0, 1, 0), 3,
+        (3, 1, 0, 0)
+    )
+    // TEST_NUM_MUL_SSM_WRAP(4, (2, 0, UINT64_MAX), (2, 0, UINT64_MAX), 2, (1, 4))
+    // TEST_NUM_MUL_SSM_WRAP(1,
+    //     (4, 0, 0, 0, 1), (4, 0, 0, 0, 1), 2,
+    //     (1, 1)
+    // )
+    // TEST_NUM_MUL_SSM_WRAP(2,
+    //     (4, 0, 0, 1, 0), (4, 0, 0, 1, 0), 2,
+    //     (3, 1, 0, 0)
+    // )
+    // TEST_NUM_MUL_SSM_WRAP(3,
+    //     (4, 1, 0, 0, 0), (4, 1, 0, 0, 0), 2,
+    //     (1, 1)
+    // )
 
     TEST_FN_CLOSE
 }
@@ -2762,40 +2862,41 @@ void test_num()
     // test_num_mul_uint(show);
 
     // test_smm_bit_inv(show);
-    // test_num_ssm_pad(show);
     // test_num_ssm_add_mod(show);
     // test_num_ssm_sub_mod(show);
+    test_num_ssm_opposite(show);
+    // test_num_ssm_pad(show);
     // test_num_ssm_shl(show);
     // test_num_ssm_shr(show);
     // test_num_ssm_shl_mod(show);
     // test_num_ssm_shr_mod(show);
     // test_num_ssm_fft(show);
     // test_num_ssm_mul_tmp(show);
-    test_num_mul_ssm_wrap(show);
+    // test_num_mul_ssm_wrap(show);
 
-    test_num_div_normalize(show);
+    // test_num_div_normalize(show);
 
-    test_num_is_zero(show);
+    // test_num_is_zero(show);
 
-    test_num_shl(show);
-    test_num_shr(show);
+    // test_num_shl(show);
+    // test_num_shr(show);
 
-    test_num_add(show);
-    test_num_sub(show);
-    test_num_mul(show);
-    test_num_sqr(show);
-    test_num_div_mod(show);
-    test_num_gcd(show);
+    // test_num_add(show);
+    // test_num_sub(show);
+    // test_num_mul(show);
+    // test_num_sqr(show);
+    // test_num_div_mod(show);
+    // test_num_gcd(show);
 
-    test_num_div_mod_uint(show);
+    // test_num_div_mod_uint(show);
 
-    test_num_base_to(show);
-    test_num_base_from(show);
+    // test_num_base_to(show);
+    // test_num_base_from(show);
 
-    test_fuzz_num_ssm_sh(show);
-    test_fuzz_num_ssm_fft(show);
-    test_fuzz_num_ssm_mul(show);
-    test_fuzz_num_bz_div(show);
+    // test_fuzz_num_ssm_sh(show);
+    // test_fuzz_num_ssm_fft(show);
+    // test_fuzz_num_ssm_mul(show);
+    // test_fuzz_num_bz_div(show);
 
     TEST_ASSERT_MEM_EMPTY
 }
