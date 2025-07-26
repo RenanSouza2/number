@@ -363,12 +363,8 @@ num_p num_expand(num_p num)
 
 void num_set_count(num_p num, uint64_t count)
 {
-    uint64_t count_old = num->count;
     num->count = count;
-    assert(num->count >= count);
-
-    num->count = count;
-    memset(&num->chunk[count], 0, (count_old - count) * sizeof(uint64_t));
+    memset(&num->chunk[count], 0, (num->size - count) * sizeof(uint64_t));
 }
 
 uint64_t num_chunk_get(num_p num, uint64_t pos)
@@ -1232,9 +1228,9 @@ void num_ssm_depad_wrap(
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
+    assert(n < n0);
 
     dprintf("begin");
-    num_display_span_full("num", num, n, K);
 
     num_p num_res = num_create(n0, n0);
     num_p num_tmp = num_create(n0, n0);
@@ -1244,25 +1240,40 @@ void num_ssm_depad_wrap(
         printf("\n");
         dprintf("loop: %lu", i);
 
+            num_display_span_tag("bef ze", num_tmp, 0, n0);
+        num_set_count(num_tmp, 0);
+            num_display_span_tag("aft ze", num_tmp, 0, n0);
         num_set_count(num_aux, 0);
         if(num_ssm_cmp_uint_offset(num, n * i + 2 * M, i + 1, n - 2 * M) < 0)
         {
+            dprintf("add");
+            num_display_span_tag("coef", num, i * n, n);
+
             memcpy(num_tmp->chunk, &num->chunk[i * n], n * sizeof(uint64_t));
-            num_ssm_shl_mod(num_aux, num_tmp, 0, n0, 2 * i * M);
+            num_display_span_tag("copy n", num_tmp, 0, n);
+            num_display_span_tag("copy n0", num_tmp, 0, n0);
+            dprintf("shifiting by %lu", 64 * i * M)
+            num_ssm_shl_mod(num_aux, num_tmp, 0, n0, 64 * i * M);
+            num_display_span_tag("sift", num_tmp, 0, n0);
             num_ssm_add_mod(num_res, 0, num_res, 0, num_tmp, 0, n0);
+            num_display_span_tag("end loop", num_res, 0, n0);
             continue;
         }
 
-        dprintf("sub")
         num_ssm_opposite(num, n * i, n);
+        // assert(num_ssm_cmp_uint_offset(num, n * i + 2 * M, i + 1, n - 2 * M) < 0);
         memcpy(num_tmp->chunk, &num->chunk[i * n], n * sizeof(uint64_t));
         num_ssm_sub_mod(num_res, 0, num_res, 0, num_tmp, 0, n0);
     }
-    num_display_full("AAA", num_res);
     while(num_normalize(num_res));
+
     num_set_count(num, 0);
     memcpy(num->chunk, num_res->chunk, num_res->count * sizeof(uint64_t));
     num->count = num_res->count;
+
+    num_free(num_res);
+    num_free(num_tmp);
+    num_free(num_aux);
 }
 
 // operation can be done in place if num_res is the same as num and pos_res is pos
