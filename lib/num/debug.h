@@ -124,6 +124,8 @@ void num_ssm_mul_tmp(
     uint64_t pos,
     uint64_t n
 );
+void num_mul_ssm_wrap(num_p num_res, num_p num_1, num_p num_2, uint64_t n);
+num_p ssm_get_buffer_wrap(uint64_t n);
 
 num_p num_mul_classic(num_p num_1, num_p num_2);
 num_p num_sqr_classic(num_p num);

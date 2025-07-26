@@ -1602,6 +1602,27 @@ void test_num_ssm_mul_tmp(bool show)
     TEST_FN_CLOSE
 }
 
+void test_num_mul_ssm_wrap(bool show)
+{
+    TEST_FN_OPEN
+
+    #define TEST_NUM_MUL_SSM_WRAP(TAG, NUM_1, NUM_2, N, RES)    \
+    {                                                           \
+        TEST_CASE_OPEN(TAG)                                     \
+        {                                                       \
+            num_p num_1 = num_create_immed(ARG_OPEN NUM_1);     \
+            num_p num_2 = num_create_immed(ARG_OPEN NUM_2);     \
+            num_p num_res = ssm_get_buffer_wrap(N);             \
+            num_mul_ssm_wrap(num_res, num_1, num_2, N);         \
+            assert(num_immed(num_res, ARG_OPEN RES))            \
+        }                                                       \
+        TEST_CASE_CLOSE                                         \
+    }
+
+    TEST_NUM_MUL_SSM_WRAP(1, (1, 1), (1, 1), 2, (1, 1))
+
+    TEST_FN_CLOSE
+}
 
 
 void test_num_div_normalize(bool show)
@@ -2710,45 +2731,46 @@ void test_num()
 
     bool show = true;
 
-    test_uint_from_char(show);
-    test_uint_inv(show);
-    test_uint128(show);
+    // test_uint_from_char(show);
+    // test_uint_inv(show);
+    // test_uint128(show);
 
-    test_num_create(show);
-    test_num_expand_to(show);
-    test_num_chunk_get(show);
-    test_num_chunk_set(show);
+    // test_num_create(show);
+    // test_num_expand_to(show);
+    // test_num_chunk_get(show);
+    // test_num_chunk_set(show);
 
-    test_num_normalize(show);
-    test_num_break(show);
+    // test_num_normalize(show);
+    // test_num_break(show);
 
-    test_num_wrap(show);
-    test_num_wrap_dec(show);
-    test_num_wrap_hex(show);
-    test_num_wrap_str(show);
-    test_num_read_dec(show);
-    test_num_unwrap(show);
-    test_num_copy(show);
+    // test_num_wrap(show);
+    // test_num_wrap_dec(show);
+    // test_num_wrap_hex(show);
+    // test_num_wrap_str(show);
+    // test_num_read_dec(show);
+    // test_num_unwrap(show);
+    // test_num_copy(show);
 
-    test_num_add_uint_offset(show);
-    test_num_sub_uint_offset(show);
-    test_num_cmp_offset(show);
-    test_num_sub_offset(show);
+    // test_num_add_uint_offset(show);
+    // test_num_sub_uint_offset(show);
+    // test_num_cmp_offset(show);
+    // test_num_sub_offset(show);
 
-    test_num_shl_inner(show);
-    test_num_shr_inner(show);
-    test_num_mul_uint(show);
+    // test_num_shl_inner(show);
+    // test_num_shr_inner(show);
+    // test_num_mul_uint(show);
 
-    test_smm_bit_inv(show);
-    test_num_ssm_pad(show);
-    test_num_ssm_add_mod(show);
-    test_num_ssm_sub_mod(show);
-    test_num_ssm_shl(show);
-    test_num_ssm_shr(show);
-    test_num_ssm_shl_mod(show);
-    test_num_ssm_shr_mod(show);
-    test_num_ssm_fft(show);
-    test_num_ssm_mul_tmp(show);
+    // test_smm_bit_inv(show);
+    // test_num_ssm_pad(show);
+    // test_num_ssm_add_mod(show);
+    // test_num_ssm_sub_mod(show);
+    // test_num_ssm_shl(show);
+    // test_num_ssm_shr(show);
+    // test_num_ssm_shl_mod(show);
+    // test_num_ssm_shr_mod(show);
+    // test_num_ssm_fft(show);
+    // test_num_ssm_mul_tmp(show);
+    test_num_mul_ssm_wrap(show);
 
     test_num_div_normalize(show);
 

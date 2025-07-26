@@ -116,24 +116,28 @@ void time_2(int argc, char** argv, uint64_t max)
 
 void time_3()
 {
-    for(uint64_t i=1000; i<50000; i*=101 / 100)
+    num_p num_1 = num_generate_2(1000, 2);
+    num_p num_2 = num_generate_2(1000, 3);
+    uint64_t i_last = 1000;
+    for(uint64_t i=1000; i<100000; i = i * 102 / 100)
     {
         printf("\n%lu", i);
         TIME_SETUP
 
-        num_p num_1 = num_generate_2(i, 2);
-        num_p num_2 = num_generate_2(i, 3);
+        for(uint64_t j=i_last; j<i; j++)
+        {
+            num_1 = num_generate_2_step(num_1, 2);
+            num_2 = num_generate_2_step(num_2, 3);
+        }
+        i_last = i;
 
         num_p num_1_copy = num_copy(num_1);
         num_p num_2_copy = num_copy(num_2);
         TIME_RESET
         num_p num_res = num_mul_ssm(num_1_copy, num_2_copy);
         TIME_END(t3);
-        printf(", %.3f", t3 / 1e9);
+        printf(", %.4f", t3 / 1e9);
         num_free(num_res);
-
-        num_free(num_1);
-        num_free(num_2);
     }
 }
 
