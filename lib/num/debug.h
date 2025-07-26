@@ -80,8 +80,14 @@ void num_ssm_sub_mod(
     uint64_t n
 );
 void num_ssm_opposite(num_p num, uint64_t pos, uint64_t n);
-num_p num_ssm_pad(num_p num, uint64_t M, uint64_t n, uint64_t K);
-void num_ssm_depad_wrap(num_p num, uint64_t M, uint64_t n, uint64_t K);
+num_p num_ssm_depad_no_wrap(num_p num, uint64_t M, uint64_t n, uint64_t K);
+num_p num_ssm_depad_wrap(
+    num_p num,
+    uint64_t M,
+    uint64_t n,
+    uint64_t K,
+    uint64_t n0
+);
 void num_ssm_shl(
     num_p num_res,
     uint64_t pos_res,

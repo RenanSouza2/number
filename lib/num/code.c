@@ -1045,6 +1045,20 @@ int64_t num_ssm_cmp(
     return 0;
 }
 
+void num_ssm_add_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value)
+{
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num)
+
+    uint128_t carry = value;
+    for(uint64_t i=0; i<n && carry; i++)
+    {
+        carry += num->chunk[pos + i];
+        num->chunk[pos + i] = LOW(carry);
+        carry = (int128_t)carry >> 64;
+    }
+}
+
 void num_ssm_sub_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value)
 {
     CLU_HANDLER_IS_SAFE(num)
@@ -1072,7 +1086,7 @@ void num_ssm_normalize(num_p num, uint64_t pos, uint64_t n)
     )
     {
         num_ssm_sub_uint(num, pos, n, 1);
-        num->chunk[pos + n - 1] = 0;
+        num->chunk[pos + n - 1] -= 1;
     }
 }
 
@@ -1118,11 +1132,8 @@ void num_ssm_sub_mod(
     assert(num_1)
     assert(num_2)
 
-    if(num_ssm_cmp(num_1, pos_1, num_2, pos_2, n) < 0)
-    {
-        num_add_uint_offset(num_1, pos_1        , 1);
-        num_add_uint_offset(num_1, pos_1 + n - 1, 1);
-    }
+    num_ssm_add_uint(num_1, pos_1        , n, 1);
+    num_ssm_add_uint(num_1, pos_1 + n - 1, 1, 1);
 
     uint128_t carry = 0;
     for(uint64_t i=0; i<n; i++)
@@ -1148,25 +1159,88 @@ void num_ssm_opposite(num_p num, uint64_t pos, uint64_t n)
     num_ssm_normalize(num, pos, n);
 }
 
-// Separate number to a base 2^(64*b)
+void num_ssm_add_offset(
+    num_p num_1,
+    uint64_t pos_1,
+    uint64_t n_1,
+    num_p num_2,
+    uint64_t pos_2,
+    uint64_t n_2
+)
+{
+    uint128_t carry = 0;
+    for(uint64_t i=0; i < n_2 && pos_1 + i < n_1; i++)
+    {
+        carry += (uint128_t)num_1->chunk[pos_1 + i] + num_2->chunk[pos_2 + i];
+        num_1->chunk[pos_1 + i] = LOW(carry);
+        carry >>= 64;
+    }
+    num_ssm_normalize(num_1, 0, n_1);
+}
+
+void num_ssm_sub_offset(
+    num_p num_1,
+    uint64_t pos_1,
+    uint64_t n_1,
+    num_p num_2,
+    uint64_t pos_2,
+    uint64_t n_2
+)
+{
+    num_ssm_add_uint(num_1, pos_1          , n_1, 1);
+    num_ssm_add_uint(num_1, pos_1 + n_1 - 1, 1  , 1);
+
+    uint128_t carry = 0;
+    for(uint64_t i=0; i < n_2 && pos_1 + i < n_1; i++)
+    {
+        carry += (uint128_t)num_1->chunk[pos_1 + i] - num_2->chunk[pos_2 + i];
+        num_1->chunk[pos_1 + i] = LOW(carry);
+        carry = (int128_t)carry >> 64;
+    }
+    num_ssm_normalize(num_1, 0, n_1);
+}
+
+// Separate number to a base 2^(64*M)
 // Each place will be represented in n chunks
-// the final vector is padded to k places
-num_p num_ssm_pad(num_p num, uint64_t M, uint64_t n, uint64_t k)
+// the final vector is padded to K places
+num_p num_ssm_pad(num_p num, uint64_t M, uint64_t n, uint64_t K)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
 
-    uint64_t count = k * n;
+    uint64_t count = K * n;
     num = num_expand_to(num, count);
     num->count = count;
     
     for(uint64_t j=n-1; j!=M; j--)
-        num->chunk[(k - 1) * n + j] = 0;
+        num->chunk[(K - 1) * n + j] = 0;
 
     for(uint64_t j=M; j!=UINT64_MAX; j--)
-        num->chunk[(k - 1) * n + j] = num->chunk[(k - 1) *M + j];
+        num->chunk[(K - 1) * n + j] = num->chunk[(K - 1) *M + j];
 
-    for(uint64_t i = k-2; i!=UINT64_MAX; i--)
+    for(uint64_t i = K-2; i!=UINT64_MAX; i--)
+    {
+        for(uint64_t j=n-1; j!=M-1; j--)
+            num->chunk[i*n + j] = 0;
+
+        for(uint64_t j=M-1; j!=UINT64_MAX; j--)
+            num->chunk[i*n + j] = num->chunk[i*M + j];
+    }
+    return num;
+}
+
+// Separate number to a base 2^(64*M)
+// Each place will be represented in n chunks
+// the final vector is padded to K places
+num_p num_ssm_depad_no_wrap(num_p num, uint64_t M, uint64_t n, uint64_t K)
+{
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num)
+
+    uint64_t count = K * n;
+    num = num_expand_to(num, count);
+    num->count = count;
+    for(uint64_t i = K-1; i!=UINT64_MAX; i--)
     {
         for(uint64_t j=n-1; j!=M-1; j--)
             num->chunk[i*n + j] = 0;
@@ -1180,52 +1254,31 @@ num_p num_ssm_pad(num_p num, uint64_t M, uint64_t n, uint64_t k)
 // Separate number to a base 2^(64*b)
 // Each place will be represented in n chunks
 // the final vector is padded to k places
-void num_ssm_depad_no_wrap(num_p num, uint64_t M, uint64_t n, uint64_t K)
+num_p num_ssm_depad_wrap(
+    num_p num,
+    uint64_t M,
+    uint64_t n,
+    uint64_t K,
+    uint64_t n0
+)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
 
-    for(uint64_t i=1; i<K; i++)
+    num_p num_res = num_create(n + 1, n + 1);
+    for(uint64_t i=0; i<K; i++)
     {
-        for(uint64_t j=0; j<n; j++)
+        if(num_ssm_cmp_uint_offset(num, n * i + 2 * M, i + 1, n - 2 * M) < 0)
         {
-            uint64_t value = num->chunk[n * i + j];
-            num->chunk[n * i + j] = 0;
-
-            num_add_uint_offset(num, M * i + j, value);
+            num_ssm_add_offset(num_res, n0, M * i, num, n * i, n);
+            continue;
         }
+
+        num_ssm_opposite(num, n * i, n);
+        num_ssm_sub_offset(num_res, n0, M * i, num, n * i, n);
     }
-    while(num_normalize(num));
-}
-
-// Separate number to a base 2^(64*b)
-// Each place will be represented in n chunks
-// the final vector is padded to k places
-void num_ssm_depad_wrap(num_p num, uint64_t M, uint64_t n, uint64_t K)
-{
-    CLU_HANDLER_IS_SAFE(num)
-    assert(num)
-
-    // num_p num_aux = num_wrap(1);
-    // num_aux = num_head_grow(n-1);
-    // num_aux->chunk[0] = 1;
-    // if(num_ssm_cmp_uint_offset(num, M, 1, n - M))
-    // {
-    //     num_ssm_sub_mod(num, 0, num_aux, 0, num, 0, n); // TODO: oposite in place
-    //     num_ssm_sub_mod()
-    // }
-
-    for(uint64_t i=1; i<K; i++)
-    {
-        for(uint64_t j=0; j<n; j++)
-        {
-            uint64_t value = num->chunk[n * i + j];
-            num->chunk[n * i + j] = 0;
-
-            num_add_uint_offset(num, M * i + j, value);
-        }
-    }
-    while(num_normalize(num));
+    while(num_normalize(num_res));
+    return num_res;
 }
 
 // operation can be done in place if num_res is the same as num and pos_res is pos
