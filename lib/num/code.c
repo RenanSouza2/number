@@ -1632,9 +1632,29 @@ num_p ssm_get_buffer_wrap(uint64_t n)
     return num_res;
 }
 
-void num_mul_ssm_params(num_p num_res, num_p num_1, num_p num_2, uint64_t params[4])
-{
+num_p num_mul_ssm_prepare(num_p num_aux, num_p num, uint64_t params[4])
+{    
     uint64_t M = params[0];
+    uint64_t K = params[1];
+    uint64_t Q = params[2];
+    uint64_t n = params[3];
+
+    // dprintf("here 1")
+    num = num_ssm_pad(num, M, n, K);
+    // dprintf("here 2")
+    num_ssm_fft_fwd(num_aux, num, n, K, Q);
+    // dprintf("here 3")
+    return num;
+}
+
+void num_mul_ssm_params(
+    num_p num_res,
+    num_p num_aux,
+    num_p num_1,
+    num_p num_2,
+    uint64_t params[4]
+)
+{
     uint64_t K = params[1];
     uint64_t Q = params[2];
     uint64_t n = params[3];
@@ -1650,22 +1670,6 @@ void num_mul_ssm_params(num_p num_res, num_p num_1, num_p num_2, uint64_t params
     // printf("\tQ: %lu", Q);
     // printf("\tn: %lu", n);
 
-    uint64_t aux_count = K > 3 ? K * n : 3 * n;
-    num_p num_aux = num_create(aux_count, aux_count);
-    num_aux->cannot_expand = true;
-
-    num_1 = num_ssm_pad(num_1, M, n, K);
-    num_2 = num_ssm_pad(num_2, M, n, K);
-    
-    // num_display_span_full("num_1 pad", num_1, n, K);
-    // num_display_span_full("num_2 pad", num_2, n, K);
-
-    num_ssm_fft_fwd(num_aux, num_1, n, K, Q);
-    num_ssm_fft_fwd(num_aux, num_2, n, K, Q);
-
-    // num_display_span_full("num_1 fft", num_1, n, K);
-    // num_display_span_full("num_2 fft", num_2, n, K);
-
     for(uint64_t i=0; i<K; i++)
     {
         num_ssm_mul_tmp(num_aux, num_1, num_2, i * n, n);
@@ -1678,8 +1682,6 @@ void num_mul_ssm_params(num_p num_res, num_p num_1, num_p num_2, uint64_t params
 
     // num_display_span_full("num_res", num_res, n, K);
 
-    num_free(num_1);
-    num_free(num_2);
     num_free(num_aux);
 }
 
@@ -1691,7 +1693,17 @@ void num_mul_ssm_wrap(num_p num_res, num_p num_1, num_p num_2, uint64_t n)
     uint64_t K = params[1];
     uint64_t n1 = params[3];
 
-    num_mul_ssm_params(num_res, num_1, num_2, params);
+    uint64_t aux_count = K > 3 ? K * n : 3 * n;
+    num_p num_aux = num_create(aux_count, aux_count);
+    num_aux->cannot_expand = true;
+
+    num_1 = num_mul_ssm_prepare(num_aux, num_1, params);
+    num_2 = num_mul_ssm_prepare(num_aux, num_2, params);
+
+    num_mul_ssm_params(num_res, num_aux, num_1, num_2, params);
+    num_free(num_1);
+    num_free(num_2);
+
     num_ssm_depad_wrap(num_res, M, n1, K, n);
 }
 
@@ -1702,8 +1714,37 @@ void num_mul_ssm_buffer(num_p num_res, num_p num_1, num_p num_2)
     uint64_t M = params[0];
     uint64_t K = params[1];
     uint64_t n = params[3];
+    
+    uint64_t aux_count = K > 3 ? K * n : 3 * n;
+    num_p num_aux = num_create(aux_count, aux_count);
+    num_aux->cannot_expand = true;
 
-    num_mul_ssm_params(num_res, num_1, num_2, params);
+    num_1 = num_mul_ssm_prepare(num_aux, num_1, params);
+    num_2 = num_mul_ssm_prepare(num_aux, num_2, params);
+
+    num_mul_ssm_params(num_res, num_aux, num_1, num_2, params);    
+    num_free(num_1);
+    num_free(num_2);
+
+    num_ssm_depad_no_wrap(num_res, M, n, K);
+}
+
+void num_sqr_ssm_buffer(num_p num_res, num_p num)
+{
+    uint64_t params[4];
+    ssm_get_params_no_wrap(params, num->count, num->count);
+    uint64_t M = params[0];
+    uint64_t K = params[1];
+    uint64_t n = params[3];
+    
+    uint64_t aux_count = K > 3 ? K * n : 3 * n;
+    num_p num_aux = num_create(aux_count, aux_count);
+    num_aux->cannot_expand = true;
+
+    num = num_mul_ssm_prepare(num_aux, num, params);
+    num_mul_ssm_params(num_res, num_aux, num, num, params);    
+    num_free(num);
+
     num_ssm_depad_no_wrap(num_res, M, n, K);
 }
 
@@ -2201,6 +2242,7 @@ num_p num_mul(num_p num_1, num_p num_2)
     num_mul_buffer(num_res, num_1, num_2);
     num_free(num_1);
     num_free(num_2);
+    num_res->cannot_expand = false;
     return num_res;
 }
 
@@ -2209,7 +2251,13 @@ num_p num_sqr(num_p num)
     if(num->count == 0)
         return num;
 
-    return num_sqr_classic(num);
+    if(num->count < 1000)
+        return num_sqr_classic(num);
+
+    num_p num_res = ssm_get_buffer_no_wrap(num->count, num->count);
+    num_sqr_ssm_buffer(num_res, num);
+    num_res->cannot_expand = false;
+    return num_res;
 }
 
 void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)

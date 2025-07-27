@@ -585,10 +585,10 @@ int main()
     // clu_log_enable(true);
 
     // num_generate(21, 2);
-    // time_1(16, 25);
+    time_1(16, 28);
     // time_1(16, 17);
     // time_2(argc, argv, 19);
-    time_3();
+    // time_3();
     // time_3_params();
     // fibonacci();
     // fibonacci_2(16, 23);
