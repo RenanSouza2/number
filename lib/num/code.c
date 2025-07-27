@@ -1500,9 +1500,6 @@ void num_ssm_fft_inv(
     num_ssm_fft_inv_rec(num_aux, num, 0, n, k, 2 * bits);
 
     uint64_t k_ = stdc_trailing_zeros(k);
-    // for(uint64_t i=0; i<k; i++)
-    //     num_ssm_shr_mod(num_aux, num, n * i, n, k_);
-
     for(uint64_t i=0; i<k; i++)
     {
         num_ssm_shr_mod(num_aux, num, n * i, n, bits * i);
@@ -1534,7 +1531,10 @@ void num_ssm_mul_tmp(
     num_span(&num_t_2, num_2, pos, pos + n);
 
     if(n > 8 && (((n - 1) & (1 - n)) > 4))
+    {
+        // printf("\nAAA n: %lu", n);
         return num_mul_ssm_wrap(num_res, num_copy(&num_t_1), num_copy(&num_t_2), n);
+    }
 
     num_set_count(num_res, 0);
     num_mul_classic_buffer(num_res, &num_t_1, &num_t_2);
@@ -1546,10 +1546,9 @@ void num_ssm_mul_tmp(
 // res[0] = M, res[1] = K, res[2] = Q, res[3] = n
 void ssm_get_params_no_wrap(uint64_t res[4], uint64_t count_1, uint64_t count_2)
 {
-    uint64_t count = count_1 > count_2 ? count_1 : count_2;
-    uint64_t M = 1 << (stdc_bit_width(count) / 2);
-    uint64_t K = stdc_bit_ceil(((count_1 + M - 1) / M) + ((count_2 + M - 1) / M)) * 2;
-    M = (2 * count / K) + 1;
+    uint64_t count = count_1 + count_2;
+    uint64_t K = (1UL << (stdc_bit_width(count) / 2));
+    uint64_t M = (count / K) + 1;
 
     uint64_t Q;
     uint64_t n;
@@ -1562,8 +1561,21 @@ void ssm_get_params_no_wrap(uint64_t res[4], uint64_t count_1, uint64_t count_2)
     else
     {
         Q = (128 * M / K) + 1;
+
+        // uint64_t a = 8;
+        // uint64_t b = B(a);
+        // uint64_t c = (K * Q / 64) % b;
+        // if(c)
+        // {
+        //     uint64_t d = b - c;
+        //     uint64_t e = d / (K / 64);
+        //     printf("\nQ: %lu\te: %lu", Q, e);
+        //     Q += e;
+        // }
+
         n = (K * Q / 64) + 1;
     }
+    // printf("\nQ: %lu", Q);
 
     res[0] = M;
     res[1] = K;
@@ -1574,7 +1586,7 @@ void ssm_get_params_no_wrap(uint64_t res[4], uint64_t count_1, uint64_t count_2)
 // res[0] = M, res[1] = K, res[2] = Q, res[3] = n
 void ssm_get_params_wrap(uint64_t res[4], uint64_t n)
 {
-    uint64_t K1 = 1UL << (stdc_bit_width(n-1) / 2);
+    uint64_t K1 = (1UL << (stdc_bit_width(n-1) / 2));
     uint64_t K2 = (n - 1) & (1 - n);
     uint64_t K = K1 < K2 ? K1 : K2;
     uint64_t M = (n - 1) / K;
@@ -1660,10 +1672,14 @@ void num_mul_ssm_params(
     // printf("\ncount_1: %lu", num_1->count);
     // printf("\ncount_2: %lu", num_2->count);
     // printf("\nN: %lu", num_1->count);
-    // printf("\tM: %lu", M);
+    // // printf("\tM: %lu", M);
     // printf("\tK: %lu", K);
     // printf("\tQ: %lu", Q);
     // printf("\tn: %lu\t", n);
+
+    // uint64_t params_2[4];
+    // ssm_get_params_wrap(params_2, n);
+    // printf("\nn: %lu\tK: %lu", n, params_2[1]);
 
     for(uint64_t i=0; i<K; i++)
     {
