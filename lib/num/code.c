@@ -1504,7 +1504,10 @@ void num_ssm_fft_inv(
     //     num_ssm_shr_mod(num_aux, num, n * i, n, k_);
 
     for(uint64_t i=0; i<k; i++)
-        num_ssm_shr_mod(num_aux, num, n * i, n, bits * i + k_);
+    {
+        num_ssm_shr_mod(num_aux, num, n * i, n, bits * i);
+        num_ssm_shr_mod(num_aux, num, n * i, n, k_);
+    }
 }
 
 uint64_t lim;
@@ -1545,14 +1548,8 @@ void ssm_get_params_no_wrap(uint64_t res[4], uint64_t count_1, uint64_t count_2)
 {
     uint64_t count = count_1 > count_2 ? count_1 : count_2;
     uint64_t M = 1 << (stdc_bit_width(count) / 2);
-    uint64_t K = stdc_bit_ceil(((count_1 + M - 1) / M) + ((count_2 + M - 1) / M));
+    uint64_t K = stdc_bit_ceil(((count_1 + M - 1) / M) + ((count_2 + M - 1) / M)) * 2;
     M = (2 * count / K) + 1;
-
-    // uint64_t count = count_1 + count_2;
-    // uint64_t K = 1UL << (stdc_bit_width(count) / 2);
-    // K = K > 2 ? K : 2;
-    // uint64_t M = 2 * count / K;
-    // // M = M ? M : 1;
 
     uint64_t Q;
     uint64_t n;
@@ -1639,11 +1636,8 @@ num_p num_mul_ssm_prepare(num_p num_aux, num_p num, uint64_t params[4])
     uint64_t Q = params[2];
     uint64_t n = params[3];
 
-    // dprintf("here 1")
     num = num_ssm_pad(num, M, n, K);
-    // dprintf("here 2")
     num_ssm_fft_fwd(num_aux, num, n, K, Q);
-    // dprintf("here 3")
     return num;
 }
 
@@ -1655,6 +1649,7 @@ void num_mul_ssm_params(
     uint64_t params[4]
 )
 {
+    // uint64_t M = params[0];
     uint64_t K = params[1];
     uint64_t Q = params[2];
     uint64_t n = params[3];
@@ -1668,7 +1663,7 @@ void num_mul_ssm_params(
     // printf("\tM: %lu", M);
     // printf("\tK: %lu", K);
     // printf("\tQ: %lu", Q);
-    // printf("\tn: %lu", n);
+    // printf("\tn: %lu\t", n);
 
     for(uint64_t i=0; i<K; i++)
     {
@@ -1676,12 +1671,7 @@ void num_mul_ssm_params(
         memcpy(&num_res->chunk[i * n], num_aux->chunk, n * sizeof(uint64_t));
     }
 
-    // num_display_span_full("num_res conv", num_res, n, K);
-
     num_ssm_fft_inv(num_aux, num_res, n, K, Q);
-
-    // num_display_span_full("num_res", num_res, n, K);
-
     num_free(num_aux);
 }
 
