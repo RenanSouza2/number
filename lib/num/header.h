@@ -53,6 +53,6 @@ num_p num_div_mod_unbalanced(num_p num_1, num_p num_2);
 num_p num_mul_ssm(num_p num_1, num_p num_2);
 num_p num_mul_classic(num_p num_1, num_p num_2);
 
-void del();
+extern uint64_t lim;
 
 #endif

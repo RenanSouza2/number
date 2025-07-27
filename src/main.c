@@ -163,7 +163,6 @@ void time_3()
 
 
 
-
 void fibonacci_1()
 {
     num_p num_a = num_wrap(1);

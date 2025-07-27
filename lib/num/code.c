@@ -1507,6 +1507,8 @@ void num_ssm_fft_inv(
         num_ssm_shr_mod(num_aux, num, n * i, n, bits * i + k_);
 }
 
+uint64_t lim;
+
 // num_res->size >= 2*n + 1
 void num_ssm_mul_tmp(
     num_p num_res,
@@ -1544,6 +1546,13 @@ void ssm_get_params_no_wrap(uint64_t res[4], uint64_t count_1, uint64_t count_2)
     uint64_t count = count_1 > count_2 ? count_1 : count_2;
     uint64_t M = 1 << (stdc_bit_width(count) / 2);
     uint64_t K = stdc_bit_ceil(((count_1 + M - 1) / M) + ((count_2 + M - 1) / M));
+    M = (2 * count / K) + 1;
+
+    // uint64_t count = count_1 + count_2;
+    // uint64_t K = 1UL << (stdc_bit_width(count) / 2);
+    // K = K > 2 ? K : 2;
+    // uint64_t M = 2 * count / K;
+    // // M = M ? M : 1;
 
     uint64_t Q;
     uint64_t n;
@@ -1633,6 +1642,8 @@ void num_mul_ssm_params(num_p num_res, num_p num_1, num_p num_2, uint64_t params
     assert(num_res->size >= K * n);
     num_res->count = K * n;
 
+    // printf("\ncount_1: %lu", num_1->count);
+    // printf("\ncount_2: %lu", num_2->count);
     // printf("\nN: %lu", num_1->count);
     // printf("\tM: %lu", M);
     // printf("\tK: %lu", K);
