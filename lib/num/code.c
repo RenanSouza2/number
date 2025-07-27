@@ -1562,16 +1562,19 @@ void ssm_get_params_no_wrap(uint64_t res[4], uint64_t count_1, uint64_t count_2)
     {
         Q = (128 * M / K) + 1;
 
-        // uint64_t a = 8;
-        // uint64_t b = B(a);
-        // uint64_t c = (K * Q / 64) % b;
-        // if(c)
-        // {
-        //     uint64_t d = b - c;
-        //     uint64_t e = d / (K / 64);
-        //     printf("\nQ: %lu\te: %lu", Q, e);
-        //     Q += e;
-        // }
+        uint64_t c = K / 64;
+        uint64_t a = stdc_bit_width(Q * c) / 2;
+        uint64_t b = B(a);
+        uint64_t d = (Q * c) % b;
+        if(d)
+        {
+            uint64_t e = b / c;
+            uint64_t f = Q & (e - 1);
+            uint64_t g = e - f;
+            // printf("\nQ: %lu\td: %lu\tg: %lu", Q, d, g);
+            Q += g;
+        }
+        // getchar();
 
         n = (K * Q / 64) + 1;
     }
@@ -1590,6 +1593,8 @@ void ssm_get_params_wrap(uint64_t res[4], uint64_t n)
     uint64_t K2 = (n - 1) & (1 - n);
     uint64_t K = K1 < K2 ? K1 : K2;
     uint64_t M = (n - 1) / K;
+
+    // printf("\nK1: %lu\tK2: %lu", K1, K2);
 
     // printf("\nn0: %lu %lx", n, n);
     // printf("\nK: %lu", K);
