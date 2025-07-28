@@ -1540,6 +1540,26 @@ void num_ssm_mul_tmp(
     num_ssm_sub_mod(num_res, 0, num_res, 0, num_res, n, n);
 }
 
+uint64_t ssm_round_count(uint64_t count)
+{
+    uint64_t w = stdc_bit_width(count);
+    if(w > 7)
+    {
+        if((count < B(w-1) + B(w-2)))
+        {
+            uint64_t b = count / B(w - 5);
+            uint64_t c = b + b%2 + 1;
+            return c * B(w - 5);
+        }
+
+
+        uint64_t count_1 = B(w) - 3 * B(w - 7);
+        if((count > B(w-1) + B(w-2)) && (count_1 > count))
+            return count_1;
+    }
+    return count;
+}
+
 // res[0] = M, res[1] = K, res[2] = Q, res[3] = n
 void ssm_get_params_no_wrap(uint64_t res[4], uint64_t count_1, uint64_t count_2)
 {
@@ -1571,26 +1591,7 @@ void ssm_get_params_no_wrap(uint64_t res[4], uint64_t count_1, uint64_t count_2)
     //     count = 7 * B(9) + B(8);
     // }
         
-    // uint64_t count_0 = count;
-    // uint64_t w = stdc_bit_width(count);
-    // if(w > 7)
-    // {
-    //     uint64_t count_1 = B(w) - 3 * B(w - 7);
-    //     if((count > B(w-1) + B(w_-2)) && (count_1 > count))
-    //         count = count_1;
-
-    // }
-    // assert(count >= count_0);
-    uint64_t count_0 = count;
-    uint64_t w = stdc_bit_width(count);
-    if(w > 7)
-    {
-        uint64_t count_1 = B(w) - 3 * B(w - 7);
-        if(count_1 > count)
-            count = count_1;
-
-    }
-    assert(count >= count_0);
+    count = ssm_round_count(count);
 
     uint64_t M = 1 << (stdc_bit_width(count) / 2);
     uint64_t K = stdc_bit_ceil(((count_1 + M - 1) / M) + ((count_2 + M - 1) / M));
