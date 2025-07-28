@@ -121,7 +121,6 @@ void time_3()
     num_p num_2 = num_generate_2(i_last, 3);
     for(uint64_t i=1; i<60000; i++)
     {
-        printf("\n%lu", i);
         TIME_SETUP
 
         for(uint64_t j=i_last; j<i; j++)
@@ -131,6 +130,7 @@ void time_3()
         }
         i_last = i;
 
+        printf("\n%lu", num_1->count);
         num_p num_1_copy = num_copy(num_1);
         num_p num_2_copy = num_copy(num_2);
         TIME_RESET
