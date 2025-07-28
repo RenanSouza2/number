@@ -1579,7 +1579,7 @@ void ssm_get_params_no_wrap(uint64_t res[4], uint64_t count_1, uint64_t count_2)
     uint64_t count = count_1 > count_2 ? count_1 : count_2;
     // printf("\n%lu", count);
         
-    count = ssm_round_count(count);
+    // count = ssm_round_count(count);
 
     uint64_t M = 1 << (stdc_bit_width(count) / 2);
     uint64_t K = stdc_bit_ceil(((count_1 + M - 1) / M) + ((count_2 + M - 1) / M));

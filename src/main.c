@@ -119,7 +119,10 @@ void time_3()
     uint64_t i_last = 1;
     num_p num_1 = num_generate_2(i_last, 2);
     num_p num_2 = num_generate_2(i_last, 3);
-    for(uint64_t i=1; i<60000; i++)
+    uint64_t threshold = 10000;
+    uint64_t max = 200000;
+    assert(threshold * 1002 / 1000 > threshold);
+    for(uint64_t i=1; i<threshold; i+=1)
     {
         TIME_SETUP
 
@@ -136,30 +139,30 @@ void time_3()
         TIME_RESET
         num_p num_res = num_mul_ssm(num_1_copy, num_2_copy);
         TIME_END(t3);
-        printf(", %.5f", t3 / 1e9);
+        printf("\t%.5f", t3 / 1e9);
         num_free(num_res);
     }
 
-    // for(uint64_t i=1000; i<200000; i = i * 102 / 100)
-    // {
-    //     printf("\n%lu", i);
-    //     TIME_SETUP
-    //
-    //     for(uint64_t j=i_last; j<i; j++)
-    //     {
-    //         num_1 = num_generate_2_step(num_1, 2);
-    //         num_2 = num_generate_2_step(num_2, 3);
-    //     }
-    //     i_last = i;
-    //
-    //     num_p num_1_copy = num_copy(num_1);
-    //     num_p num_2_copy = num_copy(num_2);
-    //     TIME_RESET
-    //     num_p num_res = num_mul_ssm(num_1_copy, num_2_copy);
-    //     TIME_END(t3);
-    //     printf(", %.5f", t3 / 1e9);
-    //     num_free(num_res);
-    // }
+    for(uint64_t i=threshold; i<max; i = i * 1002 / 1000)
+    {
+         TIME_SETUP
+
+        for(uint64_t j=i_last; j<i; j++)
+        {
+            num_1 = num_generate_2_step(num_1, 2);
+            num_2 = num_generate_2_step(num_2, 3);
+        }
+        i_last = i;
+
+        printf("\n%lu", num_1->count);
+        num_p num_1_copy = num_copy(num_1);
+        num_p num_2_copy = num_copy(num_2);
+        TIME_RESET
+        num_p num_res = num_mul_ssm(num_1_copy, num_2_copy);
+        TIME_END(t3);
+        printf("\t%.5f", t3 / 1e9);
+        num_free(num_res);
+    }
 }
 
 
