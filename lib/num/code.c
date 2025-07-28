@@ -1544,15 +1544,21 @@ void num_ssm_mul_tmp(
 void ssm_get_params_no_wrap(uint64_t res[4], uint64_t count_1, uint64_t count_2)
 {
     uint64_t count = count_1 > count_2 ? count_1 : count_2;
+
+    if(count > B(12) && count < B(13))
+    {
+        // uint64_t a = count / B(7);
+        // uint64_t b = a + 1;
+        // uint64_t c = b / 4;
+        // if(c < 4)
+        //     count = c * B(9) + B(8);
+        // else
+            count = 7 * B(9) + B(8);
+    }
+
     uint64_t M = 1 << (stdc_bit_width(count) / 2);
     uint64_t K = stdc_bit_ceil(((count_1 + M - 1) / M) + ((count_2 + M - 1) / M));
     M = (2 * count / K) + 1;
-
-    // uint64_t count = count_1 + count_2;
-    // uint64_t K = 1UL << (stdc_bit_width(count) / 2);
-    // K = K > 2 ? K : 2;
-    // uint64_t M = 2 * count / K;
-    // // M = M ? M : 1;
 
     uint64_t Q;
     uint64_t n;
