@@ -1545,6 +1545,21 @@ void ssm_get_params_no_wrap(uint64_t res[4], uint64_t count_1, uint64_t count_2)
 {
     uint64_t count = count_1 > count_2 ? count_1 : count_2;
 
+    // uint64_t w = stdc_bit_width(count);
+    // if(w > 5)
+    // {
+    //     count = 7 * B(w-4) + B(w-5);
+    // }
+    if(count > B(11) && count < B(12))
+    {
+        // uint64_t a = count / B(7);
+        // uint64_t b = a + 1;
+        // uint64_t c = b / 4;
+        // if(c < 4)
+        //     count = c * B(9) + B(8);
+        // else
+            count = 7 * B(8) + B(7);
+    }
     if(count > B(12) && count < B(13))
     {
         // uint64_t a = count / B(7);
