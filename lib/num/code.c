@@ -1549,8 +1549,8 @@ uint64_t ssm_round_count(uint64_t count)
         return 4000;
 
     if(count < B(12))
-        return 4864;
-    
+        return count;
+
     if(count < B(14) - B(8))
     {
         uint64_t b = count / B(7);
@@ -1560,36 +1560,6 @@ uint64_t ssm_round_count(uint64_t count)
     }
 
     return count;
-
-    // uint64_t w = stdc_bit_width(count);
-    // if(w < 7)
-    //     return count;
-
-    // if(w < 14)
-    // {
-    //     if((count < B(w-1) + B(w-2)))
-    //     {
-    //         uint64_t b = count / B(w - 5);
-    //         uint64_t c = b + b%2 + 1;
-    //         return c * B(w - 5);
-    //     }
-
-    //     uint64_t count_1 = B(w) - 3 * B(w - 7);
-    //     return count_1 > count ? count_1 : count;
-    // }
-    
-    // if((count < B(w-1) + B(w-2)))
-    // {
-    //     uint64_t b = count / B(8);
-    //     uint64_t c = b + 1;
-    //     uint64_t d = c % B(w - 12);
-    //     uint64_t e = c - d;
-    //     uint64_t g = e + B(w - 12) - 1;
-    //     return g * B(8);
-    // }
-
-    // uint64_t count_1 = B(w) - 3 * B(w - 7);
-    // return count_1 > count ? count_1 : count;
 }
 
 // res[0] = M, res[1] = K, res[2] = Q, res[3] = n
@@ -1598,10 +1568,11 @@ void ssm_get_params_no_wrap(uint64_t res[4], uint64_t count_1, uint64_t count_2)
     uint64_t count = count_1 > count_2 ? count_1 : count_2;
     // printf("\n%lu", count);
 
-    count = ssm_round_count(count);
-
     uint64_t M = 1 << (stdc_bit_width(count) / 2);
+    // printf("\nm_0: %lu", M);
     uint64_t K = stdc_bit_ceil(((count_1 + M - 1) / M) + ((count_2 + M - 1) / M));
+    
+    count = ssm_round_count(count);
     M = (2 * count / K) + 1;
 
     uint64_t Q;

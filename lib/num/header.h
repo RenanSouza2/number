@@ -53,6 +53,7 @@ num_p num_div_mod_unbalanced(num_p num_1, num_p num_2);
 num_p num_mul_ssm(num_p num_1, num_p num_2);
 num_p num_mul_classic(num_p num_1, num_p num_2);
 
-extern uint64_t lim;
+void ssm_get_params_no_wrap(uint64_t res[4], uint64_t count_1, uint64_t count_2);
+uint64_t ssm_round_count(uint64_t count);
 
 #endif

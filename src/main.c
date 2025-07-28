@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <stdbit.h>
 
 #include "../mods/clu/header.h"
 #include "../mods/macros/assert.h"
@@ -602,8 +603,6 @@ int main()
     // float_num_pi_2(1000);
     // float_num_pi_3(1000);
     // float_num_pi_4(1000);
-
-    // del();
 
     // assert(clu_mem_is_empty("FINAL"));
 
