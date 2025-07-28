@@ -124,6 +124,10 @@ void time_3()
     uint64_t max = 200000;
     uint64_t p_1 = 102;
     uint64_t p_2 = 100;
+    // uint64_t threshold = 1000;
+    // uint64_t max = 200000;
+    // uint64_t p_1 = 1002;
+    // uint64_t p_2 = 1000;
     assert(threshold * p_1 / p_2 > threshold);
     for(uint64_t i=1; i<threshold; i+=1)
     {

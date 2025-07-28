@@ -1375,6 +1375,7 @@ void num_ssm_shr_mod(
     assert(num_aux)
     assert(num)
     assert(num_aux->size >= n)
+    assert(bits <= 64 * (n - 1));
 
     if(bits == 0 || num_is_span_zero(num, pos, n))
         return;
@@ -1504,7 +1505,10 @@ void num_ssm_fft_inv(
     //     num_ssm_shr_mod(num_aux, num, n * i, n, k_);
 
     for(uint64_t i=0; i<k; i++)
-        num_ssm_shr_mod(num_aux, num, n * i, n, bits * i + k_);
+    {
+        num_ssm_shr_mod(num_aux, num, n * i, n, bits * i);
+        num_ssm_shr_mod(num_aux, num, n * i, n, k_);
+    }
 }
 
 uint64_t lim;
@@ -1540,39 +1544,12 @@ void num_ssm_mul_tmp(
     num_ssm_sub_mod(num_res, 0, num_res, 0, num_res, n, n);
 }
 
-uint64_t ssm_round_count(uint64_t count)
-{
-    if(count < 2560)
-        return count;
-
-    if(count < 4000)
-        return 4000;
-
-    if(count < B(12))
-        return count;
-
-    if(count < B(14) - B(8))
-    {
-        uint64_t b = count / B(7);
-        uint64_t c = b + 2;
-        uint64_t d = c + 8 - c%8;
-        return (d - 2) * B(7);
-    }
-
-    return count;
-}
-
 // res[0] = M, res[1] = K, res[2] = Q, res[3] = n
 void ssm_get_params_no_wrap(uint64_t res[4], uint64_t count_1, uint64_t count_2)
 {
     uint64_t count = count_1 > count_2 ? count_1 : count_2;
-    // printf("\n%lu", count);
-
     uint64_t M = 1 << (stdc_bit_width(count) / 2);
-    // printf("\nm_0: %lu", M);
-    uint64_t K = stdc_bit_ceil(((count_1 + M - 1) / M) + ((count_2 + M - 1) / M));
-    
-    count = ssm_round_count(count);
+    uint64_t K = stdc_bit_ceil(((count_1 + M - 1) / M) + ((count_2 + M - 1) / M)) * 2;
     M = (2 * count / K) + 1;
 
     uint64_t Q;
@@ -1598,7 +1575,7 @@ void ssm_get_params_no_wrap(uint64_t res[4], uint64_t count_1, uint64_t count_2)
 // res[0] = M, res[1] = K, res[2] = Q, res[3] = n
 void ssm_get_params_wrap(uint64_t res[4], uint64_t n)
 {
-    uint64_t K1 = 1UL << (stdc_bit_width(n-1) / 2);
+    uint64_t K1 = B(stdc_bit_width(n-1) / 2) * 2;
     uint64_t K2 = (n - 1) & (1 - n);
     uint64_t K = K1 < K2 ? K1 : K2;
     uint64_t M = (n - 1) / K;
