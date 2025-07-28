@@ -120,7 +120,7 @@ void time_3()
     num_p num_1 = num_generate_2(i_last, 2);
     num_p num_2 = num_generate_2(i_last, 3);
     uint64_t threshold = 10000;
-    uint64_t max = 200000;
+    uint64_t max = 1000000;
     assert(threshold * 1002 / 1000 > threshold);
     for(uint64_t i=1; i<threshold; i+=1)
     {
