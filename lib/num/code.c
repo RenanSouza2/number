@@ -1571,8 +1571,26 @@ void ssm_get_params_no_wrap(uint64_t res[4], uint64_t count_1, uint64_t count_2)
     //     count = 7 * B(9) + B(8);
     // }
         
+    // uint64_t count_0 = count;
+    // uint64_t w = stdc_bit_width(count);
+    // if(w > 7)
+    // {
+    //     uint64_t count_1 = B(w) - 3 * B(w - 7);
+    //     if((count > B(w-1) + B(w_-2)) && (count_1 > count))
+    //         count = count_1;
+
+    // }
+    // assert(count >= count_0);
+    uint64_t count_0 = count;
     uint64_t w = stdc_bit_width(count);
-    count = B(w-1) - 1;
+    if(w > 7)
+    {
+        uint64_t count_1 = B(w) - 3 * B(w - 7);
+        if(count_1 > count)
+            count = count_1;
+
+    }
+    assert(count >= count_0);
 
     uint64_t M = 1 << (stdc_bit_width(count) / 2);
     uint64_t K = stdc_bit_ceil(((count_1 + M - 1) / M) + ((count_2 + M - 1) / M));
