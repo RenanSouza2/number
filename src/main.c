@@ -120,9 +120,11 @@ void time_3()
     uint64_t i_last = 1;
     num_p num_1 = num_generate_2(i_last, 2);
     num_p num_2 = num_generate_2(i_last, 3);
-    uint64_t threshold = 10000;
-    uint64_t max = 1000000;
-    assert(threshold * 1002 / 1000 > threshold);
+    uint64_t threshold = 1000;
+    uint64_t max = 200000;
+    uint64_t p_1 = 102;
+    uint64_t p_2 = 100;
+    assert(threshold * p_1 / p_2 > threshold);
     for(uint64_t i=1; i<threshold; i+=1)
     {
         TIME_SETUP
@@ -144,7 +146,7 @@ void time_3()
         num_free(num_res);
     }
 
-    for(uint64_t i=threshold; i<max; i = i * 1002 / 1000)
+    for(uint64_t i=threshold; i<max; i = i * p_1 / p_2)
     {
          TIME_SETUP
 
