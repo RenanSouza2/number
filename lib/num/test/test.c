@@ -2551,10 +2551,18 @@ void test_num_base_to(bool show)
         (3, 1, 0, 0)
     );
     TEST_NUM_BASE_TO(6,
+        (1, 1000),
+        (4, 1, 0, 0, 0)
+    );
+    TEST_NUM_BASE_TO(7,
+        (1, 10000),
+        (5, 1, 0, 0, 0, 0)
+    );
+    TEST_NUM_BASE_TO(8,
         (1, 99),
         (2, 9, 9)
     );
-    TEST_NUM_BASE_TO(7,
+    TEST_NUM_BASE_TO(9,
         (2, 5, 0x6bc75e2d63100000),
         (21, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
     );

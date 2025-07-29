@@ -599,7 +599,7 @@ int main()
     // time_1(16, 25);
     // time_1(16, 17);
     // time_2(argc, argv, 19);
-    time_3();
+    // time_3();
     // time_3_params();
     // fibonacci();
     // fibonacci_2(16, 23);
@@ -609,6 +609,14 @@ int main()
     // float_num_pi_2(1000);
     // float_num_pi_3(1000);
     // float_num_pi_4(1000);
+
+    float_num_t flt = float_num_div(
+        float_num_wrap(1, 30000),
+        float_num_wrap(7, 30000)
+    );
+    printf("\ndivided\n\n");
+    // float_num_t flt = float_num_wrap(3, 2);
+    float_num_display_dec(flt);
 
     // assert(clu_mem_is_empty("FINAL"));
 

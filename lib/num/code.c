@@ -2210,6 +2210,28 @@ num_p num_sqr(num_p num)
     return num_sqr_classic(num);
 }
 
+num_p num_pow(num_p num, uint64_t value) // TODO TEST
+{
+    CLU_HANDLER_IS_SAFE(num);
+    assert(num);
+
+    if(num->count == 0)
+    {
+        assert(value);
+        return num;
+    }
+
+    num_p num_res = num_wrap(1);
+    for(uint64_t mask = B(63); mask; mask >>= 1)
+    {
+        num_res = num_sqr(num_res);
+        if(value & mask)
+            num_res = num_mul(num_res, num_copy(num));
+    }
+    num_free(num);
+    return num_res;
+}
+
 void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_1)
@@ -2262,22 +2284,49 @@ num_p num_gcd(num_p num_1, num_p num_2)
 
 
 
+num_p num_base_to_rec(num_p num, num_p num_bases[], uint64_t i)
+{
+    if(i == UINT64_MAX)
+        return num;
+
+    if(num_cmp(num, num_bases[i]) < 0)
+        return num_base_to_rec(num, num_bases, i - 1);
+
+    num_p num_q, num_r;
+    num_div_mod(&num_q, &num_r, num, num_copy(num_bases[i]));
+    num_q = num_base_to_rec(num_q, num_bases, i - 1);
+    num_r = num_base_to_rec(num_r, num_bases, i - 1);
+    num_r = num_add_offset(num_r, B(i), num_q, 0);
+    num_free(num_q);
+    return num_r;
+}
+
 num_p num_base_to(num_p num, uint64_t base)
 {
     CLU_HANDLER_IS_SAFE(num);
     assert(num);
     assert(base > 1);
 
-    num_p num_res = num_create(num->count, 0);
-    for(uint64_t i=0; num->count; i++)
+    num_p num_base = num_wrap(base);
+    num_p num_bases[100];
+    
+    uint64_t max;
+    for(max=0; num_cmp(num_base, num) <= 0; max++)
     {
-        num_p num_q = num_div_mod_uint(num, base);
-
-        uint64_t value = num_unwrap(num);
-        num_res = num_chunk_set(num_res, i, value);
-        num = num_q;
+        num_bases[max] = num_copy(num_base);
+        num_base = num_sqr(num_base);
     }
-    num_free(num);
+    num_free(num_base);
+
+
+    if(max == 0)
+        return num;
+
+    num_p num_res = num_base_to_rec(num, num_bases, max - 1);
+    
+    for(uint64_t i=0; i<max; i++)
+        num_free(num_bases[i]);
+
     return num_res;
 }
 
