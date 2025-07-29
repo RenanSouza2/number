@@ -611,8 +611,8 @@ int main()
     // float_num_pi_4(1000);
 
     float_num_t flt = float_num_div(
-        float_num_wrap(1, 300000),
-        float_num_wrap(7, 300000)
+        float_num_wrap(1, 500000),
+        float_num_wrap(7, 500000)
     );
     
     // float_num_t flt = float_num_wrap(3, 2);

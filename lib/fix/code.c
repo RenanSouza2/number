@@ -51,10 +51,9 @@ void fix_num_display_dec(fix_num_t fix)
         return;
     }
 
-    uint64_t pos = fix.pos;
     uint64_t t = 0;
     num_p num_u = num_wrap(1);
-    for(; num_u->count < pos + 1; t++)
+    for(uint64_t pos = fix.pos; num_u->count < pos + 1; t++)
     {
         num_u = num_mul_uint(num_u, 1000000000000000000);
 

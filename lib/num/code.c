@@ -1630,6 +1630,23 @@ num_p ssm_get_buffer_wrap(uint64_t n)
     return num_res;
 }
 
+num_p num_prepare(num_p num_aux, num_p num, uint64_t params[4])
+{
+    CLU_HANDLER_IS_SAFE(num_aux)
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num_aux)
+    assert(num)
+
+    uint64_t M = params[0];
+    uint64_t K = params[1];
+    uint64_t Q = params[2];
+    uint64_t n = params[3];
+
+    num = num_ssm_pad(num, M, n, K);
+    num_ssm_fft_fwd(num_aux, num, n, K, Q);
+    return num;
+}
+
 void num_mul_ssm_params(num_p num_res, num_p num_1, num_p num_2, uint64_t params[4])
 {
     uint64_t M = params[0];
@@ -1655,14 +1672,8 @@ void num_mul_ssm_params(num_p num_res, num_p num_1, num_p num_2, uint64_t params
     num_1 = num_ssm_pad(num_1, M, n, K);
     num_2 = num_ssm_pad(num_2, M, n, K);
     
-    // num_display_span_full("num_1 pad", num_1, n, K);
-    // num_display_span_full("num_2 pad", num_2, n, K);
-
     num_ssm_fft_fwd(num_aux, num_1, n, K, Q);
     num_ssm_fft_fwd(num_aux, num_2, n, K, Q);
-
-    // num_display_span_full("num_1 fft", num_1, n, K);
-    // num_display_span_full("num_2 fft", num_2, n, K);
 
     for(uint64_t i=0; i<K; i++)
     {
@@ -1670,11 +1681,7 @@ void num_mul_ssm_params(num_p num_res, num_p num_1, num_p num_2, uint64_t params
         memcpy(&num_res->chunk[i * n], num_aux->chunk, n * sizeof(uint64_t));
     }
 
-    // num_display_span_full("num_res conv", num_res, n, K);
-
     num_ssm_fft_inv(num_aux, num_res, n, K, Q);
-
-    // num_display_span_full("num_res", num_res, n, K);
 
     num_free(num_1);
     num_free(num_2);
@@ -1740,6 +1747,31 @@ STRUCT(num_fft_cache)
     uint64_t n;
     num_p fft;
 };
+
+// Keeps NUM_1
+// Keeps NUM_2
+void num_mul_buffer_memoized(num_p num_res, num_p num_1, num_fft_cache_p num_2) // TODO TEST
+{
+    CLU_HANDLER_IS_SAFE(num_1)
+    CLU_HANDLER_IS_SAFE(num_2)
+    assert(num_1)
+    assert(num_2)
+
+    if(num_1->count == 0 || num_2->num->count == 0)
+    {
+        num_set_count(num_res, 0);
+        return;
+    }
+
+    if(num_1->count < 10 || num_2->num->count < 10)
+    {
+        num_set_count(num_res, 0);
+        num_mul_classic_buffer(num_res, num_1, num_2->num);
+        return;
+    }
+
+    // num_mul_ssm_buffer(num_res, num_copy(num_1), num_copy(num_2));
+}
 
 num_p num_mul_classic(num_p num_1, num_p num_2)
 {
