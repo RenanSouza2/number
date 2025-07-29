@@ -30,10 +30,9 @@ fix_num_t fix_num_create_immed(uint64_t pos, uint64_t signal, uint64_t n, ...)
 #endif
 
 
-
 void fix_num_display_dec(fix_num_t fix)
 {
-    CLU_FIX_IS_SAFE(fix);
+    CLU_FIX_IS_SAFE(fix)
 
     printf("%c ", fix.sig.signal == NEGATIVE ? '-' : '+');
 
@@ -73,7 +72,7 @@ void fix_num_display_dec(fix_num_t fix)
 
     num_lo = num_base_to(num_lo, 1000000000000000000);
     for(uint64_t i=num_lo->count-1; i!=0; i--)
-        printf("" U64P(010) "", num_lo->chunk[i]);
+        printf("" U64P(018) "", num_lo->chunk[i]);
 
     num_free(num_lo);
 }

@@ -2533,39 +2533,43 @@ void test_num_base_to(bool show)
     TEST_NUM_BASE_TO(1,
         (0),
         (0)
-    );
+    )
     TEST_NUM_BASE_TO(2,
         (1, 1),
         (1, 1)
-    );
+    )
     TEST_NUM_BASE_TO(3,
         (1, 9),
         (1, 9)
-    );
+    )
     TEST_NUM_BASE_TO(4,
         (1, 10),
         (2, 1, 0)
-    );
+    )
     TEST_NUM_BASE_TO(5,
         (1, 100),
         (3, 1, 0, 0)
-    );
+    )
     TEST_NUM_BASE_TO(6,
         (1, 1000),
         (4, 1, 0, 0, 0)
-    );
+    )
     TEST_NUM_BASE_TO(7,
         (1, 10000),
         (5, 1, 0, 0, 0, 0)
-    );
+    )
     TEST_NUM_BASE_TO(8,
         (1, 99),
         (2, 9, 9)
-    );
+    )
     TEST_NUM_BASE_TO(9,
         (2, 5, 0x6bc75e2d63100000),
         (21, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-    );
+    )
+    TEST_NUM_BASE_TO(10,
+        (2, 1, 0),
+        (20, 1, 8, 4, 4, 6, 7, 4, 4, 0, 7, 3, 7, 0, 9, 5, 5, 1, 6, 1, 6)
+    )
 
     #undef TEST_NUM_BASE_TO
 
