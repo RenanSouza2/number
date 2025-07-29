@@ -869,7 +869,7 @@ void num_mul_uint_buffer(num_p num_res, num_p num, uint64_t value) // TODO TEST
 // Keeps NUM_1
 // Keeps NUM_2
 // NUM_RES must be reseted before
-// num_res->size >= num_1->count + num_2->count + 1 - pos
+// num_res->size >= num_1->count + num_2->count - pos
 void num_mul_high_buffer(num_p num_res, num_p num_1, num_p num_2, uint64_t pos) // TODO TEST
 {
     CLU_HANDLER_IS_SAFE(num_res)
@@ -878,7 +878,7 @@ void num_mul_high_buffer(num_p num_res, num_p num_1, num_p num_2, uint64_t pos) 
     assert(num_res)
     assert(num_1)
     assert(num_2)
-    assert(num_res->size >= num_1->count + num_2->count + 1 - pos)
+    assert(num_res->size >= num_1->count + num_2->count - pos)
 
     if(pos >= num_1->count + num_2->count)
         return;
@@ -893,7 +893,7 @@ void num_mul_high_buffer(num_p num_res, num_p num_1, num_p num_2, uint64_t pos) 
 
 // Keeps NUM_1
 // Keeps NUM_2
-// num_res->size >= num_1->count + num_2->count + 1
+// num_res->size >= num_1->count + num_2->count
 void num_mul_classic_buffer(num_p num_res, num_p num_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_res)
@@ -902,7 +902,7 @@ void num_mul_classic_buffer(num_p num_res, num_p num_1, num_p num_2)
     assert(num_res)
     assert(num_1)
     assert(num_2)
-    assert(num_res->size >= num_1->count + num_2->count + 1)
+    assert(num_res->size >= num_1->count + num_2->count)
 
     num_mul_high_buffer(num_res, num_1, num_2, 0);
 }
@@ -1513,7 +1513,6 @@ void num_ssm_fft_inv(
 
 uint64_t lim;
 
-// num_res->size >= 2*n + 1
 void num_ssm_mul_tmp(
     num_p num_res,
     num_p num_1,
@@ -1528,7 +1527,6 @@ void num_ssm_mul_tmp(
     assert(num_res)
     assert(num_1)
     assert(num_2)
-    assert(num_res->size >= 3*n)
 
     num_t num_t_1, num_t_2;
     num_span(&num_t_1, num_1, pos, pos + n);
@@ -1647,6 +1645,7 @@ num_p num_prepare(num_p num_aux, num_p num, uint64_t params[4])
     return num;
 }
 
+// num_res->size >= K * n
 void num_mul_ssm_params(num_p num_res, num_p num_1, num_p num_2, uint64_t params[4])
 {
     uint64_t M = params[0];
@@ -1665,7 +1664,7 @@ void num_mul_ssm_params(num_p num_res, num_p num_1, num_p num_2, uint64_t params
     // printf("\tQ: %lu", Q);
     // printf("\tn: %lu", n);
 
-    uint64_t aux_count = K > 3 ? K * n : 3 * n;
+    uint64_t aux_count = 2 * n;
     num_p num_aux = num_create(aux_count, aux_count);
     num_aux->cannot_expand = true;
 
@@ -1695,6 +1694,8 @@ void num_mul_ssm_wrap(num_p num_res, num_p num_1, num_p num_2, uint64_t n)
     uint64_t M = params[0];
     uint64_t K = params[1];
     uint64_t n1 = params[3];
+    
+    assert(num_res->size >= n1 * K);
 
     num_mul_ssm_params(num_res, num_1, num_2, params);
     num_ssm_depad_wrap(num_res, M, n1, K, n);
