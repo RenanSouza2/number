@@ -611,12 +611,15 @@ int main()
     // float_num_pi_4(1000);
 
     float_num_t flt = float_num_div(
-        float_num_wrap(1, 30000),
-        float_num_wrap(7, 30000)
+        float_num_wrap(1, 300000),
+        float_num_wrap(7, 300000)
     );
-    printf("\ndivided\n\n");
+    
     // float_num_t flt = float_num_wrap(3, 2);
+    TIME_SETUP
     float_num_display_dec(flt);
+    TIME_END(t1);
+    printf("\ntime: %f.1", t1 / 1e9);
 
     // assert(clu_mem_is_empty("FINAL"));
 
