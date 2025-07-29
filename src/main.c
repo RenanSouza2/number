@@ -610,9 +610,10 @@ int main()
     // float_num_pi_3(1000);
     // float_num_pi_4(1000);
 
+    uint64_t size = 300000;
     float_num_t flt = float_num_div(
-        float_num_wrap(1, 500000),
-        float_num_wrap(7, 500000)
+        float_num_wrap(1, size),
+        float_num_wrap(7, size)
     );
     
     // float_num_t flt = float_num_wrap(3, 2);

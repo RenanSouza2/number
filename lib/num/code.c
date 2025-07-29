@@ -109,6 +109,12 @@ bool num_inner(num_p num_1, num_p num_2)
     assert(num_1)
     assert(num_2)
 
+    if(num_1->cannot_expand)
+    {
+        printf("\n\n\tNUMBER ASSERT ERROR\t| NUM CANNOT EXPAND");
+        return false;
+    }
+
     if(num_1->count > num_1->size)
     {
         printf("\n\n\tNUMBER ASSERT ERROR\t| COUNT BIGGER THAN SIZE | " U64P() " " U64P() "", num_1->count, num_1->size);
@@ -1628,6 +1634,25 @@ num_p ssm_get_buffer_wrap(uint64_t n)
     return num_res;
 }
 
+num_p ssm_get_aux(uint64_t count_1, uint64_t count_2)
+{
+    uint64_t params[4];
+    ssm_get_params_no_wrap(params, count_1, count_2);
+    uint64_t n = params[3];
+    uint64_t count_a = 2 * n;
+
+    uint64_t params_2[4];
+    ssm_get_params_wrap(params_2, n);
+    uint64_t K_2 = params_2[1];
+    uint64_t n_2 = params_2[3];
+    uint64_t count_b = K_2 * n_2;
+
+    uint64_t count = count_a > count_b ? count_a : count_b;
+    num_p num_res = num_create(count, count);
+    num_res->cannot_expand = true;
+    return num_res;
+}
+
 num_p num_ssm_prepare(num_p num_aux, num_p num, uint64_t params[4])
 {
     CLU_HANDLER_IS_SAFE(num_aux)
@@ -1661,14 +1686,6 @@ void num_mul_ssm_params(
     assert(num_res->size >= K * n);
     num_res->count = K * n;
 
-    // printf("\ncount_1: %lu", num_1->count);
-    // printf("\ncount_2: %lu", num_2->count);
-    // printf("\nN: %lu", num_1->count);
-    // printf("\tM: %lu", M);
-    // printf("\tK: %lu", K);
-    // printf("\tQ: %lu", Q);
-    // printf("\tn: %lu", n);
-
     for(uint64_t i=0; i<K; i++)
     {
         num_ssm_mul_tmp(num_aux, num_1, num_2, i * n, n);
@@ -1688,7 +1705,6 @@ void num_mul_ssm_wrap(num_p num_res, num_p num_1, num_p num_2, uint64_t n)
     uint64_t M = params[0];
     uint64_t K = params[1];
     uint64_t n1 = params[3];
-    
     assert(num_res->size >= n1 * K);
 
     uint64_t aux_count = 2 * n;
@@ -1712,10 +1728,7 @@ void num_mul_ssm_buffer(num_p num_res, num_p num_1, num_p num_2)
     uint64_t K = params[1];
     uint64_t n = params[3];
 
-    uint64_t aux_count = 2 * n;
-    num_p num_aux = num_create(aux_count, aux_count);
-    num_aux->cannot_expand = true;
-
+    num_p num_aux = ssm_get_aux(num_1->count, num_2->count);
     num_1 = num_ssm_prepare(num_aux, num_1, params);
     num_2 = num_ssm_prepare(num_aux, num_2, params);
 
@@ -1733,10 +1746,7 @@ void num_sqr_ssm_buffer(num_p num_res, num_p num)
     uint64_t K = params[1];
     uint64_t n = params[3];
 
-    uint64_t aux_count = 2 * n;
-    num_p num_aux = num_create(aux_count, aux_count);
-    num_aux->cannot_expand = true;
-
+    num_p num_aux = ssm_get_aux(num->count, num->count);
     num = num_ssm_prepare(num_aux, num, params);
     num_mul_ssm_params(num_res, num_aux, num, num, params);
     num_ssm_depad_no_wrap(num_res, M, n, K);
@@ -1815,6 +1825,7 @@ num_p num_mul_classic(num_p num_1, num_p num_2)
     num_mul_classic_buffer(num_res, num_1, num_2);
     num_free(num_1);
     num_free(num_2);
+    num_res->cannot_expand = false;
     return num_res;
 }
 
@@ -1827,6 +1838,7 @@ num_p num_mul_ssm(num_p num_1, num_p num_2)
 
     num_p num_res = ssm_get_buffer_no_wrap(num_1->count, num_2->count);
     num_mul_ssm_buffer(num_res, num_1, num_2);
+    num_res->cannot_expand = false;
     return num_res;
 }
 
@@ -1837,6 +1849,7 @@ num_p num_sqr_ssm(num_p num)
 
     num_p num_res = ssm_get_buffer_no_wrap(num->count, num->count);
     num_sqr_ssm_buffer(num_res, num);
+    num_res->cannot_expand = false;
     return num_res;
 }
 
@@ -2216,6 +2229,7 @@ num_p num_mul_uint(num_p num, uint64_t value)
     num_res->cannot_expand = true;
     num_add_mul_uint_offset(num_res, 0, num, 0, value);
     num_free(num);
+    num_res->cannot_expand = false;
     return num_res;
 }
 
@@ -2271,6 +2285,8 @@ num_p num_mul(num_p num_1, num_p num_2)
     num_mul_buffer(num_res, num_1, num_2);
     num_free(num_1);
     num_free(num_2);
+
+    num_res->cannot_expand = false;
     return num_res;
 }
 

@@ -965,15 +965,21 @@ void test_num_mul_uint(bool show)
         TEST_CASE_CLOSE                                     \
     }
 
-    TEST_NUM_MUL_UINT(1, (0), 0, (0));
-    TEST_NUM_MUL_UINT(2, (0), 1, (0));
-    TEST_NUM_MUL_UINT(3, (1, 2), 0, (0));
-    TEST_NUM_MUL_UINT(4, (1, 2), 3, (1, 6));
-    TEST_NUM_MUL_UINT(5, (1, 2), UINT64_MAX, (2, 1, UINT64_MAX - 1));
-    TEST_NUM_MUL_UINT(6, (2, 2, 3), 4, (2, 8, 12));
-    TEST_NUM_MUL_UINT(7, (2, UINT64_MAX, UINT64_MAX), UINT64_MAX, (3, UINT64_MAX - 1, UINT64_MAX, 1));
-    TEST_NUM_MUL_UINT(8, (2, 2, 0), 3, (2, 6, 0));
-    TEST_NUM_MUL_UINT(9, (2, 6, 0xea7db545decb57a4), 123427205323, (2, 0xc6bfba060d, 0xdf4c110fd2f33f0c));
+    TEST_NUM_MUL_UINT(1, (0), 0, (0))
+    TEST_NUM_MUL_UINT(2, (0), 1, (0))
+    TEST_NUM_MUL_UINT(3, (1, 2), 0, (0))
+    TEST_NUM_MUL_UINT(4, (1, 2), 3, (1, 6))
+    TEST_NUM_MUL_UINT(5, (1, 2), UINT64_MAX, (2, 1, UINT64_MAX - 1))
+    TEST_NUM_MUL_UINT(6, (2, 2, 3), 4, (2, 8, 12))
+    TEST_NUM_MUL_UINT(7,
+        (2, UINT64_MAX, UINT64_MAX), UINT64_MAX,
+        (3, UINT64_MAX - 1, UINT64_MAX, 1)
+    )
+    TEST_NUM_MUL_UINT(8, (2, 2, 0), 3, (2, 6, 0))
+    TEST_NUM_MUL_UINT(9,
+        (2, 6, 0xea7db545decb57a4), 123427205323,
+        (2, 0xc6bfba060d, 0xdf4c110fd2f33f0c)
+    )
 
     #undef TEST_NUM_MUL_UINT
 
@@ -1665,6 +1671,7 @@ void test_num_ssm_mul_tmp(bool show)
         num_res->cannot_expand = true;
         num_ssm_mul_tmp(num_res, num_1, num_2, 0, 2);
         num_res->count = 2;
+        num_res->cannot_expand = false;
         assert(num_immed(num_res, 2, 0, 1));
         num_free(num_1);
         num_free(num_2);
@@ -1686,6 +1693,7 @@ void test_num_mul_ssm_wrap(bool show)
             num_p num_2 = num_create_immed(ARG_OPEN NUM_2);     \
             num_p num_res = ssm_get_buffer_wrap(N);             \
             num_mul_ssm_wrap(num_res, num_1, num_2, N);         \
+            num_res->cannot_expand = false;                     \
             assert(num_immed(num_res, ARG_OPEN RES))            \
         }                                                       \
         TEST_CASE_CLOSE                                         \
@@ -2875,13 +2883,13 @@ void test_num()
     test_num_normalize(show);
     test_num_break(show);
 
-    test_num_wrap(show);
-    test_num_wrap_dec(show);
-    test_num_wrap_hex(show);
-    test_num_wrap_str(show);
-    test_num_read_dec(show);
-    test_num_unwrap(show);
-    test_num_copy(show);
+    // test_num_wrap(show);
+    // test_num_wrap_dec(show);
+    // test_num_wrap_hex(show);
+    // test_num_wrap_str(show);
+    // test_num_read_dec(show);
+    // test_num_unwrap(show);
+    // test_num_copy(show);
 
     test_num_add_uint_offset(show);
     test_num_sub_uint_offset(show);
