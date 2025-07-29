@@ -2139,21 +2139,22 @@ void test_num_sqr(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_NUM_SQR_FN(FN, NUM, RES)           \
-    {                                               \
-        num_p num = num_create_immed(ARG_OPEN NUM); \
-        num = FN(num);                              \
-        assert(num_immed(num, ARG_OPEN RES))        \
-    }                                               \
-
-    #define TEST_NUM_SQR(TAG, NUM, RES)                 \
+    #define TEST_NUM_SQR_FN(TAG, FN, NUM, RES)          \
     {                                                   \
         TEST_CASE_OPEN(TAG)                             \
         {                                               \
-            TEST_NUM_SQR_FN(num_sqr_classic, NUM, RES)  \
-            TEST_NUM_SQR_FN(num_sqr, NUM, RES)          \
+            num_p num = num_create_immed(ARG_OPEN NUM); \
+            num = FN(num);                              \
+            assert(num_immed(num, ARG_OPEN RES))        \
         }                                               \
         TEST_CASE_CLOSE                                 \
+    }
+
+    #define TEST_NUM_SQR(TAG, NUM, RES)                             \
+    {                                                               \
+        TEST_NUM_SQR_FN(10 * TAG + 1, num_sqr_classic, NUM, RES)    \
+        TEST_NUM_SQR_FN(10 * TAG + 2, num_sqr_ssm, NUM, RES)        \
+        TEST_NUM_SQR_FN(10 * TAG + 3, num_sqr, NUM, RES)            \
     }
 
     TEST_NUM_SQR(1,
