@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <stdbit.h>
 
 #include "../mods/clu/header.h"
 #include "../mods/macros/assert.h"
@@ -119,9 +120,17 @@ void time_3()
     uint64_t i_last = 1;
     num_p num_1 = num_generate_2(i_last, 2);
     num_p num_2 = num_generate_2(i_last, 3);
-    for(uint64_t i=1; i<1000; i++)
+    uint64_t threshold = 1000;
+    uint64_t max = 200000;
+    uint64_t p_1 = 102;
+    uint64_t p_2 = 100;
+    // uint64_t threshold = 1000;
+    // uint64_t max = 200000;
+    // uint64_t p_1 = 1002;
+    // uint64_t p_2 = 1000;
+    assert(threshold * p_1 / p_2 > threshold);
+    for(uint64_t i=1; i<threshold; i+=1)
     {
-        printf("\n%lu", i);
         TIME_SETUP
 
         for(uint64_t j=i_last; j<i; j++)
@@ -130,19 +139,28 @@ void time_3()
             num_2 = num_generate_2_step(num_2, 3);
         }
         i_last = i;
+<<<<<<< HEAD
         
+=======
+
+        printf("\n%lu", num_1->count);
+>>>>>>> base
         num_p num_1_copy = num_copy(num_1);
         num_p num_2_copy = num_copy(num_2);
         TIME_RESET
         num_p num_res = num_mul_ssm(num_1_copy, num_2_copy);
         TIME_END(t3);
-        printf(", %.5f", t3 / 1e9);
+        printf("\t%.5f", t3 / 1e9);
         num_free(num_res);
     }
+<<<<<<< HEAD
     for(uint64_t i=1000; i<200000; i = i * 101 / 100)
+=======
+
+    for(uint64_t i=threshold; i<max; i = i * p_1 / p_2)
+>>>>>>> base
     {
-        printf("\n%lu", i);
-        TIME_SETUP
+         TIME_SETUP
 
         for(uint64_t j=i_last; j<i; j++)
         {
@@ -151,12 +169,13 @@ void time_3()
         }
         i_last = i;
 
+        printf("\n%lu", num_1->count);
         num_p num_1_copy = num_copy(num_1);
         num_p num_2_copy = num_copy(num_2);
         TIME_RESET
         num_p num_res = num_mul_ssm(num_1_copy, num_2_copy);
         TIME_END(t3);
-        printf(", %.5f", t3 / 1e9);
+        printf("\t%.5f", t3 / 1e9);
         num_free(num_res);
     }
 }
@@ -386,7 +405,10 @@ void pi_2()
         fix = fix_num_div(fix, fix_num_wrap(base - 1, pos));
 
         if(i%1000000 == 0)
+        {
+            printf("\n");
             fix_num_display_dec(fix);
+        }
     }
 }
 
@@ -555,18 +577,19 @@ void sqrt_2()
         fix_x = fix_num_reposition(fix_x, i);
         fix_x = fix_step(fix_x, i);
 
-        if(fork())
-            continue;
+        // if(fork())
+        //     continue;
 
         printf("\n\n");
         fix_num_display_full("hex", fix_x);
+        printf("\n");
         fix_num_display_dec(fix_x);
         printf("\n\npos: " U64P() "", i * 2);
 
-        exit(EXIT_SUCCESS);
+        // exit(EXIT_SUCCESS);
     }
 
-    fix_num_display_dec(fix_x);
+    // fix_num_display_dec(fix_x);
 
     fix_num_free(fix_x);
     num_free(num);
@@ -585,18 +608,25 @@ int main()
     // clu_log_enable(true);
 
     // num_generate(21, 2);
+<<<<<<< HEAD
     // time_1(16, 28);
+=======
+    time_1(16, 35);
+>>>>>>> base
     // time_1(16, 17);
     // time_2(argc, argv, 19);
-    time_3();
+    // time_3();
     // time_3_params();
     // fibonacci();
     // fibonacci_2(16, 23);
     // fibonacci_3(16, 23);
     // sqrt_2();
+    // e();
+    // pi_2();
     // float_num_pi_1();
     // float_num_pi_2(1000);
     // float_num_pi_3(1000);
+<<<<<<< HEAD
     // float_num_pi_4(1000);
 
     // // 71820
@@ -606,6 +636,8 @@ int main()
     // num_p num_res = num_mul_ssm(num_1, num_2);
     // printf("\nmul");
     // num_free(num_res);
+=======
+>>>>>>> base
 
     // assert(clu_mem_is_empty("FINAL"));
 

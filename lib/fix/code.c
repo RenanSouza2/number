@@ -30,10 +30,9 @@ fix_num_t fix_num_create_immed(uint64_t pos, uint64_t signal, uint64_t n, ...)
 #endif
 
 
-
 void fix_num_display_dec(fix_num_t fix)
 {
-    CLU_FIX_IS_SAFE(fix);
+    CLU_FIX_IS_SAFE(fix)
 
     printf("%c ", fix.sig.signal == NEGATIVE ? '-' : '+');
 
@@ -52,29 +51,29 @@ void fix_num_display_dec(fix_num_t fix)
         return;
     }
 
-    uint64_t pos = fix.pos;
+    uint64_t t = 0;
     num_p num_u = num_wrap(1);
-    for(;;)
+    for(uint64_t pos = fix.pos; num_u->count < pos + 1; t++)
     {
-        num_lo = num_mul(num_lo, num_wrap(1000000000000000000));
-        num_u = num_mul(num_u, num_wrap(1000000000000000000));
+        num_u = num_mul_uint(num_u, 1000000000000000000);
 
         if(num_u->count > 2)
         {
-            num_lo = num_shr(num_lo, 64);
-            num_u = num_shr(num_u, 64);
+            num_head_trim(num_u, 1);
             pos--;
         }
-
-        if(num_u->count > pos)
-            break;
-
-        num_p num_aux;
-        num_break(&num_aux, &num_lo, num_lo, pos);
-        printf(U64P(018), num_unwrap(num_aux));
     }
-    num_free(num_lo);
     num_free(num_u);
+
+    num_p num = num_pow(num_wrap(1000000000000000000), t);
+    num_lo = num_mul(num_lo, num);
+    num_break(&num_lo, &num_hi, num_lo, fix.pos);
+
+    num_lo = num_base_to(num_lo, 1000000000000000000);
+    for(uint64_t i=num_lo->count-1; i!=0; i--)
+        printf("" U64P(018) "", num_lo->chunk[i]);
+
+    num_free(num_lo);
 }
 
 void fix_num_display(fix_num_t fix)
