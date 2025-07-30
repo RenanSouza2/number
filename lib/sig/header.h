@@ -13,7 +13,6 @@ void sig_num_display_dec(sig_num_t sig);
 void sig_num_free(sig_num_t sig);
 
 sig_num_t sig_num_wrap(int64_t value);
-sig_num_t sig_num_wrap_int128(int128_t value);
 sig_num_t sig_num_wrap_num(num_p num);
 sig_num_t sig_num_wrap_str(char str[]);
 sig_num_t sig_num_copy(sig_num_t sig);
@@ -33,7 +32,5 @@ sig_num_t sig_num_mul_high(sig_num_t sig_1, sig_num_t sig_2, uint64_t pos);
 sig_num_t sig_num_mul(sig_num_t sig_1, sig_num_t sig_2);
 sig_num_t sig_num_sqr(sig_num_t sig);
 sig_num_t sig_num_div(sig_num_t sig_1, sig_num_t sig_2);
-
-sig_num_t sig_num_mul_int(sig_num_t sig, int64_t value);
 
 #endif
