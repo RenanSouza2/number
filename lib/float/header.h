@@ -26,10 +26,13 @@ float_num_t float_num_shr(float_num_t flt, uint64_t bits);
 float_num_t float_num_add(float_num_t flt_1, float_num_t flt_2);
 float_num_t float_num_sub(float_num_t flt_1, float_num_t flt_2);
 float_num_t float_num_mul(float_num_t flt_1, float_num_t flt_2);
+float_num_t float_num_pow(float_num_t flt, int64_t value);
 float_num_t float_num_sqr(float_num_t flt);
 float_num_t float_num_div(float_num_t flt_1, float_num_t flt_2);
 
 float_num_t float_num_mul_sig(float_num_t flt, sig_num_t sig);
 float_num_t float_num_div_sig(float_num_t flt, sig_num_t sig);
+
+void del();
 
 #endif

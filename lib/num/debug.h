@@ -139,6 +139,7 @@ num_p ssm_get_buffer_wrap(uint64_t n);
 
 num_p num_mul_classic(num_p num_1, num_p num_2);
 num_p num_sqr_classic(num_p num);
+num_p num_sqr_ssm(num_p num);
 
 uint64_t num_div_normalize(num_p *num_1, num_p *num_2);
 
