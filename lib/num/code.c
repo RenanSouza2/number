@@ -517,6 +517,17 @@ num_p num_wrap(uint64_t value)
     return num;
 }
 
+num_p num_wrap_uint128(uint128_t value)
+{
+    if(value <= UINT64_MAX)
+        return num_wrap(value);
+
+    num_p num = num_create(2, 2);
+    num->chunk[0] = LOW(value);
+    num->chunk[1] = HIGH(value);
+    return num;
+}
+
 num_p num_wrap_dec(char str[])
 {
     uint64_t len = strlen(str);

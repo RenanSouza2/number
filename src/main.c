@@ -397,7 +397,10 @@ void pi_2()
         fix = fix_num_div(fix, fix_num_wrap(base - 1, pos));
 
         if(i%1000000 == 0)
+        {
+            printf("\n");
             fix_num_display_dec(fix);
+        }
     }
 }
 
@@ -566,18 +569,19 @@ void sqrt_2()
         fix_x = fix_num_reposition(fix_x, i);
         fix_x = fix_step(fix_x, i);
 
-        if(fork())
-            continue;
+        // if(fork())
+        //     continue;
 
         printf("\n\n");
         fix_num_display_full("hex", fix_x);
+        printf("\n");
         fix_num_display_dec(fix_x);
         printf("\n\npos: " U64P() "", i * 2);
 
-        exit(EXIT_SUCCESS);
+        // exit(EXIT_SUCCESS);
     }
 
-    fix_num_display_dec(fix_x);
+    // fix_num_display_dec(fix_x);
 
     fix_num_free(fix_x);
     num_free(num);
@@ -596,7 +600,7 @@ int main()
     // clu_log_enable(true);
 
     // num_generate(21, 2);
-    // time_1(16, 25);
+    time_1(16, 35);
     // time_1(16, 17);
     // time_2(argc, argv, 19);
     // time_3();
@@ -605,22 +609,11 @@ int main()
     // fibonacci_2(16, 23);
     // fibonacci_3(16, 23);
     // sqrt_2();
+    // e();
+    // pi_2();
     // float_num_pi_1();
     // float_num_pi_2(1000);
     // float_num_pi_3(1000);
-    // float_num_pi_4(1000);
-
-    uint64_t size = 300000;
-    float_num_t flt = float_num_div(
-        float_num_wrap(1, size),
-        float_num_wrap(7, size)
-    );
-    
-    // float_num_t flt = float_num_wrap(3, 2);
-    TIME_SETUP
-    float_num_display_dec(flt);
-    TIME_END(t1);
-    printf("\ntime: %f.1", t1 / 1e9);
 
     // assert(clu_mem_is_empty("FINAL"));
 

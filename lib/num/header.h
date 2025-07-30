@@ -19,6 +19,7 @@ void num_head_trim(num_p num, uint64_t count);
 void num_break(num_p *out_num_ih, num_p *out_num_lo,num_p num, uint64_t count);
 
 num_p num_wrap(uint64_t value);
+num_p num_wrap_uint128(uint128_t value);
 num_p num_wrap_str(char str[]);
 num_p num_read_dec(char file_name[]);
 uint64_t num_unwrap(num_p num);

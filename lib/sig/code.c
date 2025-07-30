@@ -178,6 +178,18 @@ sig_num_t sig_num_wrap(int64_t value)
     return sig_num_create(POSITIVE, num);
 }
 
+sig_num_t sig_num_wrap_int128(int128_t value)
+{
+    if(value < 0)
+    {
+        num_p num = num_wrap_uint128(-value);
+        return sig_num_create(NEGATIVE, num);
+    }
+
+    num_p num = num_wrap_uint128(value);
+    return sig_num_create(POSITIVE, num);
+}
+
 sig_num_t sig_num_wrap_num(num_p num)   // TODO TEST
 {
     return sig_num_create(POSITIVE, num);
@@ -352,4 +364,18 @@ sig_num_t sig_num_div(sig_num_t sig_1, sig_num_t sig_2)
 
     num_p num_res = num_div(sig_1.num, sig_2.num);
     return sig_num_create(signal_res, num_res);
+}
+
+
+
+sig_num_t sig_num_mul_int(sig_num_t sig, int64_t value)
+{
+    if(value < 0)
+    {
+        sig = sig_num_opposite(sig);
+        value = -value;
+    }
+
+    sig.num = num_mul_uint(sig.num, value);
+    return sig;
 }
