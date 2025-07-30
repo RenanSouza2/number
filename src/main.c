@@ -600,7 +600,7 @@ int main()
     // clu_log_enable(true);
 
     // num_generate(21, 2);
-    time_1(16, 35);
+    // time_1(16, 35);
     // time_1(16, 17);
     // time_2(argc, argv, 19);
     // time_3();
@@ -614,6 +614,12 @@ int main()
     // float_num_pi_1();
     // float_num_pi_2(1000);
     // float_num_pi_3(1000);
+
+    // uint64_t a = B(63);
+    int64_t a = INT64_MIN;
+    int128_t b = a;
+
+    printf("\n%lx %lx", U128A(b));
 
     // assert(clu_mem_is_empty("FINAL"));
 

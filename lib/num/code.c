@@ -1891,7 +1891,7 @@ num_p num_div_mod_uint(num_p num, uint64_t value)
             continue;
         }
 
-        uint128_t value_1 = U128_IMMED(num->chunk[i + 1], num->chunk[i]);
+        uint128_t value_1 = U128HL(num->chunk[i + 1], num->chunk[i]);
         uint64_t r = value_1 / value;
         value_1 = MUL(r, value);
         num = num_sub_uint_offset(num, i+1, HIGH(value_1));
@@ -1942,7 +1942,7 @@ num_p num_div_mod_classic(num_p num_aux, num_p num_1, num_p num_2)
             continue;
         }
 
-        uint128_t val_1 = U128_IMMED(num_1->chunk[num_1->count-1], num_1->chunk[num_1->count-2]);
+        uint128_t val_1 = U128HL(num_1->chunk[num_1->count-1], num_1->chunk[num_1->count-2]);
         uint64_t r = val_1 / val_2;
         num_mul_uint_buffer(num_aux, num_2, r);
         while(num_cmp_offset(num_1, i, num_aux) < 0)

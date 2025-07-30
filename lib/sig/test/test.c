@@ -96,23 +96,93 @@ void test_sig_num_wrap(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_SIG_NUM_WRAP(TAG, VALUE, ...)         \
-    {                                               \
-        TEST_CASE_OPEN(TAG)                         \
-        {                                           \
-            sig_num_t sig = sig_num_wrap(VALUE);         \
-            assert(sig_num_immed(sig, __VA_ARGS__));  \
-        }                                           \
-        TEST_CASE_CLOSE                             \
+    #define TEST_SIG_NUM_WRAP(TAG, VALUE, RES)          \
+    {                                                   \
+        TEST_CASE_OPEN(TAG)                             \
+        {                                               \
+            sig_num_t sig = sig_num_wrap(VALUE);        \
+            assert(sig_num_immed(sig, ARG_OPEN RES));   \
+        }                                               \
+        TEST_CASE_CLOSE                                 \
     }
 
-    TEST_SIG_NUM_WRAP(1,  0, ZERO, 0);
-    TEST_SIG_NUM_WRAP(2,  1, POSITIVE, 1, 1);
-    TEST_SIG_NUM_WRAP(3, -1, NEGATIVE, 1, 1);
-    TEST_SIG_NUM_WRAP(4, INT64_MAX, POSITIVE, 1, INT64_MAX);
-    TEST_SIG_NUM_WRAP(5, INT64_MIN, NEGATIVE, 1, INT64_MIN);
+    TEST_SIG_NUM_WRAP(1,  0, (ZERO, 0))
+    TEST_SIG_NUM_WRAP(2,  1, (POSITIVE, 1, 1))
+    TEST_SIG_NUM_WRAP(3, -1, (NEGATIVE, 1, 1))
+    TEST_SIG_NUM_WRAP(4, INT64_MAX, (POSITIVE, 1, INT64_MAX))
+    TEST_SIG_NUM_WRAP(5, INT64_MIN, (NEGATIVE, 1, INT64_MIN))
 
     #undef TEST_SIG_NUM_WRAP
+
+    TEST_FN_CLOSE
+}
+
+void test_sig_num_wrap_int128(bool show)
+{
+    TEST_FN_OPEN
+
+    #define TEST_SIG_NUM_WRAP_INT128(TAG, VALUE, RES)               \
+    {                                                               \
+        TEST_CASE_OPEN(TAG)                                         \
+        {                                                           \
+            sig_num_t sig = sig_num_wrap_int128((int128_t)(VALUE)); \
+            assert(sig_num_immed(sig, ARG_OPEN RES));               \
+        }                                                           \
+        TEST_CASE_CLOSE                                             \
+    }
+
+    TEST_SIG_NUM_WRAP_INT128(1,  0, (ZERO, 0))
+    TEST_SIG_NUM_WRAP_INT128(2,  1, (POSITIVE, 1, 1))
+    TEST_SIG_NUM_WRAP_INT128(3,
+        B(63),
+        (POSITIVE, 1,  B(63))
+    )
+    TEST_SIG_NUM_WRAP_INT128(4,
+        B(63) + 1,
+        (POSITIVE, 1,  B(63) + 1)
+    )
+    TEST_SIG_NUM_WRAP_INT128(5,
+        UINT64_MAX,
+        (POSITIVE, 1, UINT64_MAX)
+    )
+    TEST_SIG_NUM_WRAP_INT128(6,
+        B128(64),
+        (POSITIVE, 2, 1, 0)
+    )
+    TEST_SIG_NUM_WRAP_INT128(7,
+        B128(126),
+        (POSITIVE, 2, B128(62), 0)
+    )
+    TEST_SIG_NUM_WRAP_INT128(8,
+        INT128_MAX,
+        (POSITIVE, 2, UINT64_MAX / 2, UINT64_MAX)
+    )
+    TEST_SIG_NUM_WRAP_INT128(9,
+        -1,
+        (NEGATIVE, 1, 1)
+    )
+    TEST_SIG_NUM_WRAP_INT128(10,
+        INT64_MIN + 1,
+        (NEGATIVE, 1,  INT64_MAX)
+    )
+    TEST_SIG_NUM_WRAP_INT128(11,
+        INT64_MIN,
+        (NEGATIVE, 1,  INT64_MIN)
+    )
+    TEST_SIG_NUM_WRAP_INT128(12,
+        -B128(64),
+        (NEGATIVE, 2, 1, 0)
+    )
+    TEST_SIG_NUM_WRAP_INT128(13,
+        -B128(126),
+        (NEGATIVE, 2, B128(62), 0)
+    )
+    TEST_SIG_NUM_WRAP_INT128(14,
+        INT128_MIN,
+        (NEGATIVE, 2, B(63), 0)
+    )
+
+    #undef TEST_SIG_NUM_WRAP_INT128
 
     TEST_FN_CLOSE
 }
@@ -588,12 +658,13 @@ void test_sig_num()
 {
     TEST_LIB
 
-    bool show = false;
+    bool show = true;
 
     test_sig_num_create(show);
     test_sig_num_create_immed(show);
 
     test_sig_num_wrap(show);
+    test_sig_num_wrap_int128(show);
     test_sig_num_wrap_str(show);
     test_sig_num_copy(show);
 

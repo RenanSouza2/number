@@ -25,7 +25,7 @@ bool num_immed(num_p num, uint64_t n, ...);
 #endif
 
 #define U128(V) ((uint128_t)(V))
-#define U128_IMMED(V1, V2) ((U128(V1) << 64) | (V2))
+#define U128HL(V1, V2) ((U128(V1) << 64) | (V2))
 #define MUL(V1, V2) U128(V1) * U128(V2)
 #define LOW(V) U64(V)
 #define HIGH(V) U64((V) >> 64)

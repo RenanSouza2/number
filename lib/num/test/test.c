@@ -90,21 +90,21 @@ void test_uint128(bool show)
 
     TEST_CASE_OPEN(3)
     {
-        uint128_t u = U128_IMMED(1, 0);
+        uint128_t u = U128HL(1, 0);
         assert(uint128_immed(u, 1, 0));
     }
     TEST_CASE_CLOSE
 
     TEST_CASE_OPEN(4)
     {
-        uint128_t u = U128_IMMED(1, 2);
+        uint128_t u = U128HL(1, 2);
         assert(uint128_immed(u, 1, 2));
     }
     TEST_CASE_CLOSE
 
     TEST_CASE_OPEN(5)
     {
-        uint128_t u = U128_IMMED(UINT64_MAX, UINT64_MAX);
+        uint128_t u = U128HL(UINT64_MAX, UINT64_MAX);
         assert(uint128_immed(u, UINT64_MAX, UINT64_MAX));
     }
     TEST_CASE_CLOSE
@@ -119,7 +119,7 @@ void test_uint128(bool show)
 
     TEST_CASE_OPEN(7)
     {
-        uint128_t u = U128_IMMED(1, 0);
+        uint128_t u = U128HL(1, 0);
         u -= 1;
         assert(uint128_immed(u, 0, UINT64_MAX));
     }
@@ -135,7 +135,7 @@ void test_uint128(bool show)
 
     TEST_CASE_OPEN(9)
     {
-        uint128_t u = U128_IMMED(1, 0);
+        uint128_t u = U128HL(1, 0);
         u <<= 1;
         assert(uint128_immed(u, 2, 0));
     }
@@ -143,7 +143,7 @@ void test_uint128(bool show)
 
     TEST_CASE_OPEN(10)
     {
-        uint128_t u = U128_IMMED(1, 0);
+        uint128_t u = U128HL(1, 0);
         u >>= 1;
         assert(uint128_immed(u, 0, 0x8000000000000000));
     }
@@ -151,7 +151,7 @@ void test_uint128(bool show)
 
     TEST_CASE_OPEN(11)
     {
-        uint128_t u = U128_IMMED(1, 0);
+        uint128_t u = U128HL(1, 0);
         u /= 1;
         assert(uint128_immed(u, 1, 0));
     }
@@ -159,7 +159,7 @@ void test_uint128(bool show)
 
     TEST_CASE_OPEN(12)
     {
-        uint128_t u = U128_IMMED(1, 0);
+        uint128_t u = U128HL(1, 0);
         u /= 2;
         assert(uint128_immed(u, 0, 0x8000000000000000));
     }
@@ -167,7 +167,7 @@ void test_uint128(bool show)
 
     TEST_CASE_OPEN(13)
     {
-        uint128_t u = U128_IMMED(UINT64_MAX, UINT64_MAX);
+        uint128_t u = U128HL(UINT64_MAX, UINT64_MAX);
         u /= 1;
         assert(uint128_immed(u, UINT64_MAX, UINT64_MAX));
     }
@@ -175,7 +175,7 @@ void test_uint128(bool show)
 
     TEST_CASE_OPEN(14)
     {
-        uint128_t u = U128_IMMED(UINT64_MAX / 2, UINT64_MAX);
+        uint128_t u = U128HL(UINT64_MAX / 2, UINT64_MAX);
         u /= 2;
         assert(uint128_immed(u, UINT64_MAX >> 2, UINT64_MAX));
     }
@@ -183,7 +183,7 @@ void test_uint128(bool show)
 
     TEST_CASE_OPEN(15)
     {
-        uint128_t u = U128_IMMED(UINT64_MAX, UINT64_MAX - 1);
+        uint128_t u = U128HL(UINT64_MAX, UINT64_MAX - 1);
         u /= 2;
         assert(uint128_immed(u, UINT64_MAX >> 1, UINT64_MAX));
     }
