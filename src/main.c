@@ -5,7 +5,7 @@
 #include "../mods/macros/assert.h"
 #include "../mods/macros/time.h"
 
-#include "../lib/fix/header.h"
+#include "../lib/fxd/header.h"
 #include "../lib/float/header.h"
 #include "../lib/mod/header.h"
 #include "../lib/num/header.h"
@@ -347,22 +347,22 @@ void time_dec()
 void pi_1()
 {
     uint64_t pos = 3;
-    fix_num_t fix = fix_num_wrap(0, pos);
+    fxd_num_t fxd = fxd_num_wrap(0, pos);
     for(uint64_t i=1; ; i++)
     {
         int64_t base = 16 * i * i - 16 * i + 3;
-        fix_num_t fix_1 = fix_num_wrap(8, pos);
-        fix_num_t fix_2 = fix_num_wrap(base, pos);
-        fix_1 = fix_num_div(fix_1, fix_2);
-        fix = fix_num_add(fix, fix_num_copy(fix_1));
+        fxd_num_t fxd_1 = fxd_num_wrap(8, pos);
+        fxd_num_t fxd_2 = fxd_num_wrap(base, pos);
+        fxd_1 = fxd_num_div(fxd_1, fxd_2);
+        fxd = fxd_num_add(fxd, fxd_num_copy(fxd_1));
 
         if(i%1000000 == 0)
         {
             printf("\ni: " U64P() "\t", i);
-            fix_num_display_dec(fix);
+            fxd_num_display_dec(fxd);
             printf("\t");
-            fix_num_display_dec(fix_1);
-            fix_num_free(fix_1);
+            fxd_num_display_dec(fxd_1);
+            fxd_num_free(fxd_1);
         }
     }
 }
@@ -370,18 +370,18 @@ void pi_1()
 void e()
 {
     uint64_t pos = 1000;
-    fix_num_t fix = fix_num_wrap(0, pos);
-    fix_num_t base = fix_num_wrap(1, pos);
+    fxd_num_t fxd = fxd_num_wrap(0, pos);
+    fxd_num_t base = fxd_num_wrap(1, pos);
     for(uint64_t i=1; ; i++)
     {
-        fix_num_t fix_2 = fix_num_wrap(i, pos);
-        base = fix_num_div(base, fix_2);
-        fix = fix_num_add(fix, fix_num_copy(base));
+        fxd_num_t fxd_2 = fxd_num_wrap(i, pos);
+        base = fxd_num_div(base, fxd_2);
+        fxd = fxd_num_add(fxd, fxd_num_copy(base));
 
         if(i%1000 == 0)
         {
             fprintf(stderr, "\ni: " U64P() "", i);
-            fix_num_display_dec(fix);
+            fxd_num_display_dec(fxd);
         }
     }
 }
@@ -389,17 +389,17 @@ void e()
 void pi_2()
 {
     uint64_t pos = 2;
-    fix_num_t fix = fix_num_wrap(2, pos);
+    fxd_num_t fxd = fxd_num_wrap(2, pos);
     for(uint64_t i=1; ; i++)
     {
         uint64_t base = 4 * i * i;
-        fix = fix_num_mul(fix, fix_num_wrap(base, pos));
-        fix = fix_num_div(fix, fix_num_wrap(base - 1, pos));
+        fxd = fxd_num_mul(fxd, fxd_num_wrap(base, pos));
+        fxd = fxd_num_div(fxd, fxd_num_wrap(base - 1, pos));
 
         if(i%1000000 == 0)
         {
             printf("\n");
-            fix_num_display_dec(fix);
+            fxd_num_display_dec(fxd);
         }
     }
 }
@@ -537,16 +537,16 @@ void display_bit(uint64_t value)
 
 
 
-fix_num_t fix_step(fix_num_t fix, uint64_t pos)
+fxd_num_t fxd_step(fxd_num_t fxd, uint64_t pos)
 {
-    fix_num_t fix_a = fix_num_shr(fix_num_copy(fix), 1);
-    fix = fix_num_div(fix_num_wrap(1, pos), fix);
-    return fix_num_add(fix, fix_a);
+    fxd_num_t fxd_a = fxd_num_shr(fxd_num_copy(fxd), 1);
+    fxd = fxd_num_div(fxd_num_wrap(1, pos), fxd);
+    return fxd_num_add(fxd, fxd_a);
 }
 
 void sqrt_2()
 {
-    fix_num_t fix_x = fix_num_wrap(1, 1);
+    fxd_num_t fxd_x = fxd_num_wrap(1, 1);
     num_p num = num_wrap(10);
 
     for(uint64_t i=0; ; i++)
@@ -554,36 +554,36 @@ void sqrt_2()
         printf("\ni: " U64P() "", i);
         // fprintf(stderr, "\ni: %lu", i);
 
-        fix_x = fix_step(fix_x, 1);
+        fxd_x = fxd_step(fxd_x, 1);
 
-        fix_num_t fix_2 = fix_num_sqr(fix_num_copy(fix_x));
-        fix_2 = fix_num_sub(fix_2, fix_num_wrap(2, 1));
-        bool res = num_cmp(fix_2.sig.num, num) < 0;
-        fix_num_free(fix_2);
+        fxd_num_t fxd_2 = fxd_num_sqr(fxd_num_copy(fxd_x));
+        fxd_2 = fxd_num_sub(fxd_2, fxd_num_wrap(2, 1));
+        bool res = num_cmp(fxd_2.sig.num, num) < 0;
+        fxd_num_free(fxd_2);
         if(res)
             break;
     }
 
     for(uint64_t i = 2; ; i *= 2)
     {
-        fix_x = fix_num_reposition(fix_x, i);
-        fix_x = fix_step(fix_x, i);
+        fxd_x = fxd_num_reposition(fxd_x, i);
+        fxd_x = fxd_step(fxd_x, i);
 
         // if(fork())
         //     continue;
 
         printf("\n\n");
-        fix_num_display_full("hex", fix_x);
+        fxd_num_display_full("hex", fxd_x);
         printf("\n");
-        fix_num_display_dec(fix_x);
+        fxd_num_display_dec(fxd_x);
         printf("\n\npos: " U64P() "", i * 2);
 
         // exit(EXIT_SUCCESS);
     }
 
-    // fix_num_display_dec(fix_x);
+    // fxd_num_display_dec(fxd_x);
 
-    fix_num_free(fix_x);
+    fxd_num_free(fxd_x);
     num_free(num);
 }
 

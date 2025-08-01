@@ -1,5 +1,5 @@
-#ifndef __FIX_DEBUG_H__
-#define __FIX_DEBUG_H__
+#ifndef __FXD_DEBUG_H__
+#define __FXD_DEBUG_H__
 
 #include "header.h"
 
@@ -7,6 +7,6 @@
 
 #endif
 
-fix_num_t fix_num_create(sig_num_t sig, uint64_t pos);
+fxd_num_t fxd_num_create(sig_num_t sig, uint64_t pos);
 
 #endif

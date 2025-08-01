@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#include "../fix/header.h"
+#include "../fxd/header.h"
 
 #include "struct.h"
 
@@ -17,7 +17,7 @@ float_num_t float_num_wrap_sig(sig_num_t sig, uint64_t size);
 float_num_t float_num_copy(float_num_t flt);
 void float_num_free(float_num_t flt);
 
-fix_num_t fix_num_wrap_float(float_num_t flt, uint64_t pos);
+fxd_num_t fxd_num_wrap_float(float_num_t flt, uint64_t pos);
 
 void float_num_file_write(FILE *fp, float_num_t flt);
 void float_num_save(char file_path[], float_num_t flt);

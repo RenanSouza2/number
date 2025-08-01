@@ -1,6 +1,6 @@
 mod exp
 mod display
-rename fix to fixed
+rename fxd to fxded
 wrap unwrap flt_p
 nested mutex display
 iterating variable is I

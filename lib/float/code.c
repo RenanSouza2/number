@@ -222,7 +222,7 @@ void float_num_display_dec(float_num_t flt_0) // TODO TEST
     flt_0 = float_num_div(float_num_copy(flt_0), flt_base);
     // flt_0 = float_num_set_size(flt_0, flt_0.size - 2);
 
-    fix_num_t fix = (fix_num_t)
+    fxd_num_t fxd = (fxd_num_t)
     {
         .pos = flt_0.size - 1,
         .sig = (sig_num_t)
@@ -231,7 +231,7 @@ void float_num_display_dec(float_num_t flt_0) // TODO TEST
             .num = flt_0.sig.num
         }
     };
-    fix_num_display_dec(fix);
+    fxd_num_display_dec(fxd);
     printf(" * 10 ^ " D64P() "", base);
     float_num_free(flt_0);
 }
@@ -386,10 +386,10 @@ float_num_t float_num_load(char file_path[])
 
 
 
-fix_num_t fix_num_wrap_float(float_num_t flt, uint64_t pos) // TODO test
+fxd_num_t fxd_num_wrap_float(float_num_t flt, uint64_t pos) // TODO test
 {
     flt = float_num_set_exponent(flt, 1 - pos);
-    return (fix_num_t)
+    return (fxd_num_t)
     {
         .pos = pos - 1,
         .sig = flt.sig
