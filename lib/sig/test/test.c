@@ -658,7 +658,7 @@ void test_sig_num()
 {
     TEST_LIB
 
-    bool show = true;
+    bool show = false;
 
     test_sig_num_create(show);
     test_sig_num_create_immed(show);
