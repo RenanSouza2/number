@@ -6,7 +6,7 @@
 #include "../mods/macros/time.h"
 
 #include "../lib/fxd/header.h"
-#include "../lib/float/header.h"
+#include "../lib/flt/header.h"
 #include "../lib/mod/header.h"
 #include "../lib/num/header.h"
 #include "../lib/num/struct.h"
@@ -404,127 +404,127 @@ void pi_2()
     }
 }
 
-void float_num_pi_1()
+void flt_num_pi_1()
 {
     uint64_t size = 3;
-    float_num_t flt = float_num_wrap(2, size);
+    flt_num_t flt = flt_num_wrap(2, size);
 
-    float_num_t i_m_8 = float_num_wrap(0, size);
-    float_num_t i_p_2 = float_num_copy(i_m_8);
-    float_num_t float_1 = float_num_wrap(1, size);
-    float_num_t float_4 = float_num_wrap(4, size);
-    float_num_t float_8 = float_num_wrap(8, size);
+    flt_num_t i_m_8 = flt_num_wrap(0, size);
+    flt_num_t i_p_2 = flt_num_copy(i_m_8);
+    flt_num_t flt_1 = flt_num_wrap(1, size);
+    flt_num_t flt_4 = flt_num_wrap(4, size);
+    flt_num_t flt_8 = flt_num_wrap(8, size);
     for(uint64_t i=0; ; i++)
     {
-        i_p_2 = float_num_add(i_p_2, float_num_copy(float_4));
-        i_p_2 = float_num_add(i_p_2, float_num_copy(i_m_8));
+        i_p_2 = flt_num_add(i_p_2, flt_num_copy(flt_4));
+        i_p_2 = flt_num_add(i_p_2, flt_num_copy(i_m_8));
 
-        i_m_8 = float_num_add(i_m_8, float_num_copy(float_8));
+        i_m_8 = flt_num_add(i_m_8, flt_num_copy(flt_8));
 
-        flt = float_num_mul(flt, float_num_copy(i_p_2));
+        flt = flt_num_mul(flt, flt_num_copy(i_p_2));
 
-        float_num_t flt_base = float_num_sub(
-            float_num_copy(i_p_2),
-            float_num_copy(float_1)
+        flt_num_t flt_base = flt_num_sub(
+            flt_num_copy(i_p_2),
+            flt_num_copy(flt_1)
         );
-        flt = float_num_div(flt, flt_base);
+        flt = flt_num_div(flt, flt_base);
 
         if(i%1000000 == 0)
         {
             printf("\n");
-            float_num_display_dec(flt);
+            flt_num_display_dec(flt);
         }
     }
 }
 
-void float_num_pi_2(uint64_t size)
+void flt_num_pi_2(uint64_t size)
 {
-    float_num_t flt = float_num_wrap(3, size);
-    float_num_t flt_1_4 = float_num_div(
-        float_num_wrap(1, size),
-        float_num_wrap(4, size)
+    flt_num_t flt = flt_num_wrap(3, size);
+    flt_num_t flt_1_4 = flt_num_div(
+        flt_num_wrap(1, size),
+        flt_num_wrap(4, size)
     );
-    float_num_t flt_m_3_8 = float_num_div(
-        float_num_wrap(-3, size),
-        float_num_wrap(8, size)
+    flt_num_t flt_m_3_8 = flt_num_div(
+        flt_num_wrap(-3, size),
+        flt_num_wrap(8, size)
     );
-    float_num_t flt_1 = float_num_wrap(1, size);
-    float_num_t flt_m_1_2 = float_num_div(
-        float_num_wrap(-1, size),
-        float_num_wrap(2, size)
+    flt_num_t flt_1 = flt_num_wrap(1, size);
+    flt_num_t flt_m_1_2 = flt_num_div(
+        flt_num_wrap(-1, size),
+        flt_num_wrap(2, size)
     );
 
-    float_num_t flt_a = float_num_wrap(6, size);
+    flt_num_t flt_a = flt_num_wrap(6, size);
     for(uint64_t i=1; ; i++)
     {
-        float_num_t flt_tmp = float_num_wrap(i, size);
-        flt_tmp = float_num_div(float_num_copy(flt_m_3_8), flt_tmp);
-        flt_tmp = float_num_add(float_num_copy(flt_1_4), flt_tmp);
-        flt_a = float_num_mul(flt_a, flt_tmp);
+        flt_num_t flt_tmp = flt_num_wrap(i, size);
+        flt_tmp = flt_num_div(flt_num_copy(flt_m_3_8), flt_tmp);
+        flt_tmp = flt_num_add(flt_num_copy(flt_1_4), flt_tmp);
+        flt_a = flt_num_mul(flt_a, flt_tmp);
 
-        flt_tmp = float_num_wrap(2*i + 1, size);
-        flt_tmp = float_num_div(float_num_copy(flt_1), flt_tmp);
-        flt_tmp = float_num_add(flt_tmp, float_num_copy(flt_m_1_2));
+        flt_tmp = flt_num_wrap(2*i + 1, size);
+        flt_tmp = flt_num_div(flt_num_copy(flt_1), flt_tmp);
+        flt_tmp = flt_num_add(flt_tmp, flt_num_copy(flt_m_1_2));
 
-        flt_tmp = float_num_mul(flt_tmp, float_num_copy(flt_a));
-        if(!float_num_safe_add(flt, flt_tmp))
+        flt_tmp = flt_num_mul(flt_tmp, flt_num_copy(flt_a));
+        if(!flt_num_safe_add(flt, flt_tmp))
         {
-            float_num_free(flt_tmp);
+            flt_num_free(flt_tmp);
             break;
         }
 
-        flt = float_num_add(flt, flt_tmp);
+        flt = flt_num_add(flt, flt_tmp);
 
         if(i%1000 == 0)
         {
             printf("\n");
-            float_num_display_dec(flt);
+            flt_num_display_dec(flt);
         }
     }
 
     printf("\n");
     printf("\n");
-    float_num_display_dec(flt);
-    float_num_free(flt);
+    flt_num_display_dec(flt);
+    flt_num_free(flt);
 
-    float_num_free(flt_a);
-    float_num_free(flt_1_4);
-    float_num_free(flt_m_3_8);
-    float_num_free(flt_1);
-    float_num_free(flt_m_1_2);
+    flt_num_free(flt_a);
+    flt_num_free(flt_1_4);
+    flt_num_free(flt_m_3_8);
+    flt_num_free(flt_1);
+    flt_num_free(flt_m_1_2);
 }
 
-void float_num_pi_3(uint64_t size)
+void flt_num_pi_3(uint64_t size)
 {
-    float_num_t flt_a = float_num_wrap(6, size);
-    float_num_t flt_pi = float_num_wrap(3, size);
+    flt_num_t flt_a = flt_num_wrap(6, size);
+    flt_num_t flt_pi = flt_num_wrap(3, size);
 
     for(uint64_t i=1; ; i++)
     {
-        flt_a = float_num_mul_sig(flt_a, sig_num_wrap((int64_t)2 * i - 3));
-        flt_a = float_num_div_sig(flt_a, sig_num_wrap((int64_t)8 * i));
+        flt_a = flt_num_mul_sig(flt_a, sig_num_wrap((int64_t)2 * i - 3));
+        flt_a = flt_num_div_sig(flt_a, sig_num_wrap((int64_t)8 * i));
 
         if(i%1000 == 0)
             fprintf(stderr, "\nexp: %ld", -(flt_a.size + flt_a.exponent));
 
-        float_num_t flt_b = float_num_copy(flt_a);
-        flt_b = float_num_mul_sig(flt_b, sig_num_wrap((int64_t)1 - 2 * i));
-        flt_b = float_num_div_sig(flt_b, sig_num_wrap((int64_t)4 * i + 2));
+        flt_num_t flt_b = flt_num_copy(flt_a);
+        flt_b = flt_num_mul_sig(flt_b, sig_num_wrap((int64_t)1 - 2 * i));
+        flt_b = flt_num_div_sig(flt_b, sig_num_wrap((int64_t)4 * i + 2));
 
-        if(!float_num_safe_add(flt_pi, flt_b))
+        if(!flt_num_safe_add(flt_pi, flt_b))
         {
-            float_num_free(flt_b);
+            flt_num_free(flt_b);
             break;
         }
 
-        flt_pi = float_num_add(flt_pi, flt_b);
+        flt_pi = flt_num_add(flt_pi, flt_b);
     }
 
     printf("\n");
     printf("\n");
-    float_num_display_dec(flt_pi);
-    float_num_free(flt_pi);
-    float_num_free(flt_a);
+    flt_num_display_dec(flt_pi);
+    flt_num_free(flt_pi);
+    flt_num_free(flt_a);
 }
 
 
@@ -611,9 +611,9 @@ int main()
     // sqrt_2();
     // e();
     // pi_2();
-    // float_num_pi_1();
-    // float_num_pi_2(1000);
-    // float_num_pi_3(1000);
+    // flt_num_pi_1();
+    // flt_num_pi_2(1000);
+    // flt_num_pi_3(1000);
 
     // assert(clu_mem_is_empty("FINAL"));
 
