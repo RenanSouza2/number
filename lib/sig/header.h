@@ -20,6 +20,11 @@ sig_num_t sig_num_copy(sig_num_t sig);
 sig_num_t sig_num_head_grow(sig_num_t sig, uint64_t count);
 sig_num_t sig_num_head_trim(sig_num_t sig, uint64_t count);
 
+void sig_num_file_write(FILE *fp, sig_num_t sig);
+void sig_num_save(char file_path[], sig_num_t sig);
+sig_num_t sig_num_file_read(FILE *fp);
+sig_num_t sig_num_load(char file_path[]);
+
 bool sig_num_is_zero(sig_num_t sig);
 int64_t sig_num_cmp(sig_num_t sig_1, sig_num_t sig_2);
 

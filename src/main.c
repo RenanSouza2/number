@@ -615,11 +615,30 @@ int main()
     // float_num_pi_2(1000);
     // float_num_pi_3(1000);
 
-    // uint64_t a = B(63);
-    int64_t a = INT64_MIN;
-    int128_t b = a;
+    // uint64_t size = 10;
+    // float_num_t flt = float_num_div(
+    //     float_num_wrap(1, size),
+    //     float_num_wrap(7, size)
+    // );
+    // printf("\n");float_num_display(flt);
+    // float_num_save("flt_del.txt", flt);
+    // sleep(10);
+    // flt = float_num_load("flt_del.txt");
 
-    printf("\n%lx %lx", U128A(b));
+    // printf("\n");float_num_display(flt);
+    // float_num_free(flt);
+
+    // size = 10;
+    sig_num_t sig_1 = sig_num_wrap(5);
+    for(uint64_t i=0; i<10; i++)
+        sig_1 =  sig_num_sqr(sig_1);
+    sig_num_display_full("sig", sig_1);
+    sig_num_save("flt_del.txt", sig_num_copy(sig_1));
+    // sleep(10);
+    sig_num_t sig_2 = sig_num_load("flt_del.txt");
+
+    sig_num_display_full("sig", sig_1);
+    printf("\ncmp: %ld", sig_num_cmp(sig_1, sig_2));
 
     // assert(clu_mem_is_empty("FINAL"));
 

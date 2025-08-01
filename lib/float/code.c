@@ -338,6 +338,54 @@ void float_num_free(float_num_t flt)
 
 
 
+void float_num_file_write(FILE *fp, float_num_t flt)
+{
+    fprintf(fp, " %ld ", flt.exponent);
+    fprintf(fp, " %lu", flt.size);
+    sig_num_file_write(fp, flt.sig);
+}
+
+void float_num_save(char file_path[], float_num_t flt)
+{
+    FILE *fp = fopen(file_path, "w");
+    assert(fp);
+
+    float_num_file_write(fp, flt);
+
+    fclose(fp);
+}
+
+float_num_t float_num_file_read(FILE *fp)
+{
+    int64_t exponent;
+    uint64_t size;
+    assert(fscanf(fp, " %ld %lu", &exponent, &size) == 2);
+
+    sig_num_t sig = sig_num_file_read(fp);
+
+    return (float_num_t)
+    {
+        .exponent = exponent,
+        .size = size,
+        .sig = sig
+    };
+}
+
+float_num_t float_num_load(char file_path[])
+{
+    FILE *fp = fopen(file_path, "r");
+    assert(fp);
+
+    float_num_t flt = float_num_file_read(fp);
+
+    fclose(fp);
+    // remove(file_path);
+
+    return flt;
+}
+
+
+
 fix_num_t fix_num_wrap_float(float_num_t flt, uint64_t pos) // TODO test
 {
     flt = float_num_set_exponent(flt, 1 - pos);

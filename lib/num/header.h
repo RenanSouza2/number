@@ -18,6 +18,7 @@ num_p num_head_grow(num_p num, uint64_t count);
 void num_head_trim(num_p num, uint64_t count);
 void num_break(num_p *out_num_ih, num_p *out_num_lo,num_p num, uint64_t count);
 
+num_p num_create(uint64_t size, uint64_t count);
 num_p num_wrap(uint64_t value);
 num_p num_wrap_uint128(uint128_t value);
 num_p num_wrap_str(char str[]);
