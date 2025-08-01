@@ -589,6 +589,32 @@ void sqrt_2()
 
 
 
+#ifdef DEBUG
+void mem_1(uint64_t index)
+{
+    num_p num_1 = num_generate(index, 2);
+    num_p num_2 = num_generate(index, 3);
+    
+    clu_clean_max_occupancy();
+    uint64_t count_bef = clu_get_register_count();
+    num_1 = num_mul(num_1, num_2);
+    uint64_t count_aft = clu_get_register_count();
+
+    printf("\nregiter_count: %lu", count_aft - count_bef);
+    printf("\tmax occupancy: %lu", clu_get_max_occupancy());
+
+    num_free(num_1);
+}
+#else
+void mem_1(uint64_t)
+{
+    printf("\n\tfunction should be run with ./run_debug");
+    assert(false);
+}
+#endif
+
+
+
 // int main(int argc, char** argv)
 int main()
 {
@@ -614,6 +640,7 @@ int main()
     // flt_num_pi_1();
     // flt_num_pi_2(1000);
     // flt_num_pi_3(1000);
+    mem_1(21);
 
     // assert(clu_mem_is_empty("FINAL"));
 
