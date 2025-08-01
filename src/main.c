@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <stdbit.h>
 
 #include "../mods/clu/header.h"
 #include "../mods/macros/assert.h"
@@ -34,8 +35,8 @@ num_p num_generate(uint64_t max, uint64_t salt)
 
 num_p num_generate_2_step(num_p num, uint64_t salt)
 {
-    num = num_add(num, num_wrap(salt));
-    return num_mul(num, num_wrap(0xe6503424c62eef89));
+    num = num_add_uint(num, salt);
+    return num_mul_uint(num, 0xe6503424c62eef89);
 }
 
 num_p num_generate_2(uint64_t index, uint64_t salt)
@@ -116,39 +117,58 @@ void time_2(int argc, char** argv, uint64_t max)
 
 void time_3()
 {
-    for(uint64_t i=1000; i<50000; i*=101 / 100)
+    uint64_t i_last = 1;
+    num_p num_1 = num_generate_2(i_last, 2);
+    num_p num_2 = num_generate_2(i_last, 3);
+    uint64_t threshold = 1000;
+    uint64_t max = 200000;
+    uint64_t p_1 = 102;
+    uint64_t p_2 = 100;
+    // uint64_t threshold = 1000;
+    // uint64_t max = 200000;
+    // uint64_t p_1 = 1002;
+    // uint64_t p_2 = 1000;
+    assert(threshold * p_1 / p_2 > threshold);
+    for(uint64_t i=1; i<threshold; i+=1)
     {
-        printf("\n%lu", i);
+        TIME_SETUP
 
-        num_p num_1 = num_generate_2(i, 2);
-        num_p num_2 = num_generate_2(i, 3);
+        for(uint64_t j=i_last; j<i; j++)
+        {
+            num_1 = num_generate_2_step(num_1, 2);
+            num_2 = num_generate_2_step(num_2, 3);
+        }
+        i_last = i;
 
+        printf("\n%lu", num_1->count);
         num_p num_1_copy = num_copy(num_1);
         num_p num_2_copy = num_copy(num_2);
-        TIME_SETUP
-        num_p num_res = num_mul_classic(num_1_copy, num_2_copy);
-        TIME_END(t1);
-        printf(", %.3f", t1 / 1e9);
-        num_free(num_res);
-    
-        num_1_copy = num_copy(num_1);
-        num_2_copy = num_copy(num_2);
         TIME_RESET
-        num_res = num_mul_fft(num_1_copy, num_2_copy);
-        TIME_END(t2);
-        printf(", %.3f", t2 / 1e9);
-        num_free(num_res);
-
-        num_1_copy = num_copy(num_1);
-        num_2_copy = num_copy(num_2);
-        TIME_RESET
-        num_res = num_mul_ssm(num_1_copy, num_2_copy);
+        num_p num_res = num_mul_ssm(num_1_copy, num_2_copy);
         TIME_END(t3);
-        printf(", %.3f", t3 / 1e9);
+        printf("\t%.5f", t3 / 1e9);
         num_free(num_res);
+    }
 
-        num_free(num_1);
-        num_free(num_2);
+    for(uint64_t i=threshold; i<max; i = i * p_1 / p_2)
+    {
+         TIME_SETUP
+
+        for(uint64_t j=i_last; j<i; j++)
+        {
+            num_1 = num_generate_2_step(num_1, 2);
+            num_2 = num_generate_2_step(num_2, 3);
+        }
+        i_last = i;
+
+        printf("\n%lu", num_1->count);
+        num_p num_1_copy = num_copy(num_1);
+        num_p num_2_copy = num_copy(num_2);
+        TIME_RESET
+        num_p num_res = num_mul_ssm(num_1_copy, num_2_copy);
+        TIME_END(t3);
+        printf("\t%.5f", t3 / 1e9);
+        num_free(num_res);
     }
 }
 
@@ -377,7 +397,10 @@ void pi_2()
         fix = fix_num_div(fix, fix_num_wrap(base - 1, pos));
 
         if(i%1000000 == 0)
+        {
+            printf("\n");
             fix_num_display_dec(fix);
+        }
     }
 }
 
@@ -546,18 +569,19 @@ void sqrt_2()
         fix_x = fix_num_reposition(fix_x, i);
         fix_x = fix_step(fix_x, i);
 
-        if(fork())
-            continue;
+        // if(fork())
+        //     continue;
 
         printf("\n\n");
         fix_num_display_full("hex", fix_x);
+        printf("\n");
         fix_num_display_dec(fix_x);
         printf("\n\npos: " U64P() "", i * 2);
 
-        exit(EXIT_SUCCESS);
+        // exit(EXIT_SUCCESS);
     }
 
-    fix_num_display_dec(fix_x);
+    // fix_num_display_dec(fix_x);
 
     fix_num_free(fix_x);
     num_free(num);
@@ -576,21 +600,45 @@ int main()
     // clu_log_enable(true);
 
     // num_generate(21, 2);
-    // time_1(16, 25);
+    // time_1(16, 35);
     // time_1(16, 17);
     // time_2(argc, argv, 19);
-    time_3();
+    // time_3();
     // time_3_params();
     // fibonacci();
     // fibonacci_2(16, 23);
     // fibonacci_3(16, 23);
     // sqrt_2();
+    // e();
+    // pi_2();
     // float_num_pi_1();
     // float_num_pi_2(1000);
     // float_num_pi_3(1000);
-    // float_num_pi_4(1000);
 
-    // del();
+    // uint64_t size = 10;
+    // float_num_t flt = float_num_div(
+    //     float_num_wrap(1, size),
+    //     float_num_wrap(7, size)
+    // );
+    // printf("\n");float_num_display(flt);
+    // float_num_save("flt_del.txt", flt);
+    // sleep(10);
+    // flt = float_num_load("flt_del.txt");
+
+    // printf("\n");float_num_display(flt);
+    // float_num_free(flt);
+
+    // size = 10;
+    sig_num_t sig_1 = sig_num_wrap(5);
+    for(uint64_t i=0; i<10; i++)
+        sig_1 =  sig_num_sqr(sig_1);
+    sig_num_display_full("sig", sig_1);
+    sig_num_save("flt_del.txt", sig_num_copy(sig_1));
+    // sleep(10);
+    sig_num_t sig_2 = sig_num_load("flt_del.txt");
+
+    sig_num_display_full("sig", sig_1);
+    printf("\ncmp: %ld", sig_num_cmp(sig_1, sig_2));
 
     // assert(clu_mem_is_empty("FINAL"));
 

@@ -15,11 +15,12 @@ void num_display_tag(char *tag, num_p num);
 void num_display_full(char *tag, num_p num);
 
 num_p num_head_grow(num_p num, uint64_t count);
-num_p num_head_trim(num_p num, uint64_t count);
+void num_head_trim(num_p num, uint64_t count);
 void num_break(num_p *out_num_ih, num_p *out_num_lo,num_p num, uint64_t count);
-num_p num_join(num_p num_hi, num_p num_lo, uint64_t count);
 
+num_p num_create(uint64_t size, uint64_t count);
 num_p num_wrap(uint64_t value);
+num_p num_wrap_uint128(uint128_t value);
 num_p num_wrap_str(char str[]);
 num_p num_read_dec(char file_name[]);
 uint64_t num_unwrap(num_p num);
@@ -40,8 +41,9 @@ num_p num_add(num_p num_1, num_p num_2);
 num_p num_sub(num_p num_1, num_p num_2);
 num_p num_mul_high(num_p num_1, num_p num_2, uint64_t pos);
 num_p num_mul(num_p num_1, num_p num_2);
-void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2);
+num_p num_pow(num_p num, uint64_t value);
 num_p num_sqr(num_p num);
+void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2);
 num_p num_div(num_p num_1, num_p num_2);
 num_p num_mod(num_p num_1, num_p num_2);
 num_p num_gcd(num_p num_1, num_p num_2);
@@ -52,9 +54,9 @@ num_p num_base_from(num_p num, uint64_t base);
 num_p num_div_mod_unbalanced(num_p num_1, num_p num_2);
 
 num_p num_mul_ssm(num_p num_1, num_p num_2);
-num_p num_mul_fft(num_p num_1, num_p num_2);
 num_p num_mul_classic(num_p num_1, num_p num_2);
 
-void del();
+void ssm_get_params_no_wrap(uint64_t res[4], uint64_t count_1, uint64_t count_2);
+uint64_t ssm_round_count(uint64_t count);
 
 #endif

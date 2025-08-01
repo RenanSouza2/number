@@ -135,35 +135,35 @@ void float_num_display(float_num_t flt)
     printf(" | exponent: " D64P() "", flt.exponent);
 }
 
-void float_num_display_dec(float_num_t flt) // TODO TEST
+void float_num_display_dec(float_num_t flt_0) // TODO TEST
 {
-    CLU_FLOAT_IS_SAFE(flt);
+    CLU_FLOAT_IS_SAFE(flt_0);
 
-    flt = float_num_copy(flt);
-    flt = float_num_set_size(flt, flt.size + 2);
-
-    if(float_num_is_zero(flt))
+    if(float_num_is_zero(flt_0))
     {
         printf("0");
         return;
     }
 
-    uint64_t signal = flt.sig.signal;
-    flt.sig.signal = POSITIVE;
+    float_num_t flt_1 = float_num_copy(flt_0);
+    flt_1 = float_num_set_size(flt_1, 2);
 
-    float_num_t flt_one = float_num_wrap(1, flt.size);
-    float_num_t flt_ten = float_num_wrap(10, flt.size);
+    uint64_t signal = flt_1.sig.signal;
+    flt_1.sig.signal = POSITIVE;
+
+    float_num_t flt_one = float_num_wrap(1, 2);
+    float_num_t flt_ten = float_num_wrap(10, 2);
 
     int64_t base = 1;
     float_num_t flt_base;
-    if(float_num_cmp(flt, flt_one) < 0)
+    if(float_num_cmp(flt_1, flt_one) < 0)
     {
         flt_base = float_num_div(
             float_num_copy(flt_one),
             float_num_copy(flt_ten)
         );
         base = -1;
-        while(float_num_cmp(flt_base, flt) > 0)
+        while(float_num_cmp(flt_base, flt_1) > 0)
         {
             flt_base = float_num_sqr(flt_base);
             base *= 2;
@@ -178,11 +178,11 @@ void float_num_display_dec(float_num_t flt) // TODO TEST
 
     while(true)
     {
-        float_num_t flt_tmp = float_num_div(
-            float_num_copy(flt),
+        float_num_t flt_tmp = float_num_mul(
+            float_num_copy(flt_ten),
             float_num_copy(flt_base)
         );
-        if(float_num_cmp(flt_tmp, flt_ten) < 0)
+        if(float_num_cmp(flt_1, flt_tmp) < 0)
         {
             float_num_free(flt_tmp);
             break;
@@ -199,7 +199,7 @@ void float_num_display_dec(float_num_t flt) // TODO TEST
                 float_num_copy(flt_add_2)
             );
 
-            if(float_num_cmp(flt_tmp, flt) > 0)
+            if(float_num_cmp(flt_tmp, flt_1) > 0)
             {
                 float_num_free(flt_tmp);
                 float_num_free(flt_add_2);
@@ -217,21 +217,23 @@ void float_num_display_dec(float_num_t flt) // TODO TEST
     }
     float_num_free(flt_ten);
 
-    flt = float_num_div(flt, flt_base);
-    flt = float_num_set_size(flt, flt.size - 2);
+    float_num_free(flt_base);
+    flt_base = float_num_pow(float_num_wrap(10, flt_0.size), base);
+    flt_0 = float_num_div(float_num_copy(flt_0), flt_base);
+    // flt_0 = float_num_set_size(flt_0, flt_0.size - 2);
 
     fix_num_t fix = (fix_num_t)
     {
-        .pos = flt.size - 1,
+        .pos = flt_0.size - 1,
         .sig = (sig_num_t)
         {
             .signal = signal,
-            .num = flt.sig.num
+            .num = flt_0.sig.num
         }
     };
     fix_num_display_dec(fix);
     printf(" * 10 ^ " D64P() "", base);
-    float_num_free(flt);
+    float_num_free(flt_0);
 }
 
 
@@ -332,6 +334,54 @@ void float_num_free(float_num_t flt)
     CLU_FLOAT_IS_SAFE(flt);
 
     sig_num_free(flt.sig);
+}
+
+
+
+void float_num_file_write(FILE *fp, float_num_t flt)
+{
+    fprintf(fp, " %ld ", flt.exponent);
+    fprintf(fp, " %lu", flt.size);
+    sig_num_file_write(fp, flt.sig);
+}
+
+void float_num_save(char file_path[], float_num_t flt)
+{
+    FILE *fp = fopen(file_path, "w");
+    assert(fp);
+
+    float_num_file_write(fp, flt);
+
+    fclose(fp);
+}
+
+float_num_t float_num_file_read(FILE *fp)
+{
+    int64_t exponent;
+    uint64_t size;
+    assert(fscanf(fp, " %ld %lu", &exponent, &size) == 2);
+
+    sig_num_t sig = sig_num_file_read(fp);
+
+    return (float_num_t)
+    {
+        .exponent = exponent,
+        .size = size,
+        .sig = sig
+    };
+}
+
+float_num_t float_num_load(char file_path[])
+{
+    FILE *fp = fopen(file_path, "r");
+    assert(fp);
+
+    float_num_t flt = float_num_file_read(fp);
+
+    fclose(fp);
+    // remove(file_path);
+
+    return flt;
 }
 
 
@@ -515,6 +565,31 @@ float_num_t float_num_sqr(float_num_t flt) // TODO TEST
     flt.exponent = int64_add(flt.exponent, flt.exponent);
     flt.sig = sig_num_sqr(flt.sig);
     return float_num_normalize(flt);
+}
+
+float_num_t float_num_pow(float_num_t flt, int64_t value) // TODO TEST
+{
+    CLU_FLOAT_IS_SAFE(flt);
+
+    bool negative = value < 0;
+    if(negative)
+        value = -value;
+
+    float_num_t flt_res = float_num_wrap(1, flt.size);
+    for(uint64_t mask = B(63); mask; mask >>= 1)
+    {
+        flt_res = float_num_sqr(flt_res);
+        if(value & mask)
+            flt_res = float_num_mul(flt_res, float_num_copy(flt));
+    }
+    float_num_free(flt);
+
+    if(negative)
+    {
+        flt_res = float_num_div(float_num_wrap(1, flt_res.size), flt_res);
+    }
+
+    return flt_res;
 }
 
 float_num_t float_num_div(float_num_t flt_1, float_num_t flt_2) // TODO TEST

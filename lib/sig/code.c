@@ -6,6 +6,7 @@
 #include "../../mods/macros/assert.h"
 
 #include "../num/header.h"
+#include "../num/struct.h"
 
 #define CLU_SIG_IS_SAFE(SIG) CLU_HANDLER_IS_SAFE((SIG).num);
 
@@ -178,6 +179,18 @@ sig_num_t sig_num_wrap(int64_t value)
     return sig_num_create(POSITIVE, num);
 }
 
+sig_num_t sig_num_wrap_int128(int128_t value)
+{
+    if(value < 0)
+    {
+        num_p num = num_wrap_uint128(-value);
+        return sig_num_create(NEGATIVE, num);
+    }
+
+    num_p num = num_wrap_uint128(value);
+    return sig_num_create(POSITIVE, num);
+}
+
 sig_num_t sig_num_wrap_num(num_p num)   // TODO TEST
 {
     return sig_num_create(POSITIVE, num);
@@ -214,8 +227,59 @@ sig_num_t sig_num_head_trim(sig_num_t sig, uint64_t count) // TODO test
     CLU_SIG_IS_SAFE(sig);
     assert(sig.num);
 
-    num_p num = num_head_trim(sig.num, count);
-    return sig_num_create(sig.signal, num);
+    num_head_trim(sig.num, count);
+    return sig_num_create(sig.signal, sig.num);
+}
+
+
+
+void sig_num_file_write(FILE *fp, sig_num_t sig)
+{
+    fprintf(fp, " %lu", sig.signal);
+    fprintf(fp, " %lu", sig.num->count);
+    for(uint64_t i=0; i<sig.num->count; i++)
+        fprintf(fp, " %lx", sig.num->chunk[i]);
+
+    sig_num_free(sig);
+}
+
+void sig_num_save(char file_path[], sig_num_t sig)
+{
+    FILE *fp = fopen(file_path, "w");
+    assert(fp);
+
+    sig_num_file_write(fp, sig);
+
+    fclose(fp);
+}
+
+sig_num_t sig_num_file_read(FILE *fp)
+{
+    uint64_t signal, count;
+    assert(fscanf(fp, " %lu %lu", &signal, &count) == 2);
+
+    num_p num = num_create(count, count);
+    for(uint64_t i=0; i<count; i++)
+        assert(fscanf(fp, " %lx", &num->chunk[i]) == 1);
+
+    return (sig_num_t)
+    {
+        .signal = signal,
+        .num = num
+    };
+}
+
+sig_num_t sig_num_load(char file_path[])
+{
+    FILE *fp = fopen(file_path, "r");
+    assert(fp);
+
+    sig_num_t sig = sig_num_file_read(fp);
+
+    fclose(fp);
+    // remove(file_path);
+
+    return sig;
 }
 
 
@@ -352,4 +416,18 @@ sig_num_t sig_num_div(sig_num_t sig_1, sig_num_t sig_2)
 
     num_p num_res = num_div(sig_1.num, sig_2.num);
     return sig_num_create(signal_res, num_res);
+}
+
+
+
+sig_num_t sig_num_mul_int(sig_num_t sig, int64_t value)
+{
+    if(value < 0)
+    {
+        sig = sig_num_opposite(sig);
+        value = -value;
+    }
+
+    sig.num = num_mul_uint(sig.num, value);
+    return sig;
 }
