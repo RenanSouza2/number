@@ -1,6 +1,7 @@
 #ifndef __FLOAT_H__
 #define __FLOAT_H__
 
+#include <stdio.h>
 #include <stdbool.h>
 
 #include "../fix/header.h"

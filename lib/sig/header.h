@@ -1,6 +1,7 @@
 #ifndef __SIG_H__
 #define __SIG_H__
 
+#include <stdio.h>
 #include <stdbool.h>
 
 #include "struct.h"
