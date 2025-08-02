@@ -275,7 +275,7 @@ void num_display_opts(num_p num, char *tag, bool length, bool full)
             4 : num->count;
 
     for(uint64_t i=0; i<max; i++)
-        printf("" U64PX " ", num->chunk[num->count-1-i]);
+        printf("%16lx ", num->chunk[num->count-1-i]);
 
     if(!full && num->count > 4)
         printf("...");
@@ -1540,7 +1540,7 @@ void num_ssm_mul_tmp(
         return num_mul_ssm_wrap(&num_aux[2], num_copy(&num_t_1), num_copy(&num_t_2), n);
 
     assert(num_aux[2]->size >= 2 * n);
-    num_set_count(num_aux[0], 0);
+    num_set_count(num_aux[2], 0);
     num_mul_classic_buffer(num_aux[2], &num_t_1, &num_t_2);
 
     memmove(&num_aux[2]->chunk[n], &num_aux[2]->chunk[n-1], n * sizeof(uint64_t));
@@ -1717,15 +1717,13 @@ void num_mul_ssm_buffer(num_p num_aux[], num_p num_1, num_p num_2)
 
 
 
-void mul_get_buffer(num_p num_aux[], uint64_t count_1, uint64_t count_2)
+bool mul_is_classic(uint64_t count_1, uint64_t count_2)
 {
-    if(count_1 < 10 || count_2 < 10)
-    {
-        uint64_t count = count_1 + count_2;
-        num_aux[0] = num_create(count, count);
-        return;
-    }
+    return count_1 < 128 || count_2 < 128;
+}
 
+void mul_get_buffer_no_wrap(num_p num_aux[], uint64_t count_1, uint64_t count_2)
+{
     uint64_t params[4];
     ssm_get_params_no_wrap(params, count_1, count_2);
     uint64_t K = params[1];
@@ -1733,11 +1731,13 @@ void mul_get_buffer(num_p num_aux[], uint64_t count_1, uint64_t count_2)
     uint64_t count = K * n;
     num_aux[0] = num_create(count, count);
     num_aux[1] = num_create(count, count);
+    num_aux[0]->cannot_expand = true;
+    num_aux[1]->cannot_expand = true;
 
     uint64_t i;
-    for(i=0; ssm_is_recursive(n); i+=2)
+    for(i=2; ssm_is_recursive(n); i+=2)
     {
-        ssm_get_params_no_wrap(params, count_1, count_2);
+        ssm_get_params_wrap(params, n);
         K = params[1];
         n = params[3];
         count = K * n;
@@ -1747,6 +1747,48 @@ void mul_get_buffer(num_p num_aux[], uint64_t count_1, uint64_t count_2)
         num_aux[i + 1]->cannot_expand = true;
     }
     num_aux[i] = num_create(2 * count, 2 * count);
+    num_aux[i]->cannot_expand = true;
+}
+
+void mul_get_buffer(num_p num_aux[], uint64_t count_1, uint64_t count_2)
+{
+    if(mul_is_classic(count_1, count_2))
+    {
+        uint64_t count = count_1 + count_2;
+        num_aux[0] = num_create(count, count);
+        num_aux[0]->count = true;
+        return;
+    }
+
+    mul_get_buffer_no_wrap(num_aux, count_1, count_2);
+}
+
+void mul_get_buffer_wrap(num_p num_aux[], uint64_t n)
+{
+    uint64_t params[4];
+    ssm_get_params_wrap(params, n);
+    uint64_t K = params[1];
+    n = params[3];
+    uint64_t count = K * n;
+    num_aux[0] = num_create(count, count);
+    num_aux[1] = num_create(count, count);
+    num_aux[0]->cannot_expand = true;
+    num_aux[1]->cannot_expand = true;
+
+    uint64_t i;
+    for(i=2; ssm_is_recursive(n); i+=2)
+    {
+        ssm_get_params_wrap(params, n);
+        K = params[1];
+        n = params[3];
+        count = K * n;
+        num_aux[i    ] = num_create(count, count);
+        num_aux[i + 1] = num_create(count, count);
+        num_aux[i    ]->cannot_expand = true;
+        num_aux[i + 1]->cannot_expand = true;
+    }
+    num_aux[i] = num_create(2 * count, 2 * count);
+    num_aux[i]->cannot_expand = true;
 }
 
 void mul_get_buffer_free(num_p num_aux[])
@@ -1781,7 +1823,7 @@ void num_mul_buffer(num_p num_aux[], num_p num_1, num_p num_2) // TODO TEST
         return;
     }
 
-    if(num_1->count < 128 || num_2->count < 128)
+    if(mul_is_classic(num_1->count, num_2->count))
     {
         num_set_count(num_aux[0], 0);
         num_mul_classic_buffer(num_aux[0], num_1, num_2);
@@ -1815,9 +1857,11 @@ num_p num_mul_ssm(num_p num_1, num_p num_2)
     assert(num_2)
 
     num_p num_aux[10] = {};
-    mul_get_buffer(num_aux, num_1->count, num_2->count);
+    mul_get_buffer_no_wrap(num_aux, num_1->count, num_2->count);
     num_mul_ssm_buffer(num_aux, num_1, num_2);
     mul_get_buffer_free(num_aux);
+    num_free(num_1);
+    num_free(num_2);
     return num_aux[0];
 }
 

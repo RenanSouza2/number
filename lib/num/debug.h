@@ -136,6 +136,7 @@ void num_mul_ssm_wrap(num_p num_aux[], num_p num_1, num_p num_2, uint64_t n);
 num_p ssm_get_buffer_wrap(uint64_t n);
 
 void mul_get_buffer(num_p num_aux[], uint64_t count_1, uint64_t count_2); // TODO RENAME
+void mul_get_buffer_wrap(num_p num_aux[], uint64_t n);
 void mul_get_buffer_free(num_p num_aux[]); // TODO RENAME
 num_p num_mul_classic(num_p num_1, num_p num_2);
 num_p num_sqr_classic(num_p num);
