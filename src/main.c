@@ -594,6 +594,8 @@ void mem_1(uint64_t index)
 {
     num_p num_1 = num_generate(index, 2);
     num_p num_2 = num_generate(index, 3);
+
+    clu_log_level_set(CLU_LOG_DYNAMIC);
     
     clu_clean_max_occupancy();
     uint64_t count_bef = clu_get_register_count();
