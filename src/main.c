@@ -595,7 +595,7 @@ void mem_1(uint64_t index)
     num_p num_1 = num_generate(index, 2);
     num_p num_2 = num_generate(index, 3);
 
-    // clu_log_level_set(CLU_LOG_DYNAMIC);
+    clu_log_level_set(CLU_LOG_DYNAMIC);
     
     clu_clean_max_occupancy();
     uint64_t count_bef = clu_get_register_count();
@@ -628,7 +628,7 @@ int main()
     // clu_log_enable(true);
 
     // num_generate(21, 2);
-    // time_1(16, 35);
+    time_1(16, 35);
     // time_1(16, 17);
     // time_2(argc, argv, 19);
     // time_3();
@@ -642,7 +642,9 @@ int main()
     // flt_num_pi_1();
     // flt_num_pi_2(1000);
     // flt_num_pi_3(1000);
-    mem_1(21);
+
+    // for(uint64_t i=18; i<23; i++)
+    // mem_1(18);
 
     // assert(clu_mem_is_empty("FINAL"));
 

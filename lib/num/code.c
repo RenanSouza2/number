@@ -1980,6 +1980,7 @@ num_p num_div_mod_classic(num_p num_aux, num_p num_1, num_p num_2)
 // Returns quocient
 // NUM_1 becomes remainder
 // Keeps NUM_2
+// num_aux->size >= num_2->count+1
 num_p num_div_mod_fallback(num_p num_aux, num_p num_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_1)
@@ -1987,6 +1988,7 @@ num_p num_div_mod_fallback(num_p num_aux, num_p num_1, num_p num_2)
     assert(num_1)
     assert(num_2)
     assert(num_2->count)
+    assert(num_aux->size >= num_2->count+1)
 
     if(num_cmp(num_1, num_2) < 0)
         return num_create(0, 0);
@@ -2043,18 +2045,14 @@ num_p num_div_mod_bz_rec(num_p num_aux, num_p num_1, num_p num_2, bz_frame_t f[]
         num_p num_q_tmp = num_div_mod_bz_rec(num_aux, &num_1_1, &f->num_2_1, &f[1]);
         while(num_normalize(num_1));
 
-        uint64_t size = 10 * (num_q_tmp->size + f->num_2_0.size);
-        num_p num_aux_2 = num_create(size, 0);
-        num_aux_2->cannot_expand = true;
-        num_mul_buffer(num_aux_2, num_q_tmp, &f->num_2_0);
+        num_mul_buffer(num_aux, num_q_tmp, &f->num_2_0);
 
-        while(num_cmp_offset(num_1, k * i, num_aux_2) < 0)
+        while(num_cmp_offset(num_1, k * i, num_aux) < 0)
         {
             num_q_tmp = num_sub_uint(num_q_tmp, 1);
             num_1 = num_add_offset(num_1, k * i, num_2, 0);
         }
-        num_1 = num_sub_offset(num_1, k * i, num_aux_2);
-        num_free(num_aux_2);
+        num_1 = num_sub_offset(num_1, k * i, num_aux);
 
         num_q[i] = num_q_tmp;
     }
@@ -2083,8 +2081,7 @@ num_p num_div_mod_bz(num_p num_1, num_p num_2)
     bz_frame_t f[frame_count];
     memset(f, 0, sizeof(f));
 
-    uint64_t count = stdc_bit_ceil(8 * num_2->count);
-    num_p num_aux = num_create(count, 0);
+    num_p num_aux = ssm_get_buffer_no_wrap(n_2 / 2, n_2 / 2);
     num_p num_q = num_create(num_1->count - num_2->count + 1, 0);
     num_aux->cannot_expand = true;
     for(uint64_t i=0; n_1 > 2 * n_2; i++)
