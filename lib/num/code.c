@@ -1528,8 +1528,6 @@ void num_ssm_fft_inv(
     }
 }
 
-uint64_t lim;
-
 void num_ssm_mul_tmp(
     num_p num_res,
     num_p num_1,
@@ -1549,7 +1547,7 @@ void num_ssm_mul_tmp(
     num_span(&num_t_1, num_1, pos, pos + n);
     num_span(&num_t_2, num_2, pos, pos + n);
 
-    if(n > 8 && (((n - 1) & (1 - n)) > 4))
+    if(n > 45 && (((n - 1) & (1 - n)) > 4))
         return num_mul_ssm_wrap(num_res, num_copy(&num_t_1), num_copy(&num_t_2), n);
 
     num_set_count(num_res, 0);
@@ -1764,7 +1762,6 @@ void num_sqr_ssm_buffer(num_p num_res, num_p num)
 }
 
 
-
 // Keeps NUM_1
 // Keeps NUM_2
 void num_mul_buffer(num_p num_res, num_p num_1, num_p num_2) // TODO TEST
@@ -1780,7 +1777,7 @@ void num_mul_buffer(num_p num_res, num_p num_1, num_p num_2) // TODO TEST
         return;
     }
 
-    if(num_1->count < 10 || num_2->count < 10)
+    if(num_1->count < 128 || num_2->count < 128)
     {
         num_set_count(num_res, 0);
         num_mul_classic_buffer(num_res, num_1, num_2);

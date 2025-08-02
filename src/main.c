@@ -144,9 +144,9 @@ void time_3()
         num_p num_1_copy = num_copy(num_1);
         num_p num_2_copy = num_copy(num_2);
         TIME_RESET
-        num_p num_res = num_mul_ssm(num_1_copy, num_2_copy);
+        num_p num_res = num_mul_classic(num_1_copy, num_2_copy);
         TIME_END(t3);
-        printf("\t%.5f", t3 / 1e9);
+        printf("\t%.9f", t3 / 1e9);
         num_free(num_res);
     }
 
@@ -626,11 +626,10 @@ int main()
     // clu_log_enable(true);
 
     // num_generate(21, 2);
-    // time_1(16, 35);
+    // time_1(16, 25);
     // time_1(16, 17);
     // time_2(argc, argv, 19);
-    // time_3();
-    // time_3_params();
+    time_3();
     // fibonacci();
     // fibonacci_2(16, 23);
     // fibonacci_3(16, 23);
@@ -640,7 +639,9 @@ int main()
     // flt_num_pi_1();
     // flt_num_pi_2(1000);
     // flt_num_pi_3(1000);
-    mem_1(21);
+    // mem_1(21);
+
+    // time_1(16, 25);
 
     // assert(clu_mem_is_empty("FINAL"));
 
