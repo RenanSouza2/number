@@ -1528,6 +1528,8 @@ void num_ssm_fft_inv(
     }
 }
 
+
+
 void num_ssm_mul_tmp(
     num_p num_res,
     num_p num_1,
@@ -1762,6 +1764,37 @@ void num_sqr_ssm_buffer(num_p num_res, num_p num)
 }
 
 
+
+void mul_get_buffer(num_p num_aux[], uint64_t count_1, uint64_t count_2)
+{
+    if(count_1 < 10 || count_2 < 10)
+    {
+        uint64_t count = count_1 + count_2;
+        num_aux[0] = num_create(count, count);
+        return;
+    }
+
+    uint64_t params[4];
+    ssm_get_params_no_wrap(params, count_1, count_2);
+    uint64_t K = params[1];
+    uint64_t n = params[3];
+    uint64_t count = K * n;
+    num_aux[0] = num_create(count, count);
+    num_aux[1] = num_create(count, count);
+
+    uint64_t i;
+    for(i=0; ssm_is_recursive(n); i+=2)
+    {
+        ssm_get_params_no_wrap(params, count_1, count_2);
+        K = params[1];
+        n = params[3];
+        count = K * n;
+        num_aux[i    ] = num_create(count, count);
+        num_aux[i + 1] = num_create(count, count);
+    }
+    num_aux[i] = num_create(2 * count, 2 * count);
+}
+
 // Keeps NUM_1
 // Keeps NUM_2
 void num_mul_buffer(num_p num_res, num_p num_1, num_p num_2) // TODO TEST
@@ -1785,40 +1818,6 @@ void num_mul_buffer(num_p num_res, num_p num_1, num_p num_2) // TODO TEST
     }
 
     num_mul_ssm_buffer(num_res, num_copy(num_1), num_copy(num_2));
-}
-
-STRUCT(num_fft_cache)
-{
-    bool memoized;
-    num_p num;
-
-    uint64_t n;
-    num_p fft;
-};
-
-// Keeps NUM_1
-// Keeps NUM_2
-void num_mul_buffer_memoized(num_p num_res, num_p num_1, num_fft_cache_p num_2) // TODO TEST
-{
-    CLU_HANDLER_IS_SAFE(num_1)
-    CLU_HANDLER_IS_SAFE(num_2)
-    assert(num_1)
-    assert(num_2)
-
-    if(num_1->count == 0 || num_2->num->count == 0)
-    {
-        num_set_count(num_res, 0);
-        return;
-    }
-
-    if(num_1->count < 10 || num_2->num->count < 10)
-    {
-        num_set_count(num_res, 0);
-        num_mul_classic_buffer(num_res, num_1, num_2->num);
-        return;
-    }
-
-    // num_mul_ssm_buffer(num_res, num_copy(num_1), num_copy(num_2));
 }
 
 num_p num_mul_classic(num_p num_1, num_p num_2)
