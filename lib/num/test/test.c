@@ -1172,6 +1172,7 @@ void test_num_ssm_pad(bool show)
             num_p num = num_create_immed(ARG_OPEN NUM); \
             num_p num_res = num_create(N * K, N * K);   \
             num_ssm_pad(num_res, num, M, N, K);         \
+            num_res->count = N * K;                     \
             assert(num_immed(num_res, ARG_OPEN RES))    \
             assert(num_immed(num, ARG_OPEN NUM))        \
         }                                               \
@@ -2780,7 +2781,7 @@ void test_num()
 {
     TEST_LIB
 
-    bool show = true;
+    bool show = false;
 
     test_uint_from_char(show);
     test_uint_inv(show);

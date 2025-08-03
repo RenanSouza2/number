@@ -489,10 +489,8 @@ void num_break(num_p *out_num_hi, num_p *out_num_lo, num_p num, uint64_t count)
 // NUM_RES should be static memory
 void num_span(num_p num_res, num_p num, uint64_t pos_init, uint64_t pos_max) // TODO TEST
 {
-    assert(pos_max <= num->count);
-    pos_max = pos_max > num->count ? num->count : pos_max;
-    pos_max = pos_max > pos_init   ? pos_max    : pos_init;
-    uint64_t size = pos_max - pos_init;
+    assert(pos_max <= num->size);
+    uint64_t size = pos_init > pos_max ? 0 : pos_max - pos_init;
 
     CLU_HANDLER_REGISTER_STATIC(num_res);
     *num_res = (num_t)
@@ -1193,6 +1191,8 @@ void num_ssm_pad(num_p num_res, num_p num, uint64_t M, uint64_t n, uint64_t K)
     assert(num)
     assert(num_res->size >= n * K)
 
+    num_set_count(num_res, 0);
+    num_res->count = n * K;
     for(uint64_t i=0; i<K-1; i++)
         for(uint64_t j=0; j<M; j++)
             num_res->chunk[n * i + j] = num_chunk_get(num, M * i + j);
@@ -1506,9 +1506,6 @@ void num_ssm_fft_inv(
     num_ssm_fft_inv_rec(num_aux, num, 0, n, k, 2 * bits);
 
     uint64_t k_ = stdc_trailing_zeros(k);
-    // for(uint64_t i=0; i<k; i++)
-    //     num_ssm_shr_mod(num_aux, num, n * i, n, k_);
-
     for(uint64_t i=0; i<k; i++)
     {
         num_ssm_shr_mod(num_aux, num, n * i, n, bits * i);
@@ -1537,7 +1534,12 @@ void num_ssm_mul_tmp(
     num_span(&num_t_2, num_aux[1], pos, pos + n);
 
     if(ssm_is_recursive(n))
-        return num_mul_ssm_wrap(&num_aux[2], num_copy(&num_t_1), num_copy(&num_t_2), n);
+    {
+        num_mul_ssm_wrap(&num_aux[2], &num_t_1, &num_t_2, n);
+        memcpy(&num_aux[0]->chunk[pos], num_aux[2]->chunk, n * sizeof(uint64_t));
+        num_set_count(num_aux[2], 0);
+        return;
+    }
 
     assert(num_aux[2]->size >= 2 * n);
     num_set_count(num_aux[2], 0);
@@ -1545,8 +1547,8 @@ void num_ssm_mul_tmp(
 
     memmove(&num_aux[2]->chunk[n], &num_aux[2]->chunk[n-1], n * sizeof(uint64_t));
     num_aux[2]->chunk[n-1] = 0;
-
     num_ssm_sub_mod(num_aux[0], pos, num_aux[2], 0, num_aux[2], n, n);
+    num_set_count(num_aux[2], 0);
 }
 
 // res[0] = M, res[1] = K, res[2] = Q, res[3] = n
@@ -1652,6 +1654,11 @@ void num_mul_ssm_params(
     uint64_t params[4]
 )
 {
+    CLU_HANDLER_IS_SAFE(num_aux[0])
+    CLU_HANDLER_IS_SAFE(num_aux[1])
+    assert(num_aux[0])
+    assert(num_aux[1])
+
     uint64_t K = params[1];
     uint64_t Q = params[2];
     uint64_t n = params[3];
@@ -1668,6 +1675,11 @@ void num_mul_ssm_params(
 // Keeps NUM_1 NUM_2
 void num_mul_ssm_wrap(num_p num_aux[], num_p num_1, num_p num_2, uint64_t n)
 {
+    CLU_HANDLER_IS_SAFE(num_aux[0])
+    CLU_HANDLER_IS_SAFE(num_aux[1])
+    assert(num_aux[0])
+    assert(num_aux[1])
+
     uint64_t params[4];
     ssm_get_params_wrap(params, n);
     uint64_t M = params[0];
@@ -1676,9 +1688,9 @@ void num_mul_ssm_wrap(num_p num_aux[], num_p num_1, num_p num_2, uint64_t n)
 
     assert(num_aux[0]->size >= n1 * K);
     assert(num_aux[1]->size >= n1 * K);
-
     num_ssm_prepare(num_aux[0], num_aux[2], num_1, params);
     num_ssm_prepare(num_aux[1], num_aux[2], num_2, params);
+    num_set_count(num_aux[2], 0);
 
     num_mul_ssm_params(num_aux, params);
     num_ssm_depad_wrap(num_aux, M, n1, K, n);
@@ -1686,6 +1698,11 @@ void num_mul_ssm_wrap(num_p num_aux[], num_p num_1, num_p num_2, uint64_t n)
 
 void num_mul_ssm_buffer(num_p num_aux[], num_p num_1, num_p num_2)
 {
+    CLU_HANDLER_IS_SAFE(num_aux[0])
+    CLU_HANDLER_IS_SAFE(num_aux[1])
+    assert(num_aux[0])
+    assert(num_aux[1])
+
     uint64_t params[4];
     ssm_get_params_no_wrap(params, num_1->count, num_2->count);
     uint64_t M = params[0];
@@ -1696,6 +1713,7 @@ void num_mul_ssm_buffer(num_p num_aux[], num_p num_1, num_p num_2)
     assert(num_aux[1]->size >= n * K);
     num_ssm_prepare(num_aux[0], num_aux[2], num_1, params);
     num_ssm_prepare(num_aux[1], num_aux[2], num_2, params);
+    num_set_count(num_aux[2], 0);
 
     num_mul_ssm_params(num_aux, params);
     num_ssm_depad_no_wrap(num_aux[0], M, n, K);
@@ -2033,8 +2051,7 @@ num_p num_div_mod_bz_rec(num_p num_aux, num_p num_1, num_p num_2, bz_frame_t f[]
     for(uint64_t i=1; i!=UINT64_MAX; i--)
     {
         num_t num_1_1;
-        uint64_t pos = k * (i + 1);
-        num_span(&num_1_1, num_1, pos, num_1->count);
+        num_span(&num_1_1, num_1, k * (i + 1), num_1->count);
 
         num_p num_q_tmp = num_div_mod_bz_rec(num_aux, &num_1_1, &f->num_2_1, &f[1]);
         while(num_normalize(num_1));
