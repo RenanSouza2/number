@@ -2089,10 +2089,10 @@ void test_num_sqr(bool show)
     #define TEST_NUM_SQR(TAG, NUM, RES)                             \
     {                                                               \
         TEST_NUM_SQR_FN(10 * TAG + 1, num_sqr_classic, NUM, RES)    \
+        TEST_NUM_SQR_FN(10 * TAG + 2, num_sqr_ssm, NUM, RES)        \
         TEST_NUM_SQR_FN(10 * TAG + 3, num_sqr, NUM, RES)            \
     }
     
-    // TEST_NUM_SQR_FN(10 * TAG + 2, num_sqr_ssm, NUM, RES)        
 
     TEST_NUM_SQR(1,
         (0),

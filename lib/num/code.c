@@ -1719,19 +1719,27 @@ void num_mul_ssm_buffer(num_p num_aux[], num_p num_1, num_p num_2)
     num_ssm_depad_no_wrap(num_aux[0], M, n, K);
 }
 
-// void num_sqr_ssm_buffer(num_p num_res, num_p num)
-// {
-//     uint64_t params[4];
-//     ssm_get_params_no_wrap(params, num->count, num->count);
-//     uint64_t M = params[0];
-//     uint64_t K = params[1];
-//     uint64_t n = params[3];
-//
-//     num_p num_aux = ssm_get_aux(num->count, num->count);
-//     num = num_ssm_prepare(num_aux, num, params);
-//     num_mul_ssm_params(num_res, num_aux, num, num, params);
-//     num_ssm_depad_no_wrap(num_res, M, n, K);
-// }
+void num_sqr_ssm_buffer(num_p num_aux[], num_p num)
+{
+    CLU_HANDLER_IS_SAFE(num_aux[0])
+    assert(num_aux[0])
+
+    uint64_t params[4];
+    ssm_get_params_no_wrap(params, num->count, num->count);
+    uint64_t M = params[0];
+    uint64_t K = params[1];
+    uint64_t n = params[3];
+
+    assert(num_aux[0]->size >= n * K);
+    num_ssm_prepare(num_aux[0], num_aux[2], num, params);
+    num_set_count(num_aux[2], 0);
+
+    num_p num_tmp = num_aux[1];
+    num_aux[1] = num_aux[0];
+    num_mul_ssm_params(num_aux, params); // todo param square
+    num_aux[1] = num_tmp;
+    num_ssm_depad_no_wrap(num_aux[0], M, n, K);
+}
 
 
 
@@ -1883,16 +1891,18 @@ num_p num_mul_ssm(num_p num_1, num_p num_2)
     return num_aux[0];
 }
 
-// num_p num_sqr_ssm(num_p num)
-// {
-//     CLU_HANDLER_IS_SAFE(num)
-//     assert(num)
-//
-//     num_p num_res = ssm_get_buffer_no_wrap(num->count, num->count);
-//     num_sqr_ssm_buffer(num_res, num);
-//     num_res->cannot_expand = false;
-//     return num_res;
-// }
+num_p num_sqr_ssm(num_p num)
+{
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num)
+
+    num_p num_aux[10] = {};
+    mul_get_buffer_no_wrap(num_aux, num->count, num->count);
+    num_sqr_ssm_buffer(num_aux, num);
+    mul_get_buffer_free(num_aux);
+    num_free(num);
+    return num_aux[0];
+}
 
 
 
@@ -2332,10 +2342,10 @@ num_p num_sqr(num_p num)
     if(num->count == 0)
         return num;
 
-    // if(num->count < 10)
+    if(num->count < 128)
         return num_sqr_classic(num);
 
-    // return num_sqr_ssm(num);
+    return num_sqr_ssm(num);
 }
 
 num_p num_pow(num_p num, uint64_t value) // TODO TEST
