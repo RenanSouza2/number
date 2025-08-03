@@ -624,9 +624,8 @@ int main()
     // uint64_t arg = get_arg(argc, argv);
 
     // clu_log_enable(true);
-
     // num_generate(21, 2);
-    time_1(16, 29);
+    // time_1(16, 29);
     // time_1(16, 17);
     // time_2(argc, argv, 19);
     // time_3();
@@ -639,9 +638,7 @@ int main()
     // flt_num_pi_1();
     // flt_num_pi_2(1000);
     // flt_num_pi_3(1000);
-    // mem_1(21);
-
-    // time_1(16, 25);
+    mem_1(21);
 
     // assert(clu_mem_is_empty("FINAL"));
 

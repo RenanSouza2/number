@@ -239,8 +239,6 @@ void sig_num_file_write(FILE *fp, sig_num_t sig)
     fprintf(fp, " %lu", sig.num->count);
     for(uint64_t i=0; i<sig.num->count; i++)
         fprintf(fp, " %lx", sig.num->chunk[i]);
-
-    sig_num_free(sig);
 }
 
 void sig_num_save(char file_path[], sig_num_t sig)
