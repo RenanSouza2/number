@@ -1856,7 +1856,7 @@ void num_mul_buffer(num_p num_aux[], num_p num_1, num_p num_2) // TODO TEST
         return;
     }
 
-    num_mul_ssm_buffer(num_aux, num_copy(num_1), num_copy(num_2));
+    num_mul_ssm_buffer(num_aux, num_1, num_2);
 }
 
 num_p num_mul_classic(num_p num_1, num_p num_2)
