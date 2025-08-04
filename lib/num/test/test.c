@@ -1172,14 +1172,9 @@ void test_num_ssm_pad(bool show)
             num_p num = num_create_immed(ARG_OPEN NUM); \
             num_p num_res = num_create(N * K, N * K);   \
             num_ssm_pad(num_res, num, M, N, K);         \
-<<<<<<< HEAD
-            assert(num_immed(num_res, ARG_OPEN RES));   \
-            assert(num_immed(num, ARG_OPEN NUM));       \
-=======
             num_res->count = N * K;                     \
             assert(num_immed(num_res, ARG_OPEN RES))    \
             assert(num_immed(num, ARG_OPEN NUM))        \
->>>>>>> alt
         }                                               \
         TEST_CASE_CLOSE                                 \
     }
@@ -1201,12 +1196,12 @@ void test_num_ssm_pad(bool show)
         (16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 3, 0, 0, 2, 1)
     )
     TEST_SSM_PAD(5,
-        (2, 1, 0), 1, 2, 2,
-        (4, 0, 1, 0, 0)
+        (2, 1, 0), 1, 2, 1,
+        (2, 1, 0)
     )
     TEST_SSM_PAD(6,
-        (3, 1, 0, 0), 1, 2, 3,
-        (6, 0, 1, 0, 0, 0, 0)
+        (3, 1, 0, 0), 1, 2, 2,
+        (4, 1, 0, 0, 0)
     )
     TEST_SSM_PAD(7,
         (3, 0, UINT64_MAX, UINT64_MAX), 1, 2, 2,
@@ -1557,32 +1552,6 @@ void test_num_ssm_fft(bool show)
         TEST_CASE_CLOSE                                 \
     }
 
-<<<<<<< HEAD
-    TEST_SSM_SHR_FFT(1,
-        (4, 0, 0, 0, 1), 2, 2, 
-        (4, 0, 1, 0, 1)
-    );
-    TEST_SSM_SHR_FFT(2,
-        (4, 0, 1, 0, 0), 2, 2, 
-        (4, 0, 0xffffffff00000001, 0, B(32))
-    );
-    TEST_SSM_SHR_FFT(3,
-        (4, 0, 1, 0, 1), 2, 2, 
-        (4, 0, 0xffffffff00000002, 0, 0x100000001)
-    );
-    TEST_SSM_SHR_FFT(4,
-        (8, 0, 0, 0, 0, 0, 0, 0, 1), 2, 4, 
-        (8, 0, 1, 0, 1, 0, 1, 0, 1)
-    );
-    TEST_SSM_SHR_FFT(5,
-        (8, 0, 0, 0, 0, 0, 1, 0, 0), 2, 4, 
-        (8, 0, 0xffff000000000001, 0, B(48), 0, 0xffffffffffff0001, 0, B(16))
-    );
-    TEST_SSM_SHR_FFT(6,
-        (8, 0, 0, 0, 1, 0, 0, 0, 0), 2, 4, 
-        (8, 0, 0xffffffff00000001, 0, 0xffffffff00000001, 0, B(32), 0, B(32))
-    );
-=======
     TEST_SSM_FFT(1,
         (4, 0, 0, 0, 1), 2, 2, 
         (4, 0, 1, 0, 1)
@@ -1607,7 +1576,6 @@ void test_num_ssm_fft(bool show)
         (8, 0, 0, 0, 1, 0, 0, 0, 0), 2, 4, 
         (8, 0, 0xffffffff00000001, 0, 0xffffffff00000001, 0, B(32), 0, B(32))
     )
->>>>>>> alt
 
     #undef TEST_SSM_FFT
 
@@ -1648,18 +1616,11 @@ void test_num_mul_ssm_wrap(bool show)
         {                                                       \
             num_p num_1 = num_create_immed(ARG_OPEN NUM_1);     \
             num_p num_2 = num_create_immed(ARG_OPEN NUM_2);     \
-<<<<<<< HEAD
-            num_p num_res = ssm_get_buffer_wrap(N);             \
-            num_mul_ssm_wrap(num_res, num_1, num_2, N);         \
-            num_res->cannot_expand = false;                     \
-            assert(num_immed(num_res, ARG_OPEN RES))            \
-=======
             num_p num_aux[10] = {};                             \
             mul_get_buffer_wrap(num_aux, N);                    \
             num_mul_ssm_wrap(num_aux, num_1, num_2, N);         \
             mul_get_buffer_free(num_aux);                       \
             assert(num_immed(num_aux[0], ARG_OPEN RES))         \
->>>>>>> alt
             num_free(num_1);                                    \
             num_free(num_2);                                    \
         }                                                       \
@@ -2077,7 +2038,6 @@ void test_num_mul(bool show)
         (5, UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX),
         (10, UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX - 1, 0, 0, 0, 0, 1)
     )
-
     TEST_NUM_MUL_BATCH(20,
         (
             19,
@@ -2597,8 +2557,6 @@ void test_num_base_from(bool show)
 
 
 
-<<<<<<< HEAD
-=======
 void test_fuzz_num_ssm_sh(bool show)
 {
     TEST_FN_OPEN
@@ -2640,7 +2598,6 @@ void test_fuzz_num_ssm_sh(bool show)
     TEST_FN_CLOSE
 }
 
->>>>>>> alt
 void test_fuzz_num_ssm_fft(bool show)
 {
     TEST_FN_OPEN
@@ -2652,18 +2609,10 @@ void test_fuzz_num_ssm_fft(bool show)
             num_p num_aux = num_create(2 * N, 2 * N);                   \
             for(uint64_t i=0; i<100; i++)                               \
             {                                                           \
-<<<<<<< HEAD
-                num_p num = num_create_rand((N-1) * K);                 \
-                num_p num_aux = num_create(N * K, N * K);               \
-                num_ssm_pad(num_aux, num, N-1, N, K);                   \
-                num_free(num);                                          \
-                num = num_aux;                                          \
-=======
                 num_p num_0 = num_create_rand((N-1) * K);               \
                 num_p num = num_create(N * K, N * K);                   \
                 num_ssm_pad(num, num_0, N-1, N, K);                     \
                 num_free(num_0);                                        \
->>>>>>> alt
                 uint64_t bits = 64 * (N-1) / K;                         \
                 num_p num_res = num_copy(num);                          \
                 num_ssm_fft_fwd(num_aux, num_res, N, K, bits);          \
@@ -2832,7 +2781,7 @@ void test_num()
 {
     TEST_LIB
 
-    bool show = true;
+    bool show = false;
 
     test_uint_from_char(show);
     test_uint_inv(show);
@@ -2895,7 +2844,8 @@ void test_num()
     test_num_base_to(show);
     test_num_base_from(show);
 
-    // test_fuzz_num_ssm_fft(show);
+    test_fuzz_num_ssm_sh(show);
+    test_fuzz_num_ssm_fft(show);
     test_fuzz_num_ssm_mul(show);
     test_fuzz_num_bz_div(show);
 

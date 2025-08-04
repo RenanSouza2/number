@@ -1,17 +1,3 @@
 base
 
-<<<<<<< HEAD
-regiter_count: 4102     max occupancy: 2036784
-regiter_count: 8198     max occupancy: 3957808
-regiter_count: 8198     max occupancy: 7939888
 regiter_count: 16390    max occupancy: 15714096
-regiter_count: 16390    max occupancy: 31605552
-
-regiter_count: 1537     max occupancy: 1410136
-regiter_count: 3073     max occupancy: 2600216
-regiter_count: 3073     max occupancy: 5308952
-regiter_count: 6145     max occupancy: 10311320
-regiter_count: 6145     max occupancy: 21102008
-=======
-regiter_count: 16390    max occupancy: 15714096
->>>>>>> alt

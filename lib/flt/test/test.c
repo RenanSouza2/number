@@ -470,14 +470,14 @@ void test_flt_num_div_sig(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_FLT_NUM_DIV_SIG(TAG, FLT, SIG, RES)                \
+    #define TEST_FLT_NUM_DIV_SIG(TAG, FLT, SIG, RES)              \
     {                                                               \
         TEST_CASE_OPEN(TAG)                                         \
         {                                                           \
-            flt_num_t flt = flt_num_create_immed(ARG_OPEN FLT);     \
+            flt_num_t flt = flt_num_create_immed(ARG_OPEN FLT); \
             sig_num_t flt_2 = sig_num_create_immed(ARG_OPEN SIG);   \
-            flt = flt_num_div_sig(flt, flt_2);                      \
-            assert(flt_num_immed(flt, ARG_OPEN RES))                \
+            flt = flt_num_div_sig(flt, flt_2);                    \
+            assert(flt_num_immed(flt, ARG_OPEN RES))              \
         }                                                           \
         TEST_CASE_CLOSE                                             \
     }
