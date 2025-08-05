@@ -340,8 +340,8 @@ void flt_num_free(flt_num_t flt)
 
 void flt_num_file_write(FILE *fp, flt_num_t flt)
 {
-    fprintf(fp, " %ld ", flt.exponent);
-    fprintf(fp, " %lu", flt.size);
+    fprintf(fp, " %lx ", flt.exponent);
+    fprintf(fp, " %lx", flt.size);
     sig_num_file_write(fp, flt.sig);
 }
 
@@ -359,7 +359,7 @@ flt_num_t flt_num_file_read(FILE *fp)
 {
     int64_t exponent;
     uint64_t size;
-    assert(fscanf(fp, " %ld %lu", &exponent, &size) == 2);
+    assert(fscanf(fp, " %lx %lx", &exponent, &size) == 2);
 
     sig_num_t sig = sig_num_file_read(fp);
 
