@@ -2484,3 +2484,16 @@ num_p num_base_from(num_p num, uint64_t base)
     num_free(num);
     return num_res;
 }
+
+
+
+void del()
+{
+    uint64_t count = 60000000;
+    uint64_t params[4];
+    ssm_get_params_no_wrap(params, count, count);
+    printf("\nM: %lu", params[0]);
+    printf("\nK: %lu", params[1]);
+    printf("\nQ: %lu", params[2]);
+    printf("\nn: %lu", params[3]);
+}
