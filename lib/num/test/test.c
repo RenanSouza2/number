@@ -1580,20 +1580,15 @@ void test_num_ssm_mul_tmp(bool show)
 {
     TEST_FN_OPEN
 
-    // clu_log_level_set(CLU_LOG_DYNAMIC);
-
     TEST_CASE_OPEN(1)
     {
         num_p num_1 = num_create_immed(2, 1, 0);
         num_p num_2 = num_create_immed(2, 1, 0);
-        num_p num_aux_2 = num_create(4, 4);
-        num_p num_aux[] = {num_1, num_2, num_aux_2};
-        num_ssm_mul_tmp(num_aux, 0, 2);
+        num_ssm_mul_tmp(num_1, num_2, 0, 2);
         num_1->cannot_expand = false;
         num_1->count = 2;
         assert(num_immed(num_1, 2, 0, 1));
         num_free(num_2);
-        num_free(num_aux_2);
     }
     TEST_CASE_CLOSE
 
@@ -1610,11 +1605,8 @@ void test_num_mul_ssm_wrap(bool show)
         {                                                       \
             num_p num_1 = num_create_immed(ARG_OPEN NUM_1);     \
             num_p num_2 = num_create_immed(ARG_OPEN NUM_2);     \
-            num_p num_aux[10] = {};                             \
-            mul_get_buffer_wrap(num_aux, N);                    \
-            num_mul_ssm_wrap(num_aux, num_1, num_2, N);         \
-            mul_get_buffer_free(num_aux);                       \
-            assert(num_immed(num_aux[0], ARG_OPEN RES))         \
+            num_mul_ssm_wrap(num_1, num_2, N);                  \
+            assert(num_immed(num_1, ARG_OPEN RES))              \
             num_free(num_1);                                    \
             num_free(num_2);                                    \
         }                                                       \
