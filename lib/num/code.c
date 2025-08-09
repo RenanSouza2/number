@@ -1424,12 +1424,7 @@ void num_ssm_fft_fwd_rec(
 }
 
 // num_aux->size >= 2 * n
-void num_ssm_fft_fwd(
-    num_p num,
-    uint64_t n,
-    uint64_t k,
-    uint64_t bits
-)
+void num_ssm_fft_fwd(num_p num, uint64_t n, uint64_t k, uint64_t bits)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
@@ -1520,8 +1515,6 @@ void num_ssm_mul_tmp(num_p num_1, num_p num_2, uint64_t pos, uint64_t n)
         return;
     }
 
-    tprintf("CASE NOT RECURSIVE");
-
     uint64_t chunk[2 * n];
     num_t num_aux;
     num_static(&num_aux, chunk, 2 * n);
@@ -1567,12 +1560,6 @@ void ssm_get_params_wrap(uint64_t res[4], uint64_t n)
     uint64_t K2 = (n - 1) & (1 - n);
     uint64_t K = K1 < K2 ? K1 : K2;
     uint64_t M = (n - 1) / K;
-
-    // printf("\nn0: %lu %lx", n, n);
-    // printf("\nK: %lu", K);
-    // printf("\nM %lu", M);
-
-    assert(K * M == n - 1);
 
     uint64_t Q;
     uint64_t _n;
@@ -1697,7 +1684,7 @@ void num_mul_ssm_buffer(num_p num_res, num_p num_1, num_p num_2)
     num_ssm_depad_no_wrap(&num_aux_1, M, n, K);
 
     num_set_count(num_res, 0);
-    memcpy(&num_res->chunk, chunk_1, num_aux_1.count * sizeof(uint64_t));
+    memcpy(num_res->chunk, num_aux_1.chunk, num_aux_1.count * sizeof(uint64_t));
     num_res->count = num_aux_1.count;
 }
 
@@ -1723,7 +1710,7 @@ void num_sqr_ssm_buffer(num_p num_res, num_p num)
     num_ssm_depad_no_wrap(&num_aux, M, n, K);
 
     num_set_count(num_res, 0);
-    memcpy(&num_res->chunk, chunk, num_aux.count * sizeof(uint64_t));
+    memcpy(num_res->chunk, chunk, num_aux.count * sizeof(uint64_t));
     num_res->count = num_aux.count;
 }
 

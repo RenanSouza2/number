@@ -1607,7 +1607,6 @@ void test_num_mul_ssm_wrap(bool show)
             num_p num_2 = num_create_immed(ARG_OPEN NUM_2);     \
             num_mul_ssm_wrap(num_1, num_2, N);                  \
             assert(num_immed(num_1, ARG_OPEN RES))              \
-            num_free(num_1);                                    \
             num_free(num_2);                                    \
         }                                                       \
         TEST_CASE_CLOSE                                         \
@@ -1923,19 +1922,19 @@ void test_num_mul(bool show)
         (0),
         (0),
         (0)
-    );
+    )
     TEST_NUM_MUL(2,
         num_mul,
         (1, 1),
         (0),
         (0)
-    );
+    )
     TEST_NUM_MUL(3,
         num_mul,
         (0),
         (1, 1),
         (0)
-    );
+    )
 
     #define TEST_NUM_MUL_BATCH(TAG, NUM_1, NUM_2, RES)                  \
     {                                                                   \
@@ -2763,7 +2762,7 @@ void test_num()
 {
     TEST_LIB
 
-    bool show = false;
+    bool show = true;
 
     test_uint_from_char(show);
     test_uint_inv(show);
