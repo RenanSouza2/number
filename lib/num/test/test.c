@@ -1381,10 +1381,8 @@ void test_num_ssm_shl_mod(bool show)
         TEST_CASE_OPEN(TAG)                             \
         {                                               \
             num_p num = num_create_immed(ARG_OPEN NUM); \
-            num_p num_aux = num_create(3, 3);           \
-            num_ssm_shl_mod(num_aux, num, 0, 3, BITS);  \
+            num_ssm_shl_mod(num, 0, 3, BITS);           \
             assert(num_immed(num, ARG_OPEN RES));       \
-            num_free(num_aux);                          \
         }                                               \
         TEST_CASE_CLOSE                                 \
     }
@@ -1460,10 +1458,8 @@ void test_num_ssm_shr_mod(bool show)
         TEST_CASE_OPEN(TAG)                             \
         {                                               \
             num_p num = num_create_immed(ARG_OPEN NUM); \
-            num_p num_aux = num_create(3, 3);           \
-            num_ssm_shr_mod(num_aux, num, 0, 3, BITS);  \
+            num_ssm_shr_mod(num, 0, 3, BITS);           \
             assert(num_immed(num, ARG_OPEN RES));       \
-            num_free(num_aux);                          \
         }                                               \
         TEST_CASE_CLOSE                                 \
     }
@@ -1543,11 +1539,9 @@ void test_num_ssm_fft(bool show)
         TEST_CASE_OPEN(TAG)                             \
         {                                               \
             num_p num = num_create_immed(ARG_OPEN NUM); \
-            num_p num_aux = num_create(2 * N, 2 * N);   \
             uint64_t q = 64 * (N - 1) / K;              \
-            num_ssm_fft_fwd(num_aux, num, N, K, q);     \
+            num_ssm_fft_fwd(num, N, K, q);              \
             assert(num_immed(num, ARG_OPEN RES));       \
-            num_free(num_aux);                          \
         }                                               \
         TEST_CASE_CLOSE                                 \
     }
@@ -2565,14 +2559,13 @@ void test_fuzz_num_ssm_sh(bool show)
     {                                                                   \
         TEST_CASE_OPEN_TIMEOUT(TAG, 0)                                  \
         {                                                               \
-            num_p num_aux = num_create(10, 10);                         \
             for(uint64_t id_t=0; id_t<100; id_t++)                      \
             {                                                           \
                 num_p num = num_create_rand(N);                         \
                 num->chunk[N - 1] = 0;                                  \
                 num_p num_res = num_copy(num);                          \
-                num_ssm_shl_mod(num_aux, num_res, 0, N, BITS);          \
-                num_ssm_shr_mod(num_aux, num_res, 0, N, BITS);          \
+                num_ssm_shl_mod(num_res, 0, N, BITS);                   \
+                num_ssm_shr_mod(num_res, 0, N, BITS);                   \
                 if(!num_eq_dbg(num_copy(num_res), num_copy(num)))       \
                 {                                                       \
                     printf("\ncase: (n: %d) (bits: %d)", N, BITS);      \
@@ -2585,7 +2578,6 @@ void test_fuzz_num_ssm_sh(bool show)
                 num_free(num_res);                                      \
                 num_free(num);                                          \
             }                                                           \
-            num_free(num_aux);                                          \
         }                                                               \
         TEST_CASE_CLOSE                                                 \
     }
@@ -2606,7 +2598,6 @@ void test_fuzz_num_ssm_fft(bool show)
     {                                                                   \
         TEST_CASE_OPEN_TIMEOUT(TAG, 0)                                  \
         {                                                               \
-            num_p num_aux = num_create(2 * N, 2 * N);                   \
             for(uint64_t i=0; i<100; i++)                               \
             {                                                           \
                 num_p num_0 = num_create_rand((N-1) * K);               \
@@ -2615,8 +2606,8 @@ void test_fuzz_num_ssm_fft(bool show)
                 num_free(num_0);                                        \
                 uint64_t bits = 64 * (N-1) / K;                         \
                 num_p num_res = num_copy(num);                          \
-                num_ssm_fft_fwd(num_aux, num_res, N, K, bits);          \
-                num_ssm_fft_inv(num_aux, num_res, N, K, bits);          \
+                num_ssm_fft_fwd(num_res, N, K, bits);                   \
+                num_ssm_fft_inv(num_res, N, K, bits);                   \
                 if(!num_eq_dbg(num_copy(num_res), num_copy(num)))       \
                 {                                                       \
                     printf("\ncase: %lu", i);                           \
@@ -2630,7 +2621,6 @@ void test_fuzz_num_ssm_fft(bool show)
                 num_free(num_res);                                      \
                 num_free(num);                                          \
             }                                                           \
-            num_free(num_aux);                                          \
         }                                                               \
         TEST_CASE_CLOSE                                                 \
     }

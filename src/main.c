@@ -582,8 +582,6 @@ int main()
     // flt_num_pi_3(1000);
     // mem_1(21);
 
-    del();
-
     // assert(clu_mem_is_empty("FINAL"));
 
     printf("\n");
