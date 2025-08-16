@@ -1515,7 +1515,9 @@ void num_ssm_mul_tmp(num_p num_1, num_p num_2, uint64_t pos, uint64_t n)
         return;
     }
 
+    // tprintf("TAG A | %lu", n);
     uint64_t chunk[2 * n];
+    // tprintf("TAG B");
     num_t num_aux;
     num_static(&num_aux, chunk, 2 * n);
     num_mul_classic_buffer(&num_aux, &num_t_1, &num_t_2);
@@ -1646,10 +1648,10 @@ void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n)
     uint64_t K = params[1];
     uint64_t n1 = params[3];
 
-    uint64_t chunk_1[n * K], chunk_2[n * K];
+    uint64_t chunk_1[n1 * K], chunk_2[n1 * K];
     num_t num_aux_1, num_aux_2;
-    num_static(&num_aux_1, chunk_1, n * K);
-    num_static(&num_aux_2, chunk_2, n * K);
+    num_static(&num_aux_1, chunk_1, n1 * K);
+    num_static(&num_aux_2, chunk_2, n1 * K);
     num_ssm_prepare(&num_aux_1, num_1, params);
     num_ssm_prepare(&num_aux_2, num_2, params);
 
@@ -1673,10 +1675,6 @@ void num_mul_ssm_buffer(num_p num_res, num_p num_1, num_p num_2)
     uint64_t K = params[1];
     uint64_t n = params[3];
 
-    // uint64_t chunk_1[n * K], chunk_2[n * K];
-    // num_t num_aux_1, num_aux_2;
-    // num_static(&num_aux_1, chunk_1, n * K);
-    // num_static(&num_aux_2, chunk_2, n * K);
     num_p num_aux_1 = num_create(n * K, 0);
     num_p num_aux_2 = num_create(n * K, 0);
     num_ssm_prepare(num_aux_1, num_1, params);
@@ -1688,6 +1686,9 @@ void num_mul_ssm_buffer(num_p num_res, num_p num_1, num_p num_2)
     num_set_count(num_res, 0);
     memcpy(num_res->chunk, num_aux_1->chunk, num_aux_1->count * sizeof(uint64_t));
     num_res->count = num_aux_1->count;
+
+    num_free(num_aux_1);
+    num_free(num_aux_2);
 }
 
 void num_sqr_ssm_buffer(num_p num_res, num_p num)
@@ -1703,17 +1704,17 @@ void num_sqr_ssm_buffer(num_p num_res, num_p num)
     uint64_t K = params[1];
     uint64_t n = params[3];
 
-    uint64_t chunk[n * K];
-    num_t num_aux;
-    num_static(&num_aux, chunk, n * K);
-    num_ssm_prepare(&num_aux, num, params);
+    num_p num_aux = num_create(n * K, 0);
+    num_ssm_prepare(num_aux, num, params);
 
-    num_mul_ssm_params(&num_aux, &num_aux, params); // todo param square
-    num_ssm_depad_no_wrap(&num_aux, M, n, K);
+    num_mul_ssm_params(num_aux, num_aux, params); // todo param square
+    num_ssm_depad_no_wrap(num_aux, M, n, K);
 
     num_set_count(num_res, 0);
-    memcpy(num_res->chunk, chunk, num_aux.count * sizeof(uint64_t));
-    num_res->count = num_aux.count;
+    memcpy(num_res->chunk, num_aux->chunk, num_aux->count * sizeof(uint64_t));
+    num_res->count = num_aux->count;
+
+    num_free(num_aux);
 }
 
 
