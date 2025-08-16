@@ -1,9 +1,5 @@
-mod exp
-mod display
-rename fix to fixed
-wrap unwrap flt_p
-nested mutex display
-iterating variable is I
-simplify division
-test: get commit mid commit and run with no monitoring
 remove return if not expected to expand
+fix flt_display_dec_corener cases bug
+multiplication half bits
+division with memoization
+base with memoization

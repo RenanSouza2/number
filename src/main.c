@@ -5,8 +5,8 @@
 #include "../mods/macros/assert.h"
 #include "../mods/macros/time.h"
 
-#include "../lib/fix/header.h"
-#include "../lib/float/header.h"
+#include "../lib/fxd/header.h"
+#include "../lib/flt/header.h"
 #include "../lib/mod/header.h"
 #include "../lib/num/header.h"
 #include "../lib/num/struct.h"
@@ -144,7 +144,7 @@ void time_3()
         num_p num_1_copy = num_copy(num_1);
         num_p num_2_copy = num_copy(num_2);
         TIME_RESET
-        num_p num_res = num_mul_ssm(num_1_copy, num_2_copy);
+        num_p num_res = num_mul(num_1_copy, num_2_copy);
         TIME_END(t3);
         printf("\t%.5f", t3 / 1e9);
         num_free(num_res);
@@ -165,7 +165,7 @@ void time_3()
         num_p num_1_copy = num_copy(num_1);
         num_p num_2_copy = num_copy(num_2);
         TIME_RESET
-        num_p num_res = num_mul_ssm(num_1_copy, num_2_copy);
+        num_p num_res = num_mul(num_1_copy, num_2_copy);
         TIME_END(t3);
         printf("\t%.5f", t3 / 1e9);
         num_free(num_res);
@@ -347,22 +347,22 @@ void time_dec()
 void pi_1()
 {
     uint64_t pos = 3;
-    fix_num_t fix = fix_num_wrap(0, pos);
+    fxd_num_t fxd = fxd_num_wrap(0, pos);
     for(uint64_t i=1; ; i++)
     {
         int64_t base = 16 * i * i - 16 * i + 3;
-        fix_num_t fix_1 = fix_num_wrap(8, pos);
-        fix_num_t fix_2 = fix_num_wrap(base, pos);
-        fix_1 = fix_num_div(fix_1, fix_2);
-        fix = fix_num_add(fix, fix_num_copy(fix_1));
+        fxd_num_t fxd_1 = fxd_num_wrap(8, pos);
+        fxd_num_t fxd_2 = fxd_num_wrap(base, pos);
+        fxd_1 = fxd_num_div(fxd_1, fxd_2);
+        fxd = fxd_num_add(fxd, fxd_num_copy(fxd_1));
 
         if(i%1000000 == 0)
         {
             printf("\ni: " U64P() "\t", i);
-            fix_num_display_dec(fix);
+            fxd_num_display_dec(fxd);
             printf("\t");
-            fix_num_display_dec(fix_1);
-            fix_num_free(fix_1);
+            fxd_num_display_dec(fxd_1);
+            fxd_num_free(fxd_1);
         }
     }
 }
@@ -370,18 +370,18 @@ void pi_1()
 void e()
 {
     uint64_t pos = 1000;
-    fix_num_t fix = fix_num_wrap(0, pos);
-    fix_num_t base = fix_num_wrap(1, pos);
+    fxd_num_t fxd = fxd_num_wrap(0, pos);
+    fxd_num_t base = fxd_num_wrap(1, pos);
     for(uint64_t i=1; ; i++)
     {
-        fix_num_t fix_2 = fix_num_wrap(i, pos);
-        base = fix_num_div(base, fix_2);
-        fix = fix_num_add(fix, fix_num_copy(base));
+        fxd_num_t fxd_2 = fxd_num_wrap(i, pos);
+        base = fxd_num_div(base, fxd_2);
+        fxd = fxd_num_add(fxd, fxd_num_copy(base));
 
         if(i%1000 == 0)
         {
             fprintf(stderr, "\ni: " U64P() "", i);
-            fix_num_display_dec(fix);
+            fxd_num_display_dec(fxd);
         }
     }
 }
@@ -389,142 +389,142 @@ void e()
 void pi_2()
 {
     uint64_t pos = 2;
-    fix_num_t fix = fix_num_wrap(2, pos);
+    fxd_num_t fxd = fxd_num_wrap(2, pos);
     for(uint64_t i=1; ; i++)
     {
         uint64_t base = 4 * i * i;
-        fix = fix_num_mul(fix, fix_num_wrap(base, pos));
-        fix = fix_num_div(fix, fix_num_wrap(base - 1, pos));
+        fxd = fxd_num_mul(fxd, fxd_num_wrap(base, pos));
+        fxd = fxd_num_div(fxd, fxd_num_wrap(base - 1, pos));
 
         if(i%1000000 == 0)
         {
             printf("\n");
-            fix_num_display_dec(fix);
+            fxd_num_display_dec(fxd);
         }
     }
 }
 
-void float_num_pi_1()
+void flt_num_pi_1()
 {
     uint64_t size = 3;
-    float_num_t flt = float_num_wrap(2, size);
+    flt_num_t flt = flt_num_wrap(2, size);
 
-    float_num_t i_m_8 = float_num_wrap(0, size);
-    float_num_t i_p_2 = float_num_copy(i_m_8);
-    float_num_t float_1 = float_num_wrap(1, size);
-    float_num_t float_4 = float_num_wrap(4, size);
-    float_num_t float_8 = float_num_wrap(8, size);
+    flt_num_t i_m_8 = flt_num_wrap(0, size);
+    flt_num_t i_p_2 = flt_num_copy(i_m_8);
+    flt_num_t flt_1 = flt_num_wrap(1, size);
+    flt_num_t flt_4 = flt_num_wrap(4, size);
+    flt_num_t flt_8 = flt_num_wrap(8, size);
     for(uint64_t i=0; ; i++)
     {
-        i_p_2 = float_num_add(i_p_2, float_num_copy(float_4));
-        i_p_2 = float_num_add(i_p_2, float_num_copy(i_m_8));
+        i_p_2 = flt_num_add(i_p_2, flt_num_copy(flt_4));
+        i_p_2 = flt_num_add(i_p_2, flt_num_copy(i_m_8));
 
-        i_m_8 = float_num_add(i_m_8, float_num_copy(float_8));
+        i_m_8 = flt_num_add(i_m_8, flt_num_copy(flt_8));
 
-        flt = float_num_mul(flt, float_num_copy(i_p_2));
+        flt = flt_num_mul(flt, flt_num_copy(i_p_2));
 
-        float_num_t flt_base = float_num_sub(
-            float_num_copy(i_p_2),
-            float_num_copy(float_1)
+        flt_num_t flt_base = flt_num_sub(
+            flt_num_copy(i_p_2),
+            flt_num_copy(flt_1)
         );
-        flt = float_num_div(flt, flt_base);
+        flt = flt_num_div(flt, flt_base);
 
         if(i%1000000 == 0)
         {
             printf("\n");
-            float_num_display_dec(flt);
+            flt_num_display_dec(flt);
         }
     }
 }
 
-void float_num_pi_2(uint64_t size)
+void flt_num_pi_2(uint64_t size)
 {
-    float_num_t flt = float_num_wrap(3, size);
-    float_num_t flt_a = float_num_wrap(6, size);
-    float_num_t flt_1_4 = float_num_div(
-        float_num_wrap(1, size),
-        float_num_wrap(4, size)
+    flt_num_t flt = flt_num_wrap(3, size);
+    flt_num_t flt_1_4 = flt_num_div(
+        flt_num_wrap(1, size),
+        flt_num_wrap(4, size)
     );
-    float_num_t flt_m_3_8 = float_num_div(
-        float_num_wrap(-3, size),
-        float_num_wrap(8, size)
+    flt_num_t flt_m_3_8 = flt_num_div(
+        flt_num_wrap(-3, size),
+        flt_num_wrap(8, size)
     );
-    float_num_t flt_1 = float_num_wrap(1, size);
-    float_num_t flt_m_1_2 = float_num_div(
-        float_num_wrap(-1, size),
-        float_num_wrap(2, size)
+    flt_num_t flt_1 = flt_num_wrap(1, size);
+    flt_num_t flt_m_1_2 = flt_num_div(
+        flt_num_wrap(-1, size),
+        flt_num_wrap(2, size)
     );
 
+    flt_num_t flt_a = flt_num_wrap(6, size);
     for(uint64_t i=1; ; i++)
     {
-        float_num_t flt_tmp = float_num_wrap(i, size);
-        flt_tmp = float_num_div(float_num_copy(flt_m_3_8), flt_tmp);
-        flt_tmp = float_num_add(float_num_copy(flt_1_4), flt_tmp);
-        flt_a = float_num_mul(flt_a, flt_tmp);
+        flt_num_t flt_tmp = flt_num_wrap(i, size);
+        flt_tmp = flt_num_div(flt_num_copy(flt_m_3_8), flt_tmp);
+        flt_tmp = flt_num_add(flt_num_copy(flt_1_4), flt_tmp);
+        flt_a = flt_num_mul(flt_a, flt_tmp);
 
-        flt_tmp = float_num_wrap(2*i + 1, size);
-        flt_tmp = float_num_div(float_num_copy(flt_1), flt_tmp);
-        flt_tmp = float_num_add(flt_tmp, float_num_copy(flt_m_1_2));
+        flt_tmp = flt_num_wrap(2*i + 1, size);
+        flt_tmp = flt_num_div(flt_num_copy(flt_1), flt_tmp);
+        flt_tmp = flt_num_add(flt_tmp, flt_num_copy(flt_m_1_2));
 
-        flt_tmp = float_num_mul(flt_tmp, float_num_copy(flt_a));
-        if(!float_num_safe_add(flt, flt_tmp))
+        flt_tmp = flt_num_mul(flt_tmp, flt_num_copy(flt_a));
+        if(!flt_num_safe_add(flt, flt_tmp))
         {
-            float_num_free(flt_tmp);
+            flt_num_free(flt_tmp);
             break;
         }
 
-        flt = float_num_add(flt, flt_tmp);
+        flt = flt_num_add(flt, flt_tmp);
 
         if(i%1000 == 0)
         {
             printf("\n");
-            float_num_display_dec(flt);
+            flt_num_display_dec(flt);
         }
     }
 
     printf("\n");
     printf("\n");
-    float_num_display_dec(flt);
-    float_num_free(flt);
+    flt_num_display_dec(flt);
+    flt_num_free(flt);
 
-    float_num_free(flt_a);
-    float_num_free(flt_1_4);
-    float_num_free(flt_m_3_8);
-    float_num_free(flt_1);
-    float_num_free(flt_m_1_2);
+    flt_num_free(flt_a);
+    flt_num_free(flt_1_4);
+    flt_num_free(flt_m_3_8);
+    flt_num_free(flt_1);
+    flt_num_free(flt_m_1_2);
 }
 
-void float_num_pi_3(uint64_t size)
+void flt_num_pi_3(uint64_t size)
 {
-    float_num_t flt_a = float_num_wrap(6, size);
-    float_num_t flt_pi = float_num_wrap(3, size);
+    flt_num_t flt_a = flt_num_wrap(6, size);
+    flt_num_t flt_pi = flt_num_wrap(3, size);
 
     for(uint64_t i=1; ; i++)
     {
-        flt_a = float_num_mul_sig(flt_a, sig_num_wrap((int64_t)2 * i - 3));
-        flt_a = float_num_div_sig(flt_a, sig_num_wrap((int64_t)8 * i));
+        flt_a = flt_num_mul_sig(flt_a, sig_num_wrap((int64_t)2 * i - 3));
+        flt_a = flt_num_div_sig(flt_a, sig_num_wrap((int64_t)8 * i));
 
         if(i%1000 == 0)
             fprintf(stderr, "\nexp: %ld", -(flt_a.size + flt_a.exponent));
 
-        float_num_t flt_b = float_num_copy(flt_a);
-        flt_b = float_num_mul_sig(flt_b, sig_num_wrap((int64_t)1 - 2 * i));
-        flt_b = float_num_div_sig(flt_b, sig_num_wrap((int64_t)4 * i + 2));
+        flt_num_t flt_b = flt_num_copy(flt_a);
+        flt_b = flt_num_mul_sig(flt_b, sig_num_wrap((int64_t)1 - 2 * i));
+        flt_b = flt_num_div_sig(flt_b, sig_num_wrap((int64_t)4 * i + 2));
 
-        if(!float_num_safe_add(flt_pi, flt_b))
+        if(!flt_num_safe_add(flt_pi, flt_b))
         {
-            float_num_free(flt_b);
+            flt_num_free(flt_b);
             break;
         }
 
-        flt_pi = float_num_add(flt_pi, flt_b);
+        flt_pi = flt_num_add(flt_pi, flt_b);
     }
 
     printf("\n");
     printf("\n");
-    float_num_display_dec(flt_pi);
-    float_num_free(flt_pi);
-    float_num_free(flt_a);
+    flt_num_display_dec(flt_pi);
+    flt_num_free(flt_pi);
+    flt_num_free(flt_a);
 }
 
 
@@ -537,16 +537,16 @@ void display_bit(uint64_t value)
 
 
 
-fix_num_t fix_step(fix_num_t fix, uint64_t pos)
+fxd_num_t fxd_step(fxd_num_t fxd, uint64_t pos)
 {
-    fix_num_t fix_a = fix_num_shr(fix_num_copy(fix), 1);
-    fix = fix_num_div(fix_num_wrap(1, pos), fix);
-    return fix_num_add(fix, fix_a);
+    fxd_num_t fxd_a = fxd_num_shr(fxd_num_copy(fxd), 1);
+    fxd = fxd_num_div(fxd_num_wrap(1, pos), fxd);
+    return fxd_num_add(fxd, fxd_a);
 }
 
 void sqrt_2()
 {
-    fix_num_t fix_x = fix_num_wrap(1, 1);
+    fxd_num_t fxd_x = fxd_num_wrap(1, 1);
     num_p num = num_wrap(10);
 
     for(uint64_t i=0; ; i++)
@@ -554,38 +554,64 @@ void sqrt_2()
         printf("\ni: " U64P() "", i);
         // fprintf(stderr, "\ni: %lu", i);
 
-        fix_x = fix_step(fix_x, 1);
+        fxd_x = fxd_step(fxd_x, 1);
 
-        fix_num_t fix_2 = fix_num_sqr(fix_num_copy(fix_x));
-        fix_2 = fix_num_sub(fix_2, fix_num_wrap(2, 1));
-        bool res = num_cmp(fix_2.sig.num, num) < 0;
-        fix_num_free(fix_2);
+        fxd_num_t fxd_2 = fxd_num_sqr(fxd_num_copy(fxd_x));
+        fxd_2 = fxd_num_sub(fxd_2, fxd_num_wrap(2, 1));
+        bool res = num_cmp(fxd_2.sig.num, num) < 0;
+        fxd_num_free(fxd_2);
         if(res)
             break;
     }
 
     for(uint64_t i = 2; ; i *= 2)
     {
-        fix_x = fix_num_reposition(fix_x, i);
-        fix_x = fix_step(fix_x, i);
+        fxd_x = fxd_num_reposition(fxd_x, i);
+        fxd_x = fxd_step(fxd_x, i);
 
         // if(fork())
         //     continue;
 
         printf("\n\n");
-        fix_num_display_full("hex", fix_x);
+        fxd_num_display_full("hex", fxd_x);
         printf("\n");
-        fix_num_display_dec(fix_x);
+        fxd_num_display_dec(fxd_x);
         printf("\n\npos: " U64P() "", i * 2);
 
         // exit(EXIT_SUCCESS);
     }
 
-    // fix_num_display_dec(fix_x);
+    // fxd_num_display_dec(fxd_x);
 
-    fix_num_free(fix_x);
+    fxd_num_free(fxd_x);
     num_free(num);
 }
+
+
+
+#ifdef DEBUG
+void mem_1(uint64_t index)
+{
+    num_p num_1 = num_generate(index, 2);
+    num_p num_2 = num_generate(index, 3);
+    
+    clu_clean_max_occupancy();
+    uint64_t count_bef = clu_get_register_count();
+    num_1 = num_mul(num_1, num_2);
+    uint64_t count_aft = clu_get_register_count();
+
+    printf("\nregiter_count: %lu", count_aft - count_bef);
+    printf("\tmax occupancy: %lu", clu_get_max_occupancy());
+
+    num_free(num_1);
+}
+#else
+void mem_1(uint64_t)
+{
+    printf("\n\tfunction should be run with ./run_debug");
+    assert(false);
+}
+#endif
 
 
 
@@ -598,47 +624,21 @@ int main()
     // uint64_t arg = get_arg(argc, argv);
 
     // clu_log_enable(true);
-
     // num_generate(21, 2);
-    // time_1(16, 35);
+    time_1(16, 29);
     // time_1(16, 17);
-    // time_2(argc, argv, 19);
     // time_3();
-    // time_3_params();
+    // time_2(argc, argv, 19);
     // fibonacci();
     // fibonacci_2(16, 23);
     // fibonacci_3(16, 23);
     // sqrt_2();
     // e();
     // pi_2();
-    // float_num_pi_1();
-    // float_num_pi_2(1000);
-    // float_num_pi_3(1000);
-
-    // uint64_t size = 10;
-    // float_num_t flt = float_num_div(
-    //     float_num_wrap(1, size),
-    //     float_num_wrap(7, size)
-    // );
-    // printf("\n");float_num_display(flt);
-    // float_num_save("flt_del.txt", flt);
-    // sleep(10);
-    // flt = float_num_load("flt_del.txt");
-
-    // printf("\n");float_num_display(flt);
-    // float_num_free(flt);
-
-    // size = 10;
-    sig_num_t sig_1 = sig_num_wrap(5);
-    for(uint64_t i=0; i<10; i++)
-        sig_1 =  sig_num_sqr(sig_1);
-    sig_num_display_full("sig", sig_1);
-    sig_num_save("flt_del.txt", sig_num_copy(sig_1));
-    // sleep(10);
-    sig_num_t sig_2 = sig_num_load("flt_del.txt");
-
-    sig_num_display_full("sig", sig_1);
-    printf("\ncmp: %ld", sig_num_cmp(sig_1, sig_2));
+    // flt_num_pi_1();
+    // flt_num_pi_2(1000);
+    // flt_num_pi_3(1000);
+    // mem_1(21);
 
     // assert(clu_mem_is_empty("FINAL"));
 

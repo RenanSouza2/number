@@ -1,9 +1,9 @@
-#ifndef __FIX_STRUCT_H__
-#define __FIX_STRUCT_H__
+#ifndef __FXD_STRUCT_H__
+#define __FXD_STRUCT_H__
 
 #include "../sig/struct.h"
 
-STRUCT(fix_num)
+STRUCT(fxd_num)
 {
     uint64_t pos;
     sig_num_t sig;

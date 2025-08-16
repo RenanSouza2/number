@@ -51,12 +51,6 @@ num_p num_gcd(num_p num_1, num_p num_2);
 num_p num_base_to(num_p num, uint64_t base);
 num_p num_base_from(num_p num, uint64_t base);
 
-num_p num_div_mod_unbalanced(num_p num_1, num_p num_2);
-
-num_p num_mul_ssm(num_p num_1, num_p num_2);
-num_p num_mul_classic(num_p num_1, num_p num_2);
-
-void ssm_get_params_no_wrap(uint64_t res[4], uint64_t count_1, uint64_t count_2);
-uint64_t ssm_round_count(uint64_t count);
+void del();
 
 #endif

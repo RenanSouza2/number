@@ -55,13 +55,6 @@ num_p num_sub_offset(num_p num_1, uint64_t pos_1, num_p num_2);
 
 void num_display_span_full(char tag[], num_p num, uint64_t n, uint64_t k);
 uint64_t ssm_bit_inv(uint64_t i, uint64_t K);
-void num_ssm_shl_mod(
-    num_p num_aux,
-    num_p num,
-    uint64_t pos,
-    uint64_t n,
-    uint64_t bits
-);
 void num_ssm_add_mod(
     num_p num_res,
     uint64_t pos_res,
@@ -81,9 +74,10 @@ void num_ssm_sub_mod(
     uint64_t n
 );
 void num_ssm_opposite(num_p num, uint64_t pos, uint64_t n);
-num_p num_ssm_pad(num_p num, uint64_t M, uint64_t n, uint64_t K);
+void num_ssm_pad(num_p num_res, num_p num, uint64_t M, uint64_t n, uint64_t K);
 void num_ssm_depad_no_wrap(num_p num, uint64_t M, uint64_t n, uint64_t K);
 void num_ssm_depad_wrap(
+    num_p num_res,
     num_p num,
     uint64_t M,
     uint64_t n,
@@ -106,38 +100,16 @@ void num_ssm_shr(
     uint64_t n,
     uint64_t bits
 );
-void num_ssm_shr_mod(
-    num_p num_aux,
-    num_p num,
-    uint64_t pos,
-    uint64_t n,
-    uint64_t bits
-);
-void num_ssm_fft_fwd(
-    num_p num_aux,
-    num_p num,
-    uint64_t n,
-    uint64_t k,
-    uint64_t bits
-);
-void num_ssm_fft_inv(
-    num_p num_aux,
-    num_p num,
-    uint64_t n,
-    uint64_t k,
-    uint64_t bits
-);
-void num_ssm_mul_tmp(
-    num_p num_res,
-    num_p num_1,
-    num_p num_2,
-    uint64_t pos,
-    uint64_t n
-);
-void num_mul_ssm_wrap(num_p num_res, num_p num_1, num_p num_2, uint64_t n);
+void num_ssm_shl_mod(num_p num, uint64_t pos, uint64_t n, uint64_t bits);
+void num_ssm_shr_mod(num_p num, uint64_t pos, uint64_t n, uint64_t bits);
+void num_ssm_fft_fwd(num_p num, uint64_t n, uint64_t k, uint64_t bits);
+void num_ssm_fft_inv(num_p num, uint64_t n, uint64_t k, uint64_t bits);
+void num_ssm_mul_tmp(num_p num_1, num_p num_2, uint64_t pos, uint64_t n);
+void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n);
 num_p ssm_get_buffer_wrap(uint64_t n);
 
 num_p num_mul_classic(num_p num_1, num_p num_2);
+num_p num_mul_ssm(num_p num_1, num_p num_2);
 num_p num_sqr_classic(num_p num);
 num_p num_sqr_ssm(num_p num);
 

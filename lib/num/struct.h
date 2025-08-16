@@ -1,6 +1,8 @@
 #ifndef __NUM_STRUCT_H__
 #define __NUM_STRUCT_H__
 
+#include <stdbool.h>
+
 #include "../../mods/macros/struct.h"
 #include "../../mods/macros/uint.h"
 

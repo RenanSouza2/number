@@ -4,7 +4,7 @@
 
 
 
-void test_fixed_fn(bool show)
+void test_fxd_fn(bool show)
 {
     TEST_FN_OPEN
 
@@ -19,13 +19,13 @@ void test_fixed_fn(bool show)
 
 
 
-void test_fixed()
+void test_fxd()
 {
     TEST_LIB
 
     bool show = false;
 
-    test_fixed_fn(show);
+    test_fxd_fn(show);
 
     TEST_ASSERT_MEM_EMPTY
 }
@@ -35,7 +35,7 @@ void test_fixed()
 int main()
 {
     setbuf(stdout, NULL);
-    test_fixed();
+    test_fxd();
     printf("\n\n\tTest successful\n\n");
     return 0;
 }
