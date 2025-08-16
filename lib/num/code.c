@@ -1673,19 +1673,21 @@ void num_mul_ssm_buffer(num_p num_res, num_p num_1, num_p num_2)
     uint64_t K = params[1];
     uint64_t n = params[3];
 
-    uint64_t chunk_1[n * K], chunk_2[n * K];
-    num_t num_aux_1, num_aux_2;
-    num_static(&num_aux_1, chunk_1, n * K);
-    num_static(&num_aux_2, chunk_2, n * K);
-    num_ssm_prepare(&num_aux_1, num_1, params);
-    num_ssm_prepare(&num_aux_2, num_2, params);
+    // uint64_t chunk_1[n * K], chunk_2[n * K];
+    // num_t num_aux_1, num_aux_2;
+    // num_static(&num_aux_1, chunk_1, n * K);
+    // num_static(&num_aux_2, chunk_2, n * K);
+    num_p num_aux_1 = num_create(n * K, 0);
+    num_p num_aux_2 = num_create(n * K, 0);
+    num_ssm_prepare(num_aux_1, num_1, params);
+    num_ssm_prepare(num_aux_2, num_2, params);
 
-    num_mul_ssm_params(&num_aux_1, &num_aux_2, params);
-    num_ssm_depad_no_wrap(&num_aux_1, M, n, K);
+    num_mul_ssm_params(num_aux_1, num_aux_2, params);
+    num_ssm_depad_no_wrap(num_aux_1, M, n, K);
 
     num_set_count(num_res, 0);
-    memcpy(num_res->chunk, num_aux_1.chunk, num_aux_1.count * sizeof(uint64_t));
-    num_res->count = num_aux_1.count;
+    memcpy(num_res->chunk, num_aux_1->chunk, num_aux_1->count * sizeof(uint64_t));
+    num_res->count = num_aux_1->count;
 }
 
 void num_sqr_ssm_buffer(num_p num_res, num_p num)

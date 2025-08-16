@@ -115,6 +115,63 @@ void time_2(int argc, char** argv, uint64_t max)
     }
 }
 
+void time_3()
+{
+    uint64_t i_last = 1;
+    num_p num_1 = num_generate_2(i_last, 2);
+    num_p num_2 = num_generate_2(i_last, 3);
+    uint64_t threshold = 1000;
+    uint64_t max = 200000;
+    uint64_t p_1 = 102;
+    uint64_t p_2 = 100;
+    // uint64_t threshold = 1000;
+    // uint64_t max = 200000;
+    // uint64_t p_1 = 1002;
+    // uint64_t p_2 = 1000;
+    assert(threshold * p_1 / p_2 > threshold);
+    for(uint64_t i=1; i<threshold; i+=1)
+    {
+        TIME_SETUP
+
+        for(uint64_t j=i_last; j<i; j++)
+        {
+            num_1 = num_generate_2_step(num_1, 2);
+            num_2 = num_generate_2_step(num_2, 3);
+        }
+        i_last = i;
+
+        printf("\n%lu", num_1->count);
+        num_p num_1_copy = num_copy(num_1);
+        num_p num_2_copy = num_copy(num_2);
+        TIME_RESET
+        num_p num_res = num_mul(num_1_copy, num_2_copy);
+        TIME_END(t3);
+        printf("\t%.5f", t3 / 1e9);
+        num_free(num_res);
+    }
+
+    for(uint64_t i=threshold; i<max; i = i * p_1 / p_2)
+    {
+         TIME_SETUP
+
+        for(uint64_t j=i_last; j<i; j++)
+        {
+            num_1 = num_generate_2_step(num_1, 2);
+            num_2 = num_generate_2_step(num_2, 3);
+        }
+        i_last = i;
+
+        printf("\n%lu", num_1->count);
+        num_p num_1_copy = num_copy(num_1);
+        num_p num_2_copy = num_copy(num_2);
+        TIME_RESET
+        num_p num_res = num_mul(num_1_copy, num_2_copy);
+        TIME_END(t3);
+        printf("\t%.5f", t3 / 1e9);
+        num_free(num_res);
+    }
+}
+
 
 
 void fibonacci_1()
@@ -570,6 +627,7 @@ int main()
     // num_generate(21, 2);
     // time_1(16, 29);
     // time_1(16, 17);
+    time_3();
     // time_2(argc, argv, 19);
     // fibonacci();
     // fibonacci_2(16, 23);
