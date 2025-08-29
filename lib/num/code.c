@@ -1486,9 +1486,7 @@ void num_ssm_mul_rec(num_p num_1, num_p num_2, uint64_t pos, uint64_t n)
         return;
     }
 
-    // tprintf("TAG A | %lu", n);
     uint64_t chunk[2 * n];
-    // tprintf("TAG B");
     num_t num_aux;
     num_static(&num_aux, chunk, 2 * n);
     num_mul_classic_buffer(&num_aux, &num_t_1, &num_t_2);
@@ -1568,24 +1566,6 @@ static void num_ssm_prepare(num_p num_res, num_p num, uint64_t params[4])
     num_ssm_fft_fwd(num_res, n, K, Q);
 }
 
-// num_res->size >= K * n
-static void num_mul_ssm_params(num_p num_1, num_p num_2, uint64_t params[4])
-{
-    CLU_HANDLER_IS_SAFE(num_1)
-    CLU_HANDLER_IS_SAFE(num_2)
-    assert(num_1)
-    assert(num_2)
-
-    uint64_t K = params[1];
-    uint64_t Q = params[2];
-    uint64_t n = params[3];
-
-    for(uint64_t i=0; i<K; i++)
-        num_ssm_mul_rec(num_1, num_2, i * n, n);
-
-    num_ssm_fft_inv(num_1, n, K, Q);
-}
-
 // Keeps NUM_1 NUM_2
 void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n)
 {
@@ -1598,6 +1578,7 @@ void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n)
     ssm_get_params_wrap(params, n);
     uint64_t M = params[0];
     uint64_t K = params[1];
+    uint64_t Q = params[2];
     uint64_t n1 = params[3];
 
     uint64_t chunk_1[n1 * K], chunk_2[n1 * K];
@@ -1607,7 +1588,10 @@ void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n)
     num_ssm_prepare(&num_aux_1, num_1, params);
     num_ssm_prepare(&num_aux_2, num_2, params);
 
-    num_mul_ssm_params(&num_aux_1, &num_aux_2, params);
+    for(uint64_t i=0; i<K; i++)
+        num_ssm_mul_rec(&num_aux_1, &num_aux_2, i * n1, n1);
+
+    num_ssm_fft_inv(&num_aux_1, n1, K, Q);
     num_ssm_depad_wrap(num_1, &num_aux_1, M, n1, K, n);
 }
 
@@ -1625,6 +1609,7 @@ static void num_mul_ssm_buffer(num_p num_res, num_p num_1, num_p num_2)
     ssm_get_params_no_wrap(params, num_1->count, num_2->count);
     uint64_t M = params[0];
     uint64_t K = params[1];
+    uint64_t Q = params[2];
     uint64_t n = params[3];
 
     num_p num_aux_1 = num_create(n * K, 0);
@@ -1632,7 +1617,10 @@ static void num_mul_ssm_buffer(num_p num_res, num_p num_1, num_p num_2)
     num_ssm_prepare(num_aux_1, num_1, params);
     num_ssm_prepare(num_aux_2, num_2, params);
 
-    num_mul_ssm_params(num_aux_1, num_aux_2, params);
+    for(uint64_t i=0; i<K; i++)
+        num_ssm_mul_rec(num_aux_1, num_aux_2, i * n, n);
+
+    num_ssm_fft_inv(num_aux_1, n, K, Q);
     num_ssm_depad_no_wrap(num_aux_1, M, n, K);
 
     num_set_count(num_res, 0);
@@ -1654,12 +1642,16 @@ static void num_sqr_ssm_buffer(num_p num_res, num_p num)
     ssm_get_params_no_wrap(params, num->count, num->count);
     uint64_t M = params[0];
     uint64_t K = params[1];
+    uint64_t Q = params[2];
     uint64_t n = params[3];
 
     num_p num_aux = num_create(n * K, 0);
     num_ssm_prepare(num_aux, num, params);
 
-    num_mul_ssm_params(num_aux, num_aux, params); // todo param square
+    for(uint64_t i=0; i<K; i++)
+        num_ssm_mul_rec(num_aux, num_aux, i * n, n);
+
+    num_ssm_fft_inv(num_aux, n, K, Q);
     num_ssm_depad_no_wrap(num_aux, M, n, K);
 
     num_set_count(num_res, 0);
