@@ -2,8 +2,6 @@
 #include "../../../testrc.h"
 #include "../../../mods/macros/test.h"
 
-#include <time.h>
-
 
 
 void test_uint_from_char(bool show)

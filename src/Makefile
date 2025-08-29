@@ -1,4 +1,4 @@
-FLAGS = -Wall -Wextra -Werror -Wfatal-errors -O3 -pthread -std=c99 -lrt -D_GNU_SOURCE
+FLAGS = -std=gnu2x -Wall -Wextra -Werror -Wfatal-errors -Wpedantic -Wshadow -Wpointer-arith -Wcast-qual -Wstrict-prototypes -Wformat=2 -Wnull-dereference -Wconversion -Wsign-conversion -fstack-protector-strong -D _POSIX_C_SOURCE=199309L
 FLAGS_DBG = -D DEBUG -fsanitize=address
 
 LIB = ../lib/lib.o

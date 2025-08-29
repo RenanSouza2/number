@@ -61,12 +61,12 @@ void time_1(uint64_t begin, uint64_t end)
         num_1 = num_add(num_1, num_wrap(1));
         num_1 = num_sqr(num_1);
         TIME_END(t1)
-        printf("\t%10.3f", t1 / 1e9);
+        printf("\t%10.3f", (double)t1 / 1e9);
 
         num_2 = num_add(num_2, num_wrap(2));
         num_2 = num_sqr(num_2);
         TIME_END(t2)
-        printf("\t%10.3f", t2 / 1e9);
+        printf("\t%10.3f", (double)t2 / 1e9);
 
         num_p num_1_copy = num_copy(num_1);
         num_p num_2_copy = num_copy(num_2);
@@ -76,7 +76,7 @@ void time_1(uint64_t begin, uint64_t end)
         TIME_RESET
         num_p num = num_div(num_1_copy, num_2_copy);
         TIME_END(t3)
-        printf("\t%10.3f", t3 / 1e9);
+        printf("\t%10.3f", (double)t3 / 1e9);
 
         // clu_log_enable(false);
 
@@ -88,7 +88,7 @@ void time_1(uint64_t begin, uint64_t end)
 
 void time_2(int argc, char** argv, uint64_t max)
 {
-    uint64_t id = get_arg(argc, argv);
+    uint64_t id = (uint64_t)get_arg(argc, argv);
     printf("\nid: " U64P() "", id);
 
     num_p num_1 = num_generate(max, 2);
@@ -111,11 +111,11 @@ void time_2(int argc, char** argv, uint64_t max)
         uint64_t begin = get_time();
         num_aux_1 = num_div(num_aux_1, num_aux_2);
         uint64_t end = get_time();
-        printf("\t%10.3lf", (end - begin) / 1e3);
+        printf("\t%10.3lf", (double)(end - begin) / 1e3);
     }
 }
 
-void time_3()
+void time_3(void)
 {
     uint64_t i_last = 1;
     num_p num_1 = num_generate_2(i_last, 2);
@@ -146,7 +146,7 @@ void time_3()
         TIME_RESET
         num_p num_res = num_mul(num_1_copy, num_2_copy);
         TIME_END(t3);
-        printf("\t%.5f", t3 / 1e9);
+        printf("\t%.5f", (double)t3 / 1e9);
         num_free(num_res);
     }
 
@@ -167,14 +167,14 @@ void time_3()
         TIME_RESET
         num_p num_res = num_mul(num_1_copy, num_2_copy);
         TIME_END(t3);
-        printf("\t%.5f", t3 / 1e9);
+        printf("\t%.5f", (double)t3 / 1e9);
         num_free(num_res);
     }
 }
 
 
 
-void fibonacci_1()
+void fibonacci_1(void)
 {
     num_p num_a = num_wrap(1);
     num_p num_b = num_wrap(1);
@@ -220,7 +220,7 @@ void fibonacci_2(uint64_t min, uint64_t max)
         uint64_t end = get_time();
 
         if(i > min)
-            printf("\t%10.3f", (end - begin) / 1e3);
+            printf("\t%10.3f", (double)(end - begin) / 1e3);
     }
 }
 
@@ -252,11 +252,11 @@ void fibonacci_3(uint64_t min, uint64_t max)
         uint64_t end = get_time();
 
         if(i > min)
-            printf("\t%10.3f", (end - begin) / 1e3);
+            printf("\t%10.3f", (double)(end - begin) / 1e3);
     }
 }
 
-void factorial()
+void factorial(void)
 {
     num_p num = num_wrap(1);
     for(uint64_t i=1; ; i++)
@@ -329,7 +329,7 @@ void mod_num_fib(mod_num_p mod_a, mod_num_p mod_b)
     *mod_b = mod_c;
 }
 
-void time_dec()
+void time_dec(void)
 {
     printf("\n");
     num_p num = num_generate(20, 2);
@@ -339,18 +339,18 @@ void time_dec()
     num_display_dec(num);
     uint64_t end = get_time();
     printf("\n");
-    printf("\ntime: %.3f", (end - begin) / 1e3);
+    printf("\ntime: %.3f", (double)(end - begin) / 1e3);
 }
 
 
 
-void pi_1()
+void pi_1(void)
 {
     uint64_t pos = 3;
     fxd_num_t fxd = fxd_num_wrap(0, pos);
     for(uint64_t i=1; ; i++)
     {
-        int64_t base = 16 * i * i - 16 * i + 3;
+        int64_t base = (int64_t)(16 * i * i - 16 * i + 3);
         fxd_num_t fxd_1 = fxd_num_wrap(8, pos);
         fxd_num_t fxd_2 = fxd_num_wrap(base, pos);
         fxd_1 = fxd_num_div(fxd_1, fxd_2);
@@ -367,14 +367,14 @@ void pi_1()
     }
 }
 
-void e()
+void e(void)
 {
     uint64_t pos = 1000;
     fxd_num_t fxd = fxd_num_wrap(0, pos);
     fxd_num_t base = fxd_num_wrap(1, pos);
     for(uint64_t i=1; ; i++)
     {
-        fxd_num_t fxd_2 = fxd_num_wrap(i, pos);
+        fxd_num_t fxd_2 = fxd_num_wrap((int64_t)i, pos);
         base = fxd_num_div(base, fxd_2);
         fxd = fxd_num_add(fxd, fxd_num_copy(base));
 
@@ -386,15 +386,15 @@ void e()
     }
 }
 
-void pi_2()
+void pi_2(void)
 {
     uint64_t pos = 2;
     fxd_num_t fxd = fxd_num_wrap(2, pos);
     for(uint64_t i=1; ; i++)
     {
         uint64_t base = 4 * i * i;
-        fxd = fxd_num_mul(fxd, fxd_num_wrap(base, pos));
-        fxd = fxd_num_div(fxd, fxd_num_wrap(base - 1, pos));
+        fxd = fxd_num_mul(fxd, fxd_num_wrap((int64_t)base, pos));
+        fxd = fxd_num_div(fxd, fxd_num_wrap((int64_t)base - 1, pos));
 
         if(i%1000000 == 0)
         {
@@ -404,7 +404,7 @@ void pi_2()
     }
 }
 
-void flt_num_pi_1()
+void flt_num_pi_1(void)
 {
     uint64_t size = 3;
     flt_num_t flt = flt_num_wrap(2, size);
@@ -457,12 +457,12 @@ void flt_num_pi_2(uint64_t size)
     flt_num_t flt_a = flt_num_wrap(6, size);
     for(uint64_t i=1; ; i++)
     {
-        flt_num_t flt_tmp = flt_num_wrap(i, size);
+        flt_num_t flt_tmp = flt_num_wrap((int64_t)i, size);
         flt_tmp = flt_num_div(flt_num_copy(flt_m_3_8), flt_tmp);
         flt_tmp = flt_num_add(flt_num_copy(flt_1_4), flt_tmp);
         flt_a = flt_num_mul(flt_a, flt_tmp);
 
-        flt_tmp = flt_num_wrap(2*i + 1, size);
+        flt_tmp = flt_num_wrap((int64_t)(2*i + 1), size);
         flt_tmp = flt_num_div(flt_num_copy(flt_1), flt_tmp);
         flt_tmp = flt_num_add(flt_tmp, flt_num_copy(flt_m_1_2));
 
@@ -501,15 +501,15 @@ void flt_num_pi_3(uint64_t size)
 
     for(uint64_t i=1; ; i++)
     {
-        flt_a = flt_num_mul_sig(flt_a, sig_num_wrap((int64_t)2 * i - 3));
-        flt_a = flt_num_div_sig(flt_a, sig_num_wrap((int64_t)8 * i));
+        flt_a = flt_num_mul_sig(flt_a, sig_num_wrap((int64_t)(2 * i) - 3));
+        flt_a = flt_num_div_sig(flt_a, sig_num_wrap((int64_t)(8 * i)));
 
         if(i%1000 == 0)
-            fprintf(stderr, "\nexp: %ld", -(flt_a.size + flt_a.exponent));
+            fprintf(stderr, "\nexp: %ld", -((int64_t)flt_a.size + flt_a.exponent));
 
         flt_num_t flt_b = flt_num_copy(flt_a);
-        flt_b = flt_num_mul_sig(flt_b, sig_num_wrap((int64_t)1 - 2 * i));
-        flt_b = flt_num_div_sig(flt_b, sig_num_wrap((int64_t)4 * i + 2));
+        flt_b = flt_num_mul_sig(flt_b, sig_num_wrap(1 - (int64_t)(2 * i)));
+        flt_b = flt_num_div_sig(flt_b, sig_num_wrap((int64_t)(4 * i) + 2));
 
         if(!flt_num_safe_add(flt_pi, flt_b))
         {
@@ -544,7 +544,7 @@ fxd_num_t fxd_step(fxd_num_t fxd, uint64_t pos)
     return fxd_num_add(fxd, fxd_a);
 }
 
-void sqrt_2()
+void sqrt_2(void)
 {
     fxd_num_t fxd_x = fxd_num_wrap(1, 1);
     num_p num = num_wrap(10);
@@ -619,7 +619,7 @@ void mem_1(uint64_t)
 int main()
 {
     setbuf(stdout, NULL);
-    srand(time(NULL));
+    srand((unsigned int)time(NULL));
 
     // uint64_t arg = get_arg(argc, argv);
 
