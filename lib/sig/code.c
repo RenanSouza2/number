@@ -51,7 +51,7 @@ bool sig_num_inner(sig_num_t sig_1, sig_num_t sig_2)
     return true;
 }
 
-bool sig_num_eq_dbg(sig_num_t sig_1, sig_num_t sig_2)
+static bool sig_num_eq_dbg(sig_num_t sig_1, sig_num_t sig_2)
 {
     CLU_SIG_IS_SAFE(sig_1);
     CLU_SIG_IS_SAFE(sig_2);
@@ -171,11 +171,11 @@ sig_num_t sig_num_wrap(int64_t value)
 {
     if(value < 0)
     {
-        num_p num = num_wrap(-value);
+        num_p num = num_wrap((uint64_t)(-value));
         return sig_num_create(NEGATIVE, num);
     }
 
-    num_p num = num_wrap(value);
+    num_p num = num_wrap((uint64_t)value);
     return sig_num_create(POSITIVE, num);
 }
 
@@ -183,11 +183,11 @@ sig_num_t sig_num_wrap_int128(int128_t value)
 {
     if(value < 0)
     {
-        num_p num = num_wrap_uint128(-value);
+        num_p num = num_wrap_uint128((uint64_t)(-value));
         return sig_num_create(NEGATIVE, num);
     }
 
-    num_p num = num_wrap_uint128(value);
+    num_p num = num_wrap_uint128((uint64_t)value);
     return sig_num_create(POSITIVE, num);
 }
 
@@ -426,6 +426,6 @@ sig_num_t sig_num_mul_int(sig_num_t sig, int64_t value)
         value = -value;
     }
 
-    sig.num = num_mul_uint(sig.num, value);
+    sig.num = num_mul_uint(sig.num, (uint64_t)value);
     return sig;
 }

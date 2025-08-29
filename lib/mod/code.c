@@ -80,7 +80,7 @@ void mod_num_free(mod_num_t mod)
     num_free(mod.num);
 }
 
-mod_num_t mod_num_adjust(mod_num_t mod) // TODO test
+static mod_num_t mod_num_adjust(mod_num_t mod) // TODO test
 {
     CLU_MOD_IS_SAFE(mod);
 
@@ -138,7 +138,7 @@ mod_num_t mod_num_sqr(mod_num_t mod)
     return mod_num_adjust(mod);
 }
 
-mod_num_t mod_num_exp(mod_num_t mod, uint64_t value) // TODO test
+mod_num_t mod_num_pow(mod_num_t mod, uint64_t value) // TODO test
 {
     CLU_MOD_IS_SAFE(mod);
 

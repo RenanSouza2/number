@@ -14,11 +14,11 @@ dbg: debug.o $(CLU_FILE)
 
 lib.o: $(LIB_FILES)
 	echo " linking num object $(DIR)"
-	ld -r -o $@ $^
+	gcc -r -o $@ $^
 
 debug.o: $(DGB_FILES)
 	echo " linking num debug $(DIR)"
-	ld -r -o $@ $^
+	gcc -r -o $@ $^ -fsanitize=address,undefined,leak
 
 
 

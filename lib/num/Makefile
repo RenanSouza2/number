@@ -1,4 +1,4 @@
-FLAGS = -std=c11 -Wall -Wextra -Wpedantic -Wshadow -Wpointer-arith -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes -Wformat=2 -Wnull-dereference -Wconversion -Wsign-conversion -std=c11 -Wall -Wextra -Wpedantic -Wshadow -Wpointer-arith -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes -Wformat=2 -Wnull-dereference -Wconversion -Wsign-conversion -fstack-protector-strong -fstack-protector-strong
+FLAGS = -std=c11 -Wall -Wextra -Werror -Wfatal-errors -c -Wpedantic -Wshadow -Wpointer-arith -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes -Wformat=2 -Wnull-dereference -Wconversion -Wsign-conversion -std=c11 -Wall -Wextra -Wpedantic -Wshadow -Wpointer-arith -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes -Wformat=2 -Wnull-dereference -Wconversion -Wsign-conversion -fstack-protector-strong -fstack-protector-strong
 FLAGS_DBG = -D DEBUG -O0 -g3 -ggdb -fno-omit-frame-pointer -fsanitize=address,undefined,leak
 
 LIB_ROOT = $(word 1,$(subst lib, ,$(CURDIR)))lib

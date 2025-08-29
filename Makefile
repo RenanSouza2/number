@@ -2,7 +2,7 @@ SRC = src
 LIB = lib
 
 build b:
-	$(MAKE) build --directory=$(SRC)
+	$(MAKE) build --directory=$(SRC) -s
 
 dbg d:
 	$(MAKE) dbg --directory=$(SRC) -s

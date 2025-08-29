@@ -7,7 +7,7 @@ test: test.o
 
 test.o: test.c $(DEBUG_FILE) $(CLU_FILE)
 	echo "building num test $(DIR)"
-	gcc -o $@ $^ $(FLAGS) -D DEBUG
+	gcc -o $@ $^ $(FLAGS) -D DEBUG -fsanitize=address,undefined,leak
 
 clean:
 	rm -rf test.o

@@ -39,6 +39,4 @@ flt_num_t flt_num_div(flt_num_t flt_1, flt_num_t flt_2);
 flt_num_t flt_num_mul_sig(flt_num_t flt, sig_num_t sig);
 flt_num_t flt_num_div_sig(flt_num_t flt, sig_num_t sig);
 
-void del();
-
 #endif

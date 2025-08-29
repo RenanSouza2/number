@@ -19,7 +19,7 @@
 #include "../sig/debug.h"
 
 
-flt_num_t flt_num_create_variadic(
+static flt_num_t flt_num_create_variadic(
     int64_t exponent,
     uint64_t size,
     uint64_t signal,
@@ -51,7 +51,7 @@ flt_num_t flt_num_create_immed(
 
 
 
-bool flt_num_inner(flt_num_t flt_1, flt_num_t flt_2)
+static bool flt_num_inner(flt_num_t flt_1, flt_num_t flt_2)
 {
     CLU_FLT_IS_SAFE(flt_1);
     CLU_FLT_IS_SAFE(flt_2);
@@ -87,7 +87,7 @@ bool flt_num_inner(flt_num_t flt_1, flt_num_t flt_2)
     return true;
 }
 
-bool flt_num_eq_dbg(flt_num_t flt_1, flt_num_t flt_2)
+static bool flt_num_eq_dbg(flt_num_t flt_1, flt_num_t flt_2)
 {
     CLU_FLT_IS_SAFE(flt_1);
     CLU_FLT_IS_SAFE(flt_2);
@@ -178,34 +178,33 @@ void flt_num_display_dec(flt_num_t flt_0) // TODO TEST
 
     while(true)
     {
-        flt_num_t flt_tmp = flt_num_mul(
+        flt_num_t flt_tmp_1 = flt_num_mul(
             flt_num_copy(flt_ten),
             flt_num_copy(flt_base)
         );
-        if(flt_num_cmp(flt_1, flt_tmp) < 0)
+        if(flt_num_cmp(flt_1, flt_tmp_1) < 0)
         {
-            flt_num_free(flt_tmp);
+            flt_num_free(flt_tmp_1);
             break;
         }
-        flt_num_free(flt_tmp);
+        flt_num_free(flt_tmp_1);
 
         flt_num_t flt_add = flt_num_copy(flt_ten);
         int64_t add = 1;
         while(true)
         {
             flt_num_t flt_add_2 = flt_num_sqr(flt_num_copy(flt_add));
-            flt_num_t flt_tmp = flt_num_mul(
+            flt_num_t flt_tmp_2 = flt_num_mul(
                 flt_num_copy(flt_base),
                 flt_num_copy(flt_add_2)
             );
-
-            if(flt_num_cmp(flt_tmp, flt_1) > 0)
+            if(flt_num_cmp(flt_tmp_2, flt_1) > 0)
             {
-                flt_num_free(flt_tmp);
+                flt_num_free(flt_tmp_2);
                 flt_num_free(flt_add_2);
                 break;
             }
-            flt_num_free(flt_tmp);
+            flt_num_free(flt_tmp_2);
 
             flt_num_free(flt_add);
             flt_add = flt_add_2;
@@ -256,7 +255,7 @@ int64_t int64_add(int64_t a, int64_t b)
     return res;
 }
 
-int64_t int64_sub(int64_t a, int64_t b) // TODO test
+static int64_t int64_sub(int64_t a, int64_t b) // TODO test
 {
     assert(b != INT64_MIN);
     return int64_add(a, -b);
@@ -275,14 +274,14 @@ flt_num_t flt_num_normalize(flt_num_t flt)
     if(flt.sig.num->count < flt.size)
     {
         uint64_t diff = flt.size - flt.sig.num->count;
-        flt.exponent = int64_sub(flt.exponent, diff);
+        flt.exponent = int64_sub(flt.exponent, (int64_t)diff);
         flt.sig = sig_num_head_grow(flt.sig, diff);
     }
 
     if(flt.sig.num->count > flt.size)
     {
         uint64_t diff = flt.sig.num->count - flt.size;
-        flt.exponent = int64_add(flt.exponent, diff);
+        flt.exponent = int64_add(flt.exponent, (int64_t)diff);
         flt.sig = sig_num_head_trim(flt.sig, diff);
     }
 
@@ -357,15 +356,14 @@ void flt_num_save(char file_path[], flt_num_t flt)
 
 flt_num_t flt_num_file_read(FILE *fp)
 {
-    int64_t exponent;
-    uint64_t size;
-    assert(fscanf(fp, " %lx %lx", &exponent, &size) == 2);
+    uint64_t exponent, size;
+    assert(fscanf(fp, " %" SCNx64 " %" SCNx64 "", &exponent, &size) == 2);
 
     sig_num_t sig = sig_num_file_read(fp);
 
     return (flt_num_t)
     {
-        .exponent = exponent,
+        .exponent = (int64_t)exponent,
         .size = size,
         .sig = sig
     };
@@ -388,7 +386,7 @@ flt_num_t flt_num_load(char file_path[])
 
 fxd_num_t fxd_num_wrap_flt(flt_num_t flt, uint64_t pos) // TODO test
 {
-    flt = flt_num_set_exponent(flt, 1 - pos);
+    flt = flt_num_set_exponent(flt, 1 - (int64_t)pos);
     return (fxd_num_t)
     {
         .pos = pos - 1,
@@ -404,13 +402,13 @@ flt_num_t flt_num_set_exponent(flt_num_t flt, int64_t exponent)
 
     if(flt.exponent < exponent)
     {
-        flt.sig = sig_num_head_trim(flt.sig, exponent - flt.exponent);
+        flt.sig = sig_num_head_trim(flt.sig, (uint64_t)(exponent - flt.exponent));
         flt.exponent = exponent;
     }
 
     if(flt.exponent > exponent)
     {
-        flt.sig = sig_num_head_grow(flt.sig, flt.exponent - exponent);
+        flt.sig = sig_num_head_grow(flt.sig, (uint64_t)(flt.exponent - exponent));
         flt.exponent = exponent;
 
     }
@@ -469,13 +467,13 @@ bool flt_num_safe_add(flt_num_t flt_1, flt_num_t flt_2) // TODO TEST
         return true;
 
     uint64_t diff = flt_1.exponent > flt_2.exponent ?
-        flt_1.exponent - flt_2.exponent:
-        flt_2.exponent > flt_1.exponent;
+        (uint64_t)(flt_1.exponent - flt_2.exponent):
+        (uint64_t)(flt_2.exponent - flt_1.exponent);
 
     return flt_1.size > diff;
 }
 
-flt_num_t flt_num_opposite(flt_num_t flt) // TODO TEST
+static flt_num_t flt_num_opposite(flt_num_t flt) // TODO TEST
 {
     CLU_FLT_IS_SAFE(flt);
 
@@ -498,12 +496,12 @@ flt_num_t flt_num_shr(flt_num_t flt, uint64_t bits) // TODO TEST
     uint64_t rem = bits & 0x3f;
     if(flt.sig.num->chunk[flt.size - 1] >> rem)
     {
-        flt.exponent = int64_sub(flt.exponent, bits >> 6);
+        flt.exponent = int64_sub(flt.exponent, (int64_t)(bits >> 6));
         flt.sig.num = num_shr(flt.sig.num, rem);
         return flt;
     }
 
-    flt.exponent = int64_sub(flt.exponent, 1 + (bits >> 6));
+    flt.exponent = int64_sub(flt.exponent, (int64_t)(1 + (bits >> 6)));
     flt.sig.num = num_shl(flt.sig.num, 64 - rem);
     return flt;
 }
@@ -527,7 +525,7 @@ flt_num_t flt_num_add(flt_num_t flt_1, flt_num_t flt_2)
         return flt_1;
     }
 
-    uint64_t exponent = flt_1.exponent > flt_2.exponent ?
+    int64_t exponent = flt_1.exponent > flt_2.exponent ?
         flt_1.exponent : flt_2.exponent;
 
     flt_1 = flt_num_set_exponent(flt_1, exponent - 1);
@@ -553,7 +551,7 @@ flt_num_t flt_num_mul(flt_num_t flt_1, flt_num_t flt_2) // TODO TEST
 
     uint64_t pos = 0;
     flt_1.exponent = int64_add(flt_1.exponent, flt_2.exponent);
-    flt_1.exponent = int64_add(flt_1.exponent, pos);
+    flt_1.exponent = int64_add(flt_1.exponent, (int64_t)pos);
     flt_1.sig = sig_num_mul(flt_1.sig, flt_2.sig);
     return flt_num_normalize(flt_1);
 }
@@ -567,7 +565,7 @@ flt_num_t flt_num_sqr(flt_num_t flt) // TODO TEST
     return flt_num_normalize(flt);
 }
 
-flt_num_t flt_num_pow(flt_num_t flt, int64_t value) // TODO TEST
+flt_num_t flt_num_pow(flt_num_t flt, int64_t value) // TODO TEST | USE NUM
 {
     CLU_FLT_IS_SAFE(flt);
 
@@ -579,7 +577,7 @@ flt_num_t flt_num_pow(flt_num_t flt, int64_t value) // TODO TEST
     for(uint64_t mask = B(63); mask; mask >>= 1)
     {
         flt_res = flt_num_sqr(flt_res);
-        if(value & mask)
+        if((uint64_t)value & mask)
             flt_res = flt_num_mul(flt_res, flt_num_copy(flt));
     }
     flt_num_free(flt);
