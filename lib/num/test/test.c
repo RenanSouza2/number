@@ -2064,6 +2064,8 @@ void test_num_sqr(bool show)
         {                                               \
             num_p num = num_create_immed(ARG_OPEN NUM); \
             num = FN(num);                              \
+            printf("\n: %p", (handler_p)num);  \
+            printf("\n: %d", num->cannot_expand);  \
             assert(num_immed(num, ARG_OPEN RES))        \
         }                                               \
         TEST_CASE_CLOSE                                 \
