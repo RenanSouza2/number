@@ -654,7 +654,7 @@ void test_sig_num_div(bool show)
 
 
 
-void test_sig_num()
+void test_sig_num(void)
 {
     TEST_LIB
 
@@ -685,7 +685,7 @@ void test_sig_num()
 
 
 
-int main()
+int main(void)
 {
     setbuf(stdout, NULL);
     test_sig_num();

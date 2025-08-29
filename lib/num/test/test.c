@@ -2756,7 +2756,7 @@ void test_fuzz_num_bz_div(bool show)
 
 
 
-void test_num()
+void test_num(void)
 {
     TEST_LIB
 
@@ -2833,10 +2833,10 @@ void test_num()
 
 
 
-int main()
+int main(void)
 {
     setbuf(stdout, NULL);
-    srand(time(NULL));
+    srand((unsigned int)time(NULL));
     test_num();
     printf("\n\n\tTest successful\n\n");
     return 0;
