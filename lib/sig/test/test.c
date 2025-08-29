@@ -235,16 +235,16 @@ void test_sig_num_copy(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_SIG_COPY(TAG, ...)                         \
-    {                                                       \
-        TEST_CASE_OPEN(TAG)                                 \
-        {                                                   \
-            sig_num_t sig = sig_num_create_immed(__VA_ARGS__);   \
-            sig_num_t sig_num_res = sig_num_copy(sig);              \
-            assert(sig_num_immed(sig_num_res, __VA_ARGS__))       \
-            sig_num_free(sig);                                \
-        }                                                   \
-        TEST_CASE_CLOSE                                     \
+    #define TEST_SIG_COPY(TAG, ...)                             \
+    {                                                           \
+        TEST_CASE_OPEN(TAG)                                     \
+        {                                                       \
+            sig_num_t sig = sig_num_create_immed(__VA_ARGS__);  \
+            sig_num_t sig_num_res = sig_num_copy(sig);          \
+            assert(sig_num_immed(sig_num_res, __VA_ARGS__))     \
+            sig_num_free(sig);                                  \
+        }                                                       \
+        TEST_CASE_CLOSE                                         \
     }
 
     TEST_SIG_COPY(1, POSITIVE, 0);
@@ -266,16 +266,16 @@ void test_sig_num_is_zero(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_SIG_IS_ZERO(TAG, NUM, RES)                 \
-    {                                                       \
-        TEST_CASE_OPEN(TAG)                                 \
-        {                                                   \
-            sig_num_t sig = sig_num_wrap(NUM);                   \
-            int64_t res = sig_num_is_zero(sig);               \
-            assert(uint64(res, RES));                       \
-            sig_num_free(sig);                                \
-        }                                                   \
-        TEST_CASE_CLOSE                                     \
+    #define TEST_SIG_IS_ZERO(TAG, NUM, RES)     \
+    {                                           \
+        TEST_CASE_OPEN(TAG)                     \
+        {                                       \
+            sig_num_t sig = sig_num_wrap(NUM);  \
+            int64_t res = sig_num_is_zero(sig); \
+            assert(int64(res, RES));            \
+            sig_num_free(sig);                  \
+        }                                       \
+        TEST_CASE_CLOSE                         \
     }
 
     TEST_SIG_IS_ZERO(1,  1, false);
@@ -291,18 +291,18 @@ void test_sig_num_cmp(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_SIG_CMP(TAG, NUM_1, NUM_2, RES)    \
-    {                                               \
-        TEST_CASE_OPEN(TAG)                         \
-        {                                           \
-            sig_num_t sig_1 = sig_num_wrap(NUM_1);       \
-            sig_num_t sig_2 = sig_num_wrap(NUM_2);       \
-            int64_t res = sig_num_cmp(sig_1, sig_2); \
-            assert(int64(res, RES));                \
-            sig_num_free(sig_1);                      \
-            sig_num_free(sig_2);                      \
-        }                                           \
-        TEST_CASE_CLOSE                             \
+    #define TEST_SIG_CMP(TAG, NUM_1, NUM_2, RES)        \
+    {                                                   \
+        TEST_CASE_OPEN(TAG)                             \
+        {                                               \
+            sig_num_t sig_1 = sig_num_wrap(NUM_1);      \
+            sig_num_t sig_2 = sig_num_wrap(NUM_2);      \
+            int64_t res = sig_num_cmp(sig_1, sig_2);    \
+            assert(int64(res, RES));                    \
+            sig_num_free(sig_1);                        \
+            sig_num_free(sig_2);                        \
+        }                                               \
+        TEST_CASE_CLOSE                                 \
     }
 
     TEST_SIG_CMP( 1,  2,  3, -1);
@@ -336,15 +336,15 @@ void test_sig_num_shl(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_SIG_NUM_SHL(TAG, SIG_NUM_BEF, BITS, SIG_NUM_AFT)        \
-    {                                                           \
-        TEST_CASE_OPEN(TAG)                                     \
-        {                                                       \
+    #define TEST_SIG_NUM_SHL(TAG, SIG_NUM_BEF, BITS, SIG_NUM_AFT)       \
+    {                                                                   \
+        TEST_CASE_OPEN(TAG)                                             \
+        {                                                               \
             sig_num_t sig = sig_num_create_immed(ARG_OPEN SIG_NUM_BEF); \
-            sig = sig_num_shl(sig, BITS);                        \
-            assert(sig_num_immed(sig, ARG_OPEN SIG_NUM_AFT));        \
-        }                                                       \
-        TEST_CASE_CLOSE                                         \
+            sig = sig_num_shl(sig, BITS);                               \
+            assert(sig_num_immed(sig, ARG_OPEN SIG_NUM_AFT));           \
+        }                                                               \
+        TEST_CASE_CLOSE                                                 \
     }
 
     TEST_SIG_NUM_SHL(1, (ZERO, 0), 0, (ZERO, 0));
@@ -366,15 +366,15 @@ void test_sig_num_shr(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_SIG_NUM_SHR(TAG, SIG_NUM_BEF, BITS, SIG_NUM_AFT)        \
-    {                                                           \
-        TEST_CASE_OPEN(TAG)                                     \
-        {                                                       \
+    #define TEST_SIG_NUM_SHR(TAG, SIG_NUM_BEF, BITS, SIG_NUM_AFT)       \
+    {                                                                   \
+        TEST_CASE_OPEN(TAG)                                             \
+        {                                                               \
             sig_num_t sig = sig_num_create_immed(ARG_OPEN SIG_NUM_BEF); \
-            sig = sig_num_shr(sig, BITS);                        \
-            assert(sig_num_immed(sig, ARG_OPEN SIG_NUM_AFT));        \
-        }                                                       \
-        TEST_CASE_CLOSE                                         \
+            sig = sig_num_shr(sig, BITS);                               \
+            assert(sig_num_immed(sig, ARG_OPEN SIG_NUM_AFT));           \
+        }                                                               \
+        TEST_CASE_CLOSE                                                 \
     }
 
     TEST_SIG_NUM_SHR(1, (ZERO, 0), 0, (ZERO, 0));
@@ -401,15 +401,15 @@ void test_sig_num_opposite(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_SIG_OPPOSITE(TAG, SIGNAL_IN, SIGNAL_OUT, ...)          \
-    {                                                                   \
-        TEST_CASE_OPEN(TAG)                                             \
-        {                                                               \
-            sig_num_t sig = sig_num_create_immed(SIGNAL_IN, __VA_ARGS__);    \
-            sig = sig_num_opposite(sig);                                 \
-            assert(sig_num_immed(sig, SIGNAL_OUT, __VA_ARGS__));          \
-        }                                                               \
-        TEST_CASE_CLOSE                                                 \
+    #define TEST_SIG_OPPOSITE(TAG, SIGNAL_IN, SIGNAL_OUT, ...)              \
+    {                                                                       \
+        TEST_CASE_OPEN(TAG)                                                 \
+        {                                                                   \
+            sig_num_t sig = sig_num_create_immed(SIGNAL_IN, __VA_ARGS__);   \
+            sig = sig_num_opposite(sig);                                    \
+            assert(sig_num_immed(sig, SIGNAL_OUT, __VA_ARGS__));            \
+        }                                                                   \
+        TEST_CASE_CLOSE                                                     \
     }
 
     TEST_SIG_OPPOSITE(1, ZERO, ZERO, 0);
@@ -423,16 +423,16 @@ void test_sig_num_add(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_SIG_NUM_ADD(TAG, SIG_NUM_1, SIG_NUM_2, SIG_NUM_OUT)        \
-    {                                                           \
-        TEST_CASE_OPEN(TAG)                                     \
-        {                                                       \
+    #define TEST_SIG_NUM_ADD(TAG, SIG_NUM_1, SIG_NUM_2, SIG_NUM_OUT)    \
+    {                                                                   \
+        TEST_CASE_OPEN(TAG)                                             \
+        {                                                               \
             sig_num_t sig_1 = sig_num_create_immed(ARG_OPEN SIG_NUM_1); \
             sig_num_t sig_2 = sig_num_create_immed(ARG_OPEN SIG_NUM_2); \
-            sig_1 = sig_num_add(sig_1, sig_2);                  \
-            assert(sig_num_immed(sig_1, ARG_OPEN SIG_NUM_OUT));      \
-        }                                                       \
-        TEST_CASE_CLOSE                                         \
+            sig_1 = sig_num_add(sig_1, sig_2);                          \
+            assert(sig_num_immed(sig_1, ARG_OPEN SIG_NUM_OUT));         \
+        }                                                               \
+        TEST_CASE_CLOSE                                                 \
     }
 
     TEST_SIG_NUM_ADD(1,
@@ -510,16 +510,16 @@ void test_sig_num_sub(bool show)
 {
     TEST_FN_OPEN
 
-    #define TESTS_SIG_NUM_SUB(TAG, SIG_NUM_1, SIG_NUM_2, SIG_NUM_OUT)       \
-    {                                                           \
-        TEST_CASE_OPEN(TAG)                                     \
-        {                                                       \
+    #define TESTS_SIG_NUM_SUB(TAG, SIG_NUM_1, SIG_NUM_2, SIG_NUM_OUT)   \
+    {                                                                   \
+        TEST_CASE_OPEN(TAG)                                             \
+        {                                                               \
             sig_num_t sig_1 = sig_num_create_immed(ARG_OPEN SIG_NUM_1); \
             sig_num_t sig_2 = sig_num_create_immed(ARG_OPEN SIG_NUM_2); \
-            sig_1 = sig_num_sub(sig_1, sig_2);                  \
-            assert(sig_num_immed(sig_1, ARG_OPEN SIG_NUM_OUT));      \
-        }                                                       \
-        TEST_CASE_CLOSE                                         \
+            sig_1 = sig_num_sub(sig_1, sig_2);                          \
+            assert(sig_num_immed(sig_1, ARG_OPEN SIG_NUM_OUT));         \
+        }                                                               \
+        TEST_CASE_CLOSE                                                 \
     }
 
     TESTS_SIG_NUM_SUB(1,
@@ -547,16 +547,16 @@ void test_sig_num_mul(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_SIG_NUM_MUL(TAG, SIG_NUM_1, SIG_NUM_2, SIG_NUM_OUT)        \
-    {                                                           \
-        TEST_CASE_OPEN(TAG)                                     \
-        {                                                       \
+    #define TEST_SIG_NUM_MUL(TAG, SIG_NUM_1, SIG_NUM_2, SIG_NUM_OUT)    \
+    {                                                                   \
+        TEST_CASE_OPEN(TAG)                                             \
+        {                                                               \
             sig_num_t sig_1 = sig_num_create_immed(ARG_OPEN SIG_NUM_1); \
             sig_num_t sig_2 = sig_num_create_immed(ARG_OPEN SIG_NUM_2); \
-            sig_1 = sig_num_mul(sig_1, sig_2);                  \
-            assert(sig_num_immed(sig_1, ARG_OPEN SIG_NUM_OUT));      \
-        }                                                       \
-        TEST_CASE_CLOSE                                         \
+            sig_1 = sig_num_mul(sig_1, sig_2);                          \
+            assert(sig_num_immed(sig_1, ARG_OPEN SIG_NUM_OUT));         \
+        }                                                               \
+        TEST_CASE_CLOSE                                                 \
     }
 
     TEST_SIG_NUM_MUL(1,
