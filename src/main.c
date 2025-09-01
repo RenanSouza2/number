@@ -252,7 +252,7 @@ void fibonacci_3(uint64_t min, uint64_t max)
         uint64_t end = get_time();
 
         if(i > min)
-            printf("\t%10.3f", (double)(end - begin) / 1e3);
+            printf("\t%5.3f", (double)(end - begin) / 1e9);
     }
 }
 
@@ -625,13 +625,13 @@ int main()
 
     // clu_log_enable(true);
     // num_generate(21, 2);
-    time_1(16, 29);
+    // time_1(16, 29);
     // time_1(16, 17);
     // time_3();
     // time_2(argc, argv, 19);
     // fibonacci();
     // fibonacci_2(16, 23);
-    // fibonacci_3(16, 23);
+    fibonacci_3(16, 35);
     // sqrt_2();
     // e();
     // pi_2();

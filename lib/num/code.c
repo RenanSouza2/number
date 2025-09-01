@@ -1710,7 +1710,7 @@ static void num_sqr_ssm_buffer(num_p num_res, num_p num)
     num_ssm_prepare(num_aux, num, params);
 
     for(uint64_t i=0; i<K; i++)
-        num_ssm_mul_rec(num_aux, num_aux, i * n, n);
+        num_ssm_sqr_rec(num_aux, i * n, n);
 
     num_ssm_fft_inv(num_aux, n, K, Q);
     num_ssm_depad_no_wrap(num_aux, M, n, K);
