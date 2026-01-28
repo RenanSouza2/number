@@ -57,8 +57,6 @@ mod_num_t mod_num_create(num_p num, num_p max)
     };
 }
 
-
-
 mod_num_t mod_num_wrap(uint64_t value, num_p max)
 {
     num_p num = num_wrap(value);

@@ -224,7 +224,7 @@ void fibonacci_2(uint64_t min, uint64_t max)
     }
 }
 
-void fibonacci_3(uint64_t min, uint64_t max)
+void fibonacci_3(uint64_t, uint64_t max)
 {
     num_p num_a = num_wrap(0);
     num_p num_b = num_wrap(1);
@@ -232,10 +232,10 @@ void fibonacci_3(uint64_t min, uint64_t max)
     printf("\n");
     for(uint64_t i=0; i < max; i++)
     {
-        if(i > min)
-            printf("\n" U64P() "", i);
+        // if(i > min)
+        //     printf("\n" U64P() "", i);
 
-        uint64_t begin = get_time();
+        // uint64_t begin = get_time();
 
         num_p num_c = num_add(num_copy(num_a), num_copy(num_b));
 
@@ -249,10 +249,19 @@ void fibonacci_3(uint64_t min, uint64_t max)
         num_a = num_a_new;
         num_b = num_b_new;
 
-        uint64_t end = get_time();
+        // uint64_t end = get_time();
 
-        if(i > min)
-            printf("\t%5.3f", (double)(end - begin) / 1e9);
+        // if(i > min)
+        //     printf("\t%5.3f", (double)(end - begin) / 1e9);
+
+        num_display_full("a", num_b);
+
+        // uint64_t size = 10;
+        // flt_num_t f_a = flt_num_wrap_num(num_copy(num_a), size);
+        // flt_num_t f_b = flt_num_wrap_num(num_copy(num_b), size);
+        // flt_num_t f_p = flt_num_div(f_b, f_a);
+        // printf("\n");
+        // flt_num_display_dec(f_p);
     }
 }
 
@@ -631,7 +640,7 @@ int main()
     // time_2(argc, argv, 19);
     // fibonacci();
     // fibonacci_2(16, 23);
-    fibonacci_3(16, 35);
+    // fibonacci_3(16, 40);
     // sqrt_2();
     // e();
     // pi_2();

@@ -9,6 +9,7 @@
 
 void mod_num_display(char tag[], mod_num_t mod);
 
+mod_num_t mod_num_create(num_p num, num_p p);
 mod_num_t mod_num_wrap(uint64_t value, num_p p);
 mod_num_t mod_num_copy(mod_num_t mod);
 void mod_num_free(mod_num_t mod);
