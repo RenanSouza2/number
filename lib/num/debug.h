@@ -8,7 +8,7 @@
 
 #include <stdarg.h>
 
-uint64_t rand_64();
+uint64_t rand_64(void);
 
 num_p num_create_variadic(uint64_t n, va_list *args);
 num_p num_create_immed(uint64_t n, ...);
@@ -74,16 +74,9 @@ void num_ssm_sub_mod(
     uint64_t n
 );
 void num_ssm_opposite(num_p num, uint64_t pos, uint64_t n);
-void num_ssm_pad(num_p num_res, num_p num, uint64_t M, uint64_t n, uint64_t K);
-void num_ssm_depad_no_wrap(num_p num, uint64_t M, uint64_t n, uint64_t K);
-void num_ssm_depad_wrap(
-    num_p num_res,
-    num_p num,
-    uint64_t M,
-    uint64_t n,
-    uint64_t K,
-    uint64_t n0
-);
+void num_ssm_pad(num_p num_res, num_p num, ssm_params_p p);
+void num_ssm_depad_no_wrap(num_p num, ssm_params_p p);
+void num_ssm_depad_wrap(num_p num_res, num_p num, ssm_params_p p, uint64_t n0);
 void num_ssm_shl(
     num_p num_res,
     uint64_t pos_res,
@@ -102,9 +95,9 @@ void num_ssm_shr(
 );
 void num_ssm_shl_mod(num_p num, uint64_t pos, uint64_t n, uint64_t bits);
 void num_ssm_shr_mod(num_p num, uint64_t pos, uint64_t n, uint64_t bits);
-void num_ssm_fft_fwd(num_p num, uint64_t n, uint64_t k, uint64_t bits);
-void num_ssm_fft_inv(num_p num, uint64_t n, uint64_t k, uint64_t bits);
-void num_ssm_mul_tmp(num_p num_1, num_p num_2, uint64_t pos, uint64_t n);
+void num_ssm_fft_fwd(num_p num, ssm_params_p p);
+void num_ssm_fft_inv(num_p num, ssm_params_p p);
+void num_ssm_mul_rec(num_p num_1, num_p num_2, uint64_t pos, uint64_t n);
 void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n);
 num_p ssm_get_buffer_wrap(uint64_t n);
 

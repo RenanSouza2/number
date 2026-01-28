@@ -19,13 +19,13 @@
 
 #include "../sig/debug.h"
 
-fxd_num_t fxd_num_create_immed(uint64_t pos, uint64_t signal, uint64_t n, ...)
-{
-    va_list args;
-    va_start(args, n);
-    sig_num_t sig = sig_num_create_variadic(signal, n, &args);
-    return fxd_num_create(sig, pos);
-}
+// static fxd_num_t fxd_num_create_immed(uint64_t pos, uint64_t signal, uint64_t n, ...)
+// {
+//     va_list args;
+//     va_start(args, n);
+//     sig_num_t sig = sig_num_create_variadic(signal, n, &args);
+//     return fxd_num_create(sig, pos);
+// }
 
 #endif
 

@@ -510,7 +510,7 @@ void test_flt_num_div_sig(bool show)
 
 
 
-void test_flt()
+void test_flt(void)
 {
     TEST_LIB
 
@@ -540,7 +540,7 @@ void test_flt()
 
 
 
-int main()
+int main(void)
 {
     setbuf(stdout, NULL);
     test_flt();

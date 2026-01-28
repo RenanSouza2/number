@@ -57,8 +57,6 @@ mod_num_t mod_num_create(num_p num, num_p max)
     };
 }
 
-
-
 mod_num_t mod_num_wrap(uint64_t value, num_p max)
 {
     num_p num = num_wrap(value);
@@ -80,7 +78,7 @@ void mod_num_free(mod_num_t mod)
     num_free(mod.num);
 }
 
-mod_num_t mod_num_adjust(mod_num_t mod) // TODO test
+static mod_num_t mod_num_adjust(mod_num_t mod) // TODO test
 {
     CLU_MOD_IS_SAFE(mod);
 
@@ -138,7 +136,7 @@ mod_num_t mod_num_sqr(mod_num_t mod)
     return mod_num_adjust(mod);
 }
 
-mod_num_t mod_num_exp(mod_num_t mod, uint64_t value) // TODO test
+mod_num_t mod_num_pow(mod_num_t mod, uint64_t value) // TODO test
 {
     CLU_MOD_IS_SAFE(mod);
 

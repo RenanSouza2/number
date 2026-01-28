@@ -1,5 +1,6 @@
-FLAGS = -Wall -Wextra -Werror -Wfatal-errors -O3 -c
-FLAGS_DBG = -D DEBUG -fsanitize=address
+FLAGS = -std=c11 -Wall -Wextra -Werror -Wfatal-errors -c -Wpedantic -Wshadow -Wpointer-arith -Wcast-qual -Wstrict-prototypes -Wformat=2 -Wnull-dereference -Wconversion -Wsign-conversion -fstack-protector-strong
+FLAGS_PRD = -O2 -march=native -mtune=native -flto -fomit-frame-pointer -fstack-clash-protection -pie -fPIE -Wl,-z,relro,-z,now,-z,noexecstack
+FLAGS_DBG = -D DEBUG -O0 -g3 -ggdb -fno-omit-frame-pointer -fsanitize=address,undefined,leak
 
 LIB_ROOT = $(word 1,$(subst lib, ,$(CURDIR)))lib
 DIR = lib$(word 2,$(subst lib, ,$(CURDIR)))
@@ -14,7 +15,7 @@ dbg: debug.o
 
 lib.o: code.c
 	echo "building num object $(DIR)"
-	gcc -o $@ $^ $(FLAGS)
+	gcc -o $@ $^ $(FLAGS) $(FLAGS_PRD)
 
 debug.o: code.c
 	echo "building num debug $(DIR)"

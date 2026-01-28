@@ -16,4 +16,9 @@ STRUCT(num)
     bool cannot_expand;
 };
 
+STRUCT(ssm_params)
+{
+    uint64_t M, K, Q, n;
+};
+
 #endif

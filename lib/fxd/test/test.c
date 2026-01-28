@@ -19,7 +19,7 @@ void test_fxd_fn(bool show)
 
 
 
-void test_fxd()
+void test_fxd(void)
 {
     TEST_LIB
 
@@ -32,7 +32,7 @@ void test_fxd()
 
 
 
-int main()
+int main(void)
 {
     setbuf(stdout, NULL);
     test_fxd();

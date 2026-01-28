@@ -1,0 +1,7 @@
+-std=c11 -Wall -Wextra -Wpedantic -Wshadow -Wpointer-arith -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes -Wformat=2 -Wnull-dereference -Wconversion -Wsign-conversion
+-std=c11 -Wall -Wextra -Wpedantic -Wshadow -Wpointer-arith -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes -Wformat=2 -Wnull-dereference -Wconversion -Wsign-conversion -fstack-protector-strong
+-fstack-protector-strong
+
+-O0 -g3 -ggdb -fno-omit-frame-pointer -fsanitize=address,undefined,leak
+
+-O2 -march=native -mtune=native -flto -fomit-frame-pointer -fstack-clash-protection -pie -fPIE -Wl,-z,relro,-z,now,-z,noexecstack

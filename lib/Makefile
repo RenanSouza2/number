@@ -6,6 +6,8 @@ CLU_FILE = ../mods/clu/bin/bin.o
 
 DIR = lib$(word 2,$(subst lib, ,$(CURDIR)))
 
+
+
 build: lib.o
 
 dbg: debug.o $(CLU_FILE)
@@ -14,11 +16,11 @@ dbg: debug.o $(CLU_FILE)
 
 lib.o: $(LIB_FILES)
 	echo " linking num object $(DIR)"
-	ld -r -o $@ $^
+	gcc -r -o $@ $^ -flto
 
 debug.o: $(DGB_FILES)
 	echo " linking num debug $(DIR)"
-	ld -r -o $@ $^
+	gcc -r -o $@ $^ -fsanitize=address,undefined,leak
 
 
 
