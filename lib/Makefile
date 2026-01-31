@@ -43,6 +43,7 @@ _clean:
 	for DIR in $(DIRS) ; do \
 		( $(MAKE) _clean --directory=$$DIR ) || exit $$? ; \
 	done
+	$(MAKE) clean --directory $(dir ${CLU_FILE}) 
 
 
 
