@@ -2,7 +2,7 @@ DIRS := $(wildcard */.)
 
 LIB_FILES = $(foreach DIR,$(DIRS),$(dir $(DIR))lib.o)
 DGB_FILES = $(foreach DIR,$(DIRS),$(dir $(DIR))debug.o)
-CLU_FILE = ../mods/clu/bin/bin.o
+CLU_FILE = ../mods/clu/bin/clu.o
 
 DIR = lib$(word 2,$(subst lib, ,$(CURDIR)))
 
@@ -10,7 +10,7 @@ DIR = lib$(word 2,$(subst lib, ,$(CURDIR)))
 
 build: lib.o
 
-dbg: debug.o $(CLU_FILE)
+dbg: debug.o
 
 
 
@@ -18,7 +18,7 @@ lib.o: $(LIB_FILES)
 	echo " linking num object $(DIR)"
 	gcc -r -o $@ $^ -flto
 
-debug.o: $(DGB_FILES)
+debug.o: $(DGB_FILES) $(CLU_FILE)
 	echo " linking num debug $(DIR)"
 	gcc -r -o $@ $^ -fsanitize=address,undefined,leak
 
@@ -43,7 +43,6 @@ _clean:
 	for DIR in $(DIRS) ; do \
 		( $(MAKE) _clean --directory=$$DIR ) || exit $$? ; \
 	done
-	$(MAKE) clean --directory=$(dir $(CLU_FILE))
 
 
 
