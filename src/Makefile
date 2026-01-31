@@ -36,6 +36,6 @@ $(DGB):
 
 
 clean:
-	echo cleaning "num $(DIR)"
+	echo "cleaning num $(DIR)"
 	rm -rf *.o
 	$(MAKE) clean --directory=$(dir $(LIB))
