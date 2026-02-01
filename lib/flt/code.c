@@ -339,8 +339,8 @@ void flt_num_free(flt_num_t flt)
 
 void flt_num_file_write(FILE *fp, flt_num_t flt)
 {
-    fprintf(fp, " %lx ", flt.exponent);
-    fprintf(fp, " %lx", flt.size);
+    fprintf(fp, " " U64PX " ", flt.exponent);
+    fprintf(fp, " " U64PX "", flt.size);
     sig_num_file_write(fp, flt.sig);
 }
 

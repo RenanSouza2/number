@@ -55,3 +55,6 @@ dkms.conf
 .vscode/settings.json
 
 thread_log/*
+
+# Test
+runner

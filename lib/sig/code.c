@@ -241,10 +241,10 @@ sig_num_t sig_num_head_trim(sig_num_t sig, uint64_t count) // TODO test
 
 void sig_num_file_write(FILE *fp, sig_num_t sig)
 {
-    fprintf(fp, " %lx", sig.signal);
-    fprintf(fp, " %lx", sig.num->count);
+    fprintf(fp, " " U64PX "", sig.signal);
+    fprintf(fp, " " U64PX "", sig.num->count);
     for(uint64_t i=0; i<sig.num->count; i++)
-        fprintf(fp, " %lx", sig.num->chunk[i]);
+        fprintf(fp, " " U64PX "", sig.num->chunk[i]);
 }
 
 void sig_num_save(char file_path[], sig_num_t sig)
@@ -260,11 +260,11 @@ void sig_num_save(char file_path[], sig_num_t sig)
 sig_num_t sig_num_file_read(FILE *fp)
 {
     uint64_t signal, count;
-    assert(fscanf(fp, " %lx %lx", &signal, &count) == 2);
+    assert(fscanf(fp, " " U64PX " " U64PX "", &signal, &count) == 2);
 
     num_p num = num_create(count, count);
     for(uint64_t i=0; i<count; i++)
-        assert(fscanf(fp, " %lx", &num->chunk[i]) == 1);
+        assert(fscanf(fp, " " U64PX "", &num->chunk[i]) == 1);
 
     return (sig_num_t)
     {

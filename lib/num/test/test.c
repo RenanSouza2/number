@@ -2618,7 +2618,7 @@ void test_fuzz_num_ssm_fft(bool show)
                 num_ssm_fft_inv(num_res, &p);                           \
                 if(!num_eq_dbg(num_copy(num_res), num_copy(num)))       \
                 {                                                       \
-                    printf("\ncase: %lu", i);                           \
+                    printf("\ncase: " U64P() "", i);                    \
                     printf("\ncase: (K: %d) (n: %d)", Kv, Nv);          \
                     printf("\nentrie");                                 \
                     num_display_span_full("num", num, Nv, Kv);          \

@@ -1,5 +1,4 @@
 #include <unistd.h>
-#include <stdbit.h>
 
 #include "../mods/clu/header.h"
 #include "../mods/macros/assert.h"
@@ -140,7 +139,7 @@ void time_3(void)
         }
         i_last = i;
 
-        printf("\n%lu", num_1->count);
+        printf("\n" U64P() "", num_1->count);
         num_p num_1_copy = num_copy(num_1);
         num_p num_2_copy = num_copy(num_2);
         TIME_RESET
@@ -161,7 +160,7 @@ void time_3(void)
         }
         i_last = i;
 
-        printf("\n%lu", num_1->count);
+        printf("\n" U64P() "", num_1->count);
         num_p num_1_copy = num_copy(num_1);
         num_p num_2_copy = num_copy(num_2);
         TIME_RESET
@@ -514,7 +513,7 @@ void flt_num_pi_3(uint64_t size)
         flt_a = flt_num_div_sig(flt_a, sig_num_wrap((int64_t)(8 * i)));
 
         if(i%1000 == 0)
-            fprintf(stderr, "\nexp: %ld", -((int64_t)flt_a.size + flt_a.exponent));
+            fprintf(stderr, "\nexp: " D64P() "", -((int64_t)flt_a.size + flt_a.exponent));
 
         flt_num_t flt_b = flt_num_copy(flt_a);
         flt_b = flt_num_mul_sig(flt_b, sig_num_wrap(1 - (int64_t)(2 * i)));
