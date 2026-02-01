@@ -432,8 +432,7 @@ num_p num_head_grow(num_p num, uint64_t count) // TODO test
 
     uint64_t count_res = num->count + count;
     num = num_expand_to(num, count_res);
-    for(uint64_t i=num->count-1; i!=UINT64_MAX; i--)
-        num->chunk[i+count] = num->chunk[i];
+    memmove(&num->chunk[count], num->chunk, num->count * sizeof(uint64_t));
 
     memset(num->chunk, 0, count * sizeof(uint64_t));
     num->count = count_res;
@@ -452,8 +451,7 @@ void num_head_trim(num_p num, uint64_t count) // TODO test
     }
 
     uint64_t count_res = num->count - count;
-    for(uint64_t i=count; i<num->count; i++)
-        num->chunk[i-count] = num->chunk[i];
+    memmove(num->chunk, &num->chunk[count], count_res * sizeof(uint64_t));
 
     memset(&num->chunk[num->count - count], 0, count * sizeof(uint64_t));
     num->count = count_res;
@@ -1262,8 +1260,7 @@ void num_ssm_shl(
     bits &=0x3f;
     if((bits) == 0)
     {
-        for(uint64_t i=n-1; i!=count-1; i--)
-            num_res->chunk[pos_res + i] = num->chunk[pos + i - count];
+        memmove(&num_res->chunk[pos_res + count], &num->chunk[pos], (n - count) * sizeof(uint64_t));
 
         memset(&num_res->chunk[pos_res], 0, count * sizeof(uint64_t));
         return;
@@ -1300,8 +1297,7 @@ void num_ssm_shr(
     bits &=0x3f;
     if(bits == 0)
     {
-        for(uint64_t i=0; i<n-count; i++)
-            num_res->chunk[pos_res + i] = num->chunk[pos + i + count];
+        memmove(&num_res->chunk[pos_res], &num->chunk[pos + count], (n - count) * sizeof(uint64_t));
 
         memset(&num_res->chunk[pos_res + n - count], 0, count * sizeof(uint64_t));
         return;
