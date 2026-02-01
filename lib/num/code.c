@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbit.h>
 
 #include "debug.h"
 #include "../../mods/macros/assert.h"
+#include "../../mods/macros/stdbit.h"
 #include "../../mods/macros/uint.h"
 #include "../../mods/clu/header.h"
 
@@ -279,7 +279,7 @@ void num_display_opts(num_p num, char *tag, bool length, bool full)
             4 : num->count;
 
     for(uint64_t i=0; i<max; i++)
-        printf("%16lx ", num->chunk[num->count-1-i]);
+        printf("" U64PX " ", num->chunk[num->count-1-i]);
 
     if(!full && num->count > 4)
         printf("...");
@@ -981,7 +981,7 @@ static void num_display_span(num_p num, uint64_t pos, uint64_t count)
     assert(num->size >= pos + count);
 
     for(uint64_t i=count-1; i!=UINT64_MAX; i--)
-        printf("%16lx ", num->chunk[pos + i]);
+        printf("" U64PX " ", num->chunk[pos + i]);
 }
 
 void num_display_span_full(char tag[], num_p num, uint64_t n, uint64_t k)
@@ -993,7 +993,7 @@ void num_display_span_full(char tag[], num_p num, uint64_t n, uint64_t k)
     printf("\n%s", tag);
     for(uint64_t i=0; i<k; i++)
     {
-        printf("\nc[%lu]\t:", i);
+        printf("\nc[" U64P() "]\t:", i);
         num_display_span(num, i * n, n);
     }
 }
@@ -1972,7 +1972,7 @@ static num_p num_div_mod_bz(num_p num_1, num_p num_2)
     num_p num_aux = num_create(count, 0);
     num_p num_q = num_create(num_1->count - num_2->count + 1, 0);
     num_aux->cannot_expand = true;
-    for(uint64_t i=0; n_1 > 2 * n_2; i++)
+    while(n_1 > 2 * n_2)
     {
         num_t num_1_1;
         num_span(&num_1_1, num_1, n_1 - 2 * n_2, num_1->count);
