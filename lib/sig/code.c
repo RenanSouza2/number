@@ -239,22 +239,87 @@ sig_num_t sig_num_head_trim(sig_num_t sig, uint64_t count) // TODO test
 
 
 
-void sig_num_file_write(FILE *fp, sig_num_t sig)
+void fseek_safe(FILE *fp, uint64_t pos)
 {
-    fprintf(fp, " " U64PX "", sig.signal);
-    fprintf(fp, " " U64PX "", sig.num->count);
+    uint64_t res = (uint64_t)fseek(fp, (long)pos, SEEK_SET);
+    if (res != 0)
+        exit(EXIT_FAILURE);
+}
+
+uint64_t ftell_safe(file_p fp)
+{
+    int64_t res = ftell(fp->fp);
+    if (res < 0)
+        exit(EXIT_FAILURE);
+
+    return (uint64_t)res;
+}
+
+void file_write_uint64(file_p fp, uint64_t value)
+{
+    fwrite(&value, sizeof(uint64_t), 1, fp->fp);
+}
+
+void file_write_int64(file_p fp, int64_t value)
+{
+    fwrite(&value, sizeof(int64_t), 1, fp->fp);
+}
+
+file_t file_write_open(char file_path[], uint64_t amount)
+{
+    FILE *fp = fopen(file_path, "wb");
+    assert(fp);
+
+    return (file_t)
+    {
+        .fp = fp,
+        .amount = amount,
+        .count = 0,
+        .pos = amount * sizeof(uint64_t)
+    };
+}
+
+void file_write_close(file_p fp)
+{
+    assert(fp->amount == fp->count);
+    fclose(fp->fp);
+}
+
+void file_write_sig_num_raw(file_p fp, sig_num_t sig)
+{
+    file_write_uint64(fp, sig.signal);
+    file_write_uint64(fp, sig.num->count);
     for(uint64_t i=0; i<sig.num->count; i++)
-        fprintf(fp, " " U64PX "", sig.num->chunk[i]);
+        file_write_uint64(fp, sig.num->chunk[i]);
+}
+
+void file_write_start(file_p fp)
+{
+    assert(fp->count < fp->amount);
+
+    fseek_safe(fp->fp, fp->count * sizeof(uint64_t));
+    file_write_uint64(fp, fp->pos);
+    fseek_safe(fp->fp, fp->pos);
+}
+
+void file_write_end(file_p fp)
+{
+    fp->pos = ftell_safe(fp);
+    fp->count++;
+}
+
+void file_write_sig_num(file_p fp, sig_num_t sig)
+{
+    file_write_start(fp);
+    file_write_sig_num_raw(fp, sig);
+    file_write_end(fp);
 }
 
 void sig_num_save(char file_path[], sig_num_t sig)
 {
-    FILE *fp = fopen(file_path, "w");
-    assert(fp);
-
-    sig_num_file_write(fp, sig);
-
-    fclose(fp);
+    file_t fp = file_write_open(file_path, 1);
+    file_write_sig_num(&fp, sig);
+    file_write_close(&fp);
 }
 
 sig_num_t sig_num_file_read(FILE *fp)

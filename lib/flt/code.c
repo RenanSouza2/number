@@ -337,21 +337,25 @@ void flt_num_free(flt_num_t flt)
 
 
 
-void flt_num_file_write(FILE *fp, flt_num_t flt)
+void file_write_flt_num_raw(file_p fp, flt_num_t flt)
 {
-    fprintf(fp, " " U64PX " ", flt.exponent);
-    fprintf(fp, " " U64PX "", flt.size);
-    sig_num_file_write(fp, flt.sig);
+    file_write_int64(fp, flt.exponent);
+    file_write_uint64(fp, flt.size);
+    file_write_sig_num_raw(fp, flt.sig);
+}
+
+void file_write_flt_num(file_p fp, flt_num_t flt)
+{
+    file_write_start(fp);
+    file_write_flt_num_raw(fp, flt);
+    file_write_end(fp);
 }
 
 void flt_num_save(char file_path[], flt_num_t flt)
 {
-    FILE *fp = fopen(file_path, "w");
-    assert(fp);
-
-    flt_num_file_write(fp, flt);
-
-    fclose(fp);
+    file_t fp = file_write_open(file_path, 1);
+    file_write_flt_num(&fp, flt);
+    file_write_close(&fp);
 }
 
 flt_num_t flt_num_file_read(FILE *fp)

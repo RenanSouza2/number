@@ -648,6 +648,17 @@ int main()
     // flt_num_pi_3(1000);
     // mem_1(21);
 
+    sig_num_t sig_1 = sig_num_wrap_int128(((int128_t)0x1234 << 64) + 0x5678);
+    sig_num_t sig_2 = sig_num_wrap(0xabcd);
+    
+    file_t fp = file_write_open("num.bin", 2);
+
+    file_write_sig_num(&fp, sig_1);
+    file_write_sig_num(&fp, sig_2);
+
+    file_write_close(&fp);
+    
+
     // assert(clu_mem_is_empty("FINAL"));
 
     printf("\n");
