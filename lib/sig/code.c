@@ -270,13 +270,16 @@ file_t file_write_open(char file_path[], uint64_t amount)
     FILE *fp = fopen(file_path, "wb");
     assert(fp);
 
-    return (file_t)
+
+    file_t res = (file_t)
     {
         .fp = fp,
         .amount = amount,
         .count = 0,
-        .pos = amount * sizeof(uint64_t)
+        .pos = (amount + 1) * sizeof(uint64_t)
     };
+    file_write_uint64(&res, amount);
+    return res;
 }
 
 void file_write_close(file_p fp)
@@ -297,7 +300,7 @@ void file_write_start(file_p fp)
 {
     assert(fp->count < fp->amount);
 
-    fseek_safe(fp->fp, fp->count * sizeof(uint64_t));
+    fseek_safe(fp->fp, (fp->count + 1) * sizeof(uint64_t));
     file_write_uint64(fp, fp->pos);
     fseek_safe(fp->fp, fp->pos);
 }
