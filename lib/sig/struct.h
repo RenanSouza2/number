@@ -1,6 +1,8 @@
 #ifndef __SIG_STRUCT_H__
 #define __SIG_STRUCT_H__
 
+#include <stdio.h>
+
 #include "../../mods/macros/struct.h"
 #include "../../mods/macros/uint.h"
 

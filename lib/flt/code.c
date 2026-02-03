@@ -358,34 +358,29 @@ void flt_num_save(char file_path[], flt_num_t flt)
     file_write_close(&fp);
 }
 
-flt_num_t flt_num_file_read(FILE *fp)
+flt_num_t file_read_flt_num_raw(FILE *fp)
 {
-    uint64_t exponent, size;
-    assert(fscanf(fp, " %" SCNx64 " %" SCNx64 "", &exponent, &size) == 2);
+    int64_t exponent = file_read_int64(fp);
+    uint64_t size = file_read_uint64(fp);
+    sig_num_t sig = file_read_sig_num_raw(fp);
+    return flt_num_create(exponent, size, sig);
+}
 
-    sig_num_t sig = sig_num_file_read(fp);
-
-    return (flt_num_t)
-    {
-        .exponent = (int64_t)exponent,
-        .size = size,
-        .sig = sig
-    };
+flt_num_t file_read_flt_num(FILE *fp, uint64_t index)
+{
+    file_read_move_to_index(fp, index);
+    return file_read_flt_num_raw(fp);
 }
 
 flt_num_t flt_num_load(char file_path[])
 {
-    FILE *fp = fopen(file_path, "r");
+    FILE *fp = file_read_open(file_path);
     assert(fp);
-
-    flt_num_t flt = flt_num_file_read(fp);
-
+    flt_num_t flt = file_read_flt_num(fp, 0);
     fclose(fp);
-    // remove(file_path);
 
     return flt;
 }
-
 
 
 fxd_num_t fxd_num_wrap_flt(flt_num_t flt, uint64_t pos) // TODO test

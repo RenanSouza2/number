@@ -239,10 +239,9 @@ sig_num_t sig_num_head_trim(sig_num_t sig, uint64_t count) // TODO test
 
 
 
-void fseek_safe(FILE *fp, uint64_t pos)
+void fseek_safe(FILE *fp, long pos, int whence)
 {
-    uint64_t res = (uint64_t)fseek(fp, (long)pos, SEEK_SET);
-    if (res != 0)
+    if (fseek(fp, pos, whence) != 0)
         exit(EXIT_FAILURE);
 }
 
@@ -285,6 +284,8 @@ file_t file_write_open(char file_path[], uint64_t amount)
 void file_write_close(file_p fp)
 {
     assert(fp->amount == fp->count);
+
+    file_write_uint64(fp, 0xd0bbe);
     fclose(fp->fp);
 }
 
@@ -300,9 +301,9 @@ void file_write_start(file_p fp)
 {
     assert(fp->count < fp->amount);
 
-    fseek_safe(fp->fp, (fp->count + 1) * sizeof(uint64_t));
+    fseek_safe(fp->fp, (long)((fp->count + 1) * sizeof(uint64_t)), SEEK_SET);
     file_write_uint64(fp, fp->pos);
-    fseek_safe(fp->fp, fp->pos);
+    fseek_safe(fp->fp, (long)fp->pos, SEEK_SET);
 }
 
 void file_write_end(file_p fp)
@@ -325,31 +326,71 @@ void sig_num_save(char file_path[], sig_num_t sig)
     file_write_close(&fp);
 }
 
-sig_num_t sig_num_file_read(FILE *fp)
-{
-    uint64_t signal, count;
-    assert(fscanf(fp, " " U64PX " " U64PX "", &signal, &count) == 2);
 
+
+FILE* file_read_open(char file_path[])
+{
+    FILE *fp = fopen(file_path, "rb");
+    if(fp == NULL)
+        return NULL;
+
+    fseek_safe(fp, -(long)sizeof(uint64_t), SEEK_END);
+    uint64_t code = file_read_uint64(fp);
+    if(code != 0xd0bbe)
+        return NULL;
+
+    return fp;
+}
+
+void file_read_move_to_index(FILE *fp, uint64_t index)
+{
+    fseek_safe(fp, 0, SEEK_SET);
+    uint64_t amount = file_read_uint64(fp);
+    assert(index < amount);
+
+    fseek_safe(fp, (long)((index + 1) * sizeof(uint64_t)), SEEK_SET);
+    uint64_t pos = file_read_uint64(fp);
+
+    fseek_safe(fp, (long)pos, SEEK_SET);
+}
+
+uint64_t file_read_uint64(FILE *fp)
+{
+    uint64_t res;
+    assert(fread(&res, sizeof(uint64_t), 1, fp) == 1);
+    return res;
+}
+
+int64_t file_read_int64(FILE *fp)
+{
+    int64_t res;
+    assert(fread(&res, sizeof(int64_t), 1, fp) == 1);
+    return res;
+}
+
+sig_num_t file_read_sig_num_raw(FILE *fp)
+{
+    uint64_t signal = file_read_uint64(fp);
+    uint64_t count = file_read_uint64(fp);
     num_p num = num_create(count, count);
     for(uint64_t i=0; i<count; i++)
-        assert(fscanf(fp, " " U64PX "", &num->chunk[i]) == 1);
+        num->chunk[i] = file_read_uint64(fp);
 
-    return (sig_num_t)
-    {
-        .signal = signal,
-        .num = num
-    };
+    return sig_num_create(signal, num);
+}
+
+sig_num_t file_read_sig_num(FILE *fp, uint64_t index)
+{
+    file_read_move_to_index(fp, index);
+    return file_read_sig_num_raw(fp);
 }
 
 sig_num_t sig_num_load(char file_path[])
 {
-    FILE *fp = fopen(file_path, "r");
+    FILE *fp = file_read_open(file_path);
     assert(fp);
-
-    sig_num_t sig = sig_num_file_read(fp);
-
+    sig_num_t sig = file_read_sig_num(fp, 0);
     fclose(fp);
-    // remove(file_path);
 
     return sig;
 }

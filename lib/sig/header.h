@@ -22,8 +22,6 @@ sig_num_t sig_num_head_grow(sig_num_t sig, uint64_t count);
 sig_num_t sig_num_head_trim(sig_num_t sig, uint64_t count);
 
 void sig_num_save(char file_path[], sig_num_t sig);
-sig_num_t sig_num_file_read(FILE *fp);
-sig_num_t sig_num_load(char file_path[]);
 
 bool sig_num_is_zero(sig_num_t sig);
 int64_t sig_num_cmp(sig_num_t sig_1, sig_num_t sig_2);
@@ -49,5 +47,12 @@ void file_write_int64(file_p fp, int64_t value);
 void file_write_start(file_p fp);
 void file_write_end(file_p fp);
 void file_write_sig_num(file_p fp, sig_num_t sig);
+
+FILE* file_read_open(char file_path[]);
+void file_read_move_to_index(FILE *fp, uint64_t index);
+uint64_t file_read_uint64(FILE *fp);
+int64_t file_read_int64(FILE *fp);
+sig_num_t file_read_sig_num_raw(FILE *fp);
+sig_num_t file_read_sig_num(FILE *fp, uint64_t index);
 
 #endif

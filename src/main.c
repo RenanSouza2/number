@@ -651,13 +651,19 @@ int main()
     sig_num_t sig_1 = sig_num_wrap_int128(((int128_t)0x1234 << 64) + 0x5678);
     sig_num_t sig_2 = sig_num_wrap(0xabcd);
     
-    file_t fp = file_write_open("num.bin", 2);
+    file_t fp_w = file_write_open("num.bin", 2);
 
-    file_write_sig_num(&fp, sig_1);
-    file_write_sig_num(&fp, sig_2);
+    file_write_sig_num(&fp_w, sig_1);
+    file_write_sig_num(&fp_w, sig_2);
+    file_write_close(&fp_w);
 
-    file_write_close(&fp);
-    
+    FILE* fp_r = file_read_open("num.bin");
+    assert(fp_r);
+    sig_num_t sig_3 = file_read_sig_num(fp_r, 0);
+    sig_num_t sig_4 = file_read_sig_num(fp_r, 1);
+
+    sig_num_display_tag("sig_3", sig_3);
+    sig_num_display_tag("sig_4", sig_4);
 
     // assert(clu_mem_is_empty("FINAL"));
 
