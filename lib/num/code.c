@@ -192,7 +192,7 @@ uint64_t uint_from_char(char c)
     return res;
 }
 
-static uint64_t uint_from_str(char str[], uint64_t size, uint64_t base) // TODO test
+static uint64_t uint_from_str(const char str[], uint64_t size, uint64_t base) // TODO test
 {
     uint64_t value = 0;
     for(uint64_t i=0; i<size; i++)
@@ -247,7 +247,7 @@ void num_display_dec(num_p num)
     num_free(num);
 }
 
-void num_display_opts(num_p num, char *tag, bool length, bool full)
+void num_display_opts(num_p num, const char tag[], bool length, bool full)
 {
     CLU_HANDLER_IS_SAFE(num);
     assert(num);
@@ -293,7 +293,7 @@ void num_display(num_p num)
     num_display_opts(num, NULL, true, false);
 }
 
-void num_display_tag(char *tag, num_p num)
+void num_display_tag(const char tag[], num_p num)
 {
     CLU_HANDLER_IS_SAFE(num);
     assert(num);
@@ -301,7 +301,7 @@ void num_display_tag(char *tag, num_p num)
     num_display_opts(num, tag, true, false);
 }
 
-void num_display_full(char *tag, num_p num)
+void num_display_full(const char tag[], num_p num)
 {
     CLU_HANDLER_IS_SAFE(num);
     assert(num);
@@ -541,7 +541,7 @@ num_p num_wrap_uint128(uint128_t value)
     return num;
 }
 
-num_p num_wrap_dec(char str[])
+num_p num_wrap_dec(const char str[])
 {
     uint64_t len = strlen(str);
     uint64_t pos = len / 18;
@@ -565,7 +565,7 @@ num_p num_wrap_dec(char str[])
     return num_base_from(num, 1000000000000000000);
 }
 
-num_p num_wrap_hex(char str[])
+num_p num_wrap_hex(const char str[])
 {
     uint64_t len = strlen(str);
     assert(len > 1 && str[0] == '0' && str[1] == 'x');
@@ -591,7 +591,7 @@ num_p num_wrap_hex(char str[])
     return num;
 }
 
-num_p num_wrap_str(char str[])
+num_p num_wrap_str(const char str[])
 {
     return str[0] == '0' && str[1] == 'x' ?
         num_wrap_hex(str) : num_wrap_dec(str);
@@ -604,7 +604,7 @@ static uint64_t get_ftell(FILE* fp)
     return (uint64_t)res;
 }
 
-num_p num_read_dec(char file_name[])
+num_p num_read_dec(const char file_name[])
 {
     FILE *fp = fopen(file_name, "r");
     assert(fp);
@@ -982,7 +982,7 @@ static void num_display_span(num_p num, uint64_t pos, uint64_t count)
         printf("" U64PX " ", num->chunk[pos + i]);
 }
 
-void num_display_span_full(char tag[], num_p num, uint64_t n, uint64_t k)
+void num_display_span_full(const char tag[], num_p num, uint64_t n, uint64_t k)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)

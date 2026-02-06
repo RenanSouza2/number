@@ -60,7 +60,7 @@ _clean:
 
 .PHONY: test
 test t:
-	$(MAKE) dbg -s
+	$(MAKE) dbg
 	$(MAKE) _test -s
 
 _test:

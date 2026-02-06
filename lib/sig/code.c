@@ -102,7 +102,7 @@ void sig_num_display(sig_num_t sig, bool full)
     printf("]");
 }
 
-void sig_num_display_tag(char tag[], sig_num_t sig)
+void sig_num_display_tag(const char tag[], sig_num_t sig)
 {
     CLU_SIG_IS_SAFE(sig);
     assert(sig.num);
@@ -111,7 +111,7 @@ void sig_num_display_tag(char tag[], sig_num_t sig)
     sig_num_display(sig, false);
 }
 
-void sig_num_display_full(char tag[], sig_num_t sig)
+void sig_num_display_full(const char tag[], sig_num_t sig)
 {
     CLU_SIG_IS_SAFE(sig);
     assert(sig.num);
