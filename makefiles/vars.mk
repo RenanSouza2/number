@@ -1,5 +1,7 @@
-PROJECT = clu
-LIB_ROOT = $(shell git rev-parse --show-toplevel)/lib
-DBG_FILE = $(LIB_ROOT)/debug.o
-LIB_FILE = $(LIB_ROOT)/lib.o
+PRJ_NAME = num
+PRJ_DIR ?= $(shell git rev-parse --show-toplevel)
+LIB_DIR = $(PRJ_DIR)/lib
+DBG_FILE = $(LIB_DIR)/debug.o
+LIB_FILE = $(LIB_DIR)/lib.o
+CLU_FILE = $(PRJ_DIR)/mods/clu/bin/clu.o
 DIR = $(shell basename $(CURDIR))

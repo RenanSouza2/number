@@ -202,7 +202,7 @@ sig_num_t sig_num_wrap_num(num_p num)   // TODO TEST
     return sig_num_create(POSITIVE, num);
 }
 
-sig_num_t sig_num_wrap_str(char str[])
+sig_num_t sig_num_wrap_str(const char str[])
 {
     uint64_t signal = str[0] == '-' ? NEGATIVE : POSITIVE;
     uint64_t offset = str[0] == '-' || str[0] == '+' ? 1 : 0;
