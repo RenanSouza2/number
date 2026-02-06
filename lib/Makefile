@@ -11,19 +11,23 @@ DGB_FILES = $(foreach DIR,$(DIRS),$(dir $(DIR))debug.o)
 
 
 
-build: lib.o
+build: $(LIB_FILE)
 
-dbg: debug.o
+dbg: $(DBG_FULL_FILE) 
 
 
 
-lib.o: $(LIB_FILES)
+$(LIB_FILE): $(LIB_FILES)
 	echo " linking num object $(DIR)"
 	gcc -r $(FLAGS) $(FLAGS_PRD) -o $@ $^ -flto -nostdlib
 
-debug.o: $(DGB_FILES) $(CLU_FILE)
-	echo " linking num debug $(DIR)"
+$(DBG_FULL_FILE): $(DBG_FILE) $(CLU_FILE)
+	echo " linking num debug full $(DIR)"
 	gcc -r $(FLAGS) $(FLAGS_DBG)  -o $@ $^ -flinker-output=nolto-rel -nostdlib
+
+$(DBG_FILE): $(DGB_FILES)
+	echo " linking num debug light $(DIR)"
+	gcc -r $(FLAGS) $(FLAGS_DBG)  -o $@ $^ -nostdlib
 
 
 

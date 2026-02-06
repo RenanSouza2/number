@@ -1,18 +1,8 @@
-FLAGS = -std=c2x -Wall -Wextra -Werror -Wfatal-errors -Wpedantic -Wshadow -Wpointer-arith -Wcast-qual -Wstrict-prototypes -Wformat=2 -Wnull-dereference -Wconversion -Wsign-conversion -D_POSIX_C_SOURCE=200809L
-FLAGS_PRD = -O2 -march=native -fstack-protector-strong
-FLAGS_DBG = -D DEBUG -O0 -g3 -ggdb -fno-omit-frame-pointer -fsanitize=address,undefined
+ROOT = $(shell git rev-parse --show-toplevel)
+include $(ROOT)/makefiles/flags.mk
+include $(ROOT)/makefiles/vars.mk
 
-ifeq ($(shell uname -s),Linux)
-    FLAGS_PRD += -fstack-clash-protection
-	FLAGS_DBG += -fsanitize=leak
-endif
-
-
-
-LIB = ../lib/lib.o
-DGB = ../lib/debug.o
-
-DIR = src
+FLAGS := $(subst -std=c11,-std=c2x,$(FLAGS))
 
 
 
@@ -22,22 +12,22 @@ dbg: debug.o
 
 
 
-main.o: main.c $(LIB)
+main.o: main.c $(LIB_FILE)
 	echo "building num exec $(DIR)"
 	gcc -o $@ $^ $(FLAGS) $(FLAGS_PRD)
 
-debug.o: main.c $(DGB)
+debug.o: main.c $(DBG_FULL_FILE)
 	echo "building num debug $(DIR)"
 	gcc -o $@ $^ $(FLAGS) $(FLAGS_DBG)
 
 
 
-.PHONY: $(LIB)
-$(LIB):
+.PHONY: $(LIB_FILE)
+$(LIB_FILE):
 	$(MAKE) --directory=$(dir $@)
 
-.PHONY: $(DGB)
-$(DGB):
+.PHONY: $(DBG_FULL_FILE)
+$(DBG_FULL_FILE):
 	$(MAKE) dbg --directory=$(dir $@)
 
 
@@ -45,4 +35,4 @@ $(DGB):
 clean:
 	echo "cleaning num $(DIR)"
 	rm -rf *.o
-	$(MAKE) clean --directory=$(dir $(LIB))
+	$(MAKE) clean --directory=$(LIB_DIR)

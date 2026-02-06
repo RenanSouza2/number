@@ -84,14 +84,14 @@ void fxd_num_display(fxd_num_t fxd)
     sig_num_display(fxd.sig, false);
 }
 
-void fxd_num_display_tag(char tag[], fxd_num_t fxd)
+void fxd_num_display_tag(const char tag[], fxd_num_t fxd)
 {
     CLU_FXD_IS_SAFE(fxd);
 
     sig_num_display_tag(tag, fxd.sig);
 }
 
-void fxd_num_display_full(char tag[], fxd_num_t fxd)
+void fxd_num_display_full(const char tag[], fxd_num_t fxd)
 {
     CLU_FXD_IS_SAFE(fxd);
 

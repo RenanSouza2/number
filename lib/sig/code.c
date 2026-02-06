@@ -264,7 +264,7 @@ void file_write_int64(file_p fp, int64_t value)
     fwrite(&value, sizeof(int64_t), 1, fp->fp);
 }
 
-file_t file_write_open(char file_path[], uint64_t amount)
+file_t file_write_open(const char file_path[], uint64_t amount)
 {
     FILE *fp = fopen(file_path, "wb");
     assert(fp);
@@ -319,7 +319,7 @@ void file_write_sig_num(file_p fp, sig_num_t sig)
     file_write_end(fp);
 }
 
-void sig_num_save(char file_path[], sig_num_t sig)
+void sig_num_save(const char file_path[], sig_num_t sig)
 {
     file_t fp = file_write_open(file_path, 1);
     file_write_sig_num(&fp, sig);
@@ -328,7 +328,7 @@ void sig_num_save(char file_path[], sig_num_t sig)
 
 
 
-FILE* file_read_open(char file_path[])
+FILE* file_read_open(const char file_path[])
 {
     FILE *fp = fopen(file_path, "rb");
     if(fp == NULL)

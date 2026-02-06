@@ -351,7 +351,7 @@ void file_write_flt_num(file_p fp, flt_num_t flt)
     file_write_end(fp);
 }
 
-void flt_num_save(char file_path[], flt_num_t flt)
+void flt_num_save(const char file_path[], flt_num_t flt)
 {
     file_t fp = file_write_open(file_path, 1);
     file_write_flt_num(&fp, flt);
@@ -372,7 +372,7 @@ flt_num_t file_read_flt_num(FILE *fp, uint64_t index)
     return file_read_flt_num_raw(fp);
 }
 
-flt_num_t flt_num_load(char file_path[])
+flt_num_t flt_num_load(const char file_path[])
 {
     FILE *fp = file_read_open(file_path);
     assert(fp);
