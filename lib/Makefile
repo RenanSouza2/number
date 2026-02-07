@@ -19,11 +19,11 @@ dbg: $(DBG_FULL_FILE)
 
 $(LIB_FILE): $(LIB_FILES)
 	echo " linking num object $(DIR)"
-	gcc -r $(FLAGS) $(FLAGS_PRD) -o $@ $^ -flto -nostdlib
+	gcc -r $(FLAGS) $(FLAGS_PRD) -o $@ $^ -nostdlib
 
 $(DBG_FULL_FILE): $(DBG_FILE) $(CLU_FILE)
 	echo " linking num debug full $(DIR)"
-	gcc -r $(FLAGS) $(FLAGS_DBG)  -o $@ $^ -flinker-output=nolto-rel -nostdlib
+	gcc -r $(FLAGS) $(FLAGS_DBG)  -o $@ $^ -nostdlib
 
 $(DBG_FILE): $(DGB_FILES)
 	echo " linking num debug light $(DIR)"
