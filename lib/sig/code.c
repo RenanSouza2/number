@@ -245,9 +245,9 @@ void fseek_safe(FILE *fp, long pos, int whence)
         exit(EXIT_FAILURE);
 }
 
-uint64_t ftell_safe(file_p fp)
+uint64_t ftell_safe(FILE *fp)
 {
-    int64_t res = ftell(fp->fp);
+    int64_t res = ftell(fp);
     if (res < 0)
         exit(EXIT_FAILURE);
 
@@ -308,7 +308,7 @@ void file_write_start(file_p fp)
 
 void file_write_end(file_p fp)
 {
-    fp->pos = ftell_safe(fp);
+    fp->pos = ftell_safe(fp->fp);
     fp->count++;
 }
 
@@ -330,27 +330,26 @@ void sig_num_save(const char file_path[], sig_num_t sig)
 
 FILE* file_read_open(const char file_path[])
 {
-    fprintf(stderr, "\ntrying to read %s", file_path);
-    getchar();
-
     FILE *fp = fopen(file_path, "rb");
     if(fp == NULL)
         return NULL;
 
-    fprintf(stderr, "\nfile opened");
+    fseek_safe(fp, 0, SEEK_END);
+    uint64_t size = ftell_safe(fp);
+    if(size < sizeof(uint64_t))
+    {
+        fclose(fp);
+        return NULL;
+    }
 
     fseek_safe(fp, -(long)sizeof(uint64_t), SEEK_END);
     uint64_t code = file_read_uint64(fp);
 
-    fprintf(stderr, "\nlast code %016lx", code);
-    getchar();
-
     if(code != 0xd0bbe)
+    {
+        fclose(fp);
         return NULL;
-
-    
-    fprintf(stderr, "\nsuccess");
-    getchar();
+    }
 
     return fp;
 }
