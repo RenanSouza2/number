@@ -57,7 +57,7 @@ _clean:
 .PHONY: test
 test t:
 	$(MAKE) dbg
-	$(MAKE) _test -s
+	$(MAKE) _test
 
 _test:
 	for DIR in $(DIRS) ; do \

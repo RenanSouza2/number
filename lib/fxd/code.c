@@ -354,8 +354,8 @@ fxd_num_t fxd_num_div(fxd_num_t fxd_1, fxd_num_t fxd_2) // TODO test
     CLU_FXD_IS_SAFE(fxd_1);
     CLU_FXD_IS_SAFE(fxd_2);
 
-    fxd_1.sig = sig_num_head_grow(fxd_1.sig, fxd_1.pos);
-    fxd_1.sig = sig_num_div(fxd_1.sig, fxd_2.sig);
+    sig_num_t sig = sig_num_head_grow(fxd_1.sig, fxd_1.pos);
+    fxd_1.sig = sig_num_div(sig, fxd_2.sig);
     return fxd_1;
 }
 
