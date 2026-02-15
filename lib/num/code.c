@@ -711,7 +711,7 @@ num_p num_sub_uint_offset(num_p num, uint64_t pos, uint64_t value)
 // keeps NUM
 // NUM_RES must be reseted before
 // num_res->size >= pos_res + num->count + 1 - pos
-static void num_add_mul_uint_offset(
+static num_p num_add_mul_uint_offset(
     num_p num_res,
     uint64_t pos_res,
     num_p num,
@@ -726,14 +726,15 @@ static void num_add_mul_uint_offset(
     assert(num_res->size >= pos_res + num->count + 1 - pos)
 
     if(value == 0)
-        return;
+        return num_res;
 
     for(uint64_t i=pos; i<num->count; i++)
     {
         uint128_t u = MUL(num->chunk[i], value);
-        num_add_uint_offset(num_res, pos_res + i - pos, LOW(u));
-        num_add_uint_offset(num_res, pos_res + i - pos + 1, HIGH(u));
+        num_res = num_add_uint_offset(num_res, pos_res + i - pos, LOW(u));
+        num_res = num_add_uint_offset(num_res, pos_res + i - pos + 1, HIGH(u));
     }
+    return num_res;
 }
 
 num_p num_shl_inner(num_p num, uint64_t bits) // TODO test
@@ -871,7 +872,7 @@ num_p num_sub_offset(num_p num_1, uint64_t pos_1, num_p num_2)
 
 // preserves NUM
 // num_res->size >= num->count + 1
-static void num_mul_uint_buffer(num_p num_res, num_p num, uint64_t value) // TODO TEST
+static num_p num_mul_uint_buffer(num_p num_res, num_p num, uint64_t value) // TODO TEST
 {
     CLU_HANDLER_IS_SAFE(num_res)
     CLU_HANDLER_IS_SAFE(num)
@@ -882,7 +883,7 @@ static void num_mul_uint_buffer(num_p num_res, num_p num, uint64_t value) // TOD
     if(value == 0 || num->count == 0)
     {
         num_set_count(num_res, 0);
-        return;
+        return num_res;
     }
 
     num_res->count = num->count + 1;
@@ -891,15 +892,16 @@ static void num_mul_uint_buffer(num_p num_res, num_p num, uint64_t value) // TOD
     {
         uint128_t u = MUL(num->chunk[i], value);
         num_res->chunk[i+1] = HIGH(u);
-        num_add_uint_offset(num_res, i, LOW(u));
+        num_res = num_add_uint_offset(num_res, i, LOW(u));
     }
     num_normalize(num_res);
+    return num_res;
 }
 
 // Keeps NUM_1
 // Keeps NUM_2
 // num_res->size >= num_1->count + num_2->count - pos
-static void num_mul_high_buffer(num_p num_res, num_p num_1, num_p num_2, uint64_t pos) // TODO TEST
+static num_p num_mul_high_buffer(num_p num_res, num_p num_1, num_p num_2, uint64_t pos) // TODO TEST
 {
     CLU_HANDLER_IS_SAFE(num_res)
     CLU_HANDLER_IS_SAFE(num_1)
@@ -911,20 +913,21 @@ static void num_mul_high_buffer(num_p num_res, num_p num_1, num_p num_2, uint64_
 
     num_set_count(num_res, 0);
     if(pos >= num_1->count + num_2->count)
-        return;
+        return num_res;
 
     uint64_t max = pos > num_2->count ? num_2->count : pos;
     for(uint64_t i=0; i<max; i++)
-        num_add_mul_uint_offset(num_res, 0, num_1, pos-i, num_2->chunk[i]);
+        num_res = num_add_mul_uint_offset(num_res, 0, num_1, pos-i, num_2->chunk[i]);
 
     for(uint64_t i=pos; i<num_2->count; i++)
-        num_add_mul_uint_offset(num_res, i-pos, num_1, 0, num_2->chunk[i]);
+        num_res = num_add_mul_uint_offset(num_res, i-pos, num_1, 0, num_2->chunk[i]);
+    return num_res;
 }
 
 // Keeps NUM_1
 // Keeps NUM_2
 // num_res->size >= num_1->count + num_2->count
-static void num_mul_classic_buffer(num_p num_res, num_p num_1, num_p num_2)
+static num_p num_mul_classic_buffer(num_p num_res, num_p num_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_res)
     CLU_HANDLER_IS_SAFE(num_1)
@@ -934,10 +937,10 @@ static void num_mul_classic_buffer(num_p num_res, num_p num_1, num_p num_2)
     assert(num_2)
     assert(num_res->size >= num_1->count + num_2->count)
 
-    num_mul_high_buffer(num_res, num_1, num_2, 0);
+    return num_mul_high_buffer(num_res, num_1, num_2, 0);
 }
 
-void num_sqr_classic_buffer(num_p num_res, num_p num)
+static num_p num_sqr_classic_buffer(num_p num_res, num_p num)
 {
     CLU_HANDLER_IS_SAFE(num_res)
     CLU_HANDLER_IS_SAFE(num)
@@ -945,28 +948,29 @@ void num_sqr_classic_buffer(num_p num_res, num_p num)
     assert(num)
 
     if(num->count == 0)
-        return;
+        return num_res;
 
     for(uint64_t i=0; i<num->count; i++)
     {
         uint64_t value = num->chunk[i];
 
         uint128_t u = MUL(value, value);
-        num_add_uint_offset(num_res, 2 * i, LOW(u));
-        num_add_uint_offset(num_res, 2 * i + 1, HIGH(u));
+        num_res = num_add_uint_offset(num_res, 2 * i, LOW(u));
+        num_res = num_add_uint_offset(num_res, 2 * i + 1, HIGH(u));
 
-        num_add_mul_uint_offset(num_res, 2 * i + 1, num, i + 1, value << 1);
+        num_res = num_add_mul_uint_offset(num_res, 2 * i + 1, num, i + 1, value << 1);
 
         if(value >= 0x8000000000000000)
-            num_add_offset(num_res, 2 * i + 2, num, i + 1);
+            num_res = num_add_offset(num_res, 2 * i + 2, num, i + 1);
     }
+    return num_res;
 }
 
 num_p num_sqr_classic(num_p num)
 {
     num_p num_res = num_create(2 * num->count, 0);
     num_res->cannot_expand = true;
-    num_sqr_classic_buffer(num_res, num);
+    num_res = num_sqr_classic_buffer(num_res, num);
     num_res->cannot_expand = false;
     num_free(num);
     return num_res;
@@ -1204,7 +1208,7 @@ void num_ssm_depad_no_wrap(num_p num, ssm_params_p p)
             uint64_t value = num->chunk[p->n * i + j];
             num->chunk[p->n * i + j] = 0;
 
-            num_add_uint_offset(num, p->M * i + j, value);
+            num = num_add_uint_offset(num, p->M * i + j, value);
         }
     }
     while(num_normalize(num));
@@ -1702,7 +1706,7 @@ STRUCT(num_fft_cache)
 
 // Keeps NUM_1
 // Keeps NUM_2
-static void num_mul_buffer(num_p num_res, num_p num_1, num_p num_2) // TODO TEST
+static num_p num_mul_buffer(num_p num_res, num_p num_1, num_p num_2) // TODO TEST
 {
     CLU_HANDLER_IS_SAFE(num_res)
     CLU_HANDLER_IS_SAFE(num_1)
@@ -1713,15 +1717,15 @@ static void num_mul_buffer(num_p num_res, num_p num_1, num_p num_2) // TODO TEST
     assert(num_res->size >= num_1->count + num_2->count);
 
     if(num_1->count == 0 || num_2->count == 0)
-        return;
+        return num_res;
 
     if(mul_is_classic(num_1->count, num_2->count))
     {
-        num_mul_classic_buffer(num_res, num_1, num_2);
-        return;
+        return num_mul_classic_buffer(num_res, num_1, num_2);
     }
 
     num_mul_ssm_buffer(num_res, num_1, num_2);
+    return num_res;
 }
 
 num_p num_mul_classic(num_p num_1, num_p num_2)
@@ -1838,14 +1842,14 @@ static num_p num_div_mod_classic(num_p num_aux, num_p num_1, num_p num_2)
         if(num_1->chunk[num_1->count-1] == value_2)
         {
             num_q->chunk[i] = UINT64_MAX;
-            num_mul_uint_buffer(num_aux, num_2, UINT64_MAX);
+            num_aux = num_mul_uint_buffer(num_aux, num_2, UINT64_MAX);
             num_1 = num_sub_offset(num_1, i, num_aux);
             continue;
         }
 
         uint128_t value_1 = U128HL(num_1->chunk[num_1->count-1], num_1->chunk[num_1->count-2]);
         uint64_t r = (uint64_t)(value_1 / value_2);
-        num_mul_uint_buffer(num_aux, num_2, r);
+        num_aux = num_mul_uint_buffer(num_aux, num_2, r);
         while(num_cmp_offset(num_1, i, num_aux) < 0)
         {
             r--;
@@ -2190,7 +2194,7 @@ num_p num_mul(num_p num_1, num_p num_2)
     assert(num_2)
 
     num_p num_res = num_create(num_1->count + num_2->count, 0);
-    num_mul_buffer(num_res, num_1, num_2);
+    num_res = num_mul_buffer(num_res, num_1, num_2);
     num_free(num_1);
     num_free(num_2);
     return num_res;
