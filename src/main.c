@@ -591,8 +591,8 @@ void sqrt_2(void)
 
     // fxd_num_display_dec(fxd_x);
 
-    fxd_num_free(fxd_x);
-    num_free(num);
+    // fxd_num_free(fxd_x);
+    // num_free(num);
 }
 
 
