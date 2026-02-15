@@ -608,8 +608,8 @@ void mem_1(uint64_t index)
     num_1 = num_mul(num_1, num_2);
     uint64_t count_aft = clu_get_register_count();
 
-    printf("\nregiter_count: %lu", count_aft - count_bef);
-    printf("\tmax occupancy: %lu", clu_get_max_occupancy());
+    printf("\nregiter_count: " U64P() "", count_aft - count_bef);
+    printf("\tmax occupancy: " U64P() "", clu_get_max_occupancy());
 
     num_free(num_1);
 }
