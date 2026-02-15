@@ -17,15 +17,97 @@
 
 #ifdef DEBUG
 
+#include "../num/debug.h"
 #include "../sig/debug.h"
 
-// static fxd_num_t fxd_num_create_immed(uint64_t pos, uint64_t signal, uint64_t n, ...)
-// {
-//     va_list args;
-//     va_start(args, n);
-//     sig_num_t sig = sig_num_create_variadic(signal, n, &args);
-//     return fxd_num_create(sig, pos);
-// }
+
+
+static fxd_num_t fxd_num_create_variadic(
+    uint64_t pos,
+    uint64_t signal,
+    uint64_t n,
+    va_list *args
+)
+{
+    sig_num_t sig = sig_num_create_variadic(signal, n, args);
+
+    assert(pos > 0);
+    return (fxd_num_t)
+    {
+        .pos = pos,
+        .sig = sig
+    };
+}
+
+fxd_num_t fxd_num_create_immed(
+    uint64_t pos,
+    uint64_t signal,
+    uint64_t n,
+    ...
+)
+{
+    va_list args;
+    va_start(args, n);
+    return fxd_num_create_variadic(pos, signal, n, &args);
+}
+
+
+
+static bool fxd_num_inner(fxd_num_t fxd_1, fxd_num_t fxd_2)
+{
+    CLU_FXD_IS_SAFE(fxd_1);
+    CLU_FXD_IS_SAFE(fxd_2);
+
+    if(!uint64(fxd_1.pos, fxd_2.pos))
+    {
+        printf("\n\tFXD NUM ASSERT ERROR\t| MISMATCH POS");
+        return false;
+    }
+
+    if(!sig_num_inner(fxd_1.sig, fxd_2.sig))
+    {
+        printf("\n\tFXD NUM ASSERT ERROR\t| MISMATCH SIG NUM");
+        return false;
+    }
+
+    return true;
+}
+
+static bool fxd_num_eq_dbg(fxd_num_t fxd_1, fxd_num_t fxd_2)
+{
+    CLU_FXD_IS_SAFE(fxd_1);
+    CLU_FXD_IS_SAFE(fxd_2);
+
+    if(!fxd_num_inner(fxd_1, fxd_2))
+    {
+        printf("\n");
+        printf("\n");
+        fxd_num_display(fxd_1);
+        printf("\n");
+        fxd_num_display(fxd_2);
+        return false;
+    }
+
+    fxd_num_free(fxd_1);
+    fxd_num_free(fxd_2);
+    return true;
+}
+
+bool fxd_num_immed(
+    fxd_num_t fxd,
+    uint64_t pos,
+    uint64_t signal,
+    uint64_t n,
+    ...
+)
+{
+    CLU_FXD_IS_SAFE(fxd);
+
+    va_list args;
+    va_start(args, n);
+    fxd_num_t fxd_2 = fxd_num_create_variadic(pos, signal, n, &args);
+    return fxd_num_eq_dbg(fxd, fxd_2);
+}
 
 #endif
 

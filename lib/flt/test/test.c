@@ -441,16 +441,16 @@ void test_flt_num_div(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_FLT_NUM_DIV(TAG, FLT_1, FLT_2, RES)                  \
-    {                                                                   \
-        TEST_CASE_OPEN(TAG)                                             \
-        {                                                               \
+    #define TEST_FLT_NUM_DIV(TAG, FLT_1, FLT_2, RES)                \
+    {                                                               \
+        TEST_CASE_OPEN(TAG)                                         \
+        {                                                           \
             flt_num_t flt_1 = flt_num_create_immed(ARG_OPEN FLT_1); \
             flt_num_t flt_2 = flt_num_create_immed(ARG_OPEN FLT_2); \
-            flt_1 = flt_num_div(flt_1, flt_2);                        \
-            assert(flt_num_immed(flt_1, ARG_OPEN RES))                \
-        }                                                               \
-        TEST_CASE_CLOSE                                                 \
+            flt_1 = flt_num_div(flt_1, flt_2);                      \
+            assert(flt_num_immed(flt_1, ARG_OPEN RES))              \
+        }                                                           \
+        TEST_CASE_CLOSE                                             \
     }
 
     TEST_FLT_NUM_DIV(1,

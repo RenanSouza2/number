@@ -14,11 +14,11 @@ dbg: debug.o
 
 main.o: main.c $(LIB_FILE)
 	echo "building num exec $(DIR)"
-	gcc -o $@ $^ $(FLAGS) $(FLAGS_PRD)
+	gcc -o $@ $^ $(FLAGS) $(FLAGS_PRD) $(FLAGS_EXE)
 
 debug.o: main.c $(DBG_FULL_FILE)
 	echo "building num debug $(DIR)"
-	gcc -o $@ $^ $(FLAGS) $(FLAGS_DBG)
+	gcc -o $@ $^ $(FLAGS) $(FLAGS_DBG) $(FLAGS_EXE)
 
 
 

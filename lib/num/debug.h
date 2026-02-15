@@ -33,7 +33,6 @@ bool num_immed(num_p num, uint64_t n, ...);
 uint64_t uint_from_char(char c);
 uint64_t uint_inv(uint64_t value, uint64_t q);
 
-num_p num_create(uint64_t size, uint64_t count);
 num_p num_expand_to(num_p num, uint64_t target);
 num_p num_expand(num_p num);
 uint64_t num_chunk_get(num_p num, uint64_t pos);

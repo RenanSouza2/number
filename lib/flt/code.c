@@ -25,7 +25,8 @@ static flt_num_t flt_num_create_variadic(
     uint64_t signal,
     uint64_t n,
     va_list *args
-){
+)
+{
     sig_num_t sig = sig_num_create_variadic(signal, n, args);
 
     assert(size > 1);
@@ -43,7 +44,8 @@ flt_num_t flt_num_create_immed(
     uint64_t signal,
     uint64_t n,
     ...
-){
+)
+{
     va_list args;
     va_start(args, n);
     return flt_num_create_variadic(exponent, size, signal, n, &args);
@@ -114,7 +116,8 @@ bool flt_num_immed(
     uint64_t signal,
     uint64_t n,
     ...
-){
+)
+{
     CLU_FLT_IS_SAFE(flt);
 
     va_list args;
