@@ -33,7 +33,6 @@ bool num_immed(num_p num, uint64_t n, ...);
 uint64_t uint_from_char(char c);
 uint64_t uint_inv(uint64_t value, uint64_t q);
 
-num_p num_create(uint64_t size, uint64_t count);
 num_p num_expand_to(num_p num, uint64_t target);
 num_p num_expand(num_p num);
 uint64_t num_chunk_get(num_p num, uint64_t pos);
@@ -41,8 +40,8 @@ num_p num_chunk_set(num_p num, uint64_t pos, uint64_t value);
 
 bool num_normalize(num_p num);
 
-num_p num_wrap_dec(char str[]);
-num_p num_wrap_hex(char str[]);
+num_p num_wrap_dec(const char str[]);
+num_p num_wrap_hex(const char str[]);
 
 num_p num_shl_inner(num_p num, uint64_t bits);
 num_p num_shr_inner(num_p num, uint64_t bits);
@@ -53,7 +52,7 @@ num_p num_sub_uint_offset(num_p num, uint64_t pos, uint64_t value);
 int64_t num_cmp_offset(num_p num_1, uint64_t pos_1, num_p num_2);
 num_p num_sub_offset(num_p num_1, uint64_t pos_1, num_p num_2);
 
-void num_display_span_full(char tag[], num_p num, uint64_t n, uint64_t k);
+void num_display_span_full(const char tag[], num_p num, uint64_t n, uint64_t k);
 uint64_t ssm_bit_inv(uint64_t i, uint64_t K);
 void num_ssm_add_mod(
     num_p num_res,

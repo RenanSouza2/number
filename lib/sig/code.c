@@ -102,7 +102,7 @@ void sig_num_display(sig_num_t sig, bool full)
     printf("]");
 }
 
-void sig_num_display_tag(char tag[], sig_num_t sig)
+void sig_num_display_tag(const char tag[], sig_num_t sig)
 {
     CLU_SIG_IS_SAFE(sig);
     assert(sig.num);
@@ -111,7 +111,7 @@ void sig_num_display_tag(char tag[], sig_num_t sig)
     sig_num_display(sig, false);
 }
 
-void sig_num_display_full(char tag[], sig_num_t sig)
+void sig_num_display_full(const char tag[], sig_num_t sig)
 {
     CLU_SIG_IS_SAFE(sig);
     assert(sig.num);
@@ -202,7 +202,7 @@ sig_num_t sig_num_wrap_num(num_p num)   // TODO TEST
     return sig_num_create(POSITIVE, num);
 }
 
-sig_num_t sig_num_wrap_str(char str[])
+sig_num_t sig_num_wrap_str(const char str[])
 {
     uint64_t signal = str[0] == '-' ? NEGATIVE : POSITIVE;
     uint64_t offset = str[0] == '-' || str[0] == '+' ? 1 : 0;
@@ -245,9 +245,9 @@ void fseek_safe(FILE *fp, long pos, int whence)
         exit(EXIT_FAILURE);
 }
 
-uint64_t ftell_safe(file_p fp)
+uint64_t ftell_safe(FILE *fp)
 {
-    int64_t res = ftell(fp->fp);
+    int64_t res = ftell(fp);
     if (res < 0)
         exit(EXIT_FAILURE);
 
@@ -264,7 +264,7 @@ void file_write_int64(file_p fp, int64_t value)
     fwrite(&value, sizeof(int64_t), 1, fp->fp);
 }
 
-file_t file_write_open(char file_path[], uint64_t amount)
+file_t file_write_open(const char file_path[], uint64_t amount)
 {
     FILE *fp = fopen(file_path, "wb");
     assert(fp);
@@ -308,7 +308,7 @@ void file_write_start(file_p fp)
 
 void file_write_end(file_p fp)
 {
-    fp->pos = ftell_safe(fp);
+    fp->pos = ftell_safe(fp->fp);
     fp->count++;
 }
 
@@ -319,7 +319,7 @@ void file_write_sig_num(file_p fp, sig_num_t sig)
     file_write_end(fp);
 }
 
-void sig_num_save(char file_path[], sig_num_t sig)
+void sig_num_save(const char file_path[], sig_num_t sig)
 {
     file_t fp = file_write_open(file_path, 1);
     file_write_sig_num(&fp, sig);
@@ -328,16 +328,28 @@ void sig_num_save(char file_path[], sig_num_t sig)
 
 
 
-FILE* file_read_open(char file_path[])
+FILE* file_read_open(const char file_path[])
 {
     FILE *fp = fopen(file_path, "rb");
     if(fp == NULL)
         return NULL;
 
+    fseek_safe(fp, 0, SEEK_END);
+    uint64_t size = ftell_safe(fp);
+    if(size < sizeof(uint64_t))
+    {
+        fclose(fp);
+        return NULL;
+    }
+
     fseek_safe(fp, -(long)sizeof(uint64_t), SEEK_END);
     uint64_t code = file_read_uint64(fp);
+
     if(code != 0xd0bbe)
+    {
+        fclose(fp);
         return NULL;
+    }
 
     return fp;
 }
