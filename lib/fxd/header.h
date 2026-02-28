@@ -33,4 +33,9 @@ fxd_num_t fxd_num_div(fxd_num_t fxd_1, fxd_num_t fxd_2);
 fxd_num_t fxd_num_mul_sig(fxd_num_t fxd, sig_num_t sig);
 fxd_num_t fxd_num_div_sig(fxd_num_t fxd, sig_num_t sig);
 
+void file_write_fxd_num(file_p fp, fxd_num_t fxd);
+fxd_num_t file_read_fxd_num(FILE *fp, uint64_t index);
+void fxd_num_save(const char file_path[], fxd_num_t fxd);
+fxd_num_t fxd_num_load(const char file_path[]);
+
 #endif
