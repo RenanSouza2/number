@@ -196,7 +196,7 @@ fxd_num_t fxd_num_create(sig_num_t sig, uint64_t pos) // TODO test
 fxd_num_t fxd_num_wrap(int64_t value, uint64_t pos) // TODO test
 {
     sig_num_t sig = sig_num_wrap(value);
-    sig = sig_num_head_grow(sig, pos);
+    sig.num = num_head_grow(sig.num, pos);
     return fxd_num_create(sig, pos);
 }
 
