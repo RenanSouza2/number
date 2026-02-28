@@ -378,3 +378,48 @@ fxd_num_t fxd_num_div_sig(fxd_num_t fxd, sig_num_t sig) // TODO test
     fxd.sig = sig_num_div(fxd.sig, sig);
     return fxd;
 }
+
+
+
+void file_write_fxd_num_raw(file_p fp, fxd_num_t fxd)
+{
+    file_write_uint64(fp, fxd.pos);
+    file_write_sig_num_raw(fp, fxd.sig);
+}
+
+void file_write_fxd_num(file_p fp, fxd_num_t fxd)
+{
+    file_write_start(fp);
+    file_write_fxd_num_raw(fp, fxd);
+    file_write_end(fp);
+}
+
+void fxd_num_save(const char file_path[], fxd_num_t fxd)
+{
+    file_t fp = file_write_open(file_path, 1);
+    file_write_fxd_num(&fp, fxd);
+    file_write_close(&fp);
+}
+
+fxd_num_t file_read_fxd_num_raw(FILE *fp)
+{
+    uint64_t pos = file_read_uint64(fp);
+    sig_num_t sig = file_read_sig_num_raw(fp);
+    return fxd_num_create(sig, pos);
+}
+
+fxd_num_t file_read_fxd_num(FILE *fp, uint64_t index)
+{
+    file_read_move_to_index(fp, index);
+    return file_read_fxd_num_raw(fp);
+}
+
+fxd_num_t fxd_num_load(const char file_path[])
+{
+    FILE *fp = file_read_open(file_path);
+    assert(fp);
+    fxd_num_t fxd = file_read_fxd_num(fp, 0);
+    fclose(fp);
+
+    return fxd;
+}

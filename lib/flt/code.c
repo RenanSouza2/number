@@ -386,6 +386,7 @@ flt_num_t flt_num_load(const char file_path[])
 }
 
 
+
 fxd_num_t fxd_num_wrap_flt(flt_num_t flt, uint64_t pos) // TODO test
 {
     flt = flt_num_set_exponent(flt, 1 - (int64_t)pos);
