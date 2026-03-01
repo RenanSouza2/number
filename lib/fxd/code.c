@@ -57,6 +57,7 @@ static bool fxd_num_inner(fxd_num_t fxd_1, fxd_num_t fxd_2)
 {
     CLU_FXD_IS_SAFE(fxd_1);
     CLU_FXD_IS_SAFE(fxd_2);
+    assert(fxd_1.pos == fxd_2.pos);
 
     if(!uint64(fxd_1.pos, fxd_2.pos))
     {
@@ -200,6 +201,14 @@ fxd_num_t fxd_num_wrap(int64_t value, uint64_t pos) // TODO test
     return fxd_num_create(sig, pos);
 }
 
+fxd_num_t fxd_num_wrap_sig(sig_num_t sig, uint64_t pos) // TODO test
+{
+    CLU_HANDLER_IS_SAFE(sig.num);
+
+    sig = sig_num_head_grow(sig, pos);
+    return fxd_num_create(sig, pos);
+}
+
 fxd_num_t fxd_num_copy(fxd_num_t fxd) // TODO test
 {
     CLU_FXD_IS_SAFE(fxd);
@@ -281,6 +290,7 @@ int64_t fxd_num_cmp(fxd_num_t fxd_1, fxd_num_t fxd_2) // TODO test
 {
     CLU_FXD_IS_SAFE(fxd_1);
     CLU_FXD_IS_SAFE(fxd_2);
+    assert(fxd_1.pos == fxd_2.pos);
 
     return sig_num_cmp(fxd_1.sig, fxd_2.sig);
 }
@@ -316,6 +326,7 @@ fxd_num_t fxd_num_add(fxd_num_t fxd_1, fxd_num_t fxd_2) // TODO test
 {
     CLU_FXD_IS_SAFE(fxd_1);
     CLU_FXD_IS_SAFE(fxd_2);
+    assert(fxd_1.pos == fxd_2.pos);
 
     fxd_1.sig = sig_num_add(fxd_1.sig, fxd_2.sig);
     return fxd_1;
@@ -325,6 +336,7 @@ fxd_num_t fxd_num_sub(fxd_num_t fxd_1, fxd_num_t fxd_2) // TODO test
 {
     CLU_FXD_IS_SAFE(fxd_1);
     CLU_FXD_IS_SAFE(fxd_2);
+    assert(fxd_1.pos == fxd_2.pos);
 
     fxd_1.sig = sig_num_sub(fxd_1.sig, fxd_2.sig);
     return fxd_1;
@@ -334,6 +346,7 @@ fxd_num_t fxd_num_mul(fxd_num_t fxd_1, fxd_num_t fxd_2) // TODO test
 {
     CLU_FXD_IS_SAFE(fxd_1);
     CLU_FXD_IS_SAFE(fxd_2);
+    assert(fxd_1.pos == fxd_2.pos);
 
     fxd_1.sig = sig_num_mul(fxd_1.sig, fxd_2.sig);
     fxd_1.sig = sig_num_head_trim(fxd_1.sig, fxd_1.pos);
@@ -353,6 +366,7 @@ fxd_num_t fxd_num_div(fxd_num_t fxd_1, fxd_num_t fxd_2) // TODO test
 {
     CLU_FXD_IS_SAFE(fxd_1);
     CLU_FXD_IS_SAFE(fxd_2);
+    assert(fxd_1.pos == fxd_2.pos);
 
     sig_num_t sig = sig_num_head_grow(fxd_1.sig, fxd_1.pos);
     fxd_1.sig = sig_num_div(sig, fxd_2.sig);

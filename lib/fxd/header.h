@@ -13,6 +13,7 @@ void fxd_num_display_full(const char tag[], fxd_num_t fxd);
 fxd_num_t fxd_num_reposition(fxd_num_t fxd, uint64_t pos);
 
 fxd_num_t fxd_num_wrap(int64_t value, uint64_t pos);
+fxd_num_t fxd_num_wrap_sig(sig_num_t sig, uint64_t pos);
 fxd_num_t fxd_num_copy(fxd_num_t fxd);
 void fxd_num_free(fxd_num_t fxd);
 
