@@ -220,9 +220,12 @@ void flt_num_display_dec(flt_num_t flt_0) // TODO TEST
     flt_num_free(flt_ten);
 
     flt_num_free(flt_base);
-    flt_base = flt_num_pow(flt_num_wrap(10, flt_0.size), base);
-    flt_0 = flt_num_div(flt_num_copy(flt_0), flt_base);
-    // flt_0 = flt_num_set_size(flt_0, flt_0.size - 2);
+    if(base != 0)
+    {
+        flt_base = flt_num_pow(flt_num_wrap(10, flt_0.size), base);
+        flt_0 = flt_num_div(flt_num_copy(flt_0), flt_base);
+        // flt_0 = flt_num_set_size(flt_0, flt_0.size - 2);
+    }
 
     fxd_num_t fxd = (fxd_num_t)
     {
@@ -389,10 +392,10 @@ flt_num_t flt_num_load(const char file_path[])
 
 fxd_num_t fxd_num_wrap_flt(flt_num_t flt, uint64_t pos) // TODO test
 {
-    flt = flt_num_set_exponent(flt, 1 - (int64_t)pos);
+    flt = flt_num_set_exponent(flt, -(int64_t)pos);
     return (fxd_num_t)
     {
-        .pos = pos - 1,
+        .pos = pos,
         .sig = flt.sig
     };
 }
