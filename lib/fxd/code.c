@@ -185,6 +185,8 @@ void fxd_num_display_full(const char tag[], fxd_num_t fxd)
     sig_num_display_full(tag, fxd.sig);
 }
 
+
+
 fxd_num_t fxd_num_create(sig_num_t sig, uint64_t pos) // TODO test
 {
     CLU_HANDLER_IS_SAFE(sig.num);
