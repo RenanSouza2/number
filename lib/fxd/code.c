@@ -150,10 +150,14 @@ void fxd_num_display_dec(fxd_num_t fxd)
 
     num_p num = num_pow(num_wrap(1000000000000000000), t);
     num_lo = num_mul(num_lo, num);
-    num_break(&num_lo, &num_hi, num_lo, fxd.pos);
+    num_break(&num_lo, &num, num_lo, fxd.pos);
+    num_free(num);
 
     num_lo = num_base_to(num_lo, 1000000000000000000);
-    for(uint64_t i=num_lo->count-1; i!=0; i--)
+    for(uint64_t i=t-1; i!=num_lo->count-1; i--)
+        printf("" U64P(018) "", (uint64_t)0);
+
+    for(uint64_t i=num_lo->count-1; i!=UINT64_MAX; i--)
         printf("" U64P(018) "", num_lo->chunk[i]);
 
     num_free(num_lo);
@@ -180,8 +184,6 @@ void fxd_num_display_full(const char tag[], fxd_num_t fxd)
 
     sig_num_display_full(tag, fxd.sig);
 }
-
-
 
 fxd_num_t fxd_num_create(sig_num_t sig, uint64_t pos) // TODO test
 {
