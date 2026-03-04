@@ -14,6 +14,7 @@ void flt_num_display_dec(flt_num_t flt);
 flt_num_t flt_num_wrap(int64_t value, uint64_t size);
 flt_num_t flt_num_wrap_num(num_p num, uint64_t size);
 flt_num_t flt_num_wrap_sig(sig_num_t sig, uint64_t size);
+flt_num_t flt_num_wrap_fxd(fxd_num_t fxd, uint64_t size);
 flt_num_t flt_num_copy(flt_num_t flt);
 void flt_num_free(flt_num_t flt);
 

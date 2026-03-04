@@ -334,6 +334,18 @@ flt_num_t flt_num_wrap_sig(sig_num_t sig, uint64_t size) // TODO TEST
     return flt_num_create(0, size, sig);
 }
 
+flt_num_t flt_num_wrap_fxd(fxd_num_t fxd, uint64_t size) // TODO TEST
+{
+    flt_num_t flt = (flt_num_t)
+    {
+        .exponent = -(int64_t)fxd.pos,
+        .size = size,
+        .sig = fxd.sig
+    };
+
+    return flt_num_normalize(flt);
+}
+
 void flt_num_free(flt_num_t flt)
 {
     CLU_FLT_IS_SAFE(flt);
