@@ -1466,7 +1466,7 @@ static bool ssm_is_recursive(uint64_t n)
     return n > 45 && (((n - 1) & (1 - n)) > 4);
 }
 
-static ssm_params_t ssm_get_params_no_wrap(uint64_t count_1, uint64_t count_2)
+ssm_params_t ssm_get_params(uint64_t count_1, uint64_t count_2)
 {
     uint64_t count = count_1 > count_2 ? count_1 : count_2;
     uint64_t M = 1 << (stdc_bit_width(count) / 2);
@@ -1489,6 +1489,7 @@ static ssm_params_t ssm_get_params_no_wrap(uint64_t count_1, uint64_t count_2)
 
     return (ssm_params_t)
     {
+        .count = count,
         .M = M,
         .K = K,
         .Q = Q,
@@ -1535,6 +1536,13 @@ static void num_ssm_prepare(num_p num_res, num_p num, ssm_params_p p)
     num_ssm_fft_fwd(num_res, p);
 }
 
+num_p num_ssm_prepare_heap(num_p num, ssm_params_p p)
+{
+    num_p num_res = num_create(p->n * p->K, 0);
+    num_ssm_prepare(num_res, num, p);
+    return num_res;
+}
+
 
 
 void num_ssm_mul_rec(num_p num_1, num_p num_2, uint64_t pos, uint64_t n)
@@ -1564,6 +1572,16 @@ void num_ssm_mul_rec(num_p num_1, num_p num_2, uint64_t pos, uint64_t n)
     num_ssm_sub_mod(num_1, pos, &num_aux, 0, &num_aux, n, n);
 }
 
+void num_mul_ssm_point(num_p num_aux_1, num_p num_aux_2, ssm_params_p p)
+{
+    for(uint64_t i=0; i<p->K; i++)
+    {
+        num_ssm_mul_rec(num_aux_1, num_aux_2, i * p->n, p->n);
+    }
+
+    num_ssm_fft_inv(num_aux_1, p);
+}
+
 // Keeps NUM_1 NUM_2
 void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n)
 {
@@ -1580,11 +1598,29 @@ void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n)
     num_ssm_prepare(&num_aux_1, num_1, &p);
     num_ssm_prepare(&num_aux_2, num_2, &p);
 
-    for(uint64_t i=0; i<p.K; i++)
-        num_ssm_mul_rec(&num_aux_1, &num_aux_2, i * p.n, p.n);
+    num_mul_ssm_point(&num_aux_1, &num_aux_2, &p);
 
-    num_ssm_fft_inv(&num_aux_1, &p);
     num_ssm_depad_wrap(num_1, &num_aux_1, &p, n);
+}
+
+void num_mull_ssm_final_steps_inner(num_p num_res, num_p num_aux_1, num_p num_aux_2, ssm_params_p p)
+{
+    num_mul_ssm_point(num_aux_1, num_aux_2, p);
+
+    num_ssm_depad_no_wrap(num_aux_1, p);
+
+    num_set_count(num_res, 0);
+    memcpy(num_res->chunk, num_aux_1->chunk, num_aux_1->count * sizeof(uint64_t));
+    num_res->count = num_aux_1->count;
+}
+
+num_p num_mull_ssm_final_steps(num_p num_aux_1, num_p num_aux_2, ssm_params_p p)
+{
+    num_p num_res = num_create(p->count, 0);
+    num_res->cannot_expand = true;
+    num_mull_ssm_final_steps_inner(num_res, num_aux_1, num_aux_2, p);
+    num_res->cannot_expand = false;
+    return num_res;
 }
 
 static void num_mul_ssm_buffer(num_p num_res, num_p num_1, num_p num_2)
@@ -1597,21 +1633,10 @@ static void num_mul_ssm_buffer(num_p num_res, num_p num_1, num_p num_2)
     assert(num_2)
     assert(num_res->size >= num_1->count + num_2->count)
 
-    ssm_params_t p = ssm_get_params_no_wrap(num_1->count, num_2->count);
-    num_p num_aux_1 = num_create(p.n * p.K, 0);
-    num_p num_aux_2 = num_create(p.n * p.K, 0);
-    num_ssm_prepare(num_aux_1, num_1, &p);
-    num_ssm_prepare(num_aux_2, num_2, &p);
-
-    for(uint64_t i=0; i<p.K; i++)
-        num_ssm_mul_rec(num_aux_1, num_aux_2, i * p.n, p.n);
-
-    num_ssm_fft_inv(num_aux_1, &p);
-    num_ssm_depad_no_wrap(num_aux_1, &p);
-
-    num_set_count(num_res, 0);
-    memcpy(num_res->chunk, num_aux_1->chunk, num_aux_1->count * sizeof(uint64_t));
-    num_res->count = num_aux_1->count;
+    ssm_params_t p = ssm_get_params(num_1->count, num_2->count);
+    num_p num_aux_1 = num_ssm_prepare_heap(num_1, &p);
+    num_p num_aux_2 = num_ssm_prepare_heap(num_2, &p);
+    num_mull_ssm_final_steps_inner(num_res, num_aux_1, num_aux_2, &p);
 
     num_free(num_aux_1);
     num_free(num_aux_2);
@@ -1671,7 +1696,7 @@ static void num_sqr_ssm_buffer(num_p num_res, num_p num)
     assert(num_res)
     assert(num)
 
-    ssm_params_t p = ssm_get_params_no_wrap(num->count, num->count);
+    ssm_params_t p = ssm_get_params(num->count, num->count);
     num_p num_aux = num_create(p.n * p.K, 0);
     num_ssm_prepare(num_aux, num, &p);
 
@@ -1717,7 +1742,9 @@ static num_p num_mul_buffer(num_p num_res, num_p num_1, num_p num_2) // TODO TES
     assert(num_res->size >= num_1->count + num_2->count);
 
     if(num_1->count == 0 || num_2->count == 0)
+    {
         return num_res;
+    }
 
     if(mul_is_classic(num_1->count, num_2->count))
     {

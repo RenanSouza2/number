@@ -2,7 +2,6 @@
 #define __NUM_DEBUG_H__
 
 #include "header.h"
-#include "struct.h"
 
 #ifdef DEBUG
 

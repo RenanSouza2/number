@@ -18,7 +18,11 @@ STRUCT(num)
 
 STRUCT(ssm_params)
 {
-    uint64_t M, K, Q, n;
+    uint64_t count;
+    uint64_t M;
+    uint64_t K;
+    uint64_t Q;
+    uint64_t n;
 };
 
 #endif
