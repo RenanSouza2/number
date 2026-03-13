@@ -155,10 +155,14 @@ void fxd_num_display_dec(fxd_num_t fxd)
 
     num_lo = num_base_to(num_lo, 1000000000000000000);
     for(uint64_t i=t-1; i!=num_lo->count-1; i--)
+    {
         printf("" U64P(018) "", (uint64_t)0);
+    }
 
     for(uint64_t i=num_lo->count-1; i!=UINT64_MAX; i--)
+    {
         printf("" U64P(018) "", num_lo->chunk[i]);
+    }
 
     num_free(num_lo);
 }

@@ -1580,6 +1580,11 @@ void num_ssm_mul_rec(num_p num_1, num_p num_2, uint64_t pos, uint64_t n)
 
 void num_mul_ssm_point(num_p num_aux_1, num_p num_aux_2, ssm_params_p p)
 {
+    CLU_HANDLER_IS_SAFE(num_aux_1)
+    CLU_HANDLER_IS_SAFE(num_aux_2)
+    assert(num_aux_1)
+    assert(num_aux_2)
+
     for(uint64_t i=0; i<p->K; i++)
     {
         num_ssm_mul_rec(num_aux_1, num_aux_2, i * p->n, p->n);
