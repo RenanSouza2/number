@@ -1608,7 +1608,12 @@ void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n)
     num_ssm_depad_wrap(num_1, &num_aux_1, &p, n);
 }
 
-void num_mull_ssm_final_steps_inner(num_p num_res, num_p num_aux_1, num_p num_aux_2, ssm_params_p p)
+void num_mull_ssm_final_steps_inner(
+    num_p num_res,
+    num_p num_aux_1,
+    num_p num_aux_2,
+    ssm_params_p p
+)
 {
     CLU_HANDLER_IS_SAFE(num_res);
     CLU_HANDLER_IS_SAFE(num_aux_1);
@@ -1948,7 +1953,9 @@ static num_p num_div_mod_bz_rec(num_p num_aux, num_p num_1, num_p num_2, bz_fram
     assert(num_2)
 
     if(num_1->count < num_2->count + 2 || num_2->count == 1)
+    {
         return num_div_mod_fallback(num_aux, num_1, num_2);
+    }
 
     uint64_t k = num_2->count / 2;
     if(f->memoized == false)
@@ -2005,9 +2012,6 @@ static num_p num_div_mod_bz(num_p num_1, num_p num_2)
     assert(num_1)
     assert(num_2)
 
-    uint64_t n_1 = num_1->count;
-    uint64_t n_2 = num_2->count;
-
     uint64_t frame_count = stdc_bit_width(num_2->count);
     bz_frame_t f[frame_count];
     memset(f, 0, sizeof(f));
@@ -2016,7 +2020,10 @@ static num_p num_div_mod_bz(num_p num_1, num_p num_2)
     num_p num_aux = num_create(count, 0);
     num_p num_q = num_create(num_1->count - num_2->count + 1, 0);
     num_aux->cannot_expand = true;
-    while(n_1 > 2 * n_2)
+
+    uint64_t n_1 = num_1->count;
+    uint64_t n_2 = num_2->count;
+    for(; n_1 > 2 * n_2; n_1 -= n_2)
     {
         num_t num_1_1;
         num_span(&num_1_1, num_1, n_1 - 2 * n_2, num_1->count);
@@ -2026,8 +2033,6 @@ static num_p num_div_mod_bz(num_p num_1, num_p num_2)
         num_p num_tmp = num_add_offset(num_q_tmp, n_2, num_q, 0);
         num_free(num_q);
         num_q = num_tmp;
-
-        n_1 -= n_2;
     }
 
     num_p num_q_tmp = num_div_mod_bz_rec(num_aux, num_1, num_2, f);
@@ -2042,6 +2047,7 @@ static num_p num_div_mod_bz(num_p num_1, num_p num_2)
     return num_q_tmp;
 }
 
+// Forces the biggest chunk of the divident to be > 2^63
 uint64_t num_div_normalize(num_p *num_1, num_p *num_2) // TODO TEST
 {
     CLU_HANDLER_IS_SAFE(*num_1);
