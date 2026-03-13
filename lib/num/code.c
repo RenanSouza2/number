@@ -507,6 +507,7 @@ static void num_span(num_p num_res, num_p num, uint64_t pos_init, uint64_t pos_m
 
 static void num_static(num_p num, uint64_t chunk[], uint64_t size)
 {
+    memset(chunk, 0, size);
     *num = (num_t)
     {
         .cannot_expand = true,
