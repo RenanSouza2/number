@@ -1490,7 +1490,7 @@ ssm_params_t ssm_get_params(uint64_t count_1, uint64_t count_2)
 
     return (ssm_params_t)
     {
-        .count = count,
+        .count = count_1 + count_2,
         .M = M,
         .K = K,
         .Q = Q,
@@ -1528,19 +1528,24 @@ static ssm_params_t ssm_get_params_wrap(uint64_t n)
     };
 }
 
-static void num_ssm_prepare(num_p num_res, num_p num, ssm_params_p p)
+static void num_mul_ssm_prepare_inner(num_p num_res, num_p num, ssm_params_p p)
 {
+    CLU_HANDLER_IS_SAFE(num_res)
     CLU_HANDLER_IS_SAFE(num)
+    assert(num_res)
     assert(num)
 
     num_ssm_pad(num_res, num, p);
     num_ssm_fft_fwd(num_res, p);
 }
 
-num_p num_ssm_prepare_heap(num_p num, ssm_params_p p)
+num_p num_mul_ssm_prepare(num_p num, ssm_params_p p)
 {
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num)   
+
     num_p num_res = num_create(p->n * p->K, 0);
-    num_ssm_prepare(num_res, num, p);
+    num_mul_ssm_prepare_inner(num_res, num, p);
     return num_res;
 }
 
@@ -1596,27 +1601,38 @@ void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n)
     num_t num_aux_1, num_aux_2;
     num_static(&num_aux_1, chunk_1, p.n * p.K);
     num_static(&num_aux_2, chunk_2, p.n * p.K);
-    num_ssm_prepare(&num_aux_1, num_1, &p);
-    num_ssm_prepare(&num_aux_2, num_2, &p);
+    num_mul_ssm_prepare_inner(&num_aux_1, num_1, &p);
+    num_mul_ssm_prepare_inner(&num_aux_2, num_2, &p);
 
     num_mul_ssm_point(&num_aux_1, &num_aux_2, &p);
-
     num_ssm_depad_wrap(num_1, &num_aux_1, &p, n);
 }
 
 void num_mull_ssm_final_steps_inner(num_p num_res, num_p num_aux_1, num_p num_aux_2, ssm_params_p p)
 {
+    CLU_HANDLER_IS_SAFE(num_res);
+    CLU_HANDLER_IS_SAFE(num_aux_1);
+    CLU_HANDLER_IS_SAFE(num_aux_2);
+    assert(num_res);
+    assert(num_aux_1);
+    assert(num_aux_2);
+
     num_mul_ssm_point(num_aux_1, num_aux_2, p);
-
     num_ssm_depad_no_wrap(num_aux_1, p);
-
     num_set_count(num_res, 0);
+
+    assert(num_res->size >= num_aux_1->count);
     memcpy(num_res->chunk, num_aux_1->chunk, num_aux_1->count * sizeof(uint64_t));
     num_res->count = num_aux_1->count;
 }
 
 num_p num_mull_ssm_final_steps(num_p num_aux_1, num_p num_aux_2, ssm_params_p p)
 {
+    CLU_HANDLER_IS_SAFE(num_aux_1);
+    CLU_HANDLER_IS_SAFE(num_aux_2);
+    assert(num_aux_1);
+    assert(num_aux_2);
+
     num_p num_res = num_create(p->count, 0);
     num_res->cannot_expand = true;
     num_mull_ssm_final_steps_inner(num_res, num_aux_1, num_aux_2, p);
@@ -1635,8 +1651,8 @@ static void num_mul_ssm_buffer(num_p num_res, num_p num_1, num_p num_2)
     assert(num_res->size >= num_1->count + num_2->count)
 
     ssm_params_t p = ssm_get_params(num_1->count, num_2->count);
-    num_p num_aux_1 = num_ssm_prepare_heap(num_1, &p);
-    num_p num_aux_2 = num_ssm_prepare_heap(num_2, &p);
+    num_p num_aux_1 = num_mul_ssm_prepare(num_1, &p);
+    num_p num_aux_2 = num_mul_ssm_prepare(num_2, &p);
     num_mull_ssm_final_steps_inner(num_res, num_aux_1, num_aux_2, &p);
 
     num_free(num_aux_1);
@@ -1681,7 +1697,7 @@ void num_sqr_ssm_wrap(num_p num, uint64_t n)
     uint64_t chunk[p.n * p.K];
     num_t num_aux;
     num_static(&num_aux, chunk, p.n * p.K);
-    num_ssm_prepare(&num_aux, num, &p);
+    num_mul_ssm_prepare_inner(&num_aux, num, &p);
 
     for(uint64_t i=0; i<p.K; i++)
         num_ssm_sqr_rec(&num_aux, i * p.n, p.n);
@@ -1699,7 +1715,7 @@ static void num_sqr_ssm_buffer(num_p num_res, num_p num)
 
     ssm_params_t p = ssm_get_params(num->count, num->count);
     num_p num_aux = num_create(p.n * p.K, 0);
-    num_ssm_prepare(num_aux, num, &p);
+    num_mul_ssm_prepare_inner(num_aux, num, &p);
 
     for(uint64_t i=0; i<p.K; i++)
         num_ssm_sqr_rec(num_aux, i * p.n, p.n);

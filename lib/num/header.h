@@ -37,6 +37,8 @@ num_p num_mul_uint(num_p num, uint64_t value);
 num_p num_div_mod_uint(num_p num, uint64_t value);
 
 ssm_params_t ssm_get_params(uint64_t count_1, uint64_t count_2);
+num_p num_mul_ssm_prepare(num_p num, ssm_params_p p);
+num_p num_mull_ssm_final_steps(num_p num_aux_1, num_p num_aux_2, ssm_params_p p);
 
 num_p num_add(num_p num_1, num_p num_2);
 num_p num_sub(num_p num_1, num_p num_2);

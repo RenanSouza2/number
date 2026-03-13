@@ -511,14 +511,17 @@ sig_num_t sig_num_mul_high(sig_num_t sig_1, sig_num_t sig_2, uint64_t pos) // TO
     return sig_num_create(signal_res, num_res);
 }
 
+uint64_t sig_signal_mul(uint64_t signal_1, uint64_t signal_2)
+{
+    return signal_1 & signal_2 ? POSITIVE : NEGATIVE;
+}
+
 sig_num_t sig_num_mul(sig_num_t sig_1, sig_num_t sig_2)
 {
     CLU_SIG_IS_SAFE(sig_1);
     CLU_SIG_IS_SAFE(sig_2);
 
-    uint64_t signal_res = sig_1.signal & sig_2.signal ?
-        POSITIVE : NEGATIVE;
-
+    uint64_t signal_res = sig_signal_mul(sig_1.signal, sig_2.signal);
     num_p num_res = num_mul(sig_1.num, sig_2.num);
     return sig_num_create(signal_res, num_res);
 }
@@ -536,9 +539,7 @@ sig_num_t sig_num_div(sig_num_t sig_1, sig_num_t sig_2)
     CLU_SIG_IS_SAFE(sig_1);
     CLU_SIG_IS_SAFE(sig_2);
 
-    uint64_t signal_res = sig_1.signal & sig_2.signal ?
-        POSITIVE : NEGATIVE;
-
+    uint64_t signal_res = sig_signal_mul(sig_1.signal, sig_2.signal);
     num_p num_res = num_div(sig_1.num, sig_2.num);
     return sig_num_create(signal_res, num_res);
 }
