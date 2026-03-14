@@ -16,7 +16,9 @@ num_p num_create_variadic(uint64_t n, va_list *args)
 {
     num_p num = num_create(n, n);
     for(uint64_t i=0; i<n; i++)
+    {
         num->chunk[n-1-i] = va_arg(*args, uint64_t);
+    }
 
     return num;
 }
@@ -50,11 +52,17 @@ num_p num_create_rand(uint64_t count)
     num_p num = num_wrap(1);
     num = num_head_grow(num, count - 1);
     for(uint64_t i=0; i<count; i++)
+    {
         num->chunk[i] = rand_64();
+    }
 
     if(count)
+    {
         while(num->chunk[count - 1] == 0)
+        {
             num->chunk[count - 1] = rand_64();
+        }
+    }
 
     return num;
 }
@@ -1469,7 +1477,8 @@ static bool ssm_is_recursive(uint64_t n)
 
 ssm_params_t ssm_get_params(uint64_t count_1, uint64_t count_2)
 {
-    uint64_t count = count_1 > count_2 ? count_1 : count_2;
+    // uint64_t count = count_1 > count_2 ? count_1 : count_2;
+    uint64_t count = (count_1 + count_2 + 1) / 2;
     uint64_t M = 1 << (stdc_bit_width(count) / 2);
     uint64_t K = stdc_bit_ceil(((count_1 + M - 1) / M) + ((count_2 + M - 1) / M)) * 2;
     M = (2 * count / K) + 1;

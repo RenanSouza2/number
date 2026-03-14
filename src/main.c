@@ -99,7 +99,7 @@ void time_2(int argc, char** argv, uint64_t max)
         num_2 = num_add(num_2, num_wrap(2));
         num_2 = num_mul(num_2, num_wrap(0xe6503424c62eef89));
 
-        if(i % 8 != id)
+        if(i % 1 != id)
             continue;
 
         printf("\n" U64P(5) "", i);
@@ -108,7 +108,7 @@ void time_2(int argc, char** argv, uint64_t max)
         num_p num_aux_2 = num_copy(num_2);
 
         uint64_t begin = get_time();
-        num_aux_1 = num_div(num_aux_1, num_aux_2);
+        num_aux_1 = num_mul(num_aux_1, num_aux_2);
         uint64_t end = get_time();
         printf("\t%10.3lf", (double)(end - begin) / 1e3);
     }
@@ -623,11 +623,12 @@ void mem_1(uint64_t)
 
 
 
-// int main(int argc, char** argv)
-int main()
+int main(int argc, char** argv)
+// int main()
 {
     setbuf(stdout, NULL);
     srand((unsigned int)time(NULL));
+    printf("\nbegin\n\n");
 
     // uint64_t arg = get_arg(argc, argv);
 
@@ -636,7 +637,7 @@ int main()
     // time_1(16, 29);
     // time_1(16, 17);
     // time_3();
-    // time_2(argc, argv, 19);
+    time_2(argc, argv, 17);
     // fibonacci();
     // fibonacci_2(16, 23);
     // fibonacci_3(16, 40);
@@ -679,6 +680,23 @@ int main()
     // };
     // fxd_num_display_dec(fxd);
     // fxd_num_free(fxd);
+
+    // uint64_t max = 27;
+    // num_p num_1 = num_generate(max, 2);
+    // num_p num_2 = num_generate(max, 3);
+    // printf("\nnum_1->count: " U64P() "", num_1->count);
+    // printf("\nnum_2->count: " U64P() "", num_2->count);
+
+    // TIME_SETUP
+    // num_1 = num_mul(num_1, num_2);
+    // TIME_END(t1)
+    // printf("\n\ntime: %.3f", (double)t1 / 1e9);
+
+    // uint64_t count_1 = 4377146;
+    // uint64_t count_2 = 5043768;
+    
+    // ssm_params_t p = ssm_get_params(count_1, count_2);
+    // while(ssm)
 
     // assert(clu_mem_is_empty());
 
