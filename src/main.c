@@ -96,11 +96,14 @@ void time_1(uint64_t begin, uint64_t end)
 
 void recursive_depth(uint64_t res[2], uint64_t n)
 {
+    // printf("\nn: " U64P() "", n);
+
     uint64_t i=1;
     for(; ssm_is_recursive(n); i++)
     {
         ssm_params_t p = ssm_get_params_wrap(n);
         n = p.n;
+        // printf("\nn: " U64P() "", n);
     }
 
     res[0] = i;
@@ -118,17 +121,19 @@ void time_2(int argc, char** argv, uint64_t max)
     printf("\nN\ttime\tM\tK\tQ\tn\tdepth\tlast_n");
 
     num_p num_2 = num_wrap(0xe6503424c62eef89);
-    for(uint64_t i=1; num_2->count < num_1->count; i++)
+    uint64_t threads = 1;
+    uint64_t jumps = 1000;
+    for(uint64_t i=id + 1; num_2->count < num_1->count; i += threads * jumps)
     {
-        num_2 = num_generate_2_step(num_2, 2);
-
-        if(i % 1 != id)
-            continue;
+        for(uint64_t j=0; j<threads * jumps; j++)
+        {
+            num_2 = num_generate_2_step(num_2, 2);
+        }
 
         printf("\n" U64P(5) "", i);
 
         uint64_t res = 0;
-        uint64_t repeat = 3;
+        uint64_t repeat = 1;
         for(uint64_t j=0; j<repeat; j ++)
         {
             num_p num_aux_1 = num_copy(num_1);
@@ -142,7 +147,7 @@ void time_2(int argc, char** argv, uint64_t max)
             res += end - begin;
         }
 
-        printf("\t%10.3lf", (double)(res / repeat) / 1e3);
+        printf("\t%10.9lf", (double)(res / repeat) / 1e9);
         ssm_params_t p = ssm_get_params(num_1->count, num_2->count);
         printf("\t" U64P() "\t" U64P() "\t" U64P() "\t" U64P() "", p.M, p.K, p.Q, p.n);
     
@@ -676,7 +681,7 @@ int main(int argc, char** argv)
     // time_1(16, 29);
     // time_1(16, 17);
     // time_3();
-    time_2(argc, argv, 17);
+    time_2(argc, argv, 25);
     // fibonacci();
     // fibonacci_2(16, 23);
     // fibonacci_3(16, 40);

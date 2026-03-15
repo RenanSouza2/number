@@ -1470,9 +1470,10 @@ void num_ssm_fft_inv(num_p num, ssm_params_p p)
     }
 }
 
+#define TRESHOLD 128
 bool ssm_is_recursive(uint64_t n)
 {
-    return n > 45 && (((n - 1) & (1 - n)) > 4);
+    return n > TRESHOLD && (((n - 1) & (1 - n)) > 4);
 }
 
 ssm_params_t ssm_get_params(uint64_t count_1, uint64_t count_2)
@@ -1497,7 +1498,7 @@ ssm_params_t ssm_get_params(uint64_t count_1, uint64_t count_2)
     }
     assert(64 * (n - 1) % K == 0);
 
-    if(n > 45)
+    if(n > TRESHOLD)
     {
         uint64_t moduli = (n - 1) & 7;
         if(moduli)
@@ -1538,6 +1539,18 @@ ssm_params_t ssm_get_params_wrap(uint64_t n)
     {
         Q = (128 * M / K) + 1;
         _n = (K * Q / 64) + 1;
+    }
+
+    if(_n > TRESHOLD)
+    {
+        uint64_t moduli = (_n - 1) & 7;
+        if(moduli)
+        {
+            _n += 8 - moduli;
+
+            assert(64 * (_n - 1) % K == 0);
+            Q = 64 * (_n - 1) / K;
+        }
     }
 
     return (ssm_params_t)
@@ -1634,7 +1647,7 @@ void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n)
     num_ssm_depad_wrap(num_1, &num_aux_1, &p, n);
 }
 
-void num_mull_ssm_final_steps_inner(
+void num_mul_ssm_final_steps_inner(
     num_p num_res,
     num_p num_aux_1,
     num_p num_aux_2,
@@ -1657,7 +1670,7 @@ void num_mull_ssm_final_steps_inner(
     num_res->count = num_aux_1->count;
 }
 
-num_p num_mull_ssm_final_steps(num_p num_aux_1, num_p num_aux_2, ssm_params_p p)
+num_p num_mul_ssm_final_steps(num_p num_aux_1, num_p num_aux_2, ssm_params_p p)
 {
     CLU_HANDLER_IS_SAFE(num_aux_1);
     CLU_HANDLER_IS_SAFE(num_aux_2);
@@ -1666,7 +1679,7 @@ num_p num_mull_ssm_final_steps(num_p num_aux_1, num_p num_aux_2, ssm_params_p p)
 
     num_p num_res = num_create(p->count, 0);
     num_res->cannot_expand = true;
-    num_mull_ssm_final_steps_inner(num_res, num_aux_1, num_aux_2, p);
+    num_mul_ssm_final_steps_inner(num_res, num_aux_1, num_aux_2, p);
     num_res->cannot_expand = false;
     return num_res;
 }
@@ -1684,7 +1697,7 @@ static void num_mul_ssm_buffer(num_p num_res, num_p num_1, num_p num_2)
     ssm_params_t p = ssm_get_params(num_1->count, num_2->count);
     num_p num_aux_1 = num_mul_ssm_prepare(num_1, &p);
     num_p num_aux_2 = num_mul_ssm_prepare(num_2, &p);
-    num_mull_ssm_final_steps_inner(num_res, num_aux_1, num_aux_2, &p);
+    num_mul_ssm_final_steps_inner(num_res, num_aux_1, num_aux_2, &p);
 
     num_free(num_aux_1);
     num_free(num_aux_2);
