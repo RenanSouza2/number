@@ -85,6 +85,28 @@ void time_1(uint64_t begin, uint64_t end)
     num_free(num_2);
 }
 
+// STRUCT()
+
+// void time_2_thread()
+// {
+    
+//     num_p num_2 = num_wrap(0xe6503424c62eef89);
+//     for(uint64_t i=1; num_2->count < 2 * num_1->count; i++)
+// }
+
+void recursive_depth(uint64_t res[2], uint64_t n)
+{
+    uint64_t i=1;
+    for(; ssm_is_recursive(n); i++)
+    {
+        ssm_params_t p = ssm_get_params_wrap(n);
+        n = p.n;
+    }
+
+    res[0] = i;
+    res[1] = n;
+}
+
 void time_2(int argc, char** argv, uint64_t max)
 {
     uint64_t id = (uint64_t)get_arg(argc, argv);
@@ -93,24 +115,41 @@ void time_2(int argc, char** argv, uint64_t max)
     num_p num_1 = num_generate(max, 2);
     num_display_tag("num_1", num_1);
 
+    printf("\nN\ttime\tM\tK\tQ\tn\tdepth\tlast_n");
+
     num_p num_2 = num_wrap(0xe6503424c62eef89);
-    for(uint64_t i=1; num_cmp(num_1, num_2) > 0; i++)
+    for(uint64_t i=1; num_2->count < num_1->count; i++)
     {
-        num_2 = num_add(num_2, num_wrap(2));
-        num_2 = num_mul(num_2, num_wrap(0xe6503424c62eef89));
+        num_2 = num_generate_2_step(num_2, 2);
 
         if(i % 1 != id)
             continue;
 
         printf("\n" U64P(5) "", i);
 
-        num_p num_aux_1 = num_copy(num_1);
-        num_p num_aux_2 = num_copy(num_2);
+        uint64_t res = 0;
+        uint64_t repeat = 3;
+        for(uint64_t j=0; j<repeat; j ++)
+        {
+            num_p num_aux_1 = num_copy(num_1);
+            num_p num_aux_2 = num_copy(num_2);
 
-        uint64_t begin = get_time();
-        num_aux_1 = num_mul(num_aux_1, num_aux_2);
-        uint64_t end = get_time();
-        printf("\t%10.3lf", (double)(end - begin) / 1e3);
+            uint64_t begin = get_time();
+            num_aux_1 = num_mul(num_aux_1, num_aux_2);
+            uint64_t end = get_time();
+            num_free(num_aux_1);
+
+            res += end - begin;
+        }
+
+        printf("\t%10.3lf", (double)(res / repeat) / 1e3);
+        ssm_params_t p = ssm_get_params(num_1->count, num_2->count);
+        printf("\t" U64P() "\t" U64P() "\t" U64P() "\t" U64P() "", p.M, p.K, p.Q, p.n);
+    
+        uint64_t a[2];
+        recursive_depth(a, p.n);
+        printf("\t" U64P() "", a[0]);
+        printf("\t" U64P() "", a[1]);
     }
 }
 

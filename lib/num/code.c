@@ -1470,14 +1470,13 @@ void num_ssm_fft_inv(num_p num, ssm_params_p p)
     }
 }
 
-static bool ssm_is_recursive(uint64_t n)
+bool ssm_is_recursive(uint64_t n)
 {
     return n > 45 && (((n - 1) & (1 - n)) > 4);
 }
 
 ssm_params_t ssm_get_params(uint64_t count_1, uint64_t count_2)
 {
-    // uint64_t count = count_1 > count_2 ? count_1 : count_2;
     uint64_t count = (count_1 + count_2 + 1) / 2;
     uint64_t M = 1 << (stdc_bit_width(count) / 2);
     uint64_t K = stdc_bit_ceil(((count_1 + M - 1) / M) + ((count_2 + M - 1) / M)) * 2;
@@ -1496,7 +1495,20 @@ ssm_params_t ssm_get_params(uint64_t count_1, uint64_t count_2)
         Q = (128 * M / K) + 1;
         n = (K * Q / 64) + 1;
     }
+    assert(64 * (n - 1) % K == 0);
 
+    if(n > 45)
+    {
+        uint64_t moduli = (n - 1) & 7;
+        if(moduli)
+        {
+            n += 8 - moduli;
+
+            assert(64 * (n - 1) % K == 0);
+            Q = 64 * (n - 1) / K;
+        }
+    }
+    
     return (ssm_params_t)
     {
         .count = count_1 + count_2,
@@ -1507,7 +1519,7 @@ ssm_params_t ssm_get_params(uint64_t count_1, uint64_t count_2)
     };
 }
 
-static ssm_params_t ssm_get_params_wrap(uint64_t n)
+ssm_params_t ssm_get_params_wrap(uint64_t n)
 {
     uint64_t K1 = B(stdc_bit_width(n-1) / 2) * 2;
     uint64_t K2 = (n - 1) & (1 - n);
