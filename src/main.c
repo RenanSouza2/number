@@ -122,7 +122,7 @@ void time_2(int argc, char** argv, uint64_t max)
 
     num_p num_2 = num_wrap(0xe6503424c62eef89);
     uint64_t threads = 1;
-    uint64_t jumps = 1000;
+    uint64_t jumps = 10;
     for(uint64_t i=id + 1; num_2->count < num_1->count; i += threads * jumps)
     {
         for(uint64_t j=0; j<threads * jumps; j++)
@@ -681,7 +681,7 @@ int main(int argc, char** argv)
     // time_1(16, 29);
     // time_1(16, 17);
     // time_3();
-    time_2(argc, argv, 25);
+    time_2(argc, argv, 19);
     // fibonacci();
     // fibonacci_2(16, 23);
     // fibonacci_3(16, 40);

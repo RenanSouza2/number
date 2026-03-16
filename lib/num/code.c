@@ -1470,7 +1470,7 @@ void num_ssm_fft_inv(num_p num, ssm_params_p p)
     }
 }
 
-#define TRESHOLD 128
+#define TRESHOLD 45
 bool ssm_is_recursive(uint64_t n)
 {
     return n > TRESHOLD && (((n - 1) & (1 - n)) > 4);
