@@ -238,7 +238,6 @@ void flt_num_display_dec(flt_num_t flt_0) // TODO TEST
     };
     fxd_num_display_dec(fxd);
     printf(" * 10 ^ " D64P() "", base);
-    flt_num_free(flt_0);
 }
 
 
