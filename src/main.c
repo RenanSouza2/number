@@ -89,7 +89,7 @@ void ssm_params_display(ssm_params_t p)
 
 void recursive_depth(uint64_t count)
 {
-    ssm_params_t p = ssm_get_params(count, 0);
+    ssm_params_t p = ssm_get_params(count);
     uint64_t n = p.n;
 
     uint64_t i=1;

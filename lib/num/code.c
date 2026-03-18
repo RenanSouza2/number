@@ -1477,9 +1477,8 @@ bool ssm_is_recursive(uint64_t n)
     return n > TRESHOLD && (((n - 1) & (1 - n)) > 4);
 }
 
-ssm_params_t ssm_get_params(uint64_t count_1, uint64_t count_2)
+ssm_params_t ssm_get_params(uint64_t count)
 {
-    uint64_t count = count_1 + count_2;
     uint64_t K = 4 * stdc_bit_ceil((stdc_bit_width(count) - 1) / 2);
     uint64_t M = (count / K) + 1;
 
@@ -1498,21 +1497,21 @@ ssm_params_t ssm_get_params(uint64_t count_1, uint64_t count_2)
     }
     assert(64 * (n - 1) % K == 0);
 
-    // if(n > TRESHOLD)
-    // {
-    //     uint64_t moduli = (n - 1) & 7;
-    //     if(moduli)
-    //     {
-    //         n += 8 - moduli;
-    //
-    //         assert(64 * (n - 1) % K == 0);
-    //         Q = 64 * (n - 1) / K;
-    //     }
-    // }
+    if(n > TRESHOLD)
+    {
+        uint64_t moduli = (n - 1) & 7;
+        if(moduli)
+        {
+            n += 8 - moduli;
+
+            assert(64 * (n - 1) % K == 0);
+            Q = 64 * (n - 1) / K;
+        }
+    }
     
     return (ssm_params_t)
     {
-        .count = count_1 + count_2,
+        .count = count,
         .M = M,
         .K = K,
         .Q = Q,
@@ -1694,7 +1693,7 @@ static void num_mul_ssm_buffer(num_p num_res, num_p num_1, num_p num_2)
     assert(num_2)
     assert(num_res->size >= num_1->count + num_2->count)
 
-    ssm_params_t p = ssm_get_params(num_1->count, num_2->count);
+    ssm_params_t p = ssm_get_params(num_1->count + num_2->count);
     num_p num_aux_1 = num_mul_ssm_prepare(num_1, &p);
     num_p num_aux_2 = num_mul_ssm_prepare(num_2, &p);
     num_mul_ssm_final_steps_inner(num_res, num_aux_1, num_aux_2, &p);
@@ -1757,7 +1756,7 @@ static void num_sqr_ssm_buffer(num_p num_res, num_p num)
     assert(num_res)
     assert(num)
 
-    ssm_params_t p = ssm_get_params(num->count, num->count);
+    ssm_params_t p = ssm_get_params(num->count + num->count);
     num_p num_aux = num_create(p.n * p.K, 0);
     num_mul_ssm_prepare_inner(num_aux, num, &p);
 
