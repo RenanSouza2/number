@@ -1471,6 +1471,7 @@ void num_ssm_fft_inv(num_p num, ssm_params_p p)
 }
 
 #define TRESHOLD 45
+
 bool ssm_is_recursive(uint64_t n)
 {
     return n > TRESHOLD && (((n - 1) & (1 - n)) > 4);
@@ -1479,9 +1480,8 @@ bool ssm_is_recursive(uint64_t n)
 ssm_params_t ssm_get_params(uint64_t count_1, uint64_t count_2)
 {
     uint64_t count = count_1 + count_2;
-    uint64_t M = 1 << ((stdc_bit_width(count) - 1) / 2);
-    uint64_t K = 4 * stdc_bit_ceil((count + M - 1) / M);
-    M = (count / K) + 1;
+    uint64_t K = 4 * stdc_bit_ceil((stdc_bit_width(count) - 1) / 2);
+    uint64_t M = (count / K) + 1;
 
     uint64_t Q;
     uint64_t n;
@@ -1498,17 +1498,17 @@ ssm_params_t ssm_get_params(uint64_t count_1, uint64_t count_2)
     }
     assert(64 * (n - 1) % K == 0);
 
-    if(n > TRESHOLD)
-    {
-        uint64_t moduli = (n - 1) & 7;
-        if(moduli)
-        {
-            n += 8 - moduli;
-
-            assert(64 * (n - 1) % K == 0);
-            Q = 64 * (n - 1) / K;
-        }
-    }
+    // if(n > TRESHOLD)
+    // {
+    //     uint64_t moduli = (n - 1) & 7;
+    //     if(moduli)
+    //     {
+    //         n += 8 - moduli;
+    //
+    //         assert(64 * (n - 1) % K == 0);
+    //         Q = 64 * (n - 1) / K;
+    //     }
+    // }
     
     return (ssm_params_t)
     {
@@ -1522,7 +1522,7 @@ ssm_params_t ssm_get_params(uint64_t count_1, uint64_t count_2)
 
 ssm_params_t ssm_get_params_wrap(uint64_t n)
 {
-    uint64_t K1 = B(stdc_bit_width(n-1) / 2) * 2;
+    uint64_t K1 = 4 * B(stdc_bit_width(n-1) / 2);
     uint64_t K2 = (n - 1) & (1 - n);
     uint64_t K = K1 < K2 ? K1 : K2;
     uint64_t M = (n - 1) / K;

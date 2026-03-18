@@ -67,70 +67,69 @@ void time_1(uint64_t begin, uint64_t end)
         TIME_END(t2)
         printf("\t%10.3f", (double)t2 / 1e9);
 
-        num_p num_1_copy = num_copy(num_1);
-        num_p num_2_copy = num_copy(num_2);
+        // num_p num_1_copy = num_copy(num_1);
+        // num_p num_2_copy = num_copy(num_2);
 
-        // clu_log_enable(true);
+        // TIME_RESET
+        // num_p num = num_div(num_1_copy, num_2_copy);
+        // TIME_END(t3)
+        // printf("\t%10.3f", (double)t3 / 1e9);
 
-        TIME_RESET
-        num_p num = num_div(num_1_copy, num_2_copy);
-        TIME_END(t3)
-        printf("\t%10.3f", (double)t3 / 1e9);
-
-        // clu_log_enable(false);
-
-        num_free(num);
+        // num_free(num);
     }
     num_free(num_1);
     num_free(num_2);
 }
 
-// STRUCT()
-
-// void time_2_thread()
-// {
-    
-//     num_p num_2 = num_wrap(0xe6503424c62eef89);
-//     for(uint64_t i=1; num_2->count < 2 * num_1->count; i++)
-// }
-
-void recursive_depth(uint64_t res[2], uint64_t n)
+void ssm_params_display(ssm_params_t p)
 {
-    // printf("\nn: " U64P() "", n);
+    printf("\t" U64P() "", p.M);
+    printf("\t" U64P() "", p.K);
+}
+
+void recursive_depth(uint64_t count)
+{
+    ssm_params_t p = ssm_get_params(count, 0);
+    uint64_t n = p.n;
 
     uint64_t i=1;
     for(; ssm_is_recursive(n); i++)
     {
-        ssm_params_t p = ssm_get_params_wrap(n);
-        n = p.n;
-        // printf("\nn: " U64P() "", n);
+        ssm_params_t p1 = ssm_get_params_wrap(n);
+        n = p1.n;
     }
 
-    res[0] = i;
-    res[1] = n;
+    printf("\t" U64P() "\t" U64P() "", i, n);
+
+    ssm_params_display(p);
+    n = p.n;
+    while(ssm_is_recursive(n))
+    {
+        ssm_params_t p1 = ssm_get_params_wrap(n);
+        n = p1.n;
+        ssm_params_display(p1);
+    }
 }
 
-void time_2(int argc, char** argv, uint64_t max)
+void time_2(int argc, char** argv, uint64_t max, uint64_t jumps)
 {
-    uint64_t id = (uint64_t)get_arg(argc, argv);
-    printf("\nid: " U64P() "", id);
+    uint64_t id = argc > 1 ? (uint64_t)get_arg(argc, argv) : 0;
+    // printf("\nid: " U64P() "", id);
 
     num_p num_1 = num_generate(max, 2);
-    num_display_tag("num_1", num_1);
+    // num_display_tag("num_1", num_1);
 
-    printf("\nN\ttime\tM\tK\tQ\tn\tdepth\tlast_n");
-
-    num_p num_2 = num_wrap(0xe6503424c62eef89);
+    // printf("\nN\ttime\tM\tK\tQ\tn\tdepth\tlast_n");
+    num_p num_2 = num_generate_2(256, 2);
     uint64_t threads = 1;
-    uint64_t jumps = 10;
-    for(uint64_t i=id + 1; num_2->count < num_1->count; i += threads * jumps)
+    for(uint64_t i=id + 256; num_2->count < num_1->count; i += threads * jumps)
     {
         for(uint64_t j=0; j<threads * jumps; j++)
         {
             num_2 = num_generate_2_step(num_2, 2);
         }
 
-        printf("\n" U64P(5) "", i);
+        printf("\n" U64P() "", num_1->count + num_2->count);
 
         uint64_t res = 0;
         uint64_t repeat = 1;
@@ -148,14 +147,22 @@ void time_2(int argc, char** argv, uint64_t max)
         }
 
         printf("\t%10.9lf", (double)(res / repeat) / 1e9);
-        ssm_params_t p = ssm_get_params(num_1->count, num_2->count);
-        printf("\t" U64P() "\t" U64P() "\t" U64P() "\t" U64P() "", p.M, p.K, p.Q, p.n);
-    
-        uint64_t a[2];
-        recursive_depth(a, p.n);
-        printf("\t" U64P() "", a[0]);
-        printf("\t" U64P() "", a[1]);
+        recursive_depth(num_1->count + num_2->count);
     }
+}
+
+void time_2_total(int argc, char** argv)
+{
+    printf("\ncount\ttime\tdepth\tlast_n");
+    for(uint64_t i=0; i<3; i++)
+        printf("\tM\tK");
+
+    time_2(argc, argv, 17, 10);
+    time_2(argc, argv, 18, 20);
+    time_2(argc, argv, 19, 40);
+    time_2(argc, argv, 20, 80);
+    time_2(argc, argv, 21, 160);
+    time_2(argc, argv, 22, 320);
 }
 
 void time_3(void)
@@ -680,8 +687,9 @@ int main(int argc, char** argv)
     // num_generate(21, 2);
     // time_1(16, 29);
     // time_1(16, 17);
+    // time_2(argc, argv, 20);
+    time_2_total(argc, argv);
     // time_3();
-    time_2(argc, argv, 19);
     // fibonacci();
     // fibonacci_2(16, 23);
     // fibonacci_3(16, 40);
