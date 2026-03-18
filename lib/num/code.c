@@ -1522,7 +1522,7 @@ ssm_params_t ssm_get_params(uint64_t count)
 
 ssm_params_t ssm_get_params_wrap(uint64_t n)
 {
-    uint64_t K1 = 4 * B(stdc_bit_width(n-1) / 2);
+    uint64_t K1 = 2 * B(stdc_bit_width(n-1) / 2);
     uint64_t K2 = (n - 1) & (1 - n);
     uint64_t K = K1 < K2 ? K1 : K2;
     uint64_t M = (n - 1) / K;
