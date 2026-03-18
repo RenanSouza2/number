@@ -1479,8 +1479,9 @@ bool ssm_is_recursive(uint64_t n)
 
 ssm_params_t ssm_get_params(uint64_t count)
 {
-    uint64_t K = 4 * stdc_bit_ceil((stdc_bit_width(count) - 1) / 2);
-    uint64_t M = (count / K) + 1;
+    uint64_t M = 1 << (stdc_bit_width(count) / 2);
+    uint64_t K = 4 * stdc_bit_ceil((count + M - 1) / M);
+    M = (count / K) + 1;
 
     uint64_t Q;
     uint64_t n;
