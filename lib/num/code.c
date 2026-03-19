@@ -1560,37 +1560,37 @@ ssm_params_t ssm_get_params_wrap(uint64_t n)
     };
 }
 
-static void num_mul_ssm_prepare_inner(num_p num_res, num_p num, ssm_params_p p)
+static void num_mul_ssm_fwd_transform_buffer(num_p num_fft_res, num_p num, ssm_params_p params)
 {
-    CLU_HANDLER_IS_SAFE(num_res)
+    CLU_HANDLER_IS_SAFE(num_fft_res)
     CLU_HANDLER_IS_SAFE(num)
-    assert(num_res)
+    assert(num_fft_res)
     assert(num)
 
-    num_ssm_pad(num_res, num, p);
-    num_ssm_fft_fwd(num_res, p);
+    num_ssm_pad(num_fft_res, num, params);
+    num_ssm_fft_fwd(num_fft_res, params);
 }
 
-num_p num_mul_ssm_prepare(num_p num, ssm_params_p p)
+num_p num_mul_ssm_fwd_transform(num_p num, ssm_params_p params)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)   
 
-    num_p num_res = num_create(p->n * p->K, 0);
-    num_mul_ssm_prepare_inner(num_res, num, p);
-    return num_res;
+    num_p num_fft = num_create(params->n * params->K, 0);
+    num_mul_ssm_fwd_transform_buffer(num_fft, num, params);
+    return num_fft;
 }
 
-void ssm_params_display(ssm_params_t p)
+void ssm_params_display(ssm_params_t params) // TODO: delete
 {
-    printf("\np.count: %lu", p.count);
-    printf("\np.M: %lu", p.M);
-    printf("\np.K: %lu", p.K);
-    printf("\np.Q: %lu", p.Q);
-    printf("\np.n: %lu", p.n);
+    printf("\nparams.count: %lu", params.count);
+    printf("\nparams.M: %lu", params.M);
+    printf("\nparams.K: %lu", params.K);
+    printf("\nparams.Q: %lu", params.Q);
+    printf("\nparams.n: %lu", params.n);
 }
 
-num_p num_mul_ssm_prepare_new(num_p num, uint64_t count)
+num_p num_mul_ssm_recursive_fwd_transform(num_p num, uint64_t count)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
@@ -1598,109 +1598,112 @@ num_p num_mul_ssm_prepare_new(num_p num, uint64_t count)
     tprintf("preparing");
     tprintf("count: %lu", count);
 
-    ssm_params_t p = ssm_get_params(count);
+    ssm_params_t params = ssm_get_params(count);
 
-    ssm_params_display(p);
+    ssm_params_display(params);
 
-    num_p num_res = num_mul_ssm_prepare(num, &p);
-    tprintf("num_res->size: %lu", num_res->size);
+    num_p num_fft = num_mul_ssm_fwd_transform(num, &params);
+    tprintf("num_fft->size: %lu", num_fft->size);
     
-    uint64_t n = p.n;
-    uint64_t K = p.K;
+    uint64_t n = params.n;
+    uint64_t K = params.K;
     while(ssm_is_recursive(n))
     {
         tprintf("recursive");
 
-        ssm_params_t p1 = ssm_get_params_wrap(n);
-        num_p num_aux = num_create(K * p1.K * p1.n, 0);
+        ssm_params_t params_next = ssm_get_params_wrap(n);
+        num_p num_fft_next = num_create(K * params_next.K * params_next.n, 0);
         
         for(uint64_t i=0; i<K; i++)
         {
             num_t num_in, num_out;
-            num_span(&num_in,  num_res, i * n, (i + 1) * n);
-            num_span(&num_out, num_aux, i * p1.K * p1.n, (i + 1) * p1.K * p.n);
-            num_mul_ssm_prepare_inner(&num_out, &num_in, &p1);
+            num_span(&num_in,  num_fft, i * n, (i + 1) * n);
+            num_span(&num_out, num_fft_next, i * params_next.K * params_next.n, (i + 1) * params_next.K * params_next.n);
+            num_mul_ssm_fwd_transform_buffer(&num_out, &num_in, &params_next);
         }
 
-        num_free(num_res);
-        num_res = num_aux;
+        num_free(num_fft);
+        num_fft = num_fft_next;
 
-        n  = p1.n;
-        K *= p1.K;
+        n  = params_next.n;
+        K *= params_next.K;
     }
 
-    return num_res;
+    return num_fft;
 }
 
-void num_ssm_mul_point(num_p num_aux_1, num_p num_aux_2, uint64_t n)
+void num_ssm_pointwise_product(num_p num_fft_a, num_p num_fft_b, uint64_t vector_size)
 {
-    CLU_HANDLER_IS_SAFE(num_aux_1)
-    CLU_HANDLER_IS_SAFE(num_aux_2)
-    assert(num_aux_1)
-    assert(num_aux_2)
+    CLU_HANDLER_IS_SAFE(num_fft_a)
+    CLU_HANDLER_IS_SAFE(num_fft_b)
+    assert(num_fft_a)
+    assert(num_fft_b)
 
-    uint64_t K = num_aux_1->size / n;
-    assert(K * n == num_aux_1->size);
-    for(uint64_t i=0; i<K; i++)
+    uint64_t block_count = num_fft_a->size / vector_size;
+    assert(block_count * vector_size == num_fft_a->size);
+    for(uint64_t i=0; i<block_count; i++)
     {
-        num_ssm_mul_rec(num_aux_1, num_aux_2, i * n, n);
+        num_ssm_mul_rec(num_fft_a, num_fft_b, i * vector_size, vector_size);
     }
 }
 
-num_p num_mul_ssm_inv_rec_new(num_p num_aux, uint64_t n)
+num_p num_mul_ssm_recursive_bwd_transform_rec(num_p num_fft, uint64_t vector_size)
 {
-    CLU_HANDLER_IS_SAFE(num_aux)
-    assert(num_aux)
+    CLU_HANDLER_IS_SAFE(num_fft)
+    assert(num_fft)
 
-    if(!ssm_is_recursive(n))
+    tprintf("begin");
+
+    if(!ssm_is_recursive(vector_size))
     {
-        return num_aux;
+        tprintf("end recursion");
+        return num_fft;
     }
 
-    ssm_params_t p = ssm_get_params_wrap(n);
-    num_aux = num_mul_ssm_inv_rec_new(num_aux, p.n);
+    ssm_params_t params = ssm_get_params_wrap(vector_size);
+    num_fft = num_mul_ssm_recursive_bwd_transform_rec(num_fft, params.n);
 
-    uint64_t K = num_aux->size / (p.K * p.n);
-    assert(K * p.K * p.n == num_aux->size);
+    uint64_t block_count = num_fft->size / (params.K * params.n);
+    assert(block_count * params.K * params.n == num_fft->size);
 
-    num_p num_tmp = num_create(K * n, 0);
+    num_p num_tmp = num_create(block_count * vector_size, 0);
 
-    for(uint64_t i=0; i<K; i++)
+    for(uint64_t i=0; i<block_count; i++)
     {
         num_t num_in;
-        num_span(&num_in, num_aux, i * p.K * p.n, (i + 1) * p.K * p.n);
+        num_span(&num_in, num_fft, i * params.K * params.n, (i + 1) * params.K * params.n);
 
-        num_ssm_fft_inv(&num_in, &p);
-        num_ssm_depad_wrap(num_tmp, &num_in, &p, n);
+        num_ssm_fft_inv(&num_in, &params);
+        num_ssm_depad_wrap(num_tmp, &num_in, &params, vector_size);
     }
 
-    num_free(num_aux);
+    num_free(num_fft);
     return num_tmp;
 }
 
-num_p num_mul_ssm_a(num_p num_aux, uint64_t count)
+num_p num_mul_ssm_recursive_bwd_transform(num_p num_fft, uint64_t count)
 {
-    CLU_HANDLER_IS_SAFE(num_aux)
-    assert(num_aux)
+    CLU_HANDLER_IS_SAFE(num_fft)
+    assert(num_fft)
 
-    ssm_params_t p = ssm_get_params(count);
-    num_p num_tmp = num_mul_ssm_inv_rec_new(num_aux, p.n);
+    ssm_params_t params = ssm_get_params(count);
+    num_p num_tmp = num_mul_ssm_recursive_bwd_transform_rec(num_fft, params.n);
 
-    num_ssm_fft_inv(num_tmp, &p);
-    num_ssm_depad_no_wrap(num_tmp, &p);
+    num_ssm_fft_inv(num_tmp, &params);
+    num_ssm_depad_no_wrap(num_tmp, &params);
 
     num_p num_res = num_copy(num_tmp);
-    num_free(num_aux);
+    num_free(num_tmp);
     return num_res;
 }
 
-num_p num_mul_ssm_finish_new(num_p num_aux_1, num_p num_aux_2, uint64_t count, uint64_t n)
+num_p num_mul_ssm_finish(num_p num_fft_a, num_p num_fft_b, uint64_t count, uint64_t vector_size)
 {
-    CLU_HANDLER_IS_SAFE(num_aux_1)
-    CLU_HANDLER_IS_SAFE(num_aux_2)
+    CLU_HANDLER_IS_SAFE(num_fft_a)
+    CLU_HANDLER_IS_SAFE(num_fft_b)
 
-    num_ssm_mul_point(num_aux_1, num_aux_2, n);
-    return num_mul_ssm_a(num_aux_1, count);
+    num_ssm_pointwise_product(num_fft_a, num_fft_b, vector_size);
+    return num_mul_ssm_recursive_bwd_transform(num_fft_a, count);
 }
 
 
@@ -1761,8 +1764,8 @@ void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n)
     num_t num_aux_1, num_aux_2;
     num_static(&num_aux_1, chunk_1, p.n * p.K);
     num_static(&num_aux_2, chunk_2, p.n * p.K);
-    num_mul_ssm_prepare_inner(&num_aux_1, num_1, &p);
-    num_mul_ssm_prepare_inner(&num_aux_2, num_2, &p);
+    num_mul_ssm_fwd_transform_buffer(&num_aux_1, num_1, &p);
+    num_mul_ssm_fwd_transform_buffer(&num_aux_2, num_2, &p);
 
     num_mul_ssm_point(&num_aux_1, &num_aux_2, &p);
     num_ssm_depad_wrap(num_1, &num_aux_1, &p, n);
@@ -1822,7 +1825,7 @@ void num_sqr_ssm_wrap(num_p num, uint64_t n)
     uint64_t chunk[p.n * p.K];
     num_t num_aux;
     num_static(&num_aux, chunk, p.n * p.K);
-    num_mul_ssm_prepare_inner(&num_aux, num, &p);
+    num_mul_ssm_fwd_transform_buffer(&num_aux, num, &p);
 
     for(uint64_t i=0; i<p.K; i++)
         num_ssm_sqr_rec(&num_aux, i * p.n, p.n);
@@ -1840,7 +1843,7 @@ static void num_sqr_ssm_buffer(num_p num_res, num_p num)
 
     ssm_params_t p = ssm_get_params(num->count + num->count);
     num_p num_aux = num_create(p.n * p.K, 0);
-    num_mul_ssm_prepare_inner(num_aux, num, &p);
+    num_mul_ssm_fwd_transform_buffer(num_aux, num, &p);
 
     for(uint64_t i=0; i<p.K; i++)
         num_ssm_sqr_rec(num_aux, i * p.n, p.n);
@@ -1897,10 +1900,10 @@ num_p num_mul_ssm(num_p num_1, num_p num_2)
 
     ssm_params_t p = ssm_get_params(num_1->count + num_2->count);
     
-    num_p num_aux_1 = num_mul_ssm_prepare(num_1, &p);
+    num_p num_aux_1 = num_mul_ssm_fwd_transform(num_1, &p);
     num_free(num_1);
     
-    num_p num_aux_2 = num_mul_ssm_prepare(num_2, &p);
+    num_p num_aux_2 = num_mul_ssm_fwd_transform(num_2, &p);
     num_free(num_2);
     
     num_p num_res = num_mul_ssm_final_steps(num_aux_1, num_aux_2, &p);
