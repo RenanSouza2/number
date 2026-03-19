@@ -1581,6 +1581,122 @@ num_p num_mul_ssm_prepare(num_p num, ssm_params_p p)
     return num_res;
 }
 
+void ssm_params_display(ssm_params_t p)
+{
+    printf("\np.count: %lu", p.count);
+    printf("\np.M: %lu", p.M);
+    printf("\np.K: %lu", p.K);
+    printf("\np.Q: %lu", p.Q);
+    printf("\np.n: %lu", p.n);
+}
+
+num_p num_mul_ssm_prepare_new(num_p num, uint64_t count)
+{
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num)
+
+    tprintf("preparing");
+    tprintf("count: %lu", count);
+
+    ssm_params_t p = ssm_get_params(count);
+
+    ssm_params_display(p);
+
+    num_p num_res = num_mul_ssm_prepare(num, &p);
+    tprintf("num_res->size: %lu", num_res->size);
+    
+    uint64_t n = p.n;
+    uint64_t K = p.K;
+    while(ssm_is_recursive(n))
+    {
+        tprintf("recursive");
+
+        ssm_params_t p1 = ssm_get_params_wrap(n);
+        num_p num_aux = num_create(K * p1.K * p1.n, 0);
+        
+        for(uint64_t i=0; i<K; i++)
+        {
+            num_t num_in, num_out;
+            num_span(&num_in,  num_res, i * n, (i + 1) * n);
+            num_span(&num_out, num_aux, i * p1.K * p1.n, (i + 1) * p1.K * p.n);
+            num_mul_ssm_prepare_inner(&num_out, &num_in, &p1);
+        }
+
+        num_free(num_res);
+        num_res = num_aux;
+
+        n  = p1.n;
+        K *= p1.K;
+    }
+
+    return num_res;
+}
+
+void num_ssm_mul_point(num_p num_aux_1, num_p num_aux_2, uint64_t n)
+{
+    CLU_HANDLER_IS_SAFE(num_aux_1)
+    CLU_HANDLER_IS_SAFE(num_aux_2)
+    assert(num_aux_1)
+    assert(num_aux_2)
+
+    uint64_t K = num_aux_1->size / n;
+    assert(K * n == num_aux_1->size);
+    for(uint64_t i=0; i<K; i++)
+    {
+        num_ssm_mul_rec(num_aux_1, num_aux_2, i * n, n);
+    }
+}
+
+num_p num_mul_ssm_inv_rec_new(num_p num_aux, uint64_t n)
+{
+    if(!ssm_is_recursive(n))
+    {
+        return num_aux;
+    }
+
+    ssm_params_t p = ssm_get_params_wrap(n);
+    num_aux = num_mul_ssm_inv_rec_new(num_aux, p.n);
+
+    uint64_t K = num_aux->size / (p.K * p.n);
+    assert(K * p.K * p.n == num_aux->size);
+
+    num_p num_tmp = num_create(K * n, 0);
+
+    for(uint64_t i=0; i<K; i++)
+    {
+        num_t num_in;
+        num_span(&num_in, num_aux, i * p.K * p.n, (i + 1) * p.K * p.n);
+
+        num_ssm_fft_inv(&num_in, &p);
+        num_ssm_depad_wrap(num_tmp, &num_in, &p, n);
+    }
+
+    num_free(num_aux);
+    return num_tmp;
+}
+
+num_p num_mul_ssm_a(num_p num_aux, uint64_t count)
+{
+    ssm_params_t p = ssm_get_params(count);
+    num_p num_tmp = num_mul_ssm_inv_rec_new(num_aux, p.n);
+
+    num_ssm_fft_inv(num_tmp, &p);
+    num_ssm_depad_no_wrap(num_tmp, &p);
+
+    num_p num_res = num_copy(num_tmp);
+    num_free(num_aux);
+    return num_res;
+}
+
+num_p num_mul_ssm_finish_new(num_p num_aux_1, num_p num_aux_2, uint64_t count, uint64_t n)
+{
+    CLU_HANDLER_IS_SAFE(num_aux_1)
+    CLU_HANDLER_IS_SAFE(num_aux_2)
+
+    num_ssm_mul_point(num_aux_1, num_aux_2, n);
+    return num_mul_ssm_a(num_aux_1, count);
+}
+
 
 
 void num_ssm_mul_rec(num_p num_1, num_p num_2, uint64_t pos, uint64_t n)
@@ -1600,6 +1716,7 @@ void num_ssm_mul_rec(num_p num_1, num_p num_2, uint64_t pos, uint64_t n)
         return;
     }
 
+    // todo get num aux as input
     uint64_t chunk[2 * n];
     num_t num_aux;
     num_static(&num_aux, chunk, 2 * n);

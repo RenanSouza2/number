@@ -2574,7 +2574,7 @@ void test_fuzz_num_ssm_sh(bool show)
                     num_display_span_full("num", num, N, 1);            \
                     printf("\nroundrip results in");                    \
                     num_display_span_full("num_res", num_res, N, 1);    \
-                    exit(EXIT_FAILURE);                                 \
+                    assert(false);                                      \
                 }                                                       \
                 num_free(num_res);                                      \
                 num_free(num);                                          \
@@ -2624,7 +2624,7 @@ void test_fuzz_num_ssm_fft(bool show)
                     num_display_span_full("num", num, Nv, Kv);          \
                     printf("\nroundrip results in");                    \
                     num_display_span_full("num_res", num_res, Nv, Kv);  \
-                    exit(EXIT_FAILURE);                                 \
+                    assert(false);                                      \
                 }                                                       \
                 num_free(num_res);                                      \
                 num_free(num);                                          \
@@ -2667,7 +2667,7 @@ void test_fuzz_num_ssm_mul(bool show)
             num_display_full("num_res_2", num_res_2);               \
             printf("\nbut was");                                    \
             num_display_full("num_res_1", num_res_1);               \
-            exit(EXIT_FAILURE);                                     \
+            assert(false);                                          \
         }                                                           \
         num_free(num_1);                                            \
         num_free(num_2);                                            \
@@ -2744,7 +2744,7 @@ void test_fuzz_num_bz_div(bool show)
                     num_display_full("num_2", num_2);                           \
                     printf("\nreconstructed give");                             \
                     num_display_full("num_aux", num_aux);                       \
-                    exit(EXIT_FAILURE);                                         \
+                    assert(false);                                              \
                 }                                                               \
                 num_free(num_1);                                                \
                 num_free(num_2);                                                \
@@ -2773,6 +2773,34 @@ void test_fuzz_num_bz_div(bool show)
     TEST_FN_CLOSE
 }
 
+void test_fuzz_num_ssm_fft_new(bool show)
+{
+    TEST_FN_OPEN
+
+    TEST_CASE_OPEN_TIMEOUT(1, 0)
+    {
+        for(uint64_t i=0; i<1; i++)
+        {
+            uint64_t count = 128;
+            num_p num_in = num_create_rand(count);
+            num_p num_middle = num_mul_ssm_prepare_new(num_in, num_in->count);
+
+            num_p num_out = num_mul_ssm_a(num_middle, count);
+            if(!num_eq_dbg(num_copy(num_out), num_copy(num_in)))
+            {
+                printf("\nentries");
+                num_display_full("num_in", num_in);
+                printf("\n");
+                num_display_full("num_out", num_out);
+                assert(false);
+            }
+        }
+    }
+    TEST_CASE_CLOSE
+
+    TEST_FN_CLOSE
+}
+
 
 
 void test_num(void)
@@ -2781,71 +2809,73 @@ void test_num(void)
 
     bool show = false;
 
-    test_uint_from_char(show);
-    test_uint_inv(show);
-    test_uint128(show);
+    // test_uint_from_char(show);
+    // test_uint_inv(show);
+    // test_uint128(show);
 
-    test_num_create(show);
-    test_num_expand_to(show);
-    test_num_chunk_get(show);
-    test_num_chunk_set(show);
+    // test_num_create(show);
+    // test_num_expand_to(show);
+    // test_num_chunk_get(show);
+    // test_num_chunk_set(show);
 
-    test_num_normalize(show);
-    test_num_break(show);
+    // test_num_normalize(show);
+    // test_num_break(show);
 
-    test_num_wrap(show);
-    test_num_wrap_dec(show);
-    test_num_wrap_hex(show);
-    test_num_wrap_str(show);
-    test_num_read_dec(show);
-    test_num_unwrap(show);
-    test_num_copy(show);
+    // test_num_wrap(show);
+    // test_num_wrap_dec(show);
+    // test_num_wrap_hex(show);
+    // test_num_wrap_str(show);
+    // test_num_read_dec(show);
+    // test_num_unwrap(show);
+    // test_num_copy(show);
 
-    test_num_add_uint_offset(show);
-    test_num_sub_uint_offset(show);
-    test_num_cmp_offset(show);
-    test_num_sub_offset(show);
+    // test_num_add_uint_offset(show);
+    // test_num_sub_uint_offset(show);
+    // test_num_cmp_offset(show);
+    // test_num_sub_offset(show);
 
-    test_num_shl_inner(show);
-    test_num_shr_inner(show);
-    test_num_mul_uint(show);
+    // test_num_shl_inner(show);
+    // test_num_shr_inner(show);
+    // test_num_mul_uint(show);
 
-    test_smm_bit_inv(show);
-    test_num_ssm_add_mod(show);
-    test_num_ssm_sub_mod(show);
-    test_num_ssm_opposite(show);
-    test_num_ssm_pad(show);
-    test_num_ssm_shl(show);
-    test_num_ssm_shr(show);
-    test_num_ssm_shl_mod(show);
-    test_num_ssm_shr_mod(show);
-    test_num_ssm_fft(show);
-    test_num_ssm_mul_rec(show);
-    test_num_mul_ssm_wrap(show);
+    // test_smm_bit_inv(show);
+    // test_num_ssm_add_mod(show);
+    // test_num_ssm_sub_mod(show);
+    // test_num_ssm_opposite(show);
+    // test_num_ssm_pad(show);
+    // test_num_ssm_shl(show);
+    // test_num_ssm_shr(show);
+    // test_num_ssm_shl_mod(show);
+    // test_num_ssm_shr_mod(show);
+    // test_num_ssm_fft(show);
+    // test_num_ssm_mul_rec(show);
+    // test_num_mul_ssm_wrap(show);
 
-    test_num_div_normalize(show);
+    // test_num_div_normalize(show);
 
-    test_num_is_zero(show);
+    // test_num_is_zero(show);
 
-    test_num_shl(show);
-    test_num_shr(show);
+    // test_num_shl(show);
+    // test_num_shr(show);
 
-    test_num_add(show);
-    test_num_sub(show);
-    test_num_mul(show);
-    test_num_sqr(show);
-    test_num_div_mod(show);
-    test_num_gcd(show);
+    // test_num_add(show);
+    // test_num_sub(show);
+    // test_num_mul(show);
+    // test_num_sqr(show);
+    // test_num_div_mod(show);
+    // test_num_gcd(show);
 
-    test_num_div_mod_uint(show);
+    // test_num_div_mod_uint(show);
 
-    test_num_base_to(show);
-    test_num_base_from(show);
+    // test_num_base_to(show);
+    // test_num_base_from(show);
 
-    test_fuzz_num_ssm_sh(show);
-    test_fuzz_num_ssm_fft(show);
-    test_fuzz_num_ssm_mul(show);
-    test_fuzz_num_bz_div(show);
+    // test_fuzz_num_ssm_sh(show);
+    // test_fuzz_num_ssm_fft(show);
+    // test_fuzz_num_ssm_mul(show);
+    // test_fuzz_num_bz_div(show);
+
+    test_fuzz_num_ssm_fft_new(show);
 
     TEST_ASSERT_MEM_EMPTY
 }

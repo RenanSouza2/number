@@ -56,4 +56,7 @@ num_p num_base_from(num_p num, uint64_t base);
 bool ssm_is_recursive(uint64_t n); // TODO delete
 ssm_params_t ssm_get_params_wrap(uint64_t n);
 
+num_p num_mul_ssm_prepare_new(num_p num, uint64_t count);
+num_p num_mul_ssm_a(num_p num_aux, uint64_t count);
+
 #endif
