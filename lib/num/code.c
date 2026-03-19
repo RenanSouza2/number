@@ -909,32 +909,6 @@ static num_p num_mul_uint_buffer(num_p num_res, num_p num, uint64_t value) // TO
 
 // Keeps NUM_1
 // Keeps NUM_2
-// num_res->size >= num_1->count + num_2->count - pos
-static num_p num_mul_high_buffer(num_p num_res, num_p num_1, num_p num_2, uint64_t pos) // TODO TEST
-{
-    CLU_HANDLER_IS_SAFE(num_res)
-    CLU_HANDLER_IS_SAFE(num_1)
-    CLU_HANDLER_IS_SAFE(num_2)
-    assert(num_res)
-    assert(num_1)
-    assert(num_2)
-    assert(num_res->size >= num_1->count + num_2->count - pos)
-
-    num_set_count(num_res, 0);
-    if(pos >= num_1->count + num_2->count)
-        return num_res;
-
-    uint64_t max = pos > num_2->count ? num_2->count : pos;
-    for(uint64_t i=0; i<max; i++)
-        num_res = num_add_mul_uint_offset(num_res, 0, num_1, pos-i, num_2->chunk[i]);
-
-    for(uint64_t i=pos; i<num_2->count; i++)
-        num_res = num_add_mul_uint_offset(num_res, i-pos, num_1, 0, num_2->chunk[i]);
-    return num_res;
-}
-
-// Keeps NUM_1
-// Keeps NUM_2
 // num_res->size >= num_1->count + num_2->count
 static num_p num_mul_classic_buffer(num_p num_res, num_p num_1, num_p num_2)
 {
@@ -946,7 +920,13 @@ static num_p num_mul_classic_buffer(num_p num_res, num_p num_1, num_p num_2)
     assert(num_2)
     assert(num_res->size >= num_1->count + num_2->count)
 
-    return num_mul_high_buffer(num_res, num_1, num_2, 0);
+    num_set_count(num_res, 0);
+    for(uint64_t i=0; i<num_2->count; i++)
+    {
+        num_res = num_add_mul_uint_offset(num_res, i, num_1, 0, num_2->chunk[i]);
+    }
+
+    return num_res;
 }
 
 static num_p num_sqr_classic_buffer(num_p num_res, num_p num)
@@ -2258,21 +2238,6 @@ num_p num_sub(num_p num_1, num_p num_2)
     num_1 = num_sub_offset(num_1, 0, num_2);
     num_free(num_2);
     return num_1;
-}
-
-num_p num_mul_high(num_p num_1, num_p num_2, uint64_t pos)
-{
-    CLU_HANDLER_IS_SAFE(num_1)
-    CLU_HANDLER_IS_SAFE(num_2)
-    assert(num_1)
-    assert(num_2)
-
-    num_p num_res = num_create(num_1->count + num_2->count + 1 - pos, 0);
-    num_res->cannot_expand = true;
-    num_mul_high_buffer(num_res, num_1, num_2, pos);
-    num_free(num_1);
-    num_free(num_2);
-    return num_res;
 }
 
 num_p num_mul(num_p num_1, num_p num_2)

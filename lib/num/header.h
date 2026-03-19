@@ -42,7 +42,6 @@ num_p num_mul_ssm_final_steps(num_p num_aux_1, num_p num_aux_2, ssm_params_p p);
 
 num_p num_add(num_p num_1, num_p num_2);
 num_p num_sub(num_p num_1, num_p num_2);
-num_p num_mul_high(num_p num_1, num_p num_2, uint64_t pos);
 num_p num_mul(num_p num_1, num_p num_2);
 num_p num_pow(num_p num, uint64_t value);
 num_p num_sqr(num_p num);
