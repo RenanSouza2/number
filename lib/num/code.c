@@ -1649,6 +1649,9 @@ void num_ssm_mul_point(num_p num_aux_1, num_p num_aux_2, uint64_t n)
 
 num_p num_mul_ssm_inv_rec_new(num_p num_aux, uint64_t n)
 {
+    CLU_HANDLER_IS_SAFE(num_aux)
+    assert(num_aux)
+
     if(!ssm_is_recursive(n))
     {
         return num_aux;
@@ -1677,6 +1680,9 @@ num_p num_mul_ssm_inv_rec_new(num_p num_aux, uint64_t n)
 
 num_p num_mul_ssm_a(num_p num_aux, uint64_t count)
 {
+    CLU_HANDLER_IS_SAFE(num_aux)
+    assert(num_aux)
+
     ssm_params_t p = ssm_get_params(count);
     num_p num_tmp = num_mul_ssm_inv_rec_new(num_aux, p.n);
 

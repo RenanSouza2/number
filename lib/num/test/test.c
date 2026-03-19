@@ -2779,7 +2779,7 @@ void test_fuzz_num_ssm_fft_new(bool show)
 
     TEST_CASE_OPEN_TIMEOUT(1, 0)
     {
-        for(uint64_t i=0; i<1; i++)
+        for(uint64_t i=0; i<100; i++)
         {
             uint64_t count = 128;
             num_p num_in = num_create_rand(count);
@@ -2794,6 +2794,9 @@ void test_fuzz_num_ssm_fft_new(bool show)
                 num_display_full("num_out", num_out);
                 assert(false);
             }
+
+            num_free(num_in);
+            num_free(num_out);
         }
     }
     TEST_CASE_CLOSE
