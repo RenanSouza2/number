@@ -1571,7 +1571,7 @@ static void num_mul_ssm_fwd_transform_buffer(num_p num_fft_res, num_p num, ssm_p
     num_ssm_fft_fwd(num_fft_res, params);
 }
 
-num_p num_mul_ssm_fwd_transform(num_p num, ssm_params_p params)
+num_p num_mul_ssm_fwd_transform(num_p num, ssm_params_p params) // TODO: make it consume input
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)   
@@ -1595,22 +1595,20 @@ num_p num_mul_ssm_recursive_fwd_transform(num_p num, uint64_t count)
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
 
-    tprintf("preparing");
-    tprintf("count: %lu", count);
+    // tprintf("preparing");
+    // tprintf("count: %lu", count);
 
     ssm_params_t params = ssm_get_params(count);
 
-    ssm_params_display(params);
+    // ssm_params_display(params);
 
     num_p num_fft = num_mul_ssm_fwd_transform(num, &params);
-    tprintf("num_fft->size: %lu", num_fft->size);
+    // tprintf("num_fft->size: %lu", num_fft->size);
     
     uint64_t n = params.n;
     uint64_t K = params.K;
     while(ssm_is_recursive(n))
     {
-        tprintf("recursive");
-
         ssm_params_t params_next = ssm_get_params_wrap(n);
         num_p num_fft_next = num_create(K * params_next.K * params_next.n, 0);
         
@@ -1652,11 +1650,8 @@ num_p num_mul_ssm_recursive_bwd_transform_rec(num_p num_fft, uint64_t vector_siz
     CLU_HANDLER_IS_SAFE(num_fft)
     assert(num_fft)
 
-    tprintf("begin");
-
     if(!ssm_is_recursive(vector_size))
     {
-        tprintf("end recursion");
         return num_fft;
     }
 
@@ -1670,11 +1665,12 @@ num_p num_mul_ssm_recursive_bwd_transform_rec(num_p num_fft, uint64_t vector_siz
 
     for(uint64_t i=0; i<block_count; i++)
     {
-        num_t num_in;
+        num_t num_in, num_out;
         num_span(&num_in, num_fft, i * params.K * params.n, (i + 1) * params.K * params.n);
+        num_span(&num_out, num_tmp, i * vector_size, (i + 1) * vector_size);
 
         num_ssm_fft_inv(&num_in, &params);
-        num_ssm_depad_wrap(num_tmp, &num_in, &params, vector_size);
+        num_ssm_depad_wrap(&num_out, &num_in, &params, vector_size);
     }
 
     num_free(num_fft);
