@@ -1627,60 +1627,20 @@ void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n)
     num_ssm_depad_wrap(num_1, &num_aux_1, &p, n);
 }
 
-void num_mul_ssm_final_steps_inner(
-    num_p num_res,
-    num_p num_aux_1,
-    num_p num_aux_2,
-    ssm_params_p p
+num_p num_mul_ssm_final_steps(num_p num_aux_1, num_p num_aux_2, ssm_params_p p
 )
 {
-    CLU_HANDLER_IS_SAFE(num_res);
     CLU_HANDLER_IS_SAFE(num_aux_1);
     CLU_HANDLER_IS_SAFE(num_aux_2);
-    assert(num_res);
     assert(num_aux_1);
     assert(num_aux_2);
 
     num_mul_ssm_point(num_aux_1, num_aux_2, p);
     num_ssm_depad_no_wrap(num_aux_1, p);
-    num_set_count(num_res, 0);
 
-    assert(num_res->size >= num_aux_1->count);
-    memcpy(num_res->chunk, num_aux_1->chunk, num_aux_1->count * sizeof(uint64_t));
-    num_res->count = num_aux_1->count;
-}
-
-num_p num_mul_ssm_final_steps(num_p num_aux_1, num_p num_aux_2, ssm_params_p p)
-{
-    CLU_HANDLER_IS_SAFE(num_aux_1);
-    CLU_HANDLER_IS_SAFE(num_aux_2);
-    assert(num_aux_1);
-    assert(num_aux_2);
-
-    num_p num_res = num_create(p->count, 0);
-    num_res->cannot_expand = true;
-    num_mul_ssm_final_steps_inner(num_res, num_aux_1, num_aux_2, p);
-    num_res->cannot_expand = false;
-    return num_res;
-}
-
-static void num_mul_ssm_buffer(num_p num_res, num_p num_1, num_p num_2)
-{
-    CLU_HANDLER_IS_SAFE(num_res)
-    CLU_HANDLER_IS_SAFE(num_1)
-    CLU_HANDLER_IS_SAFE(num_2)
-    assert(num_res)
-    assert(num_1)
-    assert(num_2)
-    assert(num_res->size >= num_1->count + num_2->count)
-
-    ssm_params_t p = ssm_get_params(num_1->count + num_2->count);
-    num_p num_aux_1 = num_mul_ssm_prepare(num_1, &p);
-    num_p num_aux_2 = num_mul_ssm_prepare(num_2, &p);
-    num_mul_ssm_final_steps_inner(num_res, num_aux_1, num_aux_2, &p);
-
+    num_p num_res = num_copy(num_aux_1);
     num_free(num_aux_1);
-    num_free(num_aux_2);
+    return num_res;
 }
 
 
@@ -1770,32 +1730,6 @@ STRUCT(num_fft_cache)
     num_p fft;
 };
 
-// Keeps NUM_1
-// Keeps NUM_2
-static num_p num_mul_buffer(num_p num_res, num_p num_1, num_p num_2) // TODO TEST
-{
-    CLU_HANDLER_IS_SAFE(num_res)
-    CLU_HANDLER_IS_SAFE(num_1)
-    CLU_HANDLER_IS_SAFE(num_2)
-    assert(num_res)
-    assert(num_1)
-    assert(num_2)
-    assert(num_res->size >= num_1->count + num_2->count);
-
-    if(num_1->count == 0 || num_2->count == 0)
-    {
-        return num_res;
-    }
-
-    if(mul_is_classic(num_1->count, num_2->count))
-    {
-        return num_mul_classic_buffer(num_res, num_1, num_2);
-    }
-
-    num_mul_ssm_buffer(num_res, num_1, num_2);
-    return num_res;
-}
-
 num_p num_mul_classic(num_p num_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_1)
@@ -1806,9 +1740,10 @@ num_p num_mul_classic(num_p num_1, num_p num_2)
     num_p num_res = num_create(num_1->count + num_2->count + 1, 0);
     num_res->cannot_expand = true;
     num_mul_classic_buffer(num_res, num_1, num_2);
+    num_res->cannot_expand = false;
+
     num_free(num_1);
     num_free(num_2);
-    num_res->cannot_expand = false;
     return num_res;
 }
 
@@ -1819,10 +1754,16 @@ num_p num_mul_ssm(num_p num_1, num_p num_2)
     assert(num_1)
     assert(num_2)
 
-    num_p num_res = num_create(num_1->count + num_2->count, 0);
-    num_mul_ssm_buffer(num_res, num_1, num_2);
+    ssm_params_t p = ssm_get_params(num_1->count + num_2->count);
+    
+    num_p num_aux_1 = num_mul_ssm_prepare(num_1, &p);
     num_free(num_1);
+    
+    num_p num_aux_2 = num_mul_ssm_prepare(num_2, &p);
     num_free(num_2);
+    
+    num_p num_res = num_mul_ssm_final_steps(num_aux_1, num_aux_2, &p);
+    num_free(num_aux_2);
     return num_res;
 }
 
@@ -2247,11 +2188,25 @@ num_p num_mul(num_p num_1, num_p num_2)
     assert(num_1)
     assert(num_2)
 
-    num_p num_res = num_create(num_1->count + num_2->count, 0);
-    num_res = num_mul_buffer(num_res, num_1, num_2);
-    num_free(num_1);
-    num_free(num_2);
-    return num_res;
+    if(num_1->count == 0)
+    {
+        num_free(num_2);
+        return num_1;
+    }
+
+    if(num_2->count == 0)
+    {
+        num_free(num_1);
+        return num_2;
+    }
+
+
+    if(mul_is_classic(num_1->count, num_2->count))
+    {
+        return num_mul_classic(num_1, num_2);
+    }
+
+    return num_mul_ssm(num_1, num_2);
 }
 
 num_p num_sqr(num_p num)
