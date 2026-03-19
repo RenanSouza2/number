@@ -381,6 +381,9 @@ num_p num_expand(num_p num)
 
 static void num_set_count(num_p num, uint64_t count)
 {
+    CLU_HANDLER_IS_SAFE(num);
+    assert(num);
+
     num->count = count;
     memset(&num->chunk[count], 0, (num->size - count) * sizeof(uint64_t));
 }
@@ -449,6 +452,9 @@ num_p num_head_grow(num_p num, uint64_t count) // TODO test
 
 void num_head_trim(num_p num, uint64_t count) // TODO test
 {
+    CLU_HANDLER_IS_SAFE(num);
+    assert(num);
+
     if(num->count == 0 || count == 0)
         return;
 
@@ -499,6 +505,10 @@ void num_break(num_p *out_num_hi, num_p *out_num_lo, num_p num, uint64_t count)
 // NUM_RES should be static memory
 static void num_span(num_p num_res, num_p num, uint64_t pos_init, uint64_t pos_max) // TODO TEST
 {
+    CLU_HANDLER_IS_SAFE(num);
+    assert(num_res);
+    assert(num);
+
     assert(pos_max <= num->size);
     uint64_t size = pos_init > pos_max ? 0 : pos_max - pos_init;
 
@@ -1082,6 +1092,9 @@ static void num_ssm_normalize(num_p num, uint64_t pos, uint64_t n)
 
 static void num_ssm_denormalize(num_p num, uint64_t pos, uint64_t n)
 {
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num)
+
     num_ssm_add_uint(num, pos        , n, 1);
     num_ssm_add_uint(num, pos + n - 1, 1, 1);
 }
@@ -1208,6 +1221,11 @@ void num_ssm_depad_no_wrap(num_p num, ssm_params_p p)
 // the final vector is padded to k places
 void num_ssm_depad_wrap(num_p num_res, num_p num, ssm_params_p p, uint64_t n0)
 {
+    CLU_HANDLER_IS_SAFE(num_res)
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num_res)
+    assert(num)
+
     uint64_t chunk[n0];
     num_t num_aux_1;
     num_static(&num_aux_1, chunk, n0);
@@ -2211,6 +2229,9 @@ num_p num_mul(num_p num_1, num_p num_2)
 
 num_p num_sqr(num_p num)
 {
+    CLU_HANDLER_IS_SAFE(num);
+    assert(num);
+
     if(num->count == 0)
         return num;
 
@@ -2296,6 +2317,9 @@ num_p num_gcd(num_p num_1, num_p num_2)
 
 static num_p num_base_to_rec(num_p num, num_p num_bases[], uint64_t i)
 {
+    CLU_HANDLER_IS_SAFE(num);
+    assert(num);
+
     if(i == UINT64_MAX)
         return num;
 
