@@ -2646,28 +2646,28 @@ void test_fuzz_num_ssm_fft_round_trip(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_FUZZ_NUM_SSM_FFT_ROUND_TRIP(TAG, COUNT, MAX)                           \
-    {                                                                                   \
-        TEST_CASE_OPEN_TIMEOUT(TAG, 0)                                                  \
-        {                                                                               \
-            for(uint64_t i=0; i<MAX; i++)                                               \
-            {                                                                           \
-                num_p num_in = num_create_rand(COUNT);                                  \
-                num_p num_middle = num_mul_ssm_recursive_fwd_transform(num_in, COUNT);  \
-                num_p num_out = num_mul_ssm_recursive_bwd_transform(num_middle, COUNT); \
-                if(!num_eq_dbg(num_copy(num_out), num_copy(num_in)))                    \
-                {                                                                       \
-                    printf("\nentries");                                                \
-                    num_display_full("num_in", num_in);                                 \
-                    printf("\n");                                                       \
-                    num_display_full("num_out", num_out);                               \
-                    assert(false);                                                      \
-                }                                                                       \
-                num_free(num_in);                                                       \
-                num_free(num_out);                                                      \
-            }                                                                           \
-        }                                                                               \
-        TEST_CASE_CLOSE                                                                 \
+    #define TEST_FUZZ_NUM_SSM_FFT_ROUND_TRIP(TAG, COUNT, MAX)                   \
+    {                                                                           \
+        TEST_CASE_OPEN_TIMEOUT(TAG, 0)                                          \
+        {                                                                       \
+            for(uint64_t i=0; i<MAX; i++)                                       \
+            {                                                                   \
+                num_p num_in = num_create_rand(COUNT);                          \
+                num_p num_middle = num_mul_ssm_fwd_transform(num_in, COUNT);    \
+                num_p num_out = num_mul_ssm_bwd_transform(num_middle, COUNT);   \
+                if(!num_eq_dbg(num_copy(num_out), num_copy(num_in)))            \
+                {                                                               \
+                    printf("\nentries");                                        \
+                    num_display_full("num_in", num_in);                         \
+                    printf("\n");                                               \
+                    num_display_full("num_out", num_out);                       \
+                    assert(false);                                              \
+                }                                                               \
+                num_free(num_in);                                               \
+                num_free(num_out);                                              \
+            }                                                                   \
+        }                                                                       \
+        TEST_CASE_CLOSE                                                         \
     }
 
     TEST_FUZZ_NUM_SSM_FFT_ROUND_TRIP(1, 128, 1000);

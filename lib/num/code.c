@@ -1893,12 +1893,10 @@ num_p num_mul_ssm(num_p num_1, num_p num_2)
     assert(num_1)
     assert(num_2)
 
-    ssm_params_t p = ssm_get_params(num_1->count + num_2->count);
-    
-    num_p num_aux_1 = num_mul_ssm_fwd_step(num_1, &p);
-    num_p num_aux_2 = num_mul_ssm_fwd_step(num_2, &p);
-    
-    num_p num_res = num_mul_ssm_final_steps(num_aux_1, num_aux_2, &p);
+    uint64_t count = num_1->count + num_2->count;
+    num_p num_aux_1 = num_mul_ssm_fwd_transform(num_1, count);
+    num_p num_aux_2 = num_mul_ssm_fwd_transform(num_2, count);
+    num_p num_res = num_mul_ssm_finish(num_aux_1, num_aux_2, count);
     num_free(num_aux_2);
     return num_res;
 }
