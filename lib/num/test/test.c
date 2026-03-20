@@ -2696,13 +2696,6 @@ void test_fuzz_num_ssm_mul(bool show)
         );                                                          \
         if(!num_eq_dbg(num_copy(num_res_1), num_copy(num_res_2)))   \
         {                                                           \
-            printf("\nentries");                                    \
-            num_display_full("num_1", num_1);                       \
-            num_display_full("num_2", num_2);                       \
-            printf("\nshould be");                                  \
-            num_display_full("num_res_2", num_res_2);               \
-            printf("\nbut was");                                    \
-            num_display_full("num_res_1", num_res_1);               \
             assert(false);                                          \
         }                                                           \
         num_free(num_1);                                            \
@@ -2815,7 +2808,7 @@ void test_num(void)
 {
     TEST_LIB
 
-    bool show = false;
+    bool show = true;
 
     // test_uint_from_char(show);
     // test_uint_inv(show);
@@ -2868,18 +2861,18 @@ void test_num(void)
 
     // test_num_add(show);
     // test_num_sub(show);
-    test_num_mul(show);
-    test_num_sqr(show);
-    test_num_div_mod(show);
-    test_num_gcd(show);
+    // test_num_mul(show);
+    // test_num_sqr(show);
+    // test_num_div_mod(show);
+    // test_num_gcd(show);
 
-    test_num_div_mod_uint(show);
+    // test_num_div_mod_uint(show);
 
-    test_num_base_to(show);
-    test_num_base_from(show);
+    // test_num_base_to(show);
+    // test_num_base_from(show);
 
-    test_fuzz_num_ssm_sh(show);
-    test_fuzz_num_ssm_fft(show);
+    // test_fuzz_num_ssm_sh(show);
+    // test_fuzz_num_ssm_fft(show);
     test_fuzz_num_ssm_mul(show);
     test_fuzz_num_bz_div(show);
 

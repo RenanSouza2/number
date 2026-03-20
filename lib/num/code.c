@@ -1495,6 +1495,7 @@ ssm_params_t ssm_get_params(uint64_t count)
         n = (K * Q / 64) + 1;
     }
     assert(64 * (n - 1) % K == 0);
+    assert(n > 2 * M);
 
     if(n > TRESHOLD)
     {
@@ -1507,6 +1508,8 @@ ssm_params_t ssm_get_params(uint64_t count)
             Q = 64 * (n - 1) / K;
         }
     }
+    assert(64 * (n - 1) % K == 0);
+    assert(n > 2 * M);
     
     return (ssm_params_t)
     {
@@ -1623,18 +1626,20 @@ num_p num_mul_ssm_fwd_transform(num_p num, uint64_t count)
     return num_fft;
 }
 
-void num_ssm_pointwise_product(num_p num_fft_a, num_p num_fft_b, uint64_t n)
+void num_ssm_pointwise_product(num_p num_fft_1, num_p num_fft_2, uint64_t n)
 {
-    CLU_HANDLER_IS_SAFE(num_fft_a)
-    CLU_HANDLER_IS_SAFE(num_fft_b)
-    assert(num_fft_a)
-    assert(num_fft_b)
+    CLU_HANDLER_IS_SAFE(num_fft_1)
+    CLU_HANDLER_IS_SAFE(num_fft_2)
+    assert(num_fft_1)
+    assert(num_fft_2)
 
-    uint64_t block_count = num_fft_a->size / n;
-    assert(block_count * n == num_fft_a->size);
+    uint64_t block_count = num_fft_1->size / n;
+    assert(block_count * n == num_fft_1->size);
+    tprintf("n: %lu", n);
+    tprintf("num_fft_1->size: %lu", num_fft_1->size);
     for(uint64_t i=0; i<block_count; i++)
     {
-        num_ssm_mul_rec(num_fft_a, num_fft_b, i * n, n);
+        num_ssm_mul_rec(num_fft_1, num_fft_2, i * n, n);
     }
 }
 
@@ -1655,6 +1660,11 @@ num_p num_mul_ssm_bwd_transform_rec(num_p num_fft, uint64_t n)
     assert(block_count * params.K * params.n == num_fft->size);
 
     num_p num_tmp = num_create(block_count * n, 0);
+
+    
+    tprintf("params.M: %lu", params.M);
+    tprintf("params.n: %lu", params.n);
+    tprintf("n: %lu", n);
 
     for(uint64_t i=0; i<block_count; i++)
     {
@@ -1678,6 +1688,8 @@ num_p num_mul_ssm_bwd_transform(num_p num_fft, uint64_t count)
     ssm_params_t params = ssm_get_params(count);
     num_p num_tmp = num_mul_ssm_bwd_transform_rec(num_fft, params.n);
 
+    tprintf("params.M: %lu", params.M);
+
     num_ssm_fft_inv(num_tmp, &params);
     num_ssm_depad_no_wrap(num_tmp, &params);
 
@@ -1686,19 +1698,25 @@ num_p num_mul_ssm_bwd_transform(num_p num_fft, uint64_t count)
     return num_res;
 }
 
-num_p num_mul_ssm_finish(num_p num_fft_a, num_p num_fft_b, uint64_t count)
+num_p num_mul_ssm_finish(num_p num_fft_1, num_p num_fft_2, uint64_t count)
 {
-    CLU_HANDLER_IS_SAFE(num_fft_a)
-    CLU_HANDLER_IS_SAFE(num_fft_b)
+    CLU_HANDLER_IS_SAFE(num_fft_1)
+    CLU_HANDLER_IS_SAFE(num_fft_2)
 
+    printf("\nbegin");
+    printf("\ncount: %lu", count);
     ssm_params_t params = ssm_get_params(count);
     while(ssm_is_recursive(params.n))
     {
+        tprintf("params.M: %lu", params.M);
+        printf("\nparams.n: %lu", params.n);
         params = ssm_get_params_wrap(params.n);
     }
+    tprintf("params.M: %lu", params.M);
+    printf("\nparams.n: %lu", params.n);
 
-    num_ssm_pointwise_product(num_fft_a, num_fft_b, params.n);
-    return num_mul_ssm_bwd_transform(num_fft_a, count);
+    num_ssm_pointwise_product(num_fft_1, num_fft_2, params.n);
+    return num_mul_ssm_bwd_transform(num_fft_1, count);
 }
 
 
