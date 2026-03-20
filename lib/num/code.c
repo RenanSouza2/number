@@ -1895,7 +1895,10 @@ num_p num_mul_ssm(num_p num_1, num_p num_2)
 
     uint64_t count = num_1->count + num_2->count;
     num_p num_aux_1 = num_mul_ssm_fwd_transform(num_1, count);
+    num_free(num_1);
     num_p num_aux_2 = num_mul_ssm_fwd_transform(num_2, count);
+    num_free(num_2);
+
     num_p num_res = num_mul_ssm_finish(num_aux_1, num_aux_2, count);
     num_free(num_aux_2);
     return num_res;
