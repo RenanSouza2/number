@@ -37,7 +37,6 @@ num_p num_mul_uint(num_p num, uint64_t value);
 num_p num_div_mod_uint(num_p num, uint64_t value);
 
 ssm_params_t ssm_get_params(uint64_t count);
-// num_p num_mul_ssm_prepare(num_p num, ssm_params_p p);
 num_p num_mul_ssm_final_steps(num_p num_aux_1, num_p num_aux_2, ssm_params_p p);
 
 num_p num_add(num_p num_1, num_p num_2);
@@ -56,7 +55,9 @@ num_p num_base_from(num_p num, uint64_t base);
 bool ssm_is_recursive(uint64_t n); // TODO delete
 ssm_params_t ssm_get_params_wrap(uint64_t n);
 
-num_p num_mul_ssm_recursive_fwd_transform(num_p num, uint64_t count);
-num_p num_mul_ssm_recursive_bwd_transform(num_p num_pointwise_product, uint64_t count);
+num_p num_mul_ssm_fwd_transform(num_p num, uint64_t count);
+num_p num_mul_ssm_bwd_transform(num_p num_fft, uint64_t count);
+
+num_p num_mul_ssm_finish(num_p num_fft_a, num_p num_fft_b, uint64_t count);
 
 #endif
