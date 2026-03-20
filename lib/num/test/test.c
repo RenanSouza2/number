@@ -2723,7 +2723,8 @@ void test_fuzz_num_ssm_mul(bool show)
     TEST_FUZZ_NUM_SSM_MUL(7, 19, 17, 100)
     TEST_FUZZ_NUM_SSM_MUL(8, 32, 19, 100)
     TEST_FUZZ_NUM_SSM_MUL(9, 1000, 500, 10)
-    TEST_FUZZ_NUM_SSM_MUL(10, 5000, 5000, 1)
+    // TEST_FUZZ_NUM_SSM_MUL(10, 5000, 5000, 1)
+    TEST_FUZZ_NUM_SSM_MUL(11, 20000, 20000, 1)
 
     #undef TEST_FUZZ_NUM_SSM_MUL
     
@@ -2873,10 +2874,10 @@ void test_num(void)
 
     // test_fuzz_num_ssm_sh(show);
     // test_fuzz_num_ssm_fft(show);
+    test_fuzz_num_ssm_fft_round_trip(show);
     test_fuzz_num_ssm_mul(show);
     test_fuzz_num_bz_div(show);
 
-    test_fuzz_num_ssm_fft_round_trip(show);
 
     TEST_ASSERT_MEM_EMPTY
 }

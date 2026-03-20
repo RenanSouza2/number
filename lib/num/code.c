@@ -520,7 +520,7 @@ static void num_span(num_p num_res, num_p num, uint64_t pos_init, uint64_t pos_m
         .chunk = &num->chunk[pos_init],
         .cannot_expand = true
     };
-    while(num_normalize(num_res));
+    // while(num_normalize(num_res));
 }
 
 static void num_static(num_p num, uint64_t chunk[], uint64_t size)
@@ -1703,17 +1703,17 @@ num_p num_mul_ssm_finish(num_p num_fft_1, num_p num_fft_2, uint64_t count)
     CLU_HANDLER_IS_SAFE(num_fft_1)
     CLU_HANDLER_IS_SAFE(num_fft_2)
 
-    printf("\nbegin");
-    printf("\ncount: %lu", count);
+    tprintf("begin");
+    tprintf("count: %lu", count);
     ssm_params_t params = ssm_get_params(count);
     while(ssm_is_recursive(params.n))
     {
         tprintf("params.M: %lu", params.M);
-        printf("\nparams.n: %lu", params.n);
+        tprintf("params.n: %lu", params.n);
         params = ssm_get_params_wrap(params.n);
     }
     tprintf("params.M: %lu", params.M);
-    printf("\nparams.n: %lu", params.n);
+    tprintf("params.n: %lu", params.n);
 
     num_ssm_pointwise_product(num_fft_1, num_fft_2, params.n);
     return num_mul_ssm_bwd_transform(num_fft_1, count);
