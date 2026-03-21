@@ -81,7 +81,7 @@ void time_1(uint64_t begin, uint64_t end)
     num_free(num_2);
 }
 
-void ssm_params_display(ssm_params_t p)
+void ssm_params_display_main(ssm_params_t p)
 {
     printf("\t" U64P() "", p.M);
     printf("\t" U64P() "", p.K);
@@ -101,13 +101,13 @@ void recursive_depth(uint64_t count)
 
     printf("\t" U64P() "\t" U64P() "", i, n);
 
-    ssm_params_display(p);
+    ssm_params_display_main(p);
     n = p.n;
     while(ssm_is_recursive(n))
     {
         ssm_params_t p1 = ssm_get_params_wrap(n);
         n = p1.n;
-        ssm_params_display(p1);
+        ssm_params_display_main(p1);
     }
 }
 

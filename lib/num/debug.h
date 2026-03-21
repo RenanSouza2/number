@@ -73,7 +73,7 @@ void num_ssm_sub_mod(
 );
 void num_ssm_opposite(num_p num, uint64_t pos, uint64_t n);
 void num_ssm_pad(num_p num_res, num_p num, ssm_params_p p);
-void num_ssm_depad_no_wrap(num_p num, ssm_params_p p);
+num_p num_ssm_depad_no_wrap(num_p num, ssm_params_p p);
 void num_ssm_depad_wrap(num_p num_res, num_p num, ssm_params_p p, uint64_t n0);
 void num_ssm_shl(
     num_p num_res,
@@ -97,7 +97,6 @@ void num_ssm_fft_fwd(num_p num, ssm_params_p p);
 void num_ssm_fft_inv(num_p num, ssm_params_p p);
 void num_ssm_mul_rec(num_p num_1, num_p num_2, uint64_t pos, uint64_t n);
 void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n);
-num_p ssm_get_buffer_wrap(uint64_t n);
 
 num_p num_mul_classic(num_p num_1, num_p num_2);
 num_p num_mul_ssm(num_p num_1, num_p num_2);

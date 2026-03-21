@@ -2682,26 +2682,16 @@ void test_fuzz_num_ssm_mul(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_FUZZ_NUM_SSM_MUL_COUNT(COUNT_1, COUNT_2)           \
-    {                                                               \
-        num_p num_1 = num_create_rand(COUNT_1);                     \
-        num_p num_2 = num_create_rand(COUNT_2);                     \
-        num_p num_res_1 = num_mul_ssm(                              \
-            num_copy(num_1),                                        \
-            num_copy(num_2)                                         \
-        );                                                          \
-        num_p num_res_2 = num_mul_classic(                          \
-            num_copy(num_1),                                        \
-            num_copy(num_2)                                         \
-        );                                                          \
-        if(!num_eq_dbg(num_copy(num_res_1), num_copy(num_res_2)))   \
-        {                                                           \
-            assert(false);                                          \
-        }                                                           \
-        num_free(num_1);                                            \
-        num_free(num_2);                                            \
-        num_free(num_res_1);                                        \
-        num_free(num_res_2);                                        \
+    #define TEST_FUZZ_NUM_SSM_MUL_COUNT(COUNT_1, COUNT_2)   \
+    {                                                       \
+        num_p num_1 = num_create_rand(COUNT_1);             \
+        num_p num_2 = num_create_rand(COUNT_2);             \
+        num_p num_res_1 = num_mul_ssm(                      \
+            num_copy(num_1),                                \
+            num_copy(num_2)                                 \
+        );                                                  \
+        num_p num_res_2 = num_mul_classic(num_1, num_2);    \
+        assert(num_eq_dbg(num_res_1, num_res_2));           \
     }
 
     #define TEST_FUZZ_NUM_SSM_MUL(TAG, COUNT_1, COUNT_2, MAX)   \
@@ -2709,7 +2699,9 @@ void test_fuzz_num_ssm_mul(bool show)
         TEST_CASE_OPEN_TIMEOUT(TAG, 0)                          \
         {                                                       \
             for(uint64_t i=0; i<MAX; i++)                       \
+            {                                                   \
                 TEST_FUZZ_NUM_SSM_MUL_COUNT(COUNT_1, COUNT_2)   \
+            }                                                   \
         }                                                       \
         TEST_CASE_CLOSE                                         \
     }

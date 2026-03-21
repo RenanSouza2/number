@@ -1198,22 +1198,23 @@ void num_ssm_pad(num_p num_res, num_p num, ssm_params_p p)
 // Separate number to a base 2^(64*M)
 // Each place will be represented in n chunks
 // the final vector is padded to K places
-void num_ssm_depad_no_wrap(num_p num, ssm_params_p p)
+num_p num_ssm_depad_no_wrap(num_p num, ssm_params_p p)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
 
-    for(uint64_t i=1; i<p->K; i++)
+    // TODO: impove size estimation
+    num_p num_res = num_create(0, 0);
+    for(uint64_t i=0; i<p->K; i++)
     {
         for(uint64_t j=0; j<p->n; j++)
         {
             uint64_t value = num->chunk[p->n * i + j];
-            num->chunk[p->n * i + j] = 0;
-
-            num = num_add_uint_offset(num, p->M * i + j, value);
+            num_res = num_add_uint_offset(num_res, p->M * i + j, value);
         }
     }
-    while(num_normalize(num));
+    num_free(num);
+    return num_res;
 }
 
 // Separate number to a base 2^(64*b)
@@ -1691,11 +1692,7 @@ num_p num_mul_ssm_bwd_transform(num_p num_fft, uint64_t count)
     tprintf("params.M: %lu", params.M);
 
     num_ssm_fft_inv(num_tmp, &params);
-    num_ssm_depad_no_wrap(num_tmp, &params);
-
-    num_p num_res = num_copy(num_tmp);
-    num_free(num_tmp);
-    return num_res;
+    return num_ssm_depad_no_wrap(num_tmp, &params);
 }
 
 num_p num_mul_ssm_finish(num_p num_fft_1, num_p num_fft_2, uint64_t count)
