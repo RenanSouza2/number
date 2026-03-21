@@ -1806,7 +1806,9 @@ num_p num_sqr_ssm(num_p num)
         params = ssm_get_params_wrap(params.n);
     }
 
-    for(uint64_t i=0; i<params.K; i++)
+    uint64_t block_count = num_fft->size / params.n;
+    assert(block_count * params.n == num_fft->size);
+    for(uint64_t i=0; i<block_count; i++)
     {
         num_ssm_sqr_mod_span(num_fft, i * params.n, params.n);
     }

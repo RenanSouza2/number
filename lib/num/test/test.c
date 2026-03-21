@@ -2660,9 +2660,9 @@ void test_fuzz_num_ssm_sqr(bool show)
         TEST_CASE_CLOSE                             \
     }
 
-    TEST_FUZZ_NUM_SSM_SQR(8, 500, 100)
-    TEST_FUZZ_NUM_SSM_SQR(9, 1000, 10)
-    TEST_FUZZ_NUM_SSM_SQR(10, 5000, 2)
+    TEST_FUZZ_NUM_SSM_SQR(1, 500, 100)
+    TEST_FUZZ_NUM_SSM_SQR(2, 1000, 10)
+    TEST_FUZZ_NUM_SSM_SQR(3, 5000, 2)
     // TEST_FUZZ_NUM_SSM_MUL(11, 20000, 20000, 1)
 
     #undef TEST_FUZZ_NUM_SSM_MUL
