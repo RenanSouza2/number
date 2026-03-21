@@ -457,15 +457,6 @@ sig_num_t sig_num_shr(sig_num_t sig, uint64_t bits)
 }
 
 
-sig_num_t sig_num_mul_prepare(sig_num_t sig_num, uint64_t count)
-{
-    CLU_SIG_IS_SAFE(sig_num);
-    assert(sig_num.num);
-
-    sig_num.num = num_mul_ssm_fwd_transform(sig_num.num, count);
-    return sig_num;
-}
-
 
 sig_num_t sig_num_opposite(sig_num_t sig)
 {
@@ -511,6 +502,24 @@ sig_num_t sig_num_sub(sig_num_t sig_1, sig_num_t sig_2)
 uint64_t sig_signal_mul(uint64_t signal_1, uint64_t signal_2)
 {
     return signal_1 & signal_2 ? POSITIVE : NEGATIVE;
+}
+
+sig_num_t sig_num_mul_prepare(sig_num_t sig_num, uint64_t count)
+{
+    CLU_SIG_IS_SAFE(sig_num);
+
+    sig_num.num = num_mul_ssm_fwd_transform(sig_num.num, count);
+    return sig_num;
+}
+
+sig_num_t sig_num_mul_finish(sig_num_t sig_num_1, sig_num_t sig_num_2, uint64_t count)
+{
+    CLU_SIG_IS_SAFE(sig_num_1);
+    CLU_SIG_IS_SAFE(sig_num_2);
+
+    num_p num = num_mul_ssm_finish(sig_num_1.num, sig_num_2.num, count);
+    uint64_t signal = sig_signal_mul(sig_num_1.signal, sig_num_2.signal);
+    return sig_num_create(signal, num);
 }
 
 sig_num_t sig_num_mul(sig_num_t sig_1, sig_num_t sig_2)

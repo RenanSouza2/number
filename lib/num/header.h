@@ -51,6 +51,6 @@ num_p num_base_from(num_p num, uint64_t base);
 
 num_p num_mul_ssm_fwd_transform(num_p num, uint64_t count);
 num_p num_mul_ssm_bwd_transform(num_p num_fft, uint64_t count);
-num_p num_mul_ssm_finish(num_p num_fft_a, num_p num_fft_b, uint64_t count);
+num_p num_mul_ssm_finish(num_p num_fft_1, num_p num_fft_2, uint64_t count);
 
 #endif

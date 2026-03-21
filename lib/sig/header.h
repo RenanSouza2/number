@@ -23,8 +23,6 @@ sig_num_t sig_num_copy(sig_num_t sig);
 sig_num_t sig_num_head_grow(sig_num_t sig, uint64_t count);
 sig_num_t sig_num_head_trim(sig_num_t sig, uint64_t count);
 
-uint64_t sig_signal_mul(uint64_t signal_1, uint64_t signal_2);
-
 bool sig_num_is_zero(sig_num_t sig);
 int64_t sig_num_cmp(sig_num_t sig_1, sig_num_t sig_2);
 
@@ -34,6 +32,8 @@ sig_num_t sig_num_shr(sig_num_t sig, uint64_t bits);
 sig_num_t sig_num_opposite(sig_num_t sig);
 sig_num_t sig_num_add(sig_num_t sig_1, sig_num_t sig_2);
 sig_num_t sig_num_sub(sig_num_t sig_1, sig_num_t sig_2);
+sig_num_t sig_num_mul_prepare(sig_num_t sig_num, uint64_t count);
+sig_num_t sig_num_mul_finish(sig_num_t sig_num_1, sig_num_t sig_num_2, uint64_t count);
 sig_num_t sig_num_mul(sig_num_t sig_1, sig_num_t sig_2);
 sig_num_t sig_num_sqr(sig_num_t sig);
 sig_num_t sig_num_div(sig_num_t sig_1, sig_num_t sig_2);
