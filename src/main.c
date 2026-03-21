@@ -21,13 +21,18 @@ int64_t get_arg(int argc, char** argv)
 
 
 
-num_p num_generate(uint64_t max, uint64_t salt)
+num_p num_generate_1_step(num_p num, uint64_t salt)
+{
+    num = num_add(num, num_wrap(salt));
+    return num_sqr(num);
+}
+
+num_p num_generate_1(uint64_t max, uint64_t salt)
 {
     num_p num = num_wrap(2);
     for(uint64_t i=0; i<max; i++)
     {
-        num = num_add(num, num_wrap(salt));
-        num = num_sqr(num);
+        num = num_generate_1_step(num, salt);
     }
     return num;
 }
@@ -50,20 +55,19 @@ num_p num_generate_2(uint64_t index, uint64_t salt)
 void time_1(uint64_t begin, uint64_t end)
 {
     assert(begin);
-    num_p num_1 = num_generate(begin, 1);
-    num_p num_2 = num_generate(begin - 1, 2);
+    num_p num_1 = num_generate_1(begin, 1);
+    num_p num_2 = num_generate_1(begin - 1, 2);
     for(uint64_t i=begin; i<end; i++)
     {
         printf("\n" U64P() "", i);
 
         TIME_SETUP
-        num_1 = num_add(num_1, num_wrap(1));
-        num_1 = num_sqr(num_1);
+        num_1 = num_generate_1_step(num_1, 1);
         TIME_END(t1)
         printf("\t%10.3f", (double)t1 / 1e9);
 
-        num_2 = num_add(num_2, num_wrap(2));
-        num_2 = num_sqr(num_2);
+        TIME_RESET
+        num_2 = num_generate_1_step(num_2, 2);
         TIME_END(t2)
         printf("\t%10.3f", (double)t2 / 1e9);
 
@@ -92,7 +96,7 @@ void time_2(int argc, char** argv, uint64_t max, uint64_t jumps)
     uint64_t id = argc > 1 ? (uint64_t)get_arg(argc, argv) : 0;
     // printf("\nid: " U64P() "", id);
 
-    num_p num_1 = num_generate(max, 2);
+    num_p num_1 = num_generate_1(max, 2);
     // num_display_tag("num_1", num_1);
 
     // printf("\nN\ttime\tM\tK\tQ\tn\tdepth\tlast_n");
@@ -193,6 +197,49 @@ void time_3(void)
         printf("\t%.5f", (double)t3 / 1e9);
         num_free(num_res);
     }
+}
+
+void time_4(void)
+{
+    uint64_t begin = 20;
+    uint64_t end = 28;
+
+    num_p num_1 = num_generate_1(begin, 1);
+    num_p num_2 = num_generate_1(begin - 1, 2);
+    for(uint64_t i=begin; i<end; i++)
+    {
+
+        num_1 = num_generate_1_step(num_1, 1);
+        num_2 = num_generate_1_step(num_2, 2);
+
+        num_p num_1_copy = num_copy(num_1);
+        num_p num_2_copy = num_copy(num_2);
+
+        uint64_t count = num_1->count + num_2->count;
+
+        printf("\n" U64P() "\t" U64P(16) "", i, count);
+
+        TIME_SETUP
+        num_1_copy = num_mul_ssm_fwd_transform(num_1_copy, count);
+        TIME_END(t1)
+        printf("\t%10.3f", (double)t1 / 1e9);
+
+        TIME_RESET
+        num_2_copy = num_mul_ssm_fwd_transform(num_2_copy, count);
+        TIME_END(t2)
+        printf("\t%10.3f", (double)t2 / 1e9);
+
+        // TIME_RESET
+        num_p num = num_mul_ssm_finish(num_1_copy, num_2_copy, count);
+        // TIME_END(t3)
+        // printf("\t%10.3f", (double)t3 / 1e9);
+
+        num_free(num);
+
+        // num_free(num);
+    }
+    num_free(num_1);
+    num_free(num_2);
 }
 
 
@@ -364,7 +411,7 @@ void mod_num_fib(mod_num_p mod_a, mod_num_p mod_b)
 void time_dec(void)
 {
     printf("\n");
-    num_p num = num_generate(20, 2);
+    num_p num = num_generate_1(20, 2);
     printf("\ngenerated\n");
     printf("\n");
     uint64_t begin = get_time();
@@ -624,8 +671,8 @@ void sqrt_2(void)
 #ifdef DEBUG
 void mem_1(uint64_t index)
 {
-    num_p num_1 = num_generate(index, 2);
-    num_p num_2 = num_generate(index, 3);
+    num_p num_1 = num_generate_1(index, 2);
+    num_p num_2 = num_generate_1(index, 3);
     
     clu_clean_max_occupancy();
     uint64_t count_bef = clu_get_register_count();
@@ -647,8 +694,8 @@ void mem_1(uint64_t)
 
 
 
-int main(int argc, char** argv)
-// int main()
+// int main(int argc, char** argv)
+int main()
 {
     setbuf(stdout, NULL);
     srand((unsigned int)time(NULL));
@@ -661,8 +708,9 @@ int main(int argc, char** argv)
     // time_1(16, 29);
     // time_1(16, 17);
     // time_2(argc, argv, 20);
-    time_2_total(argc, argv);
+    // time_2_total(argc, argv);
     // time_3();
+    time_4();
     // fibonacci();
     // fibonacci_2(16, 23);
     // fibonacci_3(16, 40);
