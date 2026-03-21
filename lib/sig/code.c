@@ -457,6 +457,15 @@ sig_num_t sig_num_shr(sig_num_t sig, uint64_t bits)
 }
 
 
+sig_num_t sig_num_mul_prepare(sig_num_t sig_num, uint64_t count)
+{
+    CLU_SIG_IS_SAFE(sig_num);
+    assert(sig_num.num);
+
+    sig_num.num = num_mul_ssm_fwd_transform(sig_num.num, count);
+    return sig_num;
+}
+
 
 sig_num_t sig_num_opposite(sig_num_t sig)
 {
