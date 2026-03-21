@@ -1628,6 +1628,28 @@ num_p num_mul_ssm_fwd_transform(num_p num, uint64_t count)
     return num_fft;
 }
 
+void num_ssm_mul_mod_span(num_p num_1, num_p num_2, uint64_t pos, uint64_t n)
+{
+    CLU_HANDLER_IS_SAFE(num_1)
+    CLU_HANDLER_IS_SAFE(num_2)
+    assert(num_1)
+    assert(num_2)
+
+    num_t num_t_1, num_t_2;
+    num_span(&num_t_1, num_1, pos, pos + n);
+    num_span(&num_t_2, num_2, pos, pos + n);
+
+    // todo get num aux as input
+    uint64_t chunk[2 * n];
+    num_t num_aux;
+    num_static(&num_aux, chunk, 2 * n);
+    num_mul_classic_buffer(&num_aux, &num_t_1, &num_t_2);
+
+    memmove(&num_aux.chunk[n], &num_aux.chunk[n-1], n * sizeof(uint64_t));
+    num_aux.chunk[n-1] = 0;
+    num_ssm_sub_mod(num_1, pos, &num_aux, 0, &num_aux, n, n);
+}
+
 void num_ssm_pointwise_product(num_p num_fft_1, num_p num_fft_2, uint64_t n)
 {
     CLU_HANDLER_IS_SAFE(num_fft_1)
@@ -1639,7 +1661,7 @@ void num_ssm_pointwise_product(num_p num_fft_1, num_p num_fft_2, uint64_t n)
     assert(block_count * n == num_fft_1->size);
     for(uint64_t i=0; i<block_count; i++)
     {
-        num_ssm_mul_rec(num_fft_1, num_fft_2, i * n, n);
+        num_ssm_mul_mod_span(num_fft_1, num_fft_2, i * n, n);
     }
 }
 
@@ -1703,102 +1725,13 @@ num_p num_mul_ssm_finish(num_p num_fft_1, num_p num_fft_2, uint64_t count)
 
 
 
-void num_ssm_mul_rec(num_p num_1, num_p num_2, uint64_t pos, uint64_t n)
-{
-    CLU_HANDLER_IS_SAFE(num_1)
-    CLU_HANDLER_IS_SAFE(num_2)
-    assert(num_1)
-    assert(num_2)
-
-    num_t num_t_1, num_t_2;
-    num_span(&num_t_1, num_1, pos, pos + n);
-    num_span(&num_t_2, num_2, pos, pos + n);
-
-    if(ssm_is_recursive(n))
-    {
-        num_mul_ssm_wrap(&num_t_1, &num_t_2, n);
-        return;
-    }
-
-    // todo get num aux as input
-    uint64_t chunk[2 * n];
-    num_t num_aux;
-    num_static(&num_aux, chunk, 2 * n);
-    num_mul_classic_buffer(&num_aux, &num_t_1, &num_t_2);
-
-    memmove(&num_aux.chunk[n], &num_aux.chunk[n-1], n * sizeof(uint64_t));
-    num_aux.chunk[n-1] = 0;
-    num_ssm_sub_mod(num_1, pos, &num_aux, 0, &num_aux, n, n);
-}
-
-void num_mul_ssm_point(num_p num_aux_1, num_p num_aux_2, ssm_params_p p)
-{
-    CLU_HANDLER_IS_SAFE(num_aux_1)
-    CLU_HANDLER_IS_SAFE(num_aux_2)
-    assert(num_aux_1)
-    assert(num_aux_2)
-
-    for(uint64_t i=0; i<p->K; i++)
-    {
-        num_ssm_mul_rec(num_aux_1, num_aux_2, i * p->n, p->n);
-    }
-
-    num_ssm_fft_inv(num_aux_1, p);
-}
-
-// Keeps NUM_1 NUM_2
-void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n)
-{
-    CLU_HANDLER_IS_SAFE(num_1)
-    CLU_HANDLER_IS_SAFE(num_2)
-    assert(num_1)
-    assert(num_2)
-
-    ssm_params_t p = ssm_get_params_wrap(n);
-    uint64_t chunk_1[p.n * p.K], chunk_2[p.n * p.K];
-    num_t num_aux_1, num_aux_2;
-    num_static(&num_aux_1, chunk_1, p.n * p.K);
-    num_static(&num_aux_2, chunk_2, p.n * p.K);
-    num_mul_ssm_fwd_step_buffer(&num_aux_1, num_1, &p);
-    num_mul_ssm_fwd_step_buffer(&num_aux_2, num_2, &p);
-
-    num_mul_ssm_point(&num_aux_1, &num_aux_2, &p);
-    num_ssm_depad_wrap(num_1, &num_aux_1, &p, n);
-}
-
-num_p num_mul_ssm_final_steps(num_p num_aux_1, num_p num_aux_2, ssm_params_p p
-)
-{
-    CLU_HANDLER_IS_SAFE(num_aux_1);
-    CLU_HANDLER_IS_SAFE(num_aux_2);
-    assert(num_aux_1);
-    assert(num_aux_2);
-
-    num_mul_ssm_point(num_aux_1, num_aux_2, p);
-    num_ssm_depad_no_wrap(num_aux_1, p);
-
-    num_p num_res = num_copy(num_aux_1);
-    num_free(num_aux_1);
-    return num_res;
-}
-
-
-
-void num_sqr_ssm_wrap(num_p num, uint64_t n);
-
-void num_ssm_sqr_rec(num_p num, uint64_t pos, uint64_t n)
+void num_ssm_sqr_mod_span(num_p num, uint64_t pos, uint64_t n)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
 
     num_t num_aux_piece;
     num_span(&num_aux_piece, num, pos, pos + n);
-
-    if(ssm_is_recursive(n))
-    {
-        num_sqr_ssm_wrap(&num_aux_piece, n);
-        return;
-    }
 
     uint64_t chunk[2 * n];
     num_t num_aux;
@@ -1808,49 +1741,6 @@ void num_ssm_sqr_rec(num_p num, uint64_t pos, uint64_t n)
     memmove(&num_aux.chunk[n], &num_aux.chunk[n-1], n * sizeof(uint64_t));
     num_aux.chunk[n-1] = 0;
     num_ssm_sub_mod(num, pos, &num_aux, 0, &num_aux, n, n);
-}
-
-// Keeps NUM_1 NUM_2
-void num_sqr_ssm_wrap(num_p num, uint64_t n)
-{
-    CLU_HANDLER_IS_SAFE(num)
-    assert(num)
-
-    ssm_params_t p = ssm_get_params_wrap(n);
-    uint64_t chunk[p.n * p.K];
-    num_t num_aux;
-    num_static(&num_aux, chunk, p.n * p.K);
-    num_mul_ssm_fwd_step_buffer(&num_aux, num, &p);
-
-    for(uint64_t i=0; i<p.K; i++)
-        num_ssm_sqr_rec(&num_aux, i * p.n, p.n);
-
-    num_ssm_fft_inv(&num_aux, &p);
-    num_ssm_depad_wrap(num, &num_aux, &p, n);
-}
-
-static void num_sqr_ssm_buffer(num_p num_res, num_p num)
-{
-    CLU_HANDLER_IS_SAFE(num_res)
-    CLU_HANDLER_IS_SAFE(num)
-    assert(num_res)
-    assert(num)
-
-    ssm_params_t p = ssm_get_params(num->count + num->count);
-    num_p num_aux = num_create(p.n * p.K, 0);
-    num_mul_ssm_fwd_step_buffer(num_aux, num, &p);
-
-    for(uint64_t i=0; i<p.K; i++)
-        num_ssm_sqr_rec(num_aux, i * p.n, p.n);
-
-    num_ssm_fft_inv(num_aux, &p);
-    num_aux = num_ssm_depad_no_wrap(num_aux, &p);
-
-    num_set_count(num_res, 0);
-    memcpy(num_res->chunk, num_aux->chunk, num_aux->count * sizeof(uint64_t));
-    num_res->count = num_aux->count;
-
-    num_free(num_aux);
 }
 
 
@@ -1907,10 +1797,21 @@ num_p num_sqr_ssm(num_p num)
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
 
-    num_p num_res = num_create(2 * num->count, 0);
-    num_sqr_ssm_buffer(num_res, num);
-    num_free(num);
-    return num_res;
+    uint64_t count = 2 * num->count;
+    num_p num_fft = num_mul_ssm_fwd_transform(num, count);
+
+    ssm_params_t params = ssm_get_params(count);
+    while(ssm_is_recursive(params.n))
+    {
+        params = ssm_get_params_wrap(params.n);
+    }
+
+    for(uint64_t i=0; i<params.K; i++)
+    {
+        num_ssm_sqr_mod_span(num_fft, i * params.n, params.n);
+    }
+        
+    return num_mul_ssm_bwd_transform(num_fft, count);
 }
 
 
