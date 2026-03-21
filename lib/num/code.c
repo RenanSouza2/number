@@ -2108,7 +2108,7 @@ static num_p num_div_mod_bz(num_p num_1, num_p num_2)
     assert(num_1)
     assert(num_2)
 
-    uint64_t frame_count = stdc_bit_width(num_2->count);
+    uint64_t frame_count = stdc_bit_width(num_2->count) + 1;
     bz_frame_t f[frame_count];
     memset(f, 0, sizeof(f));
 
