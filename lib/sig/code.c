@@ -29,6 +29,13 @@ sig_num_t sig_num_create_immed(uint64_t signal, uint64_t n, ...)
     return sig_num_create_variadic(signal, n, &args);
 }
 
+sig_num_t sig_num_create_rand(uint64_t count)
+{
+    num_p num = num_create_rand(count);
+    uint64_t signal = rand_64() & 1 ? POSITIVE : NEGATIVE;
+    return sig_num_create(signal, num);
+}
+
 
 
 bool sig_num_inner(sig_num_t sig_1, sig_num_t sig_2)
@@ -51,7 +58,7 @@ bool sig_num_inner(sig_num_t sig_1, sig_num_t sig_2)
     return true;
 }
 
-static bool sig_num_eq_dbg(sig_num_t sig_1, sig_num_t sig_2)
+bool sig_num_eq_dbg(sig_num_t sig_1, sig_num_t sig_2)
 {
     CLU_SIG_IS_SAFE(sig_1);
     CLU_SIG_IS_SAFE(sig_2);
@@ -504,31 +511,6 @@ uint64_t sig_signal_mul(uint64_t signal_1, uint64_t signal_2)
     return signal_1 & signal_2 ? POSITIVE : NEGATIVE;
 }
 
-sig_num_ssm_t sig_num_mul_prepare(sig_num_t sig, uint64_t count)
-{
-    CLU_SIG_IS_SAFE(sig);
-
-    return (sig_num_ssm_t)
-    {
-        .signal = sig.signal,
-        .num_ssm = num_mul_prepare(sig.num, count)
-    };
-}
-
-sig_num_t sig_num_mul_finish(sig_num_t sig_1, sig_num_ssm_t sig_ssm_2)
-{
-    CLU_SIG_IS_SAFE(sig_1);
-
-    num_p num = num_mul_finish(sig_1.num, sig_ssm_2.num_ssm);
-    uint64_t signal = sig_signal_mul(sig_1.signal, sig_ssm_2.signal);
-    return sig_num_create(signal, num);
-}
-
-void sig_num_ssm_free(sig_num_ssm_t sig_ssm)
-{
-    num_ssm_free(sig_ssm.num_ssm);
-}
-
 sig_num_t sig_num_mul(sig_num_t sig_1, sig_num_t sig_2)
 {
     CLU_SIG_IS_SAFE(sig_1);
@@ -555,6 +537,33 @@ sig_num_t sig_num_div(sig_num_t sig_1, sig_num_t sig_2)
     uint64_t signal_res = sig_signal_mul(sig_1.signal, sig_2.signal);
     num_p num_res = num_div(sig_1.num, sig_2.num);
     return sig_num_create(signal_res, num_res);
+}
+
+
+
+sig_num_ssm_t sig_num_mul_prepare(sig_num_t sig, uint64_t count)
+{
+    CLU_SIG_IS_SAFE(sig);
+
+    return (sig_num_ssm_t)
+    {
+        .signal = sig.signal,
+        .num_ssm = num_mul_prepare(sig.num, count)
+    };
+}
+
+sig_num_t sig_num_mul_finish(sig_num_t sig_1, sig_num_ssm_t sig_ssm_2)
+{
+    CLU_SIG_IS_SAFE(sig_1);
+
+    num_p num = num_mul_finish(sig_1.num, sig_ssm_2.num_ssm);
+    uint64_t signal = sig_signal_mul(sig_1.signal, sig_ssm_2.signal);
+    return sig_num_create(signal, num);
+}
+
+void sig_num_ssm_free(sig_num_ssm_t sig_ssm)
+{
+    num_ssm_free(sig_ssm.num_ssm);
 }
 
 
