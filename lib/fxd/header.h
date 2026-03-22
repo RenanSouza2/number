@@ -27,6 +27,8 @@ fxd_num_t fxd_num_shr(fxd_num_t fxd, uint64_t value);
 
 fxd_num_t fxd_num_add(fxd_num_t fxd_1, fxd_num_t fxd_2);
 fxd_num_t fxd_num_sub(fxd_num_t fxd_1, fxd_num_t fxd_2);
+fxd_num_t fxd_num_mul_prepare(fxd_num_t fxd_num, uint64_t count);
+fxd_num_t fxd_num_mul_finish(fxd_num_t fxd_num_1, fxd_num_t fxd_num_2, uint64_t count);
 fxd_num_t fxd_num_mul(fxd_num_t fxd_1, fxd_num_t fxd_2);
 fxd_num_t fxd_num_sqr(fxd_num_t fxd);
 fxd_num_t fxd_num_div(fxd_num_t fxd_1, fxd_num_t fxd_2);

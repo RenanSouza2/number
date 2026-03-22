@@ -350,6 +350,23 @@ fxd_num_t fxd_num_sub(fxd_num_t fxd_1, fxd_num_t fxd_2) // TODO test
     return fxd_1;
 }
 
+fxd_num_t fxd_num_mul_prepare(fxd_num_t fxd_num, uint64_t count)
+{
+    CLU_FXD_IS_SAFE(fxd_num);
+
+    fxd_num.sig = sig_num_mul_prepare(fxd_num.sig, count);
+    return fxd_num;
+}
+
+fxd_num_t fxd_num_mul_finish(fxd_num_t fxd_num_1, fxd_num_t fxd_num_2, uint64_t count)
+{
+    CLU_FXD_IS_SAFE(fxd_num_1);
+    CLU_FXD_IS_SAFE(fxd_num_2);
+
+    sig_num_t sig = sig_num_mul_finish(fxd_num_1.sig, fxd_num_2.sig, count);
+    return fxd_num_create(sig, fxd_num_1.pos);
+}
+
 fxd_num_t fxd_num_mul(fxd_num_t fxd_1, fxd_num_t fxd_2) // TODO test
 {
     CLU_FXD_IS_SAFE(fxd_1);

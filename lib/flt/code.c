@@ -561,14 +561,30 @@ flt_num_t flt_num_sub(flt_num_t flt_1, flt_num_t flt_2) // TODO TEST
     return flt_num_add(flt_1, flt_2);
 }
 
+flt_num_t flt_num_mul_prepare(flt_num_t flt, uint64_t count)
+{
+    CLU_FLT_IS_SAFE(flt);
+
+    flt.sig = sig_num_mul_prepare(flt.sig, count);
+    return flt;
+}
+
+flt_num_t flt_num_mul_finish(flt_num_t flt_1, flt_num_t flt_2, uint64_t count)
+{
+    CLU_FLT_IS_SAFE(flt_1);
+    CLU_FLT_IS_SAFE(flt_2);
+
+    flt_1.sig = sig_num_mul_finish(flt_1.sig, flt_2.sig, count);
+    flt_1.exponent = int64_add(flt_1.exponent, flt_2.exponent);
+    return flt_num_normalize(flt_1);
+}
+
 flt_num_t flt_num_mul(flt_num_t flt_1, flt_num_t flt_2) // TODO TEST
 {
     CLU_FLT_IS_SAFE(flt_1);
     CLU_FLT_IS_SAFE(flt_2);
 
-    uint64_t pos = 0;
     flt_1.exponent = int64_add(flt_1.exponent, flt_2.exponent);
-    flt_1.exponent = int64_add(flt_1.exponent, (int64_t)pos);
     flt_1.sig = sig_num_mul(flt_1.sig, flt_2.sig);
     return flt_num_normalize(flt_1);
 }

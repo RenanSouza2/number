@@ -30,6 +30,8 @@ flt_num_t flt_num_shr(flt_num_t flt, uint64_t bits);
 
 flt_num_t flt_num_add(flt_num_t flt_1, flt_num_t flt_2);
 flt_num_t flt_num_sub(flt_num_t flt_1, flt_num_t flt_2);
+flt_num_t flt_num_mul_prepare(flt_num_t flt, uint64_t count);
+flt_num_t flt_num_mul_finish(flt_num_t flt_1, flt_num_t flt_2, uint64_t count);
 flt_num_t flt_num_mul(flt_num_t flt_1, flt_num_t flt_2);
 flt_num_t flt_num_pow(flt_num_t flt, int64_t value);
 flt_num_t flt_num_sqr(flt_num_t flt);
