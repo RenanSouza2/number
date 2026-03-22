@@ -27,12 +27,12 @@ Here is a list of targeted "middle tests" to investigate the internal functions 
 6.  Perform the forward transform on the classic result: `fwd_C_classic = fwd_transform(C)`.
 7.  **Assert that `fwd_C_pointwise` is equal to `fwd_C_classic`**. This directly verifies the convolution theorem. If this fails, the issue is almost certainly in the pointwise multiplication logic itself.
 
-### 3. Verify the `num_mul_ssm_finish` function
+### 3. Verify the `num_mul_finish` function
 
-**Why it's useful:** After the inverse transform, you get a sequence of coefficients that need to be recombined with carries to form the final, large integer. The `num_mul_ssm_finish` function likely does this. An error here would mean that even with a perfect transform and pointwise multiplication, the final result is assembled incorrectly.
+**Why it's useful:** After the inverse transform, you get a sequence of coefficients that need to be recombined with carries to form the final, large integer. The `num_mul_finish` function likely does this. An error here would mean that even with a perfect transform and pointwise multiplication, the final result is assembled incorrectly.
 
 **How to test it:**
-1.  Construct a synthetic, known input for `num_mul_ssm_finish`. This input represents the coefficients of the result polynomial before carry propagation. For example, create a `num_p` that represents `[0, 1, 1, 0, ...]` which corresponds to `x^2 + x`.
+1.  Construct a synthetic, known input for `num_mul_finish`. This input represents the coefficients of the result polynomial before carry propagation. For example, create a `num_p` that represents `[0, 1, 1, 0, ...]` which corresponds to `x^2 + x`.
 2.  Manually calculate what the final integer value should be. For `x^2 + x` where `x` is the base of your chunks (e.g., `2^64`), the result would be `(2^64)^2 + 2^64`.
-3.  Call `num_mul_ssm_finish` with your synthetic input.
+3.  Call `num_mul_finish` with your synthetic input.
 4.  **Assert that the output of the function matches your manually calculated result.** You can try this with several simple, known inputs to ensure the carry propagation logic is sound.

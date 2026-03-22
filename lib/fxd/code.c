@@ -350,23 +350,6 @@ fxd_num_t fxd_num_sub(fxd_num_t fxd_1, fxd_num_t fxd_2) // TODO test
     return fxd_1;
 }
 
-fxd_num_t fxd_num_mul_prepare(fxd_num_t fxd_num, uint64_t count)
-{
-    CLU_FXD_IS_SAFE(fxd_num);
-
-    fxd_num.sig = sig_num_mul_prepare(fxd_num.sig, count);
-    return fxd_num;
-}
-
-fxd_num_t fxd_num_mul_finish(fxd_num_t fxd_num_1, fxd_num_t fxd_num_2, uint64_t count)
-{
-    CLU_FXD_IS_SAFE(fxd_num_1);
-    CLU_FXD_IS_SAFE(fxd_num_2);
-
-    sig_num_t sig = sig_num_mul_finish(fxd_num_1.sig, fxd_num_2.sig, count);
-    return fxd_num_create(sig, fxd_num_1.pos);
-}
-
 fxd_num_t fxd_num_mul(fxd_num_t fxd_1, fxd_num_t fxd_2) // TODO test
 {
     CLU_FXD_IS_SAFE(fxd_1);
@@ -396,6 +379,28 @@ fxd_num_t fxd_num_div(fxd_num_t fxd_1, fxd_num_t fxd_2) // TODO test
     sig_num_t sig = sig_num_head_grow(fxd_1.sig, fxd_1.pos);
     fxd_1.sig = sig_num_div(sig, fxd_2.sig);
     return fxd_1;
+}
+
+
+
+fxd_num_ssm_t fxd_num_mul_prepare(fxd_num_t fxd, uint64_t count)
+{
+    CLU_FXD_IS_SAFE(fxd);
+
+    return (fxd_num_ssm_t)
+    {
+        .pos = fxd.pos,
+        .sig_ssm = sig_num_mul_prepare(fxd.sig, count)
+    };
+}
+
+fxd_num_t fxd_num_mul_finish(fxd_num_t fxd_1, fxd_num_ssm_t fxd_ssm_2)
+{
+    CLU_FXD_IS_SAFE(fxd_1);
+
+    sig_num_t sig = sig_num_mul_finish(fxd_1.sig, fxd_ssm_2.sig_ssm);
+    sig = sig_num_head_trim(sig, fxd_ssm_2.pos);
+    return fxd_num_create(sig, fxd_1.pos);
 }
 
 

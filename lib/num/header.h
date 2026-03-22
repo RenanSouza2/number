@@ -49,8 +49,8 @@ num_p num_gcd(num_p num_1, num_p num_2);
 num_p num_base_to(num_p num, uint64_t base);
 num_p num_base_from(num_p num, uint64_t base);
 
-num_p num_mul_ssm_fwd_transform(num_p num, uint64_t count);
-num_p num_mul_ssm_bwd_transform(num_p num_fft, uint64_t count);
-num_p num_mul_ssm_finish(num_p num_fft_1, num_p num_fft_2, uint64_t count);
+num_ssm_t num_mul_prepare(num_p num, uint64_t count);
+num_p num_mul_finish(num_p num_1, num_ssm_t num_ssm_2);
+void num_ssm_free(num_ssm_t num_ssm);
 
 #endif

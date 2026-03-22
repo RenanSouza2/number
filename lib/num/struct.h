@@ -16,6 +16,12 @@ STRUCT(num)
     bool cannot_expand;
 };
 
+STRUCT(num_ssm)
+{
+    uint64_t count;
+    num_p num_fft;
+};
+
 STRUCT(ssm_params)
 {
     uint64_t count;

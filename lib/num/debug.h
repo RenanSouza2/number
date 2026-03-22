@@ -95,6 +95,8 @@ void num_ssm_shl_mod(num_p num, uint64_t pos, uint64_t n, uint64_t bits);
 void num_ssm_shr_mod(num_p num, uint64_t pos, uint64_t n, uint64_t bits);
 void num_ssm_fft_fwd(num_p num, ssm_params_p p);
 void num_ssm_fft_inv(num_p num, ssm_params_p p);
+num_p num_mul_ssm_fwd_transform(num_p num, uint64_t count);
+num_p num_mul_ssm_bwd_transform(num_p num_fft, uint64_t count);
 
 num_p num_mul_classic(num_p num_1, num_p num_2);
 num_p num_mul_ssm(num_p num_1, num_p num_2);

@@ -199,48 +199,48 @@ void time_3(void)
     }
 }
 
-void time_4(void)
-{
-    uint64_t begin = 20;
-    uint64_t end = 28;
-
-    num_p num_1 = num_generate_1(begin, 1);
-    num_p num_2 = num_generate_1(begin - 1, 2);
-    for(uint64_t i=begin; i<end; i++)
-    {
-
-        num_1 = num_generate_1_step(num_1, 1);
-        num_2 = num_generate_1_step(num_2, 2);
-
-        num_p num_1_copy = num_copy(num_1);
-        num_p num_2_copy = num_copy(num_2);
-
-        uint64_t count = num_1->count + num_2->count;
-
-        printf("\n" U64P() "\t" U64P(16) "", i, count);
-
-        TIME_SETUP
-        num_1_copy = num_mul_ssm_fwd_transform(num_1_copy, count);
-        TIME_END(t1)
-        printf("\t%10.3f", (double)t1 / 1e9);
-
-        TIME_RESET
-        num_2_copy = num_mul_ssm_fwd_transform(num_2_copy, count);
-        TIME_END(t2)
-        printf("\t%10.3f", (double)t2 / 1e9);
-
-        // TIME_RESET
-        num_p num = num_mul_ssm_finish(num_1_copy, num_2_copy, count);
-        // TIME_END(t3)
-        // printf("\t%10.3f", (double)t3 / 1e9);
-
-        num_free(num);
-
-        // num_free(num);
-    }
-    num_free(num_1);
-    num_free(num_2);
-}
+// void time_4(void)
+// {
+//     uint64_t begin = 20;
+//     uint64_t end = 28;
+//
+//     num_p num_1 = num_generate_1(begin, 1);
+//     num_p num_2 = num_generate_1(begin - 1, 2);
+//     for(uint64_t i=begin; i<end; i++)
+//     {
+//
+//         num_1 = num_generate_1_step(num_1, 1);
+//         num_2 = num_generate_1_step(num_2, 2);
+//
+//         num_p num_1_copy = num_copy(num_1);
+//         num_p num_2_copy = num_copy(num_2);
+//
+//         uint64_t count = num_1->count + num_2->count;
+//
+//         printf("\n" U64P() "\t" U64P(16) "", i, count);
+//
+//         TIME_SETUP
+//         num_1_copy = num_mul_ssm_fwd_transform(num_1_copy, count);
+//         TIME_END(t1)
+//         printf("\t%10.3f", (double)t1 / 1e9);
+//
+//         TIME_RESET
+//         num_2_copy = num_mul_ssm_fwd_transform(num_2_copy, count);
+//         TIME_END(t2)
+//         printf("\t%10.3f", (double)t2 / 1e9);
+//
+//         // TIME_RESET
+//         num_p num = num_mul_finish(num_1_copy, num_2_copy, count);
+//         // TIME_END(t3)
+//         // printf("\t%10.3f", (double)t3 / 1e9);
+//
+//         num_free(num);
+//
+//         // num_free(num);
+//     }
+//     num_free(num_1);
+//     num_free(num_2);
+// }
 
 
 
@@ -710,7 +710,7 @@ int main()
     // time_2(argc, argv, 20);
     // time_2_total(argc, argv);
     // time_3();
-    time_4();
+    // time_4();
     // fibonacci();
     // fibonacci_2(16, 23);
     // fibonacci_3(16, 40);

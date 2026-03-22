@@ -1564,6 +1564,16 @@ ssm_params_t ssm_get_params_wrap(uint64_t n)
     };
 }
 
+uint64_t ssm_get_last_n(uint64_t count)
+{
+    ssm_params_t params = ssm_get_params(count);
+    while(ssm_is_recursive(params.n))
+    {
+        params = ssm_get_params_wrap(params.n);
+    }
+    return params.n;
+}
+
 static void num_mul_ssm_fwd_step_buffer(num_p num_fft_res, num_p num, ssm_params_p params)
 {
     CLU_HANDLER_IS_SAFE(num_fft_res)
@@ -1583,15 +1593,6 @@ num_p num_mul_ssm_fwd_step(num_p num, ssm_params_p params) // TODO: make it cons
     num_p num_fft = num_create(params->n * params->K, 0);
     num_mul_ssm_fwd_step_buffer(num_fft, num, params);
     return num_fft;
-}
-
-void ssm_params_display(ssm_params_t params) // TODO: delete
-{
-    printf("\nparams.count: %lu", params.count);
-    printf("\nparams.M: %lu", params.M);
-    printf("\nparams.K: %lu", params.K);
-    printf("\nparams.Q: %lu", params.Q);
-    printf("\nparams.n: %lu", params.n);
 }
 
 num_p num_mul_ssm_fwd_transform(num_p num, uint64_t count)
@@ -1628,6 +1629,26 @@ num_p num_mul_ssm_fwd_transform(num_p num, uint64_t count)
     return num_fft;
 }
 
+num_ssm_t num_mul_prepare(num_p num, uint64_t count)
+{
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num)
+
+    return (num_ssm_t)
+    {
+        .count = count,
+        .num_fft = num_mul_ssm_fwd_transform(num, count)
+    };
+}
+
+void num_ssm_free(num_ssm_t num_ssm)
+{
+    CLU_HANDLER_IS_SAFE(num_ssm.num_fft)
+    assert(num_ssm.num_fft)
+
+    num_free(num_ssm.num_fft);
+}
+
 void num_ssm_mul_mod_span(num_p num_1, num_p num_2, uint64_t pos, uint64_t n)
 {
     CLU_HANDLER_IS_SAFE(num_1)
@@ -1650,18 +1671,19 @@ void num_ssm_mul_mod_span(num_p num_1, num_p num_2, uint64_t pos, uint64_t n)
     num_ssm_sub_mod(num_1, pos, &num_aux, 0, &num_aux, n, n);
 }
 
-void num_ssm_pointwise_product(num_p num_fft_1, num_p num_fft_2, uint64_t n)
+void num_ssm_pointwise_product(num_ssm_t num_ssm_1, num_ssm_t num_ssm_2)
 {
-    CLU_HANDLER_IS_SAFE(num_fft_1)
-    CLU_HANDLER_IS_SAFE(num_fft_2)
-    assert(num_fft_1)
-    assert(num_fft_2)
+    CLU_HANDLER_IS_SAFE(num_ssm_1.num_fft)
+    CLU_HANDLER_IS_SAFE(num_ssm_2.num_fft)
+    assert(num_ssm_1.num_fft)
+    assert(num_ssm_2.num_fft)
 
-    uint64_t block_count = num_fft_1->size / n;
-    assert(block_count * n == num_fft_1->size);
+    uint64_t n = ssm_get_last_n(num_ssm_2.count);
+    uint64_t block_count = num_ssm_1.num_fft->size / n;
+    assert(block_count * n == num_ssm_1.num_fft->size);
     for(uint64_t i=0; i<block_count; i++)
     {
-        num_ssm_mul_mod_span(num_fft_1, num_fft_2, i * n, n);
+        num_ssm_mul_mod_span(num_ssm_1.num_fft, num_ssm_2.num_fft, i * n, n);
     }
 }
 
@@ -1708,19 +1730,16 @@ num_p num_mul_ssm_bwd_transform(num_p num_fft, uint64_t count)
     return num_ssm_depad_no_wrap(num_tmp, &params);
 }
 
-num_p num_mul_ssm_finish(num_p num_fft_1, num_p num_fft_2, uint64_t count)
+num_p num_mul_finish(num_p num_1, num_ssm_t num_ssm_2)
 {
-    CLU_HANDLER_IS_SAFE(num_fft_1)
-    CLU_HANDLER_IS_SAFE(num_fft_2)
+    CLU_HANDLER_IS_SAFE(num_ssm_2.num_fft)
+    CLU_HANDLER_IS_SAFE(num_1)
+    assert(num_ssm_2.num_fft)
+    assert(num_1)
 
-    ssm_params_t params = ssm_get_params(count);
-    while(ssm_is_recursive(params.n))
-    {
-        params = ssm_get_params_wrap(params.n);
-    }
-
-    num_ssm_pointwise_product(num_fft_1, num_fft_2, params.n);
-    return num_mul_ssm_bwd_transform(num_fft_1, count);
+    num_ssm_t num_ssm_1 = num_mul_prepare(num_1, num_ssm_2.count);
+    num_ssm_pointwise_product(num_ssm_1, num_ssm_2);
+    return num_mul_ssm_bwd_transform(num_ssm_1.num_fft, num_ssm_2.count);
 }
 
 
@@ -1784,11 +1803,9 @@ num_p num_mul_ssm(num_p num_1, num_p num_2)
     assert(num_2)
 
     uint64_t count = num_1->count + num_2->count;
-    num_p num_aux_1 = num_mul_ssm_fwd_transform(num_1, count);
-    num_p num_aux_2 = num_mul_ssm_fwd_transform(num_2, count);
-
-    num_p num_res = num_mul_ssm_finish(num_aux_1, num_aux_2, count);
-    num_free(num_aux_2);
+    num_ssm_t num_ssm_2 = num_mul_prepare(num_2, count);
+    num_p num_res = num_mul_finish(num_1, num_ssm_2);
+    num_ssm_free(num_ssm_2);
     return num_res;
 }
 
