@@ -1769,15 +1769,6 @@ static bool mul_is_classic(uint64_t count_1, uint64_t count_2)
     return count_1 < 128 || count_2 < 128;
 }
 
-STRUCT(num_fft_cache)
-{
-    bool memoized;
-    num_p num;
-
-    uint64_t n;
-    num_p fft;
-};
-
 num_p num_mul_classic(num_p num_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_1)
@@ -1953,7 +1944,9 @@ STRUCT(bz_frame)
 {
     bool memoized;
     num_t num_2_1, num_2_0;
-    num_fft_cache_t num_2_0_cache;
+
+    bool is_ssm;
+    num_ssm_t num_ssm_2_0;
 };
 
 // Input expected to be normalized
@@ -1980,12 +1973,11 @@ static num_p num_div_mod_bz_rec(num_p num_aux, num_p num_1, num_p num_2, bz_fram
         num_span(&f->num_2_0, num_2, 0, k);
         num_span(&f->num_2_1, num_2, k, num_2->count);
 
-        uint64_t n = stdc_bit_ceil(8 * k);
-        f->num_2_0_cache = (num_fft_cache_t)
+        if(k > 128)
         {
-            .num = &f->num_2_0,
-            .n = n,
-        };
+            f->is_ssm = true;
+            f->num_ssm_2_0 = num_mul_prepare(num_copy(&f->num_2_0), num_2->count);
+        }
     }
 
     num_p num_q[2];
@@ -1997,7 +1989,15 @@ static num_p num_div_mod_bz_rec(num_p num_aux, num_p num_1, num_p num_2, bz_fram
         num_p num_q_tmp = num_div_mod_bz_rec(num_aux, &num_1_1, &f->num_2_1, &f[1]);
         while(num_normalize(num_1));
 
-        num_p num_aux_2 = num_mul(num_copy(num_q_tmp), num_copy(&f->num_2_0));
+        num_p num_aux_2;
+        if(f->is_ssm)
+        {
+            num_aux_2 = num_mul_finish(num_copy(num_q_tmp), f->num_ssm_2_0);
+        }
+        else
+        {
+            num_aux_2 = num_mul(num_copy(num_q_tmp), num_copy(&f->num_2_0));
+        }
 
         while(num_cmp_offset(num_1, k * i, num_aux_2) < 0)
         {
@@ -2056,8 +2056,12 @@ static num_p num_div_mod_bz(num_p num_1, num_p num_2)
     num_free(num_q);
 
     for(uint64_t i=0; i<frame_count && f[i].memoized; i++)
-        if(f[i].num_2_0_cache.memoized)
-            num_free(f[i].num_2_0_cache.fft);
+    {
+        if(f[i].is_ssm)
+        {
+            num_ssm_free(f[i].num_ssm_2_0);
+        }
+    }
 
     return num_q_tmp;
 }
