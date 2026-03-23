@@ -1973,7 +1973,7 @@ static num_p num_div_mod_bz_rec(num_p num_aux, num_p num_1, num_p num_2, bz_fram
         num_span(&f->num_2_0, num_2, 0, k);
         num_span(&f->num_2_1, num_2, k, num_2->count);
 
-        if(k > 128)
+        if(k > 64)
         {
             f->is_ssm = true;
             f->num_ssm_2_0 = num_mul_prepare(num_copy(&f->num_2_0), num_2->count);
