@@ -7,6 +7,8 @@
 
 #ifdef DEBUG
 
+int64_t int_rand(int64_t min, int64_t max);
+
 flt_num_t flt_num_create_immed(
     int64_t exponent,
     uint64_t size,
@@ -14,7 +16,9 @@ flt_num_t flt_num_create_immed(
     uint64_t n,
     ...
 );
+flt_num_t flt_num_create_rand(int64_t exponent, uint64_t count);
 
+bool flt_num_eq_dbg(flt_num_t flt_1, flt_num_t flt_2);
 bool flt_num_immed(
     flt_num_t flt,
     int64_t exponent,

@@ -19,6 +19,16 @@
 #include "../sig/debug.h"
 
 
+int64_t int_rand(int64_t min, int64_t max)
+{
+    assert(min <= max);
+    uint64_t range = (uint64_t)(max - min);
+    uint64_t seed = rand_64() % range;
+    return min + (int64_t)seed;
+}
+
+
+
 static flt_num_t flt_num_create_variadic(
     int64_t exponent,
     uint64_t size,
@@ -49,6 +59,12 @@ flt_num_t flt_num_create_immed(
     va_list args;
     va_start(args, n);
     return flt_num_create_variadic(exponent, size, signal, n, &args);
+}
+
+flt_num_t flt_num_create_rand(int64_t exponent, uint64_t count)
+{
+    sig_num_t sig = sig_num_create_rand(count);
+    return flt_num_create(exponent, count, sig);
 }
 
 
@@ -89,7 +105,7 @@ static bool flt_num_inner(flt_num_t flt_1, flt_num_t flt_2)
     return true;
 }
 
-static bool flt_num_eq_dbg(flt_num_t flt_1, flt_num_t flt_2)
+bool flt_num_eq_dbg(flt_num_t flt_1, flt_num_t flt_2)
 {
     CLU_FLT_IS_SAFE(flt_1);
     CLU_FLT_IS_SAFE(flt_2);
@@ -561,28 +577,6 @@ flt_num_t flt_num_sub(flt_num_t flt_1, flt_num_t flt_2) // TODO TEST
     return flt_num_add(flt_1, flt_2);
 }
 
-flt_num_ssm_t flt_num_mul_prepare(flt_num_t flt, uint64_t count)
-{
-    CLU_FLT_IS_SAFE(flt);
-
-    return (flt_num_ssm_t)
-    {
-        .exponent = flt.exponent,
-        .size = flt.size,
-        .sig_ssm = sig_num_mul_prepare(flt.sig, count)
-    };
-}
-
-flt_num_t flt_num_mul_finish(flt_num_t flt_1, flt_num_ssm_t flt_ssm_2)
-{
-    CLU_FLT_IS_SAFE(flt_1);
-
-    int64_t exponent = int64_add(flt_1.exponent, flt_ssm_2.exponent);
-    uint64_t size = flt_1.size;
-    sig_num_t sig = sig_num_mul_finish(flt_1.sig, flt_ssm_2.sig_ssm);
-    return flt_num_create(exponent, size, sig);
-}
-
 flt_num_t flt_num_mul(flt_num_t flt_1, flt_num_t flt_2) // TODO TEST
 {
     CLU_FLT_IS_SAFE(flt_1);
@@ -637,6 +631,35 @@ flt_num_t flt_num_div(flt_num_t flt_1, flt_num_t flt_2) // TODO TEST
     flt_1.exponent = int64_sub(flt_1.exponent, flt_2.exponent);
     flt_1.sig = sig_num_div(flt_1.sig, flt_2.sig);
     return flt_num_normalize(flt_1);
+}
+
+
+
+flt_num_ssm_t flt_num_mul_prepare(flt_num_t flt, uint64_t count)
+{
+    CLU_FLT_IS_SAFE(flt);
+
+    return (flt_num_ssm_t)
+    {
+        .exponent = flt.exponent,
+        .size = flt.size,
+        .sig_ssm = sig_num_mul_prepare(flt.sig, count)
+    };
+}
+
+flt_num_t flt_num_mul_finish(flt_num_t flt_1, flt_num_ssm_t flt_ssm_2)
+{
+    CLU_FLT_IS_SAFE(flt_1);
+
+    int64_t exponent = int64_add(flt_1.exponent, flt_ssm_2.exponent);
+    uint64_t size = flt_1.size;
+    sig_num_t sig = sig_num_mul_finish(flt_1.sig, flt_ssm_2.sig_ssm);
+    return flt_num_create(exponent, size, sig);
+}
+
+void flt_num_ssm_free(flt_num_ssm_t flt_ssm)
+{
+    sig_num_ssm_free(flt_ssm.sig_ssm);
 }
 
 

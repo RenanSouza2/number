@@ -8,7 +8,7 @@
 void fxd_num_display_dec(fxd_num_t fxd);
 void fxd_num_display(fxd_num_t fxd);
 void fxd_num_display_tag(const char tag[], fxd_num_t fxd);
-void fxd_num_display_full(const char tag[], fxd_num_t fxd);
+void fxd_num_display_full(fxd_num_t fxd);
 
 fxd_num_t fxd_num_reposition(fxd_num_t fxd, uint64_t pos);
 

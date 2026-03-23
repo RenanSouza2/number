@@ -652,11 +652,11 @@ void test_sig_num_div(bool show)
     TEST_FN_CLOSE
 }
 
-void test_fuzz_num_mul_ssm(bool show)
+void test_fuzz_sig_num_mul_ssm(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_FUZZ_NUM_MUL_SSM(TAG, COUNT_1, COUNT_2, MAX)       \
+    #define TEST_FUZZ_SIG_NUM_MUL_SSM(TAG, COUNT_1, COUNT_2, MAX)   \
     {                                                               \
         TEST_CASE_OPEN(TAG)                                         \
         {                                                           \
@@ -681,9 +681,9 @@ void test_fuzz_num_mul_ssm(bool show)
         TEST_CASE_CLOSE                                             \
     }
 
-    TEST_FUZZ_NUM_MUL_SSM(1, 256, 256, 256);
-    TEST_FUZZ_NUM_MUL_SSM(2, 1000, 2000, 100);
-    TEST_FUZZ_NUM_MUL_SSM(3, 500000, 200000, 5);
+    TEST_FUZZ_SIG_NUM_MUL_SSM(1, 256, 256, 256);
+    TEST_FUZZ_SIG_NUM_MUL_SSM(2, 1000, 2000, 100);
+    TEST_FUZZ_SIG_NUM_MUL_SSM(3, 500000, 200000, 5);
 
     TEST_FN_CLOSE
 }
@@ -694,29 +694,29 @@ void test_sig_num(void)
 {
     TEST_LIB
 
-    bool show = false;
+    bool show = true;
 
-    // test_sig_num_create(show);
-    // test_sig_num_create_immed(show);
+    test_sig_num_create(show);
+    test_sig_num_create_immed(show);
 
-    // test_sig_num_wrap(show);
-    // test_sig_num_wrap_int128(show);
-    // test_sig_num_wrap_str(show);
-    // test_sig_num_copy(show);
+    test_sig_num_wrap(show);
+    test_sig_num_wrap_int128(show);
+    test_sig_num_wrap_str(show);
+    test_sig_num_copy(show);
 
-    // test_sig_num_is_zero(show);
-    // test_sig_num_cmp(show);
+    test_sig_num_is_zero(show);
+    test_sig_num_cmp(show);
 
-    // test_sig_num_shl(show);
-    // test_sig_num_shr(show);
+    test_sig_num_shl(show);
+    test_sig_num_shr(show);
 
-    // test_sig_num_opposite(show);
-    // test_sig_num_add(show);
-    // test_sig_num_sub(show);
-    // test_sig_num_mul(show);
-    // test_sig_num_div(show);
+    test_sig_num_opposite(show);
+    test_sig_num_add(show);
+    test_sig_num_sub(show);
+    test_sig_num_mul(show);
+    test_sig_num_div(show);
 
-    test_fuzz_num_mul_ssm(show);
+    test_fuzz_sig_num_mul_ssm(show);
 
     TEST_ASSERT_MEM_EMPTY
 }

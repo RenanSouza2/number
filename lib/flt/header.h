@@ -37,6 +37,7 @@ flt_num_t flt_num_div(flt_num_t flt_1, flt_num_t flt_2);
 
 flt_num_ssm_t flt_num_mul_prepare(flt_num_t flt, uint64_t count);
 flt_num_t flt_num_mul_finish(flt_num_t flt_1, flt_num_ssm_t flt_ssm_2);
+void flt_num_ssm_free(flt_num_ssm_t flt_ssm);
 
 flt_num_t flt_num_mul_sig(flt_num_t flt, sig_num_t sig);
 flt_num_t flt_num_div_sig(flt_num_t flt, sig_num_t sig);

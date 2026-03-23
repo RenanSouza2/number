@@ -179,14 +179,15 @@ void fxd_num_display_tag(const char tag[], fxd_num_t fxd)
 {
     CLU_FXD_IS_SAFE(fxd);
 
-    sig_num_display_tag(tag, fxd.sig);
+    printf("\n%s:\t", tag);
+    fxd_num_display_full(fxd);
 }
 
-void fxd_num_display_full(const char tag[], fxd_num_t fxd)
+void fxd_num_display_full(fxd_num_t fxd)
 {
     CLU_FXD_IS_SAFE(fxd);
 
-    sig_num_display_full(tag, fxd.sig);
+    sig_num_display_full(fxd.sig);
 }
 
 
