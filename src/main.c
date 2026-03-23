@@ -652,7 +652,7 @@ void sqrt_2(void)
         //     continue;
 
         printf("\n\n");
-        fxd_num_display_full("hex", fxd_x);
+        fxd_num_display_full(fxd_x);
         printf("\n");
         fxd_num_display_dec(fxd_x);
         printf("\n\npos: " U64P() "", i * 2);
@@ -701,9 +701,8 @@ int main()
     srand((unsigned int)time(NULL));
     printf("\nbegin\n\n");
 
-    // uint64_t arg = get_arg(argc, argv);
-
     // clu_log_enable(true);
+
     // num_generate(21, 2);
     // time_1(16, 29);
     // time_1(16, 17);
@@ -722,54 +721,19 @@ int main()
     // flt_num_pi_3(1000);
     // mem_1(21);
 
-    // sig_num_t sig_1 = sig_num_wrap_int128(((int128_t)0x1234 << 64) + 0x5678);
-    // sig_num_t sig_2 = sig_num_wrap(0xabcd);
-    
-    // file_t fp_w = file_write_open("num.bin", 2);
+    uint64_t base = 25;
+    num_p num_1 = num_generate_1(base + 1, 2);
+    num_p num_2 = num_generate_1(base, 3);
 
-    // file_write_sig_num(&fp_w, sig_1);
-    // file_write_sig_num(&fp_w, sig_2);
-    // file_write_close(&fp_w);
+    printf("\n");
+    num_display(num_1);
+    printf("\n");
+    num_display(num_2);
 
-    // FILE* fp_r = file_read_open("num.bin");
-    // assert(fp_r);
-    // sig_num_t sig_3 = file_read_sig_num(fp_r, 0);
-    // sig_num_t sig_4 = file_read_sig_num(fp_r, 1);
-
-    // sig_num_display_tag("sig_3", sig_3);
-    // sig_num_display_tag("sig_4", sig_4);
-
-    
-    // num_p num = num_wrap(1);
-    // num = num_head_grow(num, 1);
-    // fxd_num_t fxd = (fxd_num_t)
-    // {
-    //     .pos = 10,
-    //     .sig = (sig_num_t)
-    //     {
-    //         .signal = POSITIVE,
-    //         .num = num
-    //     }
-    // };
-    // fxd_num_display_dec(fxd);
-    // fxd_num_free(fxd);
-
-    // uint64_t max = 27;
-    // num_p num_1 = num_generate(max, 2);
-    // num_p num_2 = num_generate(max, 3);
-    // printf("\nnum_1->count: " U64P() "", num_1->count);
-    // printf("\nnum_2->count: " U64P() "", num_2->count);
-
-    // TIME_SETUP
-    // num_1 = num_mul(num_1, num_2);
-    // TIME_END(t1)
-    // printf("\n\ntime: %.3f", (double)t1 / 1e9);
-
-    // uint64_t count_1 = 4377146;
-    // uint64_t count_2 = 5043768;
-    
-    // ssm_params_t p = ssm_get_params(count_1, count_2);
-    // while(ssm)
+    TIME_SETUP
+    num_1 = num_div(num_1, num_2);
+    TIME_END(t1)
+    printf("\n%10.3f", (double)t1 / 1e9);
 
     // assert(clu_mem_is_empty());
 
