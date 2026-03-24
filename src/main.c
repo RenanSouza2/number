@@ -94,22 +94,23 @@ void ssm_params_display_main(ssm_params_t p)
 void time_2(int argc, char** argv, uint64_t max, uint64_t jumps)
 {
     uint64_t id = argc > 1 ? (uint64_t)get_arg(argc, argv) : 0;
-    // printf("\nid: " U64P() "", id);
+    printf("\nid: " U64P() "", id);
 
     num_p num_1 = num_generate_1(max, 2);
-    // num_display_tag("num_1", num_1);
+    num_display_tag("num_1", num_1);
 
     // printf("\nN\ttime\tM\tK\tQ\tn\tdepth\tlast_n");
-    num_p num_2 = num_generate_2(256, 2);
+    uint64_t first = 256;
+    num_p num_2 = num_generate_2(first, 2);
     uint64_t threads = 1;
-    for(uint64_t i=id + 256; num_2->count < num_1->count; i += threads * jumps)
+    for(uint64_t i=id + first; num_2->count < num_1->count; i += threads * jumps)
     {
         for(uint64_t j=0; j<threads * jumps; j++)
         {
             num_2 = num_generate_2_step(num_2, 2);
         }
 
-        printf("\n" U64P() "", num_1->count + num_2->count);
+        printf("\n" U64P() "", i);
 
         uint64_t res = 0;
         uint64_t repeat = 1;
@@ -119,7 +120,7 @@ void time_2(int argc, char** argv, uint64_t max, uint64_t jumps)
             num_p num_aux_2 = num_copy(num_2);
 
             uint64_t begin = get_time();
-            num_aux_1 = num_mul(num_aux_1, num_aux_2);
+            num_aux_1 = num_div(num_aux_1, num_aux_2);
             uint64_t end = get_time();
             num_free(num_aux_1);
 
@@ -706,7 +707,7 @@ int main()
     // num_generate(21, 2);
     // time_1(16, 29);
     // time_1(16, 17);
-    // time_2(argc, argv, 20);
+    // time_2(argc, argv, 18, 1);
     // time_2_total(argc, argv);
     // time_3();
     // time_4();
@@ -721,9 +722,11 @@ int main()
     // flt_num_pi_3(1000);
     // mem_1(21);
 
-    uint64_t base = 25;
-    num_p num_1 = num_generate_1(base + 1, 2);
-    num_p num_2 = num_generate_1(base, 3);
+    // uint64_t base = 26;
+    // num_p num_1 = num_generate_1(base + 1, 2);
+    // num_p num_2 = num_generate_1(base, 3);
+    num_p num_1 = num_generate_1(18, 2);
+    num_p num_2 = num_generate_2(8000, 2);
 
     printf("\n");
     num_display(num_1);
@@ -733,7 +736,10 @@ int main()
     TIME_SETUP
     num_1 = num_div(num_1, num_2);
     TIME_END(t1)
-    printf("\n%10.3f", (double)t1 / 1e9);
+    tprintf("divition time: %.3f", (double)t1 / 1e9);
+
+    printf("\n\nres\n\n");
+    num_display(num_1);
 
     // assert(clu_mem_is_empty());
 

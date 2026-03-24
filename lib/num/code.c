@@ -1794,6 +1794,7 @@ num_p num_mul_ssm(num_p num_1, num_p num_2)
     assert(num_2)
 
     uint64_t count = num_1->count + num_2->count;
+    tprintf("k: %lu | preparing with %lu", num_2->count, count);
     num_ssm_t num_ssm_2 = num_mul_prepare(num_2, count);
     num_p num_res = num_mul_finish(num_1, num_ssm_2);
     num_ssm_free(num_ssm_2);
@@ -1807,18 +1808,12 @@ num_p num_sqr_ssm(num_p num)
 
     uint64_t count = 2 * num->count;
     num_p num_fft = num_mul_ssm_fwd_transform(num, count);
-
-    ssm_params_t params = ssm_get_params(count);
-    while(ssm_is_recursive(params.n))
-    {
-        params = ssm_get_params_wrap(params.n);
-    }
-
-    uint64_t block_count = num_fft->size / params.n;
-    assert(block_count * params.n == num_fft->size);
+    uint64_t n = ssm_get_last_n(count);
+    uint64_t block_count = num_fft->size / n;
+    assert(block_count * n == num_fft->size);
     for(uint64_t i=0; i<block_count; i++)
     {
-        num_ssm_sqr_mod_span(num_fft, i * params.n, params.n);
+        num_ssm_sqr_mod_span(num_fft, i * n, n);
     }
         
     return num_mul_ssm_bwd_transform(num_fft, count);
@@ -1947,7 +1942,13 @@ STRUCT(bz_frame)
 
     bool is_ssm;
     num_ssm_t num_ssm_2_0;
+    uint64_t passed;
+    uint64_t used;
 };
+
+#include "../../mods/macros/time.h"
+
+double total_time_saved = 0;
 
 // Input expected to be normalized
 // Returns quocient
@@ -1961,6 +1962,7 @@ static num_p num_div_mod_bz_rec(num_p num_aux, num_p num_1, num_p num_2, bz_fram
     assert(num_2)
 
     if(num_1->count < num_2->count + 2 || num_2->count == 1)
+    // if(num_1->count < num_2->count + 128 || num_2->count == 1)
     {
         return num_div_mod_fallback(num_aux, num_1, num_2);
     }
@@ -1968,15 +1970,22 @@ static num_p num_div_mod_bz_rec(num_p num_aux, num_p num_1, num_p num_2, bz_fram
     uint64_t k = num_2->count / 2;
     if(f->memoized == false)
     {
+        tprintf("AAA");
         f->memoized = true;
 
         num_span(&f->num_2_0, num_2, 0, k);
         num_span(&f->num_2_1, num_2, k, num_2->count);
 
-        if(k > 64)
+        if(k > 128)
         {
             f->is_ssm = true;
+            tprintf("k: %lu | preparing with: %lu", k, num_2->count);
+            tprintf("num_2_0->count: %lu", f->num_2_0.count);
+
+            TIME_SETUP
             f->num_ssm_2_0 = num_mul_prepare(num_copy(&f->num_2_0), num_2->count);
+            TIME_END(t1);
+            tprintf("time preparing: %.6f", (double) t1 / 1e9);
         }
     }
 
@@ -1985,13 +1994,19 @@ static num_p num_div_mod_bz_rec(num_p num_aux, num_p num_1, num_p num_2, bz_fram
     {
         num_t num_1_1;
         num_span(&num_1_1, num_1, k * (i + 1), num_1->count);
+        if(num_1_1.count < num_1->count / 2)
+        {
+            tprintf("num_1_1.count: %lu %lu %lu", i, num_1_1.count, num_1->count);
+        }
 
         num_p num_q_tmp = num_div_mod_bz_rec(num_aux, &num_1_1, &f->num_2_1, &f[1]);
         while(num_normalize(num_1));
 
+        f->passed++;;
         num_p num_aux_2;
         if(f->is_ssm)
         {
+            f->used++;
             num_aux_2 = num_mul_finish(num_copy(num_q_tmp), f->num_ssm_2_0);
         }
         else
@@ -2057,11 +2072,19 @@ static num_p num_div_mod_bz(num_p num_1, num_p num_2)
 
     for(uint64_t i=0; i<frame_count && f[i].memoized; i++)
     {
+        tprintf("f[%lu]->used: %lu / %lu", i, f[i].used, f[i].passed);
+    }
+
+
+    for(uint64_t i=0; i<frame_count && f[i].memoized; i++)
+    {
         if(f[i].is_ssm)
         {
             num_ssm_free(f[i].num_ssm_2_0);
         }
     }
+
+    // tprintf("total time saved: %.3f", total_time_saved);
 
     return num_q_tmp;
 }
