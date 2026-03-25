@@ -736,7 +736,7 @@ int main()
     TIME_SETUP
     num_1 = num_div(num_1, num_2);
     TIME_END(t1)
-    tprintf("divition time: %.3f", (double)t1 / 1e9);
+    tprintf("division time: %.3f", (double)t1 / 1e9);
 
     printf("\n\nres\n\n");
     num_display(num_1);
