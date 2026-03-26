@@ -705,7 +705,7 @@ int main()
     // clu_log_enable(true);
 
     // num_generate(21, 2);
-    time_1(16, 29);
+    // time_1(16, 29);
     // time_1(16, 17);
     // time_2(argc, argv, 25, 10000);
     // time_2_total(argc, argv);
@@ -721,6 +721,25 @@ int main()
     // flt_num_pi_2(1000);
     // flt_num_pi_3(1000);
     // mem_1(21);
+
+    uint64_t base = 25;
+    num_p num_1 = num_generate_1(base + 1, 2);
+    num_p num_2 = num_generate_1(base, 3);
+
+    printf("\n");
+    num_display(num_1);
+    printf("\n");
+    num_display(num_2);
+    printf("\n");
+
+    TIME_SETUP
+    num_1 = num_mul(num_1, num_2);
+    TIME_END(t1)
+
+    tprintf("multiplication time: %.3f", (double)t1 / 1e9);
+
+    printf("\n\nres\n\n");
+    num_display(num_1);
 
     // assert(clu_mem_is_empty());
 

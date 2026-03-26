@@ -1730,6 +1730,8 @@ num_p num_mul_ssm_bwd_transform(num_p num_fft, uint64_t count)
     return num_ssm_depad_no_wrap(num_tmp, &params);
 }
 
+#include "../../mods/macros/time.h"
+
 num_p num_mul_finish(num_p num_1, num_ssm_t num_ssm_2)
 {
     CLU_HANDLER_IS_SAFE(num_ssm_2.num_fft)
@@ -1738,7 +1740,12 @@ num_p num_mul_finish(num_p num_1, num_ssm_t num_ssm_2)
     assert(num_1)
 
     num_ssm_t num_ssm_1 = num_mul_prepare(num_1, num_ssm_2.count);
+
+    TIME_SETUP
     num_ssm_pointwise_product(num_ssm_1, num_ssm_2);
+    TIME_END(t1)
+    tprintf("time pointwise: %.3f", (double)t1 / 1e9);
+
     return num_mul_ssm_bwd_transform(num_ssm_1.num_fft, num_ssm_2.count);
 }
 
@@ -1794,7 +1801,12 @@ num_p num_mul_ssm(num_p num_1, num_p num_2)
     assert(num_2)
 
     uint64_t count = num_1->count + num_2->count;
+
+    TIME_SETUP
     num_ssm_t num_ssm_2 = num_mul_prepare(num_2, count);
+    TIME_END(t1)
+    tprintf("time prepare: %.3f", (double)t1 / 1e9);
+
     num_p num_res = num_mul_finish(num_1, num_ssm_2);
 
     num_ssm_free(num_ssm_2);
