@@ -1978,6 +1978,9 @@ static num_p num_div_mod_bz_rec(num_p num_aux, num_p num_1, num_p num_2, bz_fram
         }
     }
 
+    // no mem  : 0.010
+    // yes mem : 0.023
+
     num_p num_q[2];
     for(uint64_t i=1; i!=UINT64_MAX; i--)
     {
@@ -1986,10 +1989,22 @@ static num_p num_div_mod_bz_rec(num_p num_aux, num_p num_1, num_p num_2, bz_fram
         num_p num_q_tmp = num_div_mod_bz_rec(num_aux, &num_1_1, &f->num_2_1, &f[1]);
         while(num_normalize(num_1));
 
-        num_p num_aux_2;
-        if(f->is_ssm)
+        if(num_is_zero(num_q_tmp))
         {
+            num_q[i] = num_q_tmp;
+            continue;
+        }
+
+        num_p num_aux_2;
+        if(f->is_ssm && num_q_tmp->count > 128)
+        {
+            tprintf("----");
+            tprintf("num_q_tmp->count: %lu", num_q_tmp->count);
+            tprintf("f->num_2_0.count: %lu", f->num_2_0.count);
+            tprintf("num_2->count: %lu", num_2->count);
+
             num_aux_2 = num_mul_finish(num_copy(num_q_tmp), f->num_ssm_2_0);
+            // num_aux_2 = num_mul(num_copy(num_q_tmp), num_copy(&f->num_2_0));
         }
         else
         {
@@ -2040,6 +2055,9 @@ static num_p num_div_mod_bz(num_p num_1, num_p num_2)
         num_t num_1_1;
         num_span(&num_1_1, num_1, n_1 - 2 * n_2, num_1->count);
 
+        tprintf("calling inside the loop");
+        tprintf("num_1_1.count: %lu", num_1_1.count);
+        tprintf("num_2->count: %lu", num_2->count);
         num_p num_q_tmp = num_div_mod_bz_rec(num_aux, &num_1_1, num_2, f);
         while(num_normalize(num_1));
         num_p num_tmp = num_add_offset(num_q_tmp, n_2, num_q, 0);
@@ -2047,6 +2065,9 @@ static num_p num_div_mod_bz(num_p num_1, num_p num_2)
         num_q = num_tmp;
     }
 
+    tprintf("calling OUTSIDE the loop");
+    tprintf("num_1->count: %lu", num_1->count);
+    tprintf("num_2->count: %lu", num_2->count);
     num_p num_q_tmp = num_div_mod_bz_rec(num_aux, num_1, num_2, f);
     num_q_tmp = num_add_offset(num_q_tmp, n_1 - n_2, num_q, 0);
     num_free(num_aux);

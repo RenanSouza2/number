@@ -727,6 +727,7 @@ int main()
     // num_p num_2 = num_generate_1(base, 3);
     num_p num_1 = num_generate_1(18, 2);
     num_p num_2 = num_generate_2(8000, 2);
+    // num_p num_2 = num_generate_2(1000, 2);
 
     printf("\n");
     num_display(num_1);
