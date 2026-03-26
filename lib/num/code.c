@@ -1950,7 +1950,13 @@ STRUCT(bz_frame)
 // Returns quocient
 // NUM_1 becomes remainder
 // Keeps NUM_2
-static num_p num_div_mod_bz_rec(num_p num_aux, num_p num_1, num_p num_2, bz_frame_t f[])
+static num_p num_div_mod_bz_rec(
+    num_p num_aux,
+    num_p num_1,
+    num_p num_2,
+    bz_frame_t f[],
+    bool memoize
+)
 {
     CLU_HANDLER_IS_SAFE(num_1)
     CLU_HANDLER_IS_SAFE(num_2)
@@ -1971,7 +1977,7 @@ static num_p num_div_mod_bz_rec(num_p num_aux, num_p num_1, num_p num_2, bz_fram
         num_span(&f->num_2_0, num_2, 0, k);
         num_span(&f->num_2_1, num_2, k, num_2->count);
 
-        if(k > 128)
+        if(k > 128 && memoize)
         {
             f->is_ssm = true;
             f->num_ssm_2_0 = num_mul_prepare(num_copy(&f->num_2_0), num_2->count);
@@ -1986,7 +1992,7 @@ static num_p num_div_mod_bz_rec(num_p num_aux, num_p num_1, num_p num_2, bz_fram
     {
         num_t num_1_1;
         num_span(&num_1_1, num_1, k * (i + 1), num_1->count);
-        num_p num_q_tmp = num_div_mod_bz_rec(num_aux, &num_1_1, &f->num_2_1, &f[1]);
+        num_p num_q_tmp = num_div_mod_bz_rec(num_aux, &num_1_1, &f->num_2_1, &f[1], i);
         while(num_normalize(num_1));
 
         if(num_is_zero(num_q_tmp))
@@ -2058,7 +2064,7 @@ static num_p num_div_mod_bz(num_p num_1, num_p num_2)
         tprintf("calling inside the loop");
         tprintf("num_1_1.count: %lu", num_1_1.count);
         tprintf("num_2->count: %lu", num_2->count);
-        num_p num_q_tmp = num_div_mod_bz_rec(num_aux, &num_1_1, num_2, f);
+        num_p num_q_tmp = num_div_mod_bz_rec(num_aux, &num_1_1, num_2, f, true);
         while(num_normalize(num_1));
         num_p num_tmp = num_add_offset(num_q_tmp, n_2, num_q, 0);
         num_free(num_q);
@@ -2068,7 +2074,7 @@ static num_p num_div_mod_bz(num_p num_1, num_p num_2)
     tprintf("calling OUTSIDE the loop");
     tprintf("num_1->count: %lu", num_1->count);
     tprintf("num_2->count: %lu", num_2->count);
-    num_p num_q_tmp = num_div_mod_bz_rec(num_aux, num_1, num_2, f);
+    num_p num_q_tmp = num_div_mod_bz_rec(num_aux, num_1, num_2, f, false);
     num_q_tmp = num_add_offset(num_q_tmp, n_1 - n_2, num_q, 0);
     num_free(num_aux);
     num_free(num_q);
