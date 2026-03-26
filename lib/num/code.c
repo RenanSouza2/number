@@ -1990,7 +1990,7 @@ static num_p num_div_mod_bz_rec(
     {
         num_t num_1_1;
         num_span(&num_1_1, num_1, k * (i + 1), num_1->count);
-        num_p num_q_tmp = num_div_mod_bz_rec(num_aux, &num_1_1, &f->num_2_1, &f[1], i);
+        num_p num_q_tmp = num_div_mod_bz_rec(num_aux, &num_1_1, &f->num_2_1, &f[1], memoize || i);
         while(num_normalize(num_1));
 
         if(num_is_zero(num_q_tmp))
