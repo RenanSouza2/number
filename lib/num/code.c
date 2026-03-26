@@ -1993,15 +1993,19 @@ static num_p num_div_mod_bz_rec(
             continue;
         }
 
-        num_p num_aux_2;
-        if(k > 128 && num_q_tmp->count > 128 && memoize)
-        {
-            if(!f->mul_memoized)
-            {
-                f->mul_memoized = true;
-                f->num_ssm_2_0 = num_mul_prepare(num_copy(&f->num_2_0), num_2->count);
-            }
+        if(
+            k > 128 &&
+            num_q_tmp->count > 128 &&
+            memoize &&
+            !f->mul_memoized
+        ) {
+            f->mul_memoized = true;
+            f->num_ssm_2_0 = num_mul_prepare(num_copy(&f->num_2_0), num_2->count);
+        }
 
+        num_p num_aux_2;
+        if(k > 128 && num_q_tmp->count > 128 && f->mul_memoized)
+        {
             num_aux_2 = num_mul_finish(num_copy(num_q_tmp), f->num_ssm_2_0);
         }
         else
