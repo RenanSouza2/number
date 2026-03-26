@@ -71,15 +71,15 @@ void time_1(uint64_t begin, uint64_t end)
         TIME_END(t2)
         printf("\t%10.3f", (double)t2 / 1e9);
 
-        // num_p num_1_copy = num_copy(num_1);
-        // num_p num_2_copy = num_copy(num_2);
+        num_p num_1_copy = num_copy(num_1);
+        num_p num_2_copy = num_copy(num_2);
 
-        // TIME_RESET
-        // num_p num = num_div(num_1_copy, num_2_copy);
-        // TIME_END(t3)
-        // printf("\t%10.3f", (double)t3 / 1e9);
+        TIME_RESET
+        num_p num = num_div(num_1_copy, num_2_copy);
+        TIME_END(t3)
+        printf("\t%10.3f", (double)t3 / 1e9);
 
-        // num_free(num);
+        num_free(num);
     }
     num_free(num_1);
     num_free(num_2);
@@ -100,7 +100,7 @@ void time_2(int argc, char** argv, uint64_t max, uint64_t jumps)
     num_display_tag("num_1", num_1);
 
     // printf("\nN\ttime\tM\tK\tQ\tn\tdepth\tlast_n");
-    uint64_t first = 256;
+    uint64_t first = 1;
     num_p num_2 = num_generate_2(first, 2);
     uint64_t threads = 1;
     for(uint64_t i=id + first; num_2->count < num_1->count; i += threads * jumps)
@@ -705,9 +705,9 @@ int main()
     // clu_log_enable(true);
 
     // num_generate(21, 2);
-    // time_1(16, 29);
+    time_1(16, 29);
     // time_1(16, 17);
-    // time_2(argc, argv, 18, 1);
+    // time_2(argc, argv, 25, 10000);
     // time_2_total(argc, argv);
     // time_3();
     // time_4();
@@ -721,26 +721,6 @@ int main()
     // flt_num_pi_2(1000);
     // flt_num_pi_3(1000);
     // mem_1(21);
-
-    // uint64_t base = 26;
-    // num_p num_1 = num_generate_1(base + 1, 2);
-    // num_p num_2 = num_generate_1(base, 3);
-    num_p num_1 = num_generate_1(18, 2);
-    num_p num_2 = num_generate_2(8000, 2);
-    // num_p num_2 = num_generate_2(1000, 2);
-
-    printf("\n");
-    num_display(num_1);
-    printf("\n");
-    num_display(num_2);
-
-    TIME_SETUP
-    num_1 = num_div(num_1, num_2);
-    TIME_END(t1)
-    tprintf("division time: %.3f", (double)t1 / 1e9);
-
-    printf("\n\nres\n\n");
-    num_display(num_1);
 
     // assert(clu_mem_is_empty());
 

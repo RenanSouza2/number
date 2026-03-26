@@ -1940,7 +1940,7 @@ STRUCT(bz_frame)
     bool memoized;
     num_t num_2_1, num_2_0;
 
-    bool is_ssm;
+    bool mul_memoized;
     num_ssm_t num_ssm_2_0;
 };
 
@@ -1974,12 +1974,6 @@ static num_p num_div_mod_bz_rec(
 
         num_span(&f->num_2_0, num_2, 0, k);
         num_span(&f->num_2_1, num_2, k, num_2->count);
-
-        if(k > 128 && memoize)
-        {
-            f->is_ssm = true;
-            f->num_ssm_2_0 = num_mul_prepare(num_copy(&f->num_2_0), num_2->count);
-        }
     }
 
     // no mem  : 0.010
@@ -2000,8 +1994,14 @@ static num_p num_div_mod_bz_rec(
         }
 
         num_p num_aux_2;
-        if(f->is_ssm && num_q_tmp->count > 128)
+        if(k > 128 && num_q_tmp->count > 128 && memoize)
         {
+            if(!f->mul_memoized)
+            {
+                f->mul_memoized = true;
+                f->num_ssm_2_0 = num_mul_prepare(num_copy(&f->num_2_0), num_2->count);
+            }
+
             num_aux_2 = num_mul_finish(num_copy(num_q_tmp), f->num_ssm_2_0);
         }
         else
@@ -2067,7 +2067,7 @@ static num_p num_div_mod_bz(num_p num_1, num_p num_2)
 
     for(uint64_t i=0; i<frame_count && f[i].memoized; i++)
     {
-        if(f[i].is_ssm)
+        if(f[i].mul_memoized)
         {
             num_ssm_free(f[i].num_ssm_2_0);
         }
