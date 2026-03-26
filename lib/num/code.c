@@ -1786,8 +1786,6 @@ num_p num_mul_classic(num_p num_1, num_p num_2)
     return num_res;
 }
 
-#include "../../mods/macros/time.h"
-
 num_p num_mul_ssm(num_p num_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_1)
@@ -2004,13 +2002,7 @@ static num_p num_div_mod_bz_rec(
         num_p num_aux_2;
         if(f->is_ssm && num_q_tmp->count > 128)
         {
-            tprintf("----");
-            tprintf("num_q_tmp->count: %lu", num_q_tmp->count);
-            tprintf("f->num_2_0.count: %lu", f->num_2_0.count);
-            tprintf("num_2->count: %lu", num_2->count);
-
             num_aux_2 = num_mul_finish(num_copy(num_q_tmp), f->num_ssm_2_0);
-            // num_aux_2 = num_mul(num_copy(num_q_tmp), num_copy(&f->num_2_0));
         }
         else
         {
@@ -2061,9 +2053,6 @@ static num_p num_div_mod_bz(num_p num_1, num_p num_2)
         num_t num_1_1;
         num_span(&num_1_1, num_1, n_1 - 2 * n_2, num_1->count);
 
-        tprintf("calling inside the loop");
-        tprintf("num_1_1.count: %lu", num_1_1.count);
-        tprintf("num_2->count: %lu", num_2->count);
         num_p num_q_tmp = num_div_mod_bz_rec(num_aux, &num_1_1, num_2, f, true);
         while(num_normalize(num_1));
         num_p num_tmp = num_add_offset(num_q_tmp, n_2, num_q, 0);
@@ -2071,9 +2060,6 @@ static num_p num_div_mod_bz(num_p num_1, num_p num_2)
         num_q = num_tmp;
     }
 
-    tprintf("calling OUTSIDE the loop");
-    tprintf("num_1->count: %lu", num_1->count);
-    tprintf("num_2->count: %lu", num_2->count);
     num_p num_q_tmp = num_div_mod_bz_rec(num_aux, num_1, num_2, f, false);
     num_q_tmp = num_add_offset(num_q_tmp, n_1 - n_2, num_q, 0);
     num_free(num_aux);
