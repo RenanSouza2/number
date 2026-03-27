@@ -843,7 +843,8 @@ int64_t num_cmp_offset(num_p num_1, uint64_t pos_1, num_p num_2) // TODO TEST
 }
 
 // keeps NUM_2
-static num_p num_add_offset(num_p num_1, uint64_t pos_1, num_p num_2, uint64_t pos_2) // TODO TEST
+// TODO TEST
+static num_p num_add_offset(num_p num_1, uint64_t pos_1, num_p num_2, uint64_t pos_2)
 {
     CLU_HANDLER_IS_SAFE(num_1)
     CLU_HANDLER_IS_SAFE(num_2)
@@ -866,9 +867,16 @@ static num_p num_add_offset(num_p num_1, uint64_t pos_1, num_p num_2, uint64_t p
     }
 
     if(carry)
+    {
         num_1 = num_add_uint_offset(num_1, count_max, LOW(carry));
+    }
     else
-        num_1->count = num_1->count > count_max ? num_1->count : count_max;
+    {
+        if(num_1->count < count_max)
+        {
+            num_1->count = count_max;
+        }
+    }
 
     return num_1;
 }
@@ -1791,6 +1799,53 @@ num_p num_mul_classic(num_p num_1, num_p num_2)
     num_free(num_1);
     num_free(num_2);
     return num_res;
+}
+
+num_p num_mul_karatsuba(num_p num_1, num_p num_2)
+{
+    CLU_HANDLER_IS_SAFE(num_1)
+    CLU_HANDLER_IS_SAFE(num_2)
+    assert(num_1)
+    assert(num_2)
+
+    uint64_t threshold = 5;
+    if(num_1->count < threshold || num_2->count < threshold)
+    {
+        return num_mul_classic(num_1, num_2);
+    }
+
+    uint64_t bigger_count = num_1->count > num_2->count ? num_1->count : num_2->count;
+    uint64_t count = (bigger_count + 1) / 2;
+
+    num_t num_1_0, num_1_1, num_2_0, num_2_1;
+    num_span(&num_1_0, num_1, 0, count);
+    num_span(&num_1_1, num_1, count, num_1->count);
+    num_span(&num_2_0, num_2, 0, count);
+    num_span(&num_2_1, num_2, count, num_2->count);
+
+    // TIME_SETUP
+    num_p num_res_0 = num_mul_karatsuba(num_copy(&num_1_0), num_copy(&num_2_0));
+    // TIME_END(t1)
+    // tprintf("time mul 1: %.3f", (double)t1 / 1e9);
+
+    // TIME_RESET
+    num_p num_res_2 = num_mul_karatsuba(num_copy(&num_1_1), num_copy(&num_2_1));
+    // TIME_END(t2)
+    // tprintf("time mul 2: %.3f", (double)t2 / 1e9);
+
+    num_p num_add_1 = num_add(num_copy(&num_1_0), num_copy(&num_1_1));
+    num_p num_add_2 = num_add(num_copy(&num_2_0), num_copy(&num_2_1));
+
+    // TIME_RESET
+    num_p num_res_1 = num_mul_karatsuba(num_add_1, num_add_2);
+    // TIME_END(t3)
+    // tprintf("time mul 3: %.3f", (double)t3 / 1e9);
+
+    num_res_1 = num_sub(num_res_1, num_copy(num_res_0));
+    num_res_1 = num_sub(num_res_1, num_copy(num_res_2));
+
+    num_p num_res = num_add_offset(num_res_0, count, num_res_1, 0);
+    return num_add_offset(num_res, 2 * count, num_res_2, 0);
 }
 
 num_p num_mul_ssm(num_p num_1, num_p num_2)

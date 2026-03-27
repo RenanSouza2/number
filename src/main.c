@@ -722,25 +722,38 @@ int main()
     // flt_num_pi_3(1000);
     // mem_1(21);
 
-    uint64_t base = 25;
-    num_p num_1 = num_generate_1(base + 1, 2);
-    num_p num_2 = num_generate_1(base, 3);
+    // uint64_t base = 2;
+    for(uint64_t base=1; base<15; base++)
+    {
 
-    printf("\n");
-    num_display(num_1);
-    printf("\n");
-    num_display(num_2);
-    printf("\n");
-
-    TIME_SETUP
-    num_1 = num_mul(num_1, num_2);
-    TIME_END(t1)
-
-    tprintf("multiplication time: %.3f", (double)t1 / 1e9);
-
-    printf("\n\nres\n\n");
-    num_display(num_1);
-
+        num_p num_1 = num_generate_1(base + 1, 2);
+        // num_p num_2 = num_generate_1(base, 3);
+        num_p num_2 = num_add(num_copy(num_1), num_wrap(1));
+        
+        printf("\n");
+        printf("\n-----------------------");
+        printf("\nnum_1: ");
+        num_display(num_1);
+        printf("\nnum_2: ");
+        num_display(num_2);
+        printf("\n");
+        
+        TIME_SETUP
+        num_p num_res_1 = num_mul_classic(num_copy(num_1), num_copy(num_2));
+        TIME_END(t1)
+        num_free(num_res_1);
+        tprintf("classical time: %lu", t1);
+        
+        TIME_RESET
+        num_p num_res_2 = num_mul_karatsuba(num_copy(num_1), num_copy(num_2));
+        TIME_END(t2)
+        num_free(num_res_2);
+        tprintf("karatsuba time: %lu", t2);
+        
+        printf("\n\nres\n\n");
+        num_display(num_1);
+    }
+        
     // assert(clu_mem_is_empty());
 
     printf("\n");
