@@ -653,6 +653,7 @@ flt_num_t flt_num_mul_finish(flt_num_t flt_1, flt_num_ssm_t flt_ssm_2)
 
     int64_t exponent = int64_add(flt_1.exponent, flt_ssm_2.exponent);
     uint64_t size = flt_1.size;
+
     sig_num_t sig = sig_num_mul_finish(flt_1.sig, flt_ssm_2.sig_ssm);
     return flt_num_create(exponent, size, sig);
 }

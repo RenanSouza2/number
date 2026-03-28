@@ -705,7 +705,7 @@ int main()
     // clu_log_enable(true);
 
     // num_generate(21, 2);
-    // time_1(16, 29);
+    time_1(16, 28);
     // time_1(16, 17);
     // time_2(argc, argv, 25, 10000);
     // time_2_total(argc, argv);
@@ -722,37 +722,36 @@ int main()
     // flt_num_pi_3(1000);
     // mem_1(21);
 
-    // uint64_t base = 2;
-    for(uint64_t base=1; base<15; base++)
-    {
+    // for(uint64_t base=1; base<15; base++)
+    // {
 
-        num_p num_1 = num_generate_1(base + 1, 2);
-        // num_p num_2 = num_generate_1(base, 3);
-        num_p num_2 = num_add(num_copy(num_1), num_wrap(1));
+    //     num_p num_1 = num_generate_1(base + 1, 2);
+    //     // num_p num_2 = num_generate_1(base, 3);
+    //     num_p num_2 = num_add(num_copy(num_1), num_wrap(1));
         
-        printf("\n");
-        printf("\n-----------------------");
-        printf("\nnum_1: ");
-        num_display(num_1);
-        printf("\nnum_2: ");
-        num_display(num_2);
-        printf("\n");
+    //     printf("\n");
+    //     printf("\n-----------------------");
+    //     printf("\nnum_1: ");
+    //     num_display(num_1);
+    //     printf("\nnum_2: ");
+    //     num_display(num_2);
+    //     printf("\n");
         
-        TIME_SETUP
-        num_p num_res_1 = num_mul_classic(num_copy(num_1), num_copy(num_2));
-        TIME_END(t1)
-        num_free(num_res_1);
-        tprintf("classical time: %lu", t1);
+    //     TIME_SETUP
+    //     num_p num_res_1 = num_mul_classic(num_copy(num_1), num_copy(num_2));
+    //     TIME_END(t1)
+    //     num_free(num_res_1);
+    //     tprintf("classical time: %lu", t1);
         
-        TIME_RESET
-        num_p num_res_2 = num_mul_karatsuba(num_copy(num_1), num_copy(num_2));
-        TIME_END(t2)
-        num_free(num_res_2);
-        tprintf("karatsuba time: %lu", t2);
+    //     TIME_RESET
+    //     num_p num_res_2 = num_mul_karatsuba(num_copy(num_1), num_copy(num_2));
+    //     TIME_END(t2)
+    //     num_free(num_res_2);
+    //     tprintf("karatsuba time: %lu", t2);
         
-        printf("\n\nres\n\n");
-        num_display(num_1);
-    }
+    //     printf("\n\nres\n\n");
+    //     num_display(num_1);
+    // }
         
     // assert(clu_mem_is_empty());
 

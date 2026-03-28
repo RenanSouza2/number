@@ -12,6 +12,30 @@
 
 #ifdef DEBUG
 
+static uint16_t rand_16(void)
+{
+    return (uint16_t)rand();
+}
+
+static uint32_t rand_32(void)
+{
+    return ((uint32_t)rand_16() << 16) | rand_16();
+}
+
+uint64_t rand_64(void)
+{
+    return (U64(rand_32()) << 32) | rand_32();
+}
+
+uint64_t rand_64_range(uint64_t min, uint64_t max)
+{
+    assert(min < max);
+    uint64_t range = max - min;
+    return rand_64() % range + min;
+}
+
+
+
 num_p num_create_variadic(uint64_t n, va_list *args)
 {
     num_p num = num_create(n, n);
@@ -30,27 +54,9 @@ num_p num_create_immed(uint64_t n, ...)
     return num_create_variadic(n, &args);
 }
 
-
-
-static uint16_t rand_16(void)
-{
-    return (uint16_t)rand();
-}
-
-static uint32_t rand_32(void)
-{
-    return ((uint32_t)rand_16() << 16) | rand_16();
-}
-
-uint64_t rand_64(void)
-{
-    return (U64(rand_32()) << 32) | rand_32();
-}
-
 num_p num_create_rand(uint64_t count)
 {
-    num_p num = num_wrap(1);
-    num = num_head_grow(num, count - 1);
+    num_p num = num_create(count, count);
     for(uint64_t i=0; i<count; i++)
     {
         num->chunk[i] = rand_64();
@@ -1603,6 +1609,7 @@ num_p num_mul_ssm_fwd_step(num_p num, ssm_params_p params) // TODO: make it cons
     return num_fft;
 }
 
+// KEEP NUM
 num_p num_mul_ssm_fwd_transform(num_p num, uint64_t count)
 {
     CLU_HANDLER_IS_SAFE(num)
@@ -1610,7 +1617,6 @@ num_p num_mul_ssm_fwd_transform(num_p num, uint64_t count)
 
     ssm_params_t params = ssm_get_params(count);
     num_p num_fft = num_mul_ssm_fwd_step(num, &params);
-    num_free(num);
     
     uint64_t n = params.n;
     uint64_t K = params.K;
@@ -1637,7 +1643,8 @@ num_p num_mul_ssm_fwd_transform(num_p num, uint64_t count)
     return num_fft;
 }
 
-num_ssm_t num_mul_prepare(num_p num, uint64_t count)
+// KEEP NUM
+num_ssm_t num_mul_prepare_inner(num_p num, uint64_t count)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
@@ -1647,6 +1654,16 @@ num_ssm_t num_mul_prepare(num_p num, uint64_t count)
         .count = count,
         .num_fft = num_mul_ssm_fwd_transform(num, count)
     };
+}
+
+num_ssm_t num_mul_prepare(num_p num, uint64_t count)
+{
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num)
+
+    num_ssm_t num_ssm = num_mul_prepare_inner(num, count);
+    num_free(num);
+    return num_ssm;
 }
 
 void num_ssm_free(num_ssm_t num_ssm)
@@ -1740,6 +1757,24 @@ num_p num_mul_ssm_bwd_transform(num_p num_fft, uint64_t count)
 
 #include "../../mods/macros/time.h"
 
+// KEEPS NUM_1
+num_p num_mul_finish_inner(num_p num_1, num_ssm_t num_ssm_2)
+{
+    CLU_HANDLER_IS_SAFE(num_ssm_2.num_fft)
+    CLU_HANDLER_IS_SAFE(num_1)
+    assert(num_ssm_2.num_fft)
+    assert(num_1)
+
+    num_ssm_t num_ssm_1 = num_mul_prepare_inner(num_1, num_ssm_2.count);
+
+    // TIME_SETUP
+    num_ssm_pointwise_product(num_ssm_1, num_ssm_2);
+    // TIME_END(t1)
+    // tprintf("time pointwise: %.3f", (double)t1 / 1e9);
+
+    return num_mul_ssm_bwd_transform(num_ssm_1.num_fft, num_ssm_2.count);
+}
+
 num_p num_mul_finish(num_p num_1, num_ssm_t num_ssm_2)
 {
     CLU_HANDLER_IS_SAFE(num_ssm_2.num_fft)
@@ -1747,14 +1782,9 @@ num_p num_mul_finish(num_p num_1, num_ssm_t num_ssm_2)
     assert(num_ssm_2.num_fft)
     assert(num_1)
 
-    num_ssm_t num_ssm_1 = num_mul_prepare(num_1, num_ssm_2.count);
-
-    TIME_SETUP
-    num_ssm_pointwise_product(num_ssm_1, num_ssm_2);
-    TIME_END(t1)
-    tprintf("time pointwise: %.3f", (double)t1 / 1e9);
-
-    return num_mul_ssm_bwd_transform(num_ssm_1.num_fft, num_ssm_2.count);
+    num_p num_res = num_mul_finish_inner(num_1, num_ssm_2);
+    num_free(num_1);
+    return num_res;
 }
 
 
@@ -1784,6 +1814,7 @@ static bool mul_is_classic(uint64_t count_1, uint64_t count_2)
     return count_1 < 128 || count_2 < 128;
 }
 
+// KEEPS NUM_1 NUM_2
 num_p num_mul_classic(num_p num_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_1)
@@ -1795,9 +1826,6 @@ num_p num_mul_classic(num_p num_1, num_p num_2)
     num_res->cannot_expand = true;
     num_mul_classic_buffer(num_res, num_1, num_2);
     num_res->cannot_expand = false;
-
-    num_free(num_1);
-    num_free(num_2);
     return num_res;
 }
 
@@ -1848,6 +1876,7 @@ num_p num_mul_karatsuba(num_p num_1, num_p num_2)
     return num_add_offset(num_res, 2 * count, num_res_2, 0);
 }
 
+// KEEPS NUM_1 NUM_2
 num_p num_mul_ssm(num_p num_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_1)
@@ -1857,12 +1886,12 @@ num_p num_mul_ssm(num_p num_1, num_p num_2)
 
     uint64_t count = num_1->count + num_2->count;
 
-    TIME_SETUP
-    num_ssm_t num_ssm_2 = num_mul_prepare(num_2, count);
-    TIME_END(t1)
-    tprintf("time prepare: %.3f", (double)t1 / 1e9);
+    // TIME_SETUP
+    num_ssm_t num_ssm_2 = num_mul_prepare_inner(num_2, count);
+    // TIME_END(t1)
+    // tprintf("time prepare: %.3f", (double)t1 / 1e9);
 
-    num_p num_res = num_mul_finish(num_1, num_ssm_2);
+    num_p num_res = num_mul_finish_inner(num_1, num_ssm_2);
 
     num_ssm_free(num_ssm_2);
     return num_res;
@@ -1874,16 +1903,37 @@ num_p num_sqr_ssm(num_p num)
     assert(num)
 
     uint64_t count = 2 * num->count;
-    num_p num_fft = num_mul_ssm_fwd_transform(num, count);
+    num_ssm_t num_ssm = num_mul_prepare(num, count);
+
     uint64_t n = ssm_get_last_n(count);
-    uint64_t block_count = num_fft->size / n;
-    assert(block_count * n == num_fft->size);
+    uint64_t block_count = num_ssm.num_fft->size / n;
+    assert(block_count * n == num_ssm.num_fft->size);
     for(uint64_t i=0; i<block_count; i++)
     {
-        num_ssm_sqr_mod_span(num_fft, i * n, n);
+        num_ssm_sqr_mod_span(num_ssm.num_fft, i * n, n);
     }
         
-    return num_mul_ssm_bwd_transform(num_fft, count);
+    return num_mul_ssm_bwd_transform(num_ssm.num_fft, count);
+}
+
+num_p num_mul_inner(num_p num_1, num_p num_2)
+{
+    CLU_HANDLER_IS_SAFE(num_1)
+    CLU_HANDLER_IS_SAFE(num_2)
+    assert(num_1)
+    assert(num_2)
+
+    if(num_1->count == 0 || num_2->count == 0)
+    {
+        return num_wrap(0);
+    }
+
+    if(mul_is_classic(num_1->count, num_2->count))
+    {
+        return num_mul_classic(num_1, num_2);
+    }
+
+    return num_mul_ssm(num_1, num_2);
 }
 
 
@@ -2067,17 +2117,17 @@ static num_p num_div_mod_bz_rec(
             !f->mul_memoized
         ) {
             f->mul_memoized = true;
-            f->num_ssm_2_0 = num_mul_prepare(num_copy(&f->num_2_0), num_2->count);
+            f->num_ssm_2_0 = num_mul_prepare_inner(&f->num_2_0, num_2->count);
         }
 
         num_p num_aux_2;
         if(k > 128 && num_q_tmp->count > 128 && f->mul_memoized)
         {
-            num_aux_2 = num_mul_finish(num_copy(num_q_tmp), f->num_ssm_2_0);
+            num_aux_2 = num_mul_finish_inner(num_q_tmp, f->num_ssm_2_0);
         }
         else
         {
-            num_aux_2 = num_mul(num_copy(num_q_tmp), num_copy(&f->num_2_0));
+            num_aux_2 = num_mul_inner(num_q_tmp, &f->num_2_0);
         }
 
         while(num_cmp_offset(num_1, k * i, num_aux_2) < 0)
@@ -2328,25 +2378,10 @@ num_p num_mul(num_p num_1, num_p num_2)
     assert(num_1)
     assert(num_2)
 
-    if(num_1->count == 0)
-    {
-        num_free(num_2);
-        return num_1;
-    }
-
-    if(num_2->count == 0)
-    {
-        num_free(num_1);
-        return num_2;
-    }
-
-
-    if(mul_is_classic(num_1->count, num_2->count))
-    {
-        return num_mul_classic(num_1, num_2);
-    }
-
-    return num_mul_ssm(num_1, num_2);
+    num_p num_res = num_mul_inner(num_1, num_2);
+    num_free(num_1);
+    num_free(num_2);
+    return num_res;
 }
 
 num_p num_sqr(num_p num)

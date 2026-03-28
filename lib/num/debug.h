@@ -8,6 +8,7 @@
 #include <stdarg.h>
 
 uint64_t rand_64(void);
+uint64_t rand_64_range(uint64_t min, uint64_t max);
 
 num_p num_create_variadic(uint64_t n, va_list *args);
 num_p num_create_immed(uint64_t n, ...);
@@ -100,6 +101,7 @@ num_p num_mul_ssm_bwd_transform(num_p num_fft, uint64_t count);
 
 // num_p num_mul_classic(num_p num_1, num_p num_2);
 num_p num_mul_ssm(num_p num_1, num_p num_2);
+num_p num_mul_inner(num_p num_1, num_p num_2);
 num_p num_sqr_classic(num_p num);
 num_p num_sqr_ssm(num_p num);
 

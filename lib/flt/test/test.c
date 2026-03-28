@@ -512,31 +512,28 @@ void test_fuzz_flt_num_mul_ssm(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_FUZZ_FLT_NUM_MUL_SSM(TAG, COUNT_1, COUNT_2, MAX)           \
-    {                                                                       \
-        TEST_CASE_OPEN(TAG)                                                 \
-        {                                                                   \
-            for(uint64_t i=0; i<MAX; i++)                                   \
-            {                                                               \
-                uint64_t count = COUNT_1 + COUNT_2;                         \
-                int64_t exponent_1 = int_rand(INT32_MIN, INT32_MAX);        \
-                int64_t exponent_2 = int_rand(INT32_MIN, INT32_MAX);        \
-                flt_num_t flt_1 = flt_num_create_rand(exponent_1, COUNT_1); \
-                flt_num_t flt_2 = flt_num_create_rand(exponent_2, COUNT_2); \
-                flt_num_ssm_t flt_ssm_2 = flt_num_mul_prepare(              \
-                    flt_num_copy(flt_2),                                    \
-                    count                                                   \
-                );                                                          \
-                flt_num_t flt_res_1 = flt_num_mul_finish(                   \
-                    flt_num_copy(flt_1),                                    \
-                    flt_ssm_2                                               \
-                );                                                          \
-                flt_num_ssm_free(flt_ssm_2);                                \
-                flt_num_t flt_res_2 = flt_num_mul(flt_1, flt_2);            \
-                assert(flt_num_eq_dbg(flt_res_1, flt_res_2));               \
-            }                                                               \
-        }                                                                   \
-        TEST_CASE_CLOSE                                                     \
+    #define TEST_FUZZ_FLT_NUM_MUL_SSM(RUNS, TAG, COUNT_1, COUNT_2)      \
+    {                                                                   \
+        TEST_FUZZ_CASE_OPEN(RUNS, TAG)                                  \
+        {                                                               \
+            uint64_t count = COUNT_1 + COUNT_2;                         \
+            int64_t exponent_1 = int_rand(INT32_MIN, INT32_MAX);        \
+            int64_t exponent_2 = int_rand(INT32_MIN, INT32_MAX);        \
+            flt_num_t flt_1 = flt_num_create_rand(exponent_1, COUNT_1); \
+            flt_num_t flt_2 = flt_num_create_rand(exponent_2, COUNT_2); \
+            flt_num_ssm_t flt_ssm_2 = flt_num_mul_prepare(              \
+                flt_num_copy(flt_2),                                    \
+                count                                                   \
+            );                                                          \
+            flt_num_t flt_res_1 = flt_num_mul_finish(                   \
+                flt_num_copy(flt_1),                                    \
+                flt_ssm_2                                               \
+            );                                                          \
+            flt_num_ssm_free(flt_ssm_2);                                \
+            flt_num_t flt_res_2 = flt_num_mul(flt_1, flt_2);            \
+            assert(flt_num_eq_dbg(flt_res_1, flt_res_2));               \
+        }                                                               \
+        TEST_FUZZ_CASE_CLOSE                                            \
     }
 
     TEST_FUZZ_FLT_NUM_MUL_SSM(1, 256, 256, 256);

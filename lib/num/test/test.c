@@ -1824,14 +1824,20 @@ void test_num_mul(bool show)
 {
     TEST_FN_OPEN
 
+    // show = true;
+    // clu_log_level_set(CLU_LOG_DYNAMIC);
+
+    #define NUM_FREE
+
     #define TEST_NUM_MUL(TAG, FN, NUM_1, NUM_2, RES)        \
     {                                                       \
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
             num_p num_1 = num_create_immed(ARG_OPEN NUM_1); \
             num_p num_2 = num_create_immed(ARG_OPEN NUM_2); \
-            num_1 = FN(num_1, num_2);                       \
-            assert(num_immed(num_1, ARG_OPEN RES))          \
+            num_p num_res = FN(num_1, num_2);               \
+            assert(num_immed(num_res, ARG_OPEN RES))        \
+            NUM_FREE                                        \
         }                                                   \
         TEST_CASE_CLOSE                                     \
     }                                                       \
@@ -1855,11 +1861,17 @@ void test_num_mul(bool show)
         (0)
     )
 
+    #undef NUM_FREE
+
+    #define NUM_FREE        \
+        num_free(num_1);    \
+        num_free(num_2);
+
     #define TEST_NUM_MUL_BATCH(TAG, NUM_1, NUM_2, RES)                  \
     {                                                                   \
         TEST_NUM_MUL(10 * TAG + 1, num_mul_classic, NUM_1, NUM_2, RES)  \
         TEST_NUM_MUL(10 * TAG + 2, num_mul_ssm, NUM_1, NUM_2, RES)      \
-        TEST_NUM_MUL(10 * TAG + 3, num_mul, NUM_1, NUM_2, RES)          \
+        TEST_NUM_MUL(10 * TAG + 3, num_mul_inner, NUM_1, NUM_2, RES)    \
     }
 
     TEST_NUM_MUL_BATCH(4,
@@ -2555,22 +2567,22 @@ void test_fuzz_num_ssm_fft_round_trip(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_FUZZ_NUM_SSM_FFT_ROUND_TRIP(TAG, COUNT, MAX)                       \
-    {                                                                               \
-        TEST_CASE_OPEN_TIMEOUT(TAG, 0)                                              \
-        {                                                                           \
-            for(uint64_t i=0; i<MAX; i++)                                           \
-            {                                                                       \
-                num_p num_in = num_create_rand(COUNT);                              \
-                num_p num_fft = num_mul_ssm_fwd_transform(num_copy(num_in), COUNT); \
-                num_p num_out = num_mul_ssm_bwd_transform(num_fft, COUNT);          \
-                assert(num_eq_dbg(num_out, num_in))                                 \
-            }                                                                       \
-        }                                                                           \
-        TEST_CASE_CLOSE                                                             \
+    #define TEST_FUZZ_NUM_SSM_FFT_ROUND_TRIP(TAG, COUNT, MAX)               \
+    {                                                                       \
+        TEST_CASE_OPEN_TIMEOUT(TAG, 0)                                      \
+        {                                                                   \
+            for(uint64_t i=0; i<MAX; i++)                                   \
+            {                                                               \
+                num_p num_in = num_create_rand(COUNT);                      \
+                num_p num_fft = num_mul_ssm_fwd_transform(num_in, COUNT);   \
+                num_p num_out = num_mul_ssm_bwd_transform(num_fft, COUNT);  \
+                assert(num_eq_dbg(num_out, num_in))                         \
+            }                                                               \
+        }                                                                   \
+        TEST_CASE_CLOSE                                                     \
     }
 
-    TEST_FUZZ_NUM_SSM_FFT_ROUND_TRIP(1, 128, 1000);
+    TEST_FUZZ_NUM_SSM_FFT_ROUND_TRIP(1, 256, 1000);
     TEST_FUZZ_NUM_SSM_FFT_ROUND_TRIP(2, 1000, 100);
     TEST_FUZZ_NUM_SSM_FFT_ROUND_TRIP(3, 10000, 100);
     // TEST_FUZZ_NUM_SSM_FFT_ROUND_TRIP(4, 17000000, 1);
@@ -2586,12 +2598,11 @@ void test_fuzz_num_ssm_mul(bool show)
     {                                                       \
         num_p num_1 = num_create_rand(COUNT_1);             \
         num_p num_2 = num_create_rand(COUNT_2);             \
-        num_p num_res_1 = num_mul_ssm(                      \
-            num_copy(num_1),                                \
-            num_copy(num_2)                                 \
-        );                                                  \
+        num_p num_res_1 = num_mul_ssm(num_1, num_2);        \
         num_p num_res_2 = num_mul_classic(num_1, num_2);    \
         assert(num_eq_dbg(num_res_1, num_res_2));           \
+        num_free(num_1);                                    \
+        num_free(num_2);                                    \
     }
 
     #define TEST_FUZZ_NUM_SSM_MUL(TAG, COUNT_1, COUNT_2, MAX)   \
@@ -2613,18 +2624,18 @@ void test_fuzz_num_ssm_mul(bool show)
 
     #undef TEST_FUZZ_NUM_SSM_MUL
     
-    #define TEST_FUZZ_NUM_SSM_MUL(TAG, COUNT_MIN, COUNT_MAX, MAX)                   \
-    {                                                                               \
-        TEST_CASE_OPEN_TIMEOUT(TAG, 0)                                              \
-        {                                                                           \
-            for(uint64_t i=0; i<MAX; i++)                                           \
-            {                                                                       \
-                uint64_t count_1 = COUNT_MIN + rand_64() % (COUNT_MAX - COUNT_MIN); \
-                uint64_t count_2 = COUNT_MIN + rand_64() % (COUNT_MAX - COUNT_MIN); \
-                TEST_FUZZ_NUM_SSM_MUL_COUNT(count_1, count_2)                       \
-            }                                                                       \
-        }                                                                           \
-        TEST_CASE_CLOSE                                                             \
+    #define TEST_FUZZ_NUM_SSM_MUL(TAG, COUNT_MIN, COUNT_MAX, MAX)       \
+    {                                                                   \
+        TEST_CASE_OPEN_TIMEOUT(TAG, 0)                                  \
+        {                                                               \
+            for(uint64_t i=0; i<MAX; i++)                               \
+            {                                                           \
+                uint64_t count_1 = rand_64_range(COUNT_MIN, COUNT_MAX); \
+                uint64_t count_2 = rand_64_range(COUNT_MIN, COUNT_MAX); \
+                TEST_FUZZ_NUM_SSM_MUL_COUNT(count_1, count_2)           \
+            }                                                           \
+        }                                                               \
+        TEST_CASE_CLOSE                                                 \
     }
 
     TEST_FUZZ_NUM_SSM_MUL(4, 10, 20, 100);
