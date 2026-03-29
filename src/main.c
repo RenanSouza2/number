@@ -200,48 +200,39 @@ void time_3(void)
     }
 }
 
-// void time_4(void)
-// {
-//     uint64_t begin = 20;
-//     uint64_t end = 28;
-//
-//     num_p num_1 = num_generate_1(begin, 1);
-//     num_p num_2 = num_generate_1(begin - 1, 2);
-//     for(uint64_t i=begin; i<end; i++)
-//     {
-//
-//         num_1 = num_generate_1_step(num_1, 1);
-//         num_2 = num_generate_1_step(num_2, 2);
-//
-//         num_p num_1_copy = num_copy(num_1);
-//         num_p num_2_copy = num_copy(num_2);
-//
-//         uint64_t count = num_1->count + num_2->count;
-//
-//         printf("\n" U64P() "\t" U64P(16) "", i, count);
-//
-//         TIME_SETUP
-//         num_1_copy = num_mul_ssm_fwd_transform(num_1_copy, count);
-//         TIME_END(t1)
-//         printf("\t%10.3f", (double)t1 / 1e9);
-//
-//         TIME_RESET
-//         num_2_copy = num_mul_ssm_fwd_transform(num_2_copy, count);
-//         TIME_END(t2)
-//         printf("\t%10.3f", (double)t2 / 1e9);
-//
-//         // TIME_RESET
-//         num_p num = num_mul_finish(num_1_copy, num_2_copy, count);
-//         // TIME_END(t3)
-//         // printf("\t%10.3f", (double)t3 / 1e9);
-//
-//         num_free(num);
-//
-//         // num_free(num);
-//     }
-//     num_free(num_1);
-//     num_free(num_2);
-// }
+void time_karatsuba(void)
+{
+    for(uint64_t base=1; base<15; base++)
+    {
+
+        num_p num_1 = num_generate_1(base + 1, 2);
+        // num_p num_2 = num_generate_1(base, 3);
+        num_p num_2 = num_add(num_copy(num_1), num_wrap(1));
+        
+        printf("\n");
+        printf("\n-----------------------");
+        printf("\nnum_1: ");
+        num_display(num_1);
+        printf("\nnum_2: ");
+        num_display(num_2);
+        printf("\n");
+        
+        TIME_SETUP
+        num_p num_res_1 = num_mul_classic(num_copy(num_1), num_copy(num_2));
+        TIME_END(t1)
+        num_free(num_res_1);
+        tprintf("classical time: %lu", t1);
+        
+        TIME_RESET
+        num_p num_res_2 = num_mul_karatsuba(num_copy(num_1), num_copy(num_2));
+        TIME_END(t2)
+        num_free(num_res_2);
+        tprintf("karatsuba time: %lu", t2);
+        
+        printf("\n\nres\n\n");
+        num_display(num_1);
+    }
+}
 
 
 
@@ -705,12 +696,14 @@ int main()
     // clu_log_enable(true);
 
     // num_generate(21, 2);
-    time_1(16, 28);
+    // time_1(16, 28);
     // time_1(16, 17);
     // time_2(argc, argv, 25, 10000);
     // time_2_total(argc, argv);
     // time_3();
     // time_4();
+    time_karatsuba();
+
     // fibonacci();
     // fibonacci_2(16, 23);
     // fibonacci_3(16, 40);
@@ -721,38 +714,7 @@ int main()
     // flt_num_pi_2(1000);
     // flt_num_pi_3(1000);
     // mem_1(21);
-
-    // for(uint64_t base=1; base<15; base++)
-    // {
-
-    //     num_p num_1 = num_generate_1(base + 1, 2);
-    //     // num_p num_2 = num_generate_1(base, 3);
-    //     num_p num_2 = num_add(num_copy(num_1), num_wrap(1));
-        
-    //     printf("\n");
-    //     printf("\n-----------------------");
-    //     printf("\nnum_1: ");
-    //     num_display(num_1);
-    //     printf("\nnum_2: ");
-    //     num_display(num_2);
-    //     printf("\n");
-        
-    //     TIME_SETUP
-    //     num_p num_res_1 = num_mul_classic(num_copy(num_1), num_copy(num_2));
-    //     TIME_END(t1)
-    //     num_free(num_res_1);
-    //     tprintf("classical time: %lu", t1);
-        
-    //     TIME_RESET
-    //     num_p num_res_2 = num_mul_karatsuba(num_copy(num_1), num_copy(num_2));
-    //     TIME_END(t2)
-    //     num_free(num_res_2);
-    //     tprintf("karatsuba time: %lu", t2);
-        
-    //     printf("\n\nres\n\n");
-    //     num_display(num_1);
-    // }
-        
+ 
     // assert(clu_mem_is_empty());
 
     printf("\n");

@@ -2477,37 +2477,34 @@ void test_fuzz_num_ssm_sh(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_FUZZ_NUM_SSM_SH(TAG, N, BITS)                          \
-    {                                                                   \
-        TEST_CASE_OPEN_TIMEOUT(TAG, 0)                                  \
-        {                                                               \
-            for(uint64_t id_t=0; id_t<100; id_t++)                      \
-            {                                                           \
-                num_p num = num_create_rand(N);                         \
-                num->chunk[N - 1] = 0;                                  \
-                num_p num_res = num_copy(num);                          \
-                num_ssm_shl_mod(num_res, 0, N, BITS);                   \
-                num_ssm_shr_mod(num_res, 0, N, BITS);                   \
-                if(!num_eq_dbg(num_copy(num_res), num_copy(num)))       \
-                {                                                       \
-                    printf("\ncase: (n: %d) (bits: %d)", N, BITS);      \
-                    printf("\nentrie");                                 \
-                    num_display_span_full("num", num, N, 1);            \
-                    printf("\nroundrip results in");                    \
-                    num_display_span_full("num_res", num_res, N, 1);    \
-                    assert(false);                                      \
-                }                                                       \
-                num_free(num_res);                                      \
-                num_free(num);                                          \
-            }                                                           \
-        }                                                               \
-        TEST_CASE_CLOSE                                                 \
+    #define TEST_FUZZ_NUM_SSM_SH(RUNS, TAG, N, BITS)                \
+    {                                                               \
+        TEST_FUZZ_CASE_OPEN(RUNS, TAG)                              \
+        {                                                           \
+            num_p num = num_create_rand(N);                         \
+            num->chunk[N - 1] = 0;                                  \
+            num_p num_res = num_copy(num);                          \
+            num_ssm_shl_mod(num_res, 0, N, BITS);                   \
+            num_ssm_shr_mod(num_res, 0, N, BITS);                   \
+            if(!num_eq_dbg(num_copy(num_res), num_copy(num)))       \
+            {                                                       \
+                printf("\ncase: (n: %d) (bits: %d)", N, BITS);      \
+                printf("\nentrie");                                 \
+                num_display_span_full("num", num, N, 1);            \
+                printf("\nroundrip results in");                    \
+                num_display_span_full("num_res", num_res, N, 1);    \
+                assert(false);                                      \
+            }                                                       \
+            num_free(num_res);                                      \
+            num_free(num);                                          \
+        }                                                           \
+        TEST_FUZZ_CASE_CLOSE                                        \
     }
 
-    TEST_FUZZ_NUM_SSM_SH(1, 2, 1)
-    TEST_FUZZ_NUM_SSM_SH(2, 3, 65)
-    TEST_FUZZ_NUM_SSM_SH(3, 4, 80)
-    TEST_FUZZ_NUM_SSM_SH(4, 5, 80)
+    TEST_FUZZ_NUM_SSM_SH(100, 1, 2, 1)
+    TEST_FUZZ_NUM_SSM_SH(100, 2, 3, 65)
+    TEST_FUZZ_NUM_SSM_SH(100, 3, 4, 80)
+    TEST_FUZZ_NUM_SSM_SH(100, 4, 5, 80)
 
     TEST_FN_CLOSE
 }
@@ -2516,49 +2513,45 @@ void test_fuzz_num_ssm_fft(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_FUZZ_NUM_SSM_FFT(TAG, Nv, Kv)                          \
-    {                                                                   \
-        TEST_CASE_OPEN_TIMEOUT(TAG, 0)                                  \
-        {                                                               \
-            for(uint64_t i=0; i<100; i++)                               \
-            {                                                           \
-                num_p num_0 = num_create_rand((Nv-1) * Kv);             \
-                num_p num = num_create(Nv * Kv, Nv * Kv);               \
-                uint64_t Q = 64 * (Nv-1) / Kv;                          \
-                ssm_params_t p = (ssm_params_t)                         \
-                {                                                       \
-                    .M = Nv-1,                                          \
-                    .K = Kv,                                            \
-                    .Q = Q,                                             \
-                    .n = Nv,                                            \
-                };                                                      \
-                num_ssm_pad(num, num_0, &p);                            \
-                num_free(num_0);                                        \
-                num_p num_res = num_copy(num);                          \
-                num_ssm_fft_fwd(num_res, &p);                           \
-                num_ssm_fft_inv(num_res, &p);                           \
-                if(!num_eq_dbg(num_copy(num_res), num_copy(num)))       \
-                {                                                       \
-                    printf("\ncase: " U64P() "", i);                    \
-                    printf("\ncase: (K: %d) (n: %d)", Kv, Nv);          \
-                    printf("\nentrie");                                 \
-                    num_display_span_full("num", num, Nv, Kv);          \
-                    printf("\nroundrip results in");                    \
-                    num_display_span_full("num_res", num_res, Nv, Kv);  \
-                    assert(false);                                      \
-                }                                                       \
-                num_free(num_res);                                      \
-                num_free(num);                                          \
-            }                                                           \
-        }                                                               \
-        TEST_CASE_CLOSE                                                 \
+    #define TEST_FUZZ_NUM_SSM_FFT(RUNS, TAG, Nv, Kv)                \
+    {                                                               \
+        TEST_FUZZ_CASE_OPEN(RUNS, TAG)                              \
+        {                                                           \
+            num_p num_0 = num_create_rand((Nv-1) * Kv);             \
+            num_p num = num_create(Nv * Kv, Nv * Kv);               \
+            uint64_t Q = 64 * (Nv-1) / Kv;                          \
+            ssm_params_t p = (ssm_params_t)                         \
+            {                                                       \
+                .M = Nv-1,                                          \
+                .K = Kv,                                            \
+                .Q = Q,                                             \
+                .n = Nv,                                            \
+            };                                                      \
+            num_ssm_pad(num, num_0, &p);                            \
+            num_free(num_0);                                        \
+            num_p num_res = num_copy(num);                          \
+            num_ssm_fft_fwd(num_res, &p);                           \
+            num_ssm_fft_inv(num_res, &p);                           \
+            if(!num_eq_dbg(num_copy(num_res), num_copy(num)))       \
+            {                                                       \
+                printf("\ncase: (K: %d) (n: %d)", Kv, Nv);          \
+                printf("\nentrie");                                 \
+                num_display_span_full("num", num, Nv, Kv);          \
+                printf("\nroundrip results in");                    \
+                num_display_span_full("num_res", num_res, Nv, Kv);  \
+                assert(false);                                      \
+            }                                                       \
+            num_free(num_res);                                      \
+            num_free(num);                                          \
+        }                                                           \
+        TEST_FUZZ_CASE_CLOSE                                        \
     }
 
-    TEST_FUZZ_NUM_SSM_FFT(1, 2, 4)
-    TEST_FUZZ_NUM_SSM_FFT(2, 2, 8)
-    TEST_FUZZ_NUM_SSM_FFT(3, 2, 16)
-    TEST_FUZZ_NUM_SSM_FFT(4, 3, 16)
-    TEST_FUZZ_NUM_SSM_FFT(5, 10, 128)
+    TEST_FUZZ_NUM_SSM_FFT(100, 1, 2, 4)
+    TEST_FUZZ_NUM_SSM_FFT(100, 2, 2, 8)
+    TEST_FUZZ_NUM_SSM_FFT(100, 3, 2, 16)
+    TEST_FUZZ_NUM_SSM_FFT(100, 4, 3, 16)
+    TEST_FUZZ_NUM_SSM_FFT(100, 5, 10, 128)
 
     TEST_FN_CLOSE
 }
@@ -2567,25 +2560,22 @@ void test_fuzz_num_ssm_fft_round_trip(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_FUZZ_NUM_SSM_FFT_ROUND_TRIP(TAG, COUNT, MAX)               \
-    {                                                                       \
-        TEST_CASE_OPEN_TIMEOUT(TAG, 0)                                      \
-        {                                                                   \
-            for(uint64_t i=0; i<MAX; i++)                                   \
-            {                                                               \
-                num_p num_in = num_create_rand(COUNT);                      \
-                num_p num_fft = num_mul_ssm_fwd_transform(num_in, COUNT);   \
-                num_p num_out = num_mul_ssm_bwd_transform(num_fft, COUNT);  \
-                assert(num_eq_dbg(num_out, num_in))                         \
-            }                                                               \
-        }                                                                   \
-        TEST_CASE_CLOSE                                                     \
+    #define TEST_FUZZ_NUM_SSM_FFT_ROUND_TRIP(RUNS, TAG, COUNT)          \
+    {                                                                   \
+        TEST_FUZZ_CASE_OPEN(RUNS, TAG)                                  \
+        {                                                               \
+            num_p num_in = num_create_rand(COUNT);                      \
+            num_p num_fft = num_mul_ssm_fwd_transform(num_in, COUNT);   \
+            num_p num_out = num_mul_ssm_bwd_transform(num_fft, COUNT);  \
+            assert(num_eq_dbg(num_out, num_in))                         \
+        }                                                               \
+        TEST_FUZZ_CASE_CLOSE                                            \
     }
 
-    TEST_FUZZ_NUM_SSM_FFT_ROUND_TRIP(1, 256, 1000);
-    TEST_FUZZ_NUM_SSM_FFT_ROUND_TRIP(2, 1000, 100);
-    TEST_FUZZ_NUM_SSM_FFT_ROUND_TRIP(3, 10000, 100);
-    // TEST_FUZZ_NUM_SSM_FFT_ROUND_TRIP(4, 17000000, 1);
+    TEST_FUZZ_NUM_SSM_FFT_ROUND_TRIP(1000, 1, 256);
+    TEST_FUZZ_NUM_SSM_FFT_ROUND_TRIP( 100, 2, 1000);
+    TEST_FUZZ_NUM_SSM_FFT_ROUND_TRIP( 100, 3, 10000);
+    // TEST_FUZZ_NUM_SSM_FFT_ROUND_TRIP(1, 4, 17000000);
 
     TEST_FN_CLOSE
 }
@@ -2605,42 +2595,36 @@ void test_fuzz_num_ssm_mul(bool show)
         num_free(num_2);                                    \
     }
 
-    #define TEST_FUZZ_NUM_SSM_MUL(TAG, COUNT_1, COUNT_2, MAX)   \
+    #define TEST_FUZZ_NUM_SSM_MUL(RUNS, TAG, COUNT_1, COUNT_2)  \
     {                                                           \
-        TEST_CASE_OPEN_TIMEOUT(TAG, 0)                          \
+        TEST_FUZZ_CASE_OPEN(RUNS, TAG)                          \
         {                                                       \
-            for(uint64_t i=0; i<MAX; i++)                       \
-            {                                                   \
-                TEST_FUZZ_NUM_SSM_MUL_COUNT(COUNT_1, COUNT_2)   \
-            }                                                   \
+            TEST_FUZZ_NUM_SSM_MUL_COUNT(COUNT_1, COUNT_2)       \
         }                                                       \
-        TEST_CASE_CLOSE                                         \
+        TEST_FUZZ_CASE_CLOSE                                    \
     }
 
-    TEST_FUZZ_NUM_SSM_MUL(1, 500, 500, 100)
-    TEST_FUZZ_NUM_SSM_MUL(2, 1000, 500, 10)
-    TEST_FUZZ_NUM_SSM_MUL(3, 5000, 5000, 2)
+    TEST_FUZZ_NUM_SSM_MUL(100, 1, 500, 500)
+    TEST_FUZZ_NUM_SSM_MUL( 10, 2, 1000, 500)
+    TEST_FUZZ_NUM_SSM_MUL(  2, 3, 5000, 5000)
     // TEST_FUZZ_NUM_SSM_MUL(11, 20000, 20000, 1)
 
     #undef TEST_FUZZ_NUM_SSM_MUL
     
-    #define TEST_FUZZ_NUM_SSM_MUL(TAG, COUNT_MIN, COUNT_MAX, MAX)       \
-    {                                                                   \
-        TEST_CASE_OPEN_TIMEOUT(TAG, 0)                                  \
-        {                                                               \
-            for(uint64_t i=0; i<MAX; i++)                               \
-            {                                                           \
-                uint64_t count_1 = rand_64_range(COUNT_MIN, COUNT_MAX); \
-                uint64_t count_2 = rand_64_range(COUNT_MIN, COUNT_MAX); \
-                TEST_FUZZ_NUM_SSM_MUL_COUNT(count_1, count_2)           \
-            }                                                           \
-        }                                                               \
-        TEST_CASE_CLOSE                                                 \
+    #define TEST_FUZZ_NUM_SSM_MUL(RUNS, TAG, COUNT_MIN, COUNT_MAX)  \
+    {                                                               \
+        TEST_FUZZ_CASE_OPEN(RUNS, TAG)                              \
+        {                                                           \
+            uint64_t count_1 = rand_64_range(COUNT_MIN, COUNT_MAX); \
+            uint64_t count_2 = rand_64_range(COUNT_MIN, COUNT_MAX); \
+            TEST_FUZZ_NUM_SSM_MUL_COUNT(count_1, count_2)           \
+        }                                                           \
+        TEST_FUZZ_CASE_CLOSE                                        \
     }
 
-    TEST_FUZZ_NUM_SSM_MUL(4, 10, 20, 100);
-    TEST_FUZZ_NUM_SSM_MUL(5, 50, 100, 100);
-    TEST_FUZZ_NUM_SSM_MUL(6, 500, 5000, 100);
+    TEST_FUZZ_NUM_SSM_MUL(100, 4, 10, 20);
+    TEST_FUZZ_NUM_SSM_MUL(100, 5, 50, 100);
+    TEST_FUZZ_NUM_SSM_MUL(100, 6, 500, 5000);
 
     #undef TEST_FUZZ_NUM_SSM_MUL
 
@@ -2659,22 +2643,18 @@ void test_fuzz_num_ssm_sqr(bool show)
         assert(num_eq_dbg(num_res_1, num_res_2));       \
     }
 
-    #define TEST_FUZZ_NUM_SSM_SQR(TAG, COUNT, MAX)  \
+    #define TEST_FUZZ_NUM_SSM_SQR(RUNS, TAG, COUNT) \
     {                                               \
-        TEST_CASE_OPEN_TIMEOUT(TAG, 0)              \
+        TEST_FUZZ_CASE_OPEN(RUNS, TAG)              \
         {                                           \
-            for(uint64_t i=0; i<MAX; i++)           \
-            {                                       \
-                TEST_FUZZ_NUM_SSM_SQR_COUNT(COUNT)  \
-            }                                       \
+            TEST_FUZZ_NUM_SSM_SQR_COUNT(COUNT)      \
         }                                           \
-        TEST_CASE_CLOSE                             \
+        TEST_FUZZ_CASE_CLOSE                        \
     }
 
-    TEST_FUZZ_NUM_SSM_SQR(1, 500, 100)
-    TEST_FUZZ_NUM_SSM_SQR(2, 1000, 10)
-    TEST_FUZZ_NUM_SSM_SQR(3, 5000, 2)
-    // TEST_FUZZ_NUM_SSM_MUL(11, 20000, 20000, 1)
+    TEST_FUZZ_NUM_SSM_SQR(100, 1,  500)
+    TEST_FUZZ_NUM_SSM_SQR( 10, 2, 1000)
+    TEST_FUZZ_NUM_SSM_SQR(  2, 3, 5000)
 
     #undef TEST_FUZZ_NUM_SSM_MUL
 
@@ -2685,48 +2665,45 @@ void test_fuzz_num_bz_div(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_FUZZ_NUM_SSM_DIV(TAG, COUNT_1, COUNT_2, MAX)                   \
-    {                                                                           \
-        TEST_CASE_OPEN_TIMEOUT(TAG, 0)                                          \
-        {                                                                       \
-            for(uint64_t i=0; i<MAX; i++)                                       \
-            {                                                                   \
-                num_p num_1 = num_create_rand(COUNT_1);                         \
-                num_p num_2 = num_create_rand(COUNT_2);                         \
-                num_p num_q, num_r;                                             \
-                num_div_mod(&num_q, &num_r, num_copy(num_1), num_copy(num_2));  \
-                num_p num_aux = num_mul(num_copy(num_q), num_copy(num_2));      \
-                num_aux = num_add(num_aux, num_copy(num_r));                    \
-                if(!num_eq_dbg(num_copy(num_aux), num_copy(num_1)))             \
-                {                                                               \
-                    printf("\nentries");                                        \
-                    num_display_full("num_1", num_1);                           \
-                    num_display_full("num_2", num_2);                           \
-                    printf("\nreconstructed give");                             \
-                    num_display_full("num_aux", num_aux);                       \
-                    assert(false);                                              \
-                }                                                               \
-                num_free(num_1);                                                \
-                num_free(num_2);                                                \
-                num_free(num_aux);                                              \
-                num_free(num_q);                                                \
-                num_free(num_r);                                                \
-            }                                                                   \
-        }                                                                       \
-        TEST_CASE_CLOSE                                                         \
+    #define TEST_FUZZ_NUM_SSM_DIV(RUNS, TAG, COUNT_1, COUNT_2)              \
+    {                                                                       \
+        TEST_FUZZ_CASE_OPEN(RUNS, TAG)                                      \
+        {                                                                   \
+            num_p num_1 = num_create_rand(COUNT_1);                         \
+            num_p num_2 = num_create_rand(COUNT_2);                         \
+            num_p num_q, num_r;                                             \
+            num_div_mod(&num_q, &num_r, num_copy(num_1), num_copy(num_2));  \
+            num_p num_aux = num_mul(num_copy(num_q), num_copy(num_2));      \
+            num_aux = num_add(num_aux, num_copy(num_r));                    \
+            if(!num_eq_dbg(num_copy(num_aux), num_copy(num_1)))             \
+            {                                                               \
+                printf("\nentries");                                        \
+                num_display_full("num_1", num_1);                           \
+                num_display_full("num_2", num_2);                           \
+                printf("\nreconstructed give");                             \
+                num_display_full("num_aux", num_aux);                       \
+                assert(false);                                              \
+            }                                                               \
+            num_free(num_1);                                                \
+            num_free(num_2);                                                \
+            num_free(num_aux);                                              \
+            num_free(num_q);                                                \
+            num_free(num_r);                                                \
+        }                                                                   \
+        TEST_FUZZ_CASE_CLOSE                                                \
     }
 
-    TEST_FUZZ_NUM_SSM_DIV(1, 3, 1, 100)
-    TEST_FUZZ_NUM_SSM_DIV(1, 3, 2, 100)
-    TEST_FUZZ_NUM_SSM_DIV(2, 4, 2, 100)
-    TEST_FUZZ_NUM_SSM_DIV(3, 5, 2, 100)
-    TEST_FUZZ_NUM_SSM_DIV(4, 8, 5, 100)
-    TEST_FUZZ_NUM_SSM_DIV(5, 10, 7, 100)
-    TEST_FUZZ_NUM_SSM_DIV(6, 32, 19, 100)
-    TEST_FUZZ_NUM_SSM_DIV(7, 20, 20, 5)
-    TEST_FUZZ_NUM_SSM_DIV(8, 30, 20, 5)
-    TEST_FUZZ_NUM_SSM_DIV(9, 40, 20, 5)
-    TEST_FUZZ_NUM_SSM_DIV(10, 50, 20, 5)
+    TEST_FUZZ_NUM_SSM_DIV(100, 1, 3, 1)
+    TEST_FUZZ_NUM_SSM_DIV(100, 1, 3, 2)
+    TEST_FUZZ_NUM_SSM_DIV(100, 2, 4, 2)
+    TEST_FUZZ_NUM_SSM_DIV(100, 3, 5, 2)
+    TEST_FUZZ_NUM_SSM_DIV(100, 4, 8, 5)
+    TEST_FUZZ_NUM_SSM_DIV(100, 5, 10, 7)
+    TEST_FUZZ_NUM_SSM_DIV(100, 6, 32, 19)
+    TEST_FUZZ_NUM_SSM_DIV(  5, 7, 20, 20)
+    TEST_FUZZ_NUM_SSM_DIV(  5, 8, 30, 20)
+    TEST_FUZZ_NUM_SSM_DIV(  5, 9, 40, 20)
+    TEST_FUZZ_NUM_SSM_DIV(  5, 10, 50, 20)
 
     #undef TEST_FUZZ_NUM_SSM_DIV
 
