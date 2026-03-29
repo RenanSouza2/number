@@ -1829,6 +1829,9 @@ num_p num_mul_classic(num_p num_1, num_p num_2)
     return num_res;
 }
 
+num_p num_add_inner(num_p num_1, num_p num_2);
+num_p num_sub_inner(num_p num_1, num_p num_2);
+
 num_p num_mul_karatsuba(num_p num_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_1)
@@ -1852,25 +1855,27 @@ num_p num_mul_karatsuba(num_p num_1, num_p num_2)
     num_span(&num_2_1, num_2, count, num_2->count);
 
     // TIME_SETUP
-    num_p num_res_0 = num_mul_karatsuba(num_copy(&num_1_0), num_copy(&num_2_0));
+    num_p num_res_0 = num_mul_karatsuba(&num_1_0, &num_2_0);
     // TIME_END(t1)
     // tprintf("time mul 1: %.3f", (double)t1 / 1e9);
 
     // TIME_RESET
-    num_p num_res_2 = num_mul_karatsuba(num_copy(&num_1_1), num_copy(&num_2_1));
+    num_p num_res_2 = num_mul_karatsuba(&num_1_1, &num_2_1);
     // TIME_END(t2)
     // tprintf("time mul 2: %.3f", (double)t2 / 1e9);
 
-    num_p num_add_1 = num_add(num_copy(&num_1_0), num_copy(&num_1_1));
-    num_p num_add_2 = num_add(num_copy(&num_2_0), num_copy(&num_2_1));
+    num_p num_add_1 = num_add_inner(num_copy(&num_1_0), &num_1_1);
+    num_p num_add_2 = num_add_inner(num_copy(&num_2_0), &num_2_1);
 
     // TIME_RESET
     num_p num_res_1 = num_mul_karatsuba(num_add_1, num_add_2);
+    num_free(num_add_1);
+    num_free(num_add_2);
     // TIME_END(t3)
     // tprintf("time mul 3: %.3f", (double)t3 / 1e9);
 
-    num_res_1 = num_sub(num_res_1, num_copy(num_res_0));
-    num_res_1 = num_sub(num_res_1, num_copy(num_res_2));
+    num_res_1 = num_sub_inner(num_res_1, num_res_0);
+    num_res_1 = num_sub_inner(num_res_1, num_res_2);
 
     num_p num_res = num_add_offset(num_res_0, count, num_res_1, 0);
     return num_add_offset(num_res, 2 * count, num_res_2, 0);
@@ -2346,6 +2351,15 @@ num_p num_mul_uint(num_p num, uint64_t value)
 }
 
 
+num_p num_add_inner(num_p num_1, num_p num_2)
+{
+    CLU_HANDLER_IS_SAFE(num_1)
+    CLU_HANDLER_IS_SAFE(num_2)
+    assert(num_1)
+    assert(num_2)
+
+    return num_add_offset(num_1, 0, num_2, 0);
+}
 
 num_p num_add(num_p num_1, num_p num_2)
 {
@@ -2357,6 +2371,16 @@ num_p num_add(num_p num_1, num_p num_2)
     num_1 = num_add_offset(num_1, 0, num_2, 0);
     num_free(num_2);
     return num_1;
+}
+
+num_p num_sub_inner(num_p num_1, num_p num_2)
+{
+    CLU_HANDLER_IS_SAFE(num_1)
+    CLU_HANDLER_IS_SAFE(num_2)
+    assert(num_1)
+    assert(num_2)
+
+    return num_sub_offset(num_1, 0, num_2);
 }
 
 num_p num_sub(num_p num_1, num_p num_2)
