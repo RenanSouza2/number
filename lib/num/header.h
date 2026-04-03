@@ -55,5 +55,6 @@ void num_ssm_free(num_ssm_t num_ssm);
 
 num_p num_mul_karatsuba(num_p num_1, num_p num_2);
 num_p num_mul_classic(num_p num_1, num_p num_2);
+num_p num_mul_ssm(num_p num_1, num_p num_2);
 
 #endif

@@ -953,6 +953,30 @@ static num_p num_mul_classic_buffer(num_p num_res, num_p num_1, num_p num_2)
     return num_res;
 }
 
+num_p num_mul_aaa_buffer(num_p num_res, num_p num_1, num_p num_2)
+{
+    CLU_HANDLER_IS_SAFE(num_res)
+    CLU_HANDLER_IS_SAFE(num_1)
+    CLU_HANDLER_IS_SAFE(num_2)
+    assert(num_res)
+    assert(num_1)
+    assert(num_2)
+    assert(num_res->size >= num_1->count + num_2->count)
+
+    uint64_t th = 10;
+    if(num_1->count < th || num_2->count < th)
+    {
+        return num_mul_classic_buffer(num_res, num_1, num_2);
+    }
+
+    num_p num_aux = num_mul_karatsuba(num_1, num_2);
+    memmove(num_res->chunk, num_aux->chunk, num_aux->count * sizeof(uint64_t));
+    num_res->count = num_aux->count;
+    num_free(num_aux);
+
+    return num_res;
+}
+
 static num_p num_sqr_classic_buffer(num_p num_res, num_p num)
 {
     CLU_HANDLER_IS_SAFE(num_res)
@@ -961,7 +985,9 @@ static num_p num_sqr_classic_buffer(num_p num_res, num_p num)
     assert(num)
 
     if(num->count == 0)
+    {
         return num_res;
+    }
 
     for(uint64_t i=0; i<num->count; i++)
     {
@@ -974,7 +1000,9 @@ static num_p num_sqr_classic_buffer(num_p num_res, num_p num)
         num_res = num_add_mul_uint_offset(num_res, 2 * i + 1, num, i + 1, value << 1);
 
         if(value >= 0x8000000000000000)
+        {
             num_res = num_add_offset(num_res, 2 * i + 2, num, i + 1);
+        }
     }
     return num_res;
 }
@@ -1483,12 +1511,14 @@ void num_ssm_fft_inv(num_p num, ssm_params_p p)
     }
 }
 
-#define TRESHOLD 45
+#define TRESHOLD 1024
 
 bool ssm_is_recursive(uint64_t n)
 {
     return n > TRESHOLD && (((n - 1) & (1 - n)) > 4);
 }
+
+// karatsuba 0: 789425000
 
 ssm_params_t ssm_get_params(uint64_t count)
 {
@@ -1689,7 +1719,8 @@ void num_ssm_mul_mod_span(num_p num_1, num_p num_2, uint64_t pos, uint64_t n)
     uint64_t chunk[2 * n];
     num_t num_aux;
     num_static(&num_aux, chunk, 2 * n);
-    num_mul_classic_buffer(&num_aux, &num_t_1, &num_t_2);
+    // num_mul_classic_buffer(&num_aux, &num_t_1, &num_t_2);
+    num_mul_aaa_buffer(&num_aux, &num_t_1, &num_t_2);
 
     memmove(&num_aux.chunk[n], &num_aux.chunk[n-1], n * sizeof(uint64_t));
     num_aux.chunk[n-1] = 0;
@@ -1755,7 +1786,7 @@ num_p num_mul_ssm_bwd_transform(num_p num_fft, uint64_t count)
     return num_ssm_depad_no_wrap(num_tmp, &params);
 }
 
-#include "../../mods/macros/time.h"
+#include "../../mods/macros/time.h" // DELETE
 
 // KEEPS NUM_1
 num_p num_mul_finish_inner(num_p num_1, num_ssm_t num_ssm_2)
@@ -1839,7 +1870,7 @@ num_p num_mul_karatsuba(num_p num_1, num_p num_2)
     assert(num_1)
     assert(num_2)
 
-    uint64_t threshold = 5;
+    uint64_t threshold = 10;
     if(num_1->count < threshold || num_2->count < threshold)
     {
         return num_mul_classic(num_1, num_2);
