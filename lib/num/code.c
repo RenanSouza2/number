@@ -750,8 +750,6 @@ static num_p num_add_mul_uint_offset(
     assert(num)
     assert(num_res->size >= pos_res + num->count + 1 - pos)
 
-    tprintf("begin");
-
     if(value == 0)
         return num_res;
 
@@ -862,19 +860,8 @@ static num_p num_add_offset(num_p num_1, uint64_t pos_1, num_p num_2, uint64_t p
     if(num_2->count == 0)
         return num_1;
 
-    printf("\n");
-    tprintf("begin");
-    tprintf("pos_1: %lu", pos_1);
-    tprintf("pos_2: %lu", pos_2);
-    tprintf("num_1: ");
-    num_display_opts(num_1, NULL, true, true);
-    tprintf("num_2: ");
-    num_display_opts(num_2, NULL, true, true);
-
     uint64_t delta = pos_1 - pos_2;
     uint64_t count_max = delta + num_2->count;
-    tprintf("count_max: %lu", count_max);
-    tprintf("num_1->size: %lu", num_1->size);
     
     num_1 = num_expand_to(num_1, count_max);
 
@@ -959,15 +946,11 @@ static num_p num_mul_classic_buffer(num_p num_res, num_p num_1, num_p num_2)
     assert(num_2)
     assert(num_res->size >= num_1->count + num_2->count)
 
-    tprintf("begin");
-
     num_set_count(num_res, 0);
     for(uint64_t i=0; i<num_2->count; i++)
     {
         num_res = num_add_mul_uint_offset(num_res, i, num_1, 0, num_2->chunk[i]);
     }
-
-    tprintf("end");
 
     return num_res;
 }
@@ -990,9 +973,7 @@ num_p num_mul_aaa_buffer(num_p num_res, num_p num_1, num_p num_2)
         return num_mul_classic_buffer(num_res, num_1, num_2);
     }
 
-    num_res = num_mul_karatsuba_buffer(num_res, num_1, num_2);
-    tprintf("end");
-    return num_res;
+    return num_mul_karatsuba_buffer(num_res, num_1, num_2);
 }
 
 static num_p num_sqr_classic_buffer(num_p num_res, num_p num)
@@ -1537,6 +1518,7 @@ bool ssm_is_recursive(uint64_t n)
 }
 
 // karatsuba 0: 789425000
+// karatsuba 1: 639613900
 
 ssm_params_t ssm_get_params(uint64_t count)
 {
@@ -1895,25 +1877,14 @@ num_p num_mul_karatsuba_buffer(num_p num_res, num_p num_1, num_p num_2)
     assert(num_res)
     assert(num_1)
     assert(num_2)
-
-    tprintf("begin");
-    tprintf("num_1->count: %lu", num_1->count);
-    tprintf("num_2->count: %lu", num_2->count);
-    tprintf("num_res->size: %lu", num_res->size);
-
     assert(num_res->size >= num_1->count + num_2->count);
-
 
     uint64_t threshold = 10;
     if(num_1->count < threshold || num_2->count < threshold)
     {
-        tprintf("classic");
-        num_res = num_mul_classic_buffer(num_res, num_1, num_2);
-        tprintf("end");
-        return num_res;
+        return num_mul_classic_buffer(num_res, num_1, num_2);
     }
 
-    tprintf("karatsuba");
     num_set_count(num_res, 0);
 
     uint64_t bigger_count = num_1->count > num_2->count ? num_1->count : num_2->count;
@@ -1927,46 +1898,21 @@ num_p num_mul_karatsuba_buffer(num_p num_res, num_p num_1, num_p num_2)
     num_span(&num_2_0, num_2, 0, count);
     num_span(&num_2_1, num_2, count, num_2->count);
 
-    printf("\n");
-    tprintf("logs 1");
-    tprintf("num_1->count: %lu", num_1->count);
-    tprintf("num_2->count: %lu", num_2->count);
-    tprintf("count: %lu", count);
-    tprintf("num_1_0.count: %lu", num_1_0.count);
-    tprintf("num_1_1.count: %lu", num_1_1.count);
-    tprintf("num_2_0.count: %lu", num_2_0.count);
-    tprintf("num_2_1.count: %lu", num_2_1.count);
-
-    tprintf("a");
     num_res_next = num_mul_karatsuba_buffer(num_res_next, &num_1_1, &num_2_1);
     num_res = num_add_offset(num_res, 2 * count, num_res_next, 0);
     num_res = num_sub_offset(num_res, count, num_res_next);
     
     num_p num_add_2 = num_add_offset(num_copy(&num_2_0), 0, &num_2_1, 0);
     num_p num_add_1 = num_add_offset(num_copy(&num_1_0), 0, &num_1_1, 0);
-    
-    printf("\n");
-    tprintf("logs 2");
-    tprintf("num_1->count: %lu", num_1->count);
-    tprintf("num_2->count: %lu", num_2->count);
-    tprintf("count: %lu", count);
-    tprintf("num_1_0.count: %lu", num_1_0.count);
-    tprintf("num_1_1.count: %lu", num_1_1.count);
-    tprintf("num_2_0.count: %lu", num_2_0.count);
-    tprintf("num_2_1.count: %lu", num_2_1.count);
 
-    tprintf("b");
     num_res_next = num_mul_karatsuba_buffer(num_res_next, num_add_1, num_add_2);
     num_free(num_add_1);
     num_free(num_add_2);
     num_res = num_add_offset(num_res, count, num_res_next, 0);
-    
-    tprintf("c");
+
     num_res_next = num_mul_karatsuba_buffer(num_res_next, &num_1_0, &num_2_0);
     num_res = num_add_offset(num_res, 0, num_res_next, 0);
-    num_res = num_sub_offset(num_res, count, num_res_next);
-
-    return num_res;
+    return num_sub_offset(num_res, count, num_res_next);
 }
 
 // KEEPS NUM_1 NUM_2
