@@ -94,13 +94,13 @@ void ssm_params_display_main(ssm_params_t p)
 void time_2(int argc, char** argv, uint64_t max, uint64_t jumps)
 {
     uint64_t id = argc > 1 ? (uint64_t)get_arg(argc, argv) : 0;
-    printf("\nid: " U64P() "", id);
-
     num_p num_1 = num_generate_1(max, 2);
-    num_display_tag("num_1", num_1);
-
+    
+    // printf("\nid: " U64P() "", id);
+    // num_display_tag("num_1", num_1);
     // printf("\nN\ttime\tM\tK\tQ\tn\tdepth\tlast_n");
-    uint64_t first = 1;
+
+    uint64_t first = jumps;
     num_p num_2 = num_generate_2(first, 2);
     uint64_t threads = 1;
     for(uint64_t i=id + first; num_2->count < num_1->count; i += threads * jumps)
@@ -120,7 +120,7 @@ void time_2(int argc, char** argv, uint64_t max, uint64_t jumps)
             num_p num_aux_2 = num_copy(num_2);
 
             uint64_t begin = get_time();
-            num_aux_1 = num_div(num_aux_1, num_aux_2);
+            num_aux_1 = num_mul(num_aux_1, num_aux_2);
             uint64_t end = get_time();
             num_free(num_aux_1);
 
@@ -700,8 +700,8 @@ void mem_1(uint64_t)
 
 
 
-// int main(int argc, char** argv)
-int main()
+int main(int argc, char** argv)
+// int main()
 {
     setbuf(stdout, NULL);
     srand((unsigned int)time(NULL));
@@ -713,10 +713,10 @@ int main()
     // time_1(16, 28);
     // time_1(16, 17);
     // time_2(argc, argv, 25, 10000);
-    // time_2_total(argc, argv);
+    time_2_total(argc, argv);
     // time_3();
     // time_4();
-    time_karatsuba();
+    // time_karatsuba();
 
     // fibonacci();
     // fibonacci_2(16, 23);
@@ -728,9 +728,24 @@ int main()
     // flt_num_pi_2(1000);
     // flt_num_pi_3(1000);
     // mem_1(21);
+
+    // uint64_t base = 26;
+    // num_p num_1 = num_generate_1(base, 2);
+    // num_p num_2 = num_add(num_copy(num_1), num_wrap(1));
+    
+    // TIME_SETUP
+    // num_p num_res = num_mul(num_1, num_2);
+    // TIME_END(t1)
+    // num_free(num_res);
+    // tprintf("time: %.3f", dtime(t1));
  
     // assert(clu_mem_is_empty());
 
     printf("\n");
     return 0;
 }
+
+// num_mul_ssm     | time prepare: 0.782
+// num_mul_finish_inner    | time pointwise: 6.417
+// main    | time: 10.229
+

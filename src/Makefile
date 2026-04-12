@@ -13,11 +13,12 @@ dbg: debug.o
 
 
 main.o: main.c $(LIB_FILE)
-	echo "building num exec $(DIR)"
+	echo "building $(PRJ_NAME) exec $(DIR)"
 	gcc -o $@ $^ $(FLAGS) $(FLAGS_PRD) $(FLAGS_EXE)
+	echo "finished $(PRJ_NAME) exec $(DIR)"
 
 debug.o: main.c $(DBG_FULL_FILE)
-	echo "building num debug $(DIR)"
+	echo "building $(PRJ_NAME) debug $(DIR)"
 	gcc -o $@ $^ $(FLAGS) $(FLAGS_DBG) $(FLAGS_EXE)
 
 
@@ -33,6 +34,6 @@ $(DBG_FULL_FILE):
 
 
 clean:
-	echo "cleaning num $(DIR)"
+	echo "cleaning $(PRJ_NAME) $(DIR)"
 	rm -rf *.o
 	$(MAKE) clean --directory=$(LIB_DIR)

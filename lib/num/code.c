@@ -957,25 +957,6 @@ static num_p num_mul_classic_buffer(num_p num_res, num_p num_1, num_p num_2)
 
 num_p num_mul_karatsuba_buffer(num_p num_res, num_p num_1, num_p num_2);
 
-num_p num_mul_aaa_buffer(num_p num_res, num_p num_1, num_p num_2)
-{
-    CLU_HANDLER_IS_SAFE(num_res)
-    CLU_HANDLER_IS_SAFE(num_1)
-    CLU_HANDLER_IS_SAFE(num_2)
-    assert(num_res)
-    assert(num_1)
-    assert(num_2)
-    assert(num_res->size >= num_1->count + num_2->count)
-
-    uint64_t th = 10;
-    if(num_1->count < th || num_2->count < th)
-    {
-        return num_mul_classic_buffer(num_res, num_1, num_2);
-    }
-
-    return num_mul_karatsuba_buffer(num_res, num_1, num_2);
-}
-
 static num_p num_sqr_classic_buffer(num_p num_res, num_p num)
 {
     CLU_HANDLER_IS_SAFE(num_res)
@@ -1517,8 +1498,7 @@ bool ssm_is_recursive(uint64_t n)
     return n > TRESHOLD && (((n - 1) & (1 - n)) > 4);
 }
 
-// karatsuba 0: 789425000
-// karatsuba 1: 639613900
+// 45: 633608800
 
 ssm_params_t ssm_get_params(uint64_t count)
 {
@@ -1629,7 +1609,7 @@ static void num_mul_ssm_fwd_step_buffer(num_p num_fft_res, num_p num, ssm_params
     num_ssm_fft_fwd(num_fft_res, params);
 }
 
-num_p num_mul_ssm_fwd_step(num_p num, ssm_params_p params) // TODO: make it consume input
+num_p num_mul_ssm_fwd_step(num_p num, ssm_params_p params)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)   
@@ -1704,7 +1684,7 @@ void num_ssm_free(num_ssm_t num_ssm)
     num_free(num_ssm.num_fft);
 }
 
-void num_ssm_mul_mod_span(num_p num_1, num_p num_2, uint64_t pos, uint64_t n)
+void num_ssm_mul_mod_span(num_p num_aux, num_p num_1, num_p num_2, uint64_t pos, uint64_t n)
 {
     CLU_HANDLER_IS_SAFE(num_1)
     CLU_HANDLER_IS_SAFE(num_2)
@@ -1715,16 +1695,12 @@ void num_ssm_mul_mod_span(num_p num_1, num_p num_2, uint64_t pos, uint64_t n)
     num_span(&num_t_1, num_1, pos, pos + n);
     num_span(&num_t_2, num_2, pos, pos + n);
 
-    // todo get num aux as input
-    uint64_t chunk[2 * n];
-    num_t num_aux;
-    num_static(&num_aux, chunk, 2 * n);
-    // num_mul_classic_buffer(&num_aux, &num_t_1, &num_t_2);
-    num_mul_aaa_buffer(&num_aux, &num_t_1, &num_t_2);
+    // num_mul_classic_buffer(num_aux, &num_t_1, &num_t_2);
+    num_mul_karatsuba_buffer(num_aux, &num_t_1, &num_t_2);
 
-    memmove(&num_aux.chunk[n], &num_aux.chunk[n-1], n * sizeof(uint64_t));
-    num_aux.chunk[n-1] = 0;
-    num_ssm_sub_mod(num_1, pos, &num_aux, 0, &num_aux, n, n);
+    memmove(&num_aux->chunk[n], &num_aux->chunk[n-1], n * sizeof(uint64_t));
+    num_aux->chunk[n-1] = 0;
+    num_ssm_sub_mod(num_1, pos, num_aux, 0, num_aux, n, n);
 }
 
 void num_ssm_pointwise_product(num_ssm_t num_ssm_1, num_ssm_t num_ssm_2)
@@ -1733,13 +1709,18 @@ void num_ssm_pointwise_product(num_ssm_t num_ssm_1, num_ssm_t num_ssm_2)
     CLU_HANDLER_IS_SAFE(num_ssm_2.num_fft)
     assert(num_ssm_1.num_fft)
     assert(num_ssm_2.num_fft)
-
+    
     uint64_t n = ssm_get_last_n(num_ssm_2.count);
     uint64_t block_count = num_ssm_1.num_fft->size / n;
     assert(block_count * n == num_ssm_1.num_fft->size);
+
+    uint64_t chunk[2 * n];
+    num_t num_aux;
+    num_static(&num_aux, chunk, 2 * n);
+
     for(uint64_t i=0; i<block_count; i++)
     {
-        num_ssm_mul_mod_span(num_ssm_1.num_fft, num_ssm_2.num_fft, i * n, n);
+        num_ssm_mul_mod_span(&num_aux, num_ssm_1.num_fft, num_ssm_2.num_fft, i * n, n);
     }
 }
 
@@ -1869,6 +1850,17 @@ num_p num_mul_karatsuba(num_p num_1, num_p num_2)
     return num_mul_karatsuba_buffer(num_res, num_1, num_2);
 }
 
+//   5: 982592400
+//  16: 656533600
+//  24: 652941300
+//  28: 647962000
+//  32: 625284000
+//  36: 738506100
+//  40: 717307700
+//  48: 734585600
+//  64: 713112800
+// 128: 901370300
+
 num_p num_mul_karatsuba_buffer(num_p num_res, num_p num_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_res)
@@ -1879,7 +1871,7 @@ num_p num_mul_karatsuba_buffer(num_p num_res, num_p num_1, num_p num_2)
     assert(num_2)
     assert(num_res->size >= num_1->count + num_2->count);
 
-    uint64_t threshold = 10;
+    uint64_t threshold = 32;
     if(num_1->count < threshold || num_2->count < threshold)
     {
         return num_mul_classic_buffer(num_res, num_1, num_2);
@@ -1890,7 +1882,7 @@ num_p num_mul_karatsuba_buffer(num_p num_res, num_p num_1, num_p num_2)
     uint64_t bigger_count = num_1->count > num_2->count ? num_1->count : num_2->count;
     uint64_t count = (bigger_count + 1) / 2;
 
-    num_p num_res_next = num_create(bigger_count + 2, 0);
+    num_p num_res_next = num_create(2 * count + 2, 0);
 
     num_t num_1_0, num_1_1, num_2_0, num_2_1;
     num_span(&num_1_0, num_1, 0, count);
