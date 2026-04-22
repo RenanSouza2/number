@@ -38,7 +38,7 @@ sig_num_t sig_num_create_rand(uint64_t count)
 
 
 
-bool sig_num_inner(sig_num_t sig_1, sig_num_t sig_2)
+bool sig_num_keep(sig_num_t sig_1, sig_num_t sig_2)
 {
     CLU_SIG_IS_SAFE(sig_1);
     CLU_SIG_IS_SAFE(sig_2);
@@ -49,7 +49,7 @@ bool sig_num_inner(sig_num_t sig_1, sig_num_t sig_2)
         return false;
     }
 
-    if(!num_inner(sig_1.num, sig_2.num))
+    if(!num_keep(sig_1.num, sig_2.num))
     {
         printf("\n\tSIG ASSERT ERROR\t| DIFFERENT NUMBER");
         return false;
@@ -63,7 +63,7 @@ bool sig_num_eq_dbg(sig_num_t sig_1, sig_num_t sig_2)
     CLU_SIG_IS_SAFE(sig_1);
     CLU_SIG_IS_SAFE(sig_2);
 
-    if(!sig_num_inner(sig_1, sig_2))
+    if(!sig_num_keep(sig_1, sig_2))
     {
         printf("\n");
         sig_num_display_tag("\tsig_1", sig_1);

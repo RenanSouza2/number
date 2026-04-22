@@ -700,8 +700,8 @@ void mem_1(uint64_t)
 
 
 
-int main(int argc, char** argv)
-// int main()
+// int main(int argc, char** argv)
+int main()
 {
     setbuf(stdout, NULL);
     srand((unsigned int)time(NULL));
@@ -713,7 +713,7 @@ int main(int argc, char** argv)
     // time_1(16, 28);
     // time_1(16, 17);
     // time_2(argc, argv, 25, 10000);
-    time_2_total(argc, argv);
+    // time_2_total(argc, argv);
     // time_3();
     // time_4();
     // time_karatsuba();
@@ -729,15 +729,15 @@ int main(int argc, char** argv)
     // flt_num_pi_3(1000);
     // mem_1(21);
 
-    // uint64_t base = 26;
-    // num_p num_1 = num_generate_1(base, 2);
-    // num_p num_2 = num_add(num_copy(num_1), num_wrap(1));
+    uint64_t base = 26;
+    num_p num_1 = num_generate_1(base, 2);
+    num_p num_2 = num_add(num_copy(num_1), num_wrap(1));
     
-    // TIME_SETUP
-    // num_p num_res = num_mul(num_1, num_2);
-    // TIME_END(t1)
-    // num_free(num_res);
-    // tprintf("time: %.3f", dtime(t1));
+    TIME_SETUP
+    num_p num_res = num_mul(num_1, num_2);
+    TIME_END(t1)
+    num_free(num_res);
+    tprintf("time: %.3f", dtime(t1));
  
     // assert(clu_mem_is_empty());
 

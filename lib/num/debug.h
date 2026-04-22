@@ -18,7 +18,7 @@ bool int64(int64_t i1, int64_t i2);
 bool uint64(uint64_t u1, uint64_t u2);
 bool uint128_immed(uint128_t u1, uint64_t v2h, uint64_t v2l);
 
-bool num_inner(num_p num_1, num_p num_2);
+bool num_keep(num_p num_1, num_p num_2);
 bool num_eq_dbg(num_p num_1, num_p num_2);
 bool num_immed(num_p num, uint64_t n, ...);
 
@@ -101,7 +101,6 @@ num_p num_mul_ssm_bwd_transform(num_p num_fft, uint64_t count);
 
 // num_p num_mul_classic(num_p num_1, num_p num_2);
 // num_p num_mul_ssm(num_p num_1, num_p num_2);
-num_p num_mul_inner(num_p num_1, num_p num_2);
 num_p num_sqr_classic(num_p num);
 num_p num_sqr_ssm(num_p num);
 

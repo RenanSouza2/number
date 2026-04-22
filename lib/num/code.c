@@ -116,7 +116,7 @@ bool uint128_immed(uint128_t u1, uint64_t v2h, uint64_t v2l)
 
 
 
-bool num_inner(num_p num_1, num_p num_2)
+bool num_keep(num_p num_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_1)
     CLU_HANDLER_IS_SAFE(num_2)
@@ -166,7 +166,7 @@ bool num_eq_dbg(num_p num_1, num_p num_2)
     assert(num_1)
     assert(num_2)
 
-    if(!num_inner(num_1, num_2))
+    if(!num_keep(num_1, num_2))
     {
         printf("\n");
         num_display_full("\tnum_1", num_1);
@@ -762,6 +762,7 @@ static num_p num_add_mul_uint_offset(
     return num_res;
 }
 
+// BITS shoud be less than 64
 num_p num_shl_inner(num_p num, uint64_t bits) // TODO test
 {
     CLU_HANDLER_IS_SAFE(num);
@@ -785,6 +786,7 @@ num_p num_shl_inner(num_p num, uint64_t bits) // TODO test
     return num;
 }
 
+// BITS shoud be less than 64
 num_p num_shr_inner(num_p num, uint64_t bits) // TODO test
 {
     CLU_HANDLER_IS_SAFE(num);
@@ -1947,7 +1949,7 @@ num_p num_sqr_ssm(num_p num)
     return num_mul_ssm_bwd_transform(num_ssm.num_fft, count);
 }
 
-num_p num_mul_inner(num_p num_1, num_p num_2)
+num_p num_mul_pure(num_p num_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_1)
     CLU_HANDLER_IS_SAFE(num_2)
@@ -2158,7 +2160,7 @@ static num_p num_div_mod_bz_rec(
         }
         else
         {
-            num_aux_2 = num_mul_inner(num_q_tmp, &f->num_2_0);
+            num_aux_2 = num_mul_pure(num_q_tmp, &f->num_2_0);
         }
 
         while(num_cmp_offset(num_1, k * i, num_aux_2) < 0)
@@ -2407,7 +2409,7 @@ num_p num_mul(num_p num_1, num_p num_2)
     assert(num_1)
     assert(num_2)
 
-    num_p num_res = num_mul_inner(num_1, num_2);
+    num_p num_res = num_mul_pure(num_1, num_2);
     num_free(num_1);
     num_free(num_2);
     return num_res;

@@ -69,7 +69,7 @@ flt_num_t flt_num_create_rand(int64_t exponent, uint64_t count)
 
 
 
-static bool flt_num_inner(flt_num_t flt_1, flt_num_t flt_2)
+static bool flt_num_keep(flt_num_t flt_1, flt_num_t flt_2)
 {
     CLU_FLT_IS_SAFE(flt_1);
     CLU_FLT_IS_SAFE(flt_2);
@@ -86,7 +86,7 @@ static bool flt_num_inner(flt_num_t flt_1, flt_num_t flt_2)
         return false;
     }
 
-    if(!sig_num_inner(flt_1.sig, flt_2.sig))
+    if(!sig_num_keep(flt_1.sig, flt_2.sig))
     {
         printf("\n\tFLT NUM ASSERT ERROR\t| MISMATCH SIG NUM");
         return false;
@@ -110,7 +110,7 @@ bool flt_num_eq_dbg(flt_num_t flt_1, flt_num_t flt_2)
     CLU_FLT_IS_SAFE(flt_1);
     CLU_FLT_IS_SAFE(flt_2);
 
-    if(!flt_num_inner(flt_1, flt_2))
+    if(!flt_num_keep(flt_1, flt_2))
     {
         printf("\n");
         printf("\n");

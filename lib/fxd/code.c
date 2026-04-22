@@ -53,7 +53,7 @@ fxd_num_t fxd_num_create_immed(
 
 
 
-static bool fxd_num_inner(fxd_num_t fxd_1, fxd_num_t fxd_2)
+static bool fxd_num_keep(fxd_num_t fxd_1, fxd_num_t fxd_2)
 {
     CLU_FXD_IS_SAFE(fxd_1);
     CLU_FXD_IS_SAFE(fxd_2);
@@ -65,7 +65,7 @@ static bool fxd_num_inner(fxd_num_t fxd_1, fxd_num_t fxd_2)
         return false;
     }
 
-    if(!sig_num_inner(fxd_1.sig, fxd_2.sig))
+    if(!sig_num_keep(fxd_1.sig, fxd_2.sig))
     {
         printf("\n\tFXD NUM ASSERT ERROR\t| MISMATCH SIG NUM");
         return false;
@@ -79,7 +79,7 @@ static bool fxd_num_eq_dbg(fxd_num_t fxd_1, fxd_num_t fxd_2)
     CLU_FXD_IS_SAFE(fxd_1);
     CLU_FXD_IS_SAFE(fxd_2);
 
-    if(!fxd_num_inner(fxd_1, fxd_2))
+    if(!fxd_num_keep(fxd_1, fxd_2))
     {
         printf("\n");
         printf("\n");
