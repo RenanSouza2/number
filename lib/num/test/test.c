@@ -867,37 +867,37 @@ void test_num_sub_offset(bool show)
 
 
 
-void test_num_shl_inner(bool show)
+void test_num_shl_core(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_NUM_SHL_INNER(TAG, NUM_BEF, BITS, NUM_AFT) \
+    #define TEST_NUM_SHL_CORE(TAG, NUM_BEF, BITS, NUM_AFT) \
     {                                                       \
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
             num_p num = num_create_immed(ARG_OPEN NUM_BEF); \
-            num = num_shl_inner(num, BITS);                 \
+            num = num_shl_core(num, BITS);                 \
             assert(num_immed(num, ARG_OPEN NUM_AFT));       \
         }                                                   \
         TEST_CASE_CLOSE                                     \
     }
 
-    TEST_NUM_SHL_INNER(1, (0), 0, (0));
-    TEST_NUM_SHL_INNER(2, (0), 63, (0));
-    TEST_NUM_SHL_INNER(3, (1, 1), 1, (1, 2));
-    TEST_NUM_SHL_INNER(4, (1, 1), 1, (1, 2));
-    TEST_NUM_SHL_INNER(5, (1, 1), 63, (1, 0x8000000000000000));
-    TEST_NUM_SHL_INNER(6, (1, 2), 63, (2, 1, 0));
-    TEST_NUM_SHL_INNER(7, (2, 1, 2), 63, (2, 0x8000000000000001, 0));
+    TEST_NUM_SHL_CORE(1, (0), 0, (0));
+    TEST_NUM_SHL_CORE(2, (0), 63, (0));
+    TEST_NUM_SHL_CORE(3, (1, 1), 1, (1, 2));
+    TEST_NUM_SHL_CORE(4, (1, 1), 1, (1, 2));
+    TEST_NUM_SHL_CORE(5, (1, 1), 63, (1, 0x8000000000000000));
+    TEST_NUM_SHL_CORE(6, (1, 2), 63, (2, 1, 0));
+    TEST_NUM_SHL_CORE(7, (2, 1, 2), 63, (2, 0x8000000000000001, 0));
 
-    #undef TEST_NUM_SHL_INNER
+    #undef TEST_NUM_SHL_CORE
 
     TEST_CASE_OPEN(8)
     {
         num_p num = num_create_immed(1, 1);
         TEST_REVERT_OPEN
         {
-            num_shl_inner(num, 64);
+            num_shl_core(num, 64);
         }
         TEST_REVERT_CLOSE
     }
@@ -906,40 +906,40 @@ void test_num_shl_inner(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_shr_inner(bool show)
+void test_num_shr_core(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_NUM_SHR_INNER(TAG, NUM_BEF, BITS, NUM_AFT) \
+    #define TEST_NUM_SHR_CORE(TAG, NUM_BEF, BITS, NUM_AFT) \
     {                                                       \
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
             num_p num = num_create_immed(ARG_OPEN NUM_BEF); \
-            num = num_shr_inner(num, BITS);                 \
+            num = num_shr_core(num, BITS);                 \
             assert(num_immed(num, ARG_OPEN NUM_AFT));       \
         }                                                   \
         TEST_CASE_CLOSE                                     \
     }
 
-    TEST_NUM_SHR_INNER(1, (0), 1, (0));
-    TEST_NUM_SHR_INNER(2, (1, 1), 0, (1, 1));
-    TEST_NUM_SHR_INNER(3, (1, 1), 1, (0));
-    TEST_NUM_SHR_INNER(4, (1, 2), 1, (1, 1));
-    TEST_NUM_SHR_INNER(5, (1, UINT64_MAX), 63, (1, 1));
-    TEST_NUM_SHR_INNER(6, (2, 1, 0x8000000000000000), 63, (1, 3));
-    TEST_NUM_SHR_INNER(7,
+    TEST_NUM_SHR_CORE(1, (0), 1, (0));
+    TEST_NUM_SHR_CORE(2, (1, 1), 0, (1, 1));
+    TEST_NUM_SHR_CORE(3, (1, 1), 1, (0));
+    TEST_NUM_SHR_CORE(4, (1, 2), 1, (1, 1));
+    TEST_NUM_SHR_CORE(5, (1, UINT64_MAX), 63, (1, 1));
+    TEST_NUM_SHR_CORE(6, (2, 1, 0x8000000000000000), 63, (1, 3));
+    TEST_NUM_SHR_CORE(7,
         (4, 4, UINT64_MAX, UINT64_MAX, UINT64_MAX - 3), 0,
         (4, 4, UINT64_MAX, UINT64_MAX, UINT64_MAX - 3)
     );
 
-    #undef TEST_NUM_SHR_INNER
+    #undef TEST_NUM_SHR_CORE
 
     TEST_CASE_OPEN(8)
     {
         num_p num = num_create_immed(1, 1);
         TEST_REVERT_OPEN
         {
-            num_shr_inner(num, 64);
+            num_shr_core(num, 64);
         }
         TEST_REVERT_CLOSE
     }
@@ -1824,9 +1824,6 @@ void test_num_mul(bool show)
 {
     TEST_FN_OPEN
 
-    // show = true;
-    // clu_log_level_set(CLU_LOG_DYNAMIC);
-
     #define NUM_FREE
 
     #define TEST_NUM_MUL(TAG, FN, NUM_1, NUM_2, RES)        \
@@ -1867,11 +1864,12 @@ void test_num_mul(bool show)
         num_free(num_1);    \
         num_free(num_2);
 
-    #define TEST_NUM_MUL_BATCH(TAG, NUM_1, NUM_2, RES)                  \
-    {                                                                   \
-        TEST_NUM_MUL(10 * TAG + 1, num_mul_classic, NUM_1, NUM_2, RES)  \
-        TEST_NUM_MUL(10 * TAG + 2, num_mul_ssm, NUM_1, NUM_2, RES)      \
-        TEST_NUM_MUL(10 * TAG + 3, num_mul_inner, NUM_1, NUM_2, RES)    \
+    #define TEST_NUM_MUL_BATCH(TAG, NUM_1, NUM_2, RES)                      \
+    {                                                                       \
+        TEST_NUM_MUL(10 * TAG + 1, num_mul_classic, NUM_1, NUM_2, RES)      \
+        TEST_NUM_MUL(10 * TAG + 2, num_mul_karatsuba, NUM_1, NUM_2, RES)    \
+        TEST_NUM_MUL(10 * TAG + 2, num_mul_ssm, NUM_1, NUM_2, RES)          \
+        TEST_NUM_MUL(10 * TAG + 3, num_mul_core, NUM_1, NUM_2, RES)         \
     }
 
     TEST_NUM_MUL_BATCH(4,
@@ -2743,8 +2741,8 @@ void test_num(void)
     test_num_cmp_offset(show);
     test_num_sub_offset(show);
 
-    test_num_shl_inner(show);
-    test_num_shr_inner(show);
+    test_num_shl_core(show);
+    test_num_shr_core(show);
     test_num_mul_uint(show);
 
     test_smm_bit_inv(show);

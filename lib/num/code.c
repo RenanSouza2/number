@@ -763,7 +763,7 @@ static num_p num_add_mul_uint_offset(
 }
 
 // BITS shoud be less than 64
-num_p num_shl_inner(num_p num, uint64_t bits) // TODO test
+num_p num_shl_core(num_p num, uint64_t bits) // TODO test
 {
     CLU_HANDLER_IS_SAFE(num);
     assert(num);
@@ -787,7 +787,7 @@ num_p num_shl_inner(num_p num, uint64_t bits) // TODO test
 }
 
 // BITS shoud be less than 64
-num_p num_shr_inner(num_p num, uint64_t bits) // TODO test
+num_p num_shr_core(num_p num, uint64_t bits) // TODO test
 {
     CLU_HANDLER_IS_SAFE(num);
     assert(num);
@@ -1656,7 +1656,7 @@ num_p num_mul_ssm_fwd_transform(num_p num, uint64_t count)
 }
 
 // KEEP NUM
-num_ssm_t num_mul_prepare_inner(num_p num, uint64_t count)
+num_ssm_t num_mul_prepare_core(num_p num, uint64_t count)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
@@ -1673,7 +1673,7 @@ num_ssm_t num_mul_prepare(num_p num, uint64_t count)
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
 
-    num_ssm_t num_ssm = num_mul_prepare_inner(num, count);
+    num_ssm_t num_ssm = num_mul_prepare_core(num, count);
     num_free(num);
     return num_ssm;
 }
@@ -1772,14 +1772,14 @@ num_p num_mul_ssm_bwd_transform(num_p num_fft, uint64_t count)
 #include "../../mods/macros/time.h" // DELETE
 
 // KEEPS NUM_1
-num_p num_mul_finish_inner(num_p num_1, num_ssm_t num_ssm_2)
+num_p num_mul_finish_core(num_p num_1, num_ssm_t num_ssm_2)
 {
     CLU_HANDLER_IS_SAFE(num_ssm_2.num_fft)
     CLU_HANDLER_IS_SAFE(num_1)
     assert(num_ssm_2.num_fft)
     assert(num_1)
 
-    num_ssm_t num_ssm_1 = num_mul_prepare_inner(num_1, num_ssm_2.count);
+    num_ssm_t num_ssm_1 = num_mul_prepare_core(num_1, num_ssm_2.count);
 
     // TIME_SETUP
     num_ssm_pointwise_product(num_ssm_1, num_ssm_2);
@@ -1796,7 +1796,7 @@ num_p num_mul_finish(num_p num_1, num_ssm_t num_ssm_2)
     assert(num_ssm_2.num_fft)
     assert(num_1)
 
-    num_p num_res = num_mul_finish_inner(num_1, num_ssm_2);
+    num_p num_res = num_mul_finish_core(num_1, num_ssm_2);
     num_free(num_1);
     return num_res;
 }
@@ -1920,11 +1920,11 @@ num_p num_mul_ssm(num_p num_1, num_p num_2)
     uint64_t count = num_1->count + num_2->count;
 
     // TIME_SETUP
-    num_ssm_t num_ssm_2 = num_mul_prepare_inner(num_2, count);
+    num_ssm_t num_ssm_2 = num_mul_prepare_core(num_2, count);
     // TIME_END(t1)
     // tprintf("time prepare: %.3f", (double)t1 / 1e9);
 
-    num_p num_res = num_mul_finish_inner(num_1, num_ssm_2);
+    num_p num_res = num_mul_finish_core(num_1, num_ssm_2);
 
     num_ssm_free(num_ssm_2);
     return num_res;
@@ -1949,7 +1949,7 @@ num_p num_sqr_ssm(num_p num)
     return num_mul_ssm_bwd_transform(num_ssm.num_fft, count);
 }
 
-num_p num_mul_pure(num_p num_1, num_p num_2)
+num_p num_mul_core(num_p num_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_1)
     CLU_HANDLER_IS_SAFE(num_2)
@@ -2150,17 +2150,17 @@ static num_p num_div_mod_bz_rec(
             !f->mul_memoized
         ) {
             f->mul_memoized = true;
-            f->num_ssm_2_0 = num_mul_prepare_inner(&f->num_2_0, num_2->count);
+            f->num_ssm_2_0 = num_mul_prepare_core(&f->num_2_0, num_2->count);
         }
 
         num_p num_aux_2;
         if(k > 128 && num_q_tmp->count > 128 && f->mul_memoized)
         {
-            num_aux_2 = num_mul_finish_inner(num_q_tmp, f->num_ssm_2_0);
+            num_aux_2 = num_mul_finish_core(num_q_tmp, f->num_ssm_2_0);
         }
         else
         {
-            num_aux_2 = num_mul_pure(num_q_tmp, &f->num_2_0);
+            num_aux_2 = num_mul_core(num_q_tmp, &f->num_2_0);
         }
 
         while(num_cmp_offset(num_1, k * i, num_aux_2) < 0)
@@ -2239,8 +2239,8 @@ uint64_t num_div_normalize(num_p *num_1, num_p *num_2) // TODO TEST
     assert(*num_2);
 
     uint64_t bits = 64 - stdc_bit_width((*num_2)->chunk[(*num_2)->count-1]);
-    *num_1 = num_shl_inner((*num_1), bits);
-    *num_2 = num_shl_inner((*num_2), bits);
+    *num_1 = num_shl_core((*num_1), bits);
+    *num_2 = num_shl_core((*num_2), bits);
     return bits;
 }
 
@@ -2267,42 +2267,13 @@ static void num_div_mod_finalize(
 
     if(out_num_r)
     {
-        num_1 = num_shr_inner(num_1, bits);
+        num_1 = num_shr_core(num_1, bits);
         *out_num_r = num_1;
     }
     else
     {
         num_free(num_1);
     }
-}
-
-// out_num_q and out_num_r can be NULL
-static void num_div_mod_inner(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
-{
-    CLU_HANDLER_IS_SAFE(num_1)
-    CLU_HANDLER_IS_SAFE(num_2)
-    assert(num_1)
-    assert(num_2)
-
-    assert(num_2->count);
-
-    if(num_cmp(num_1, num_2) < 0)
-    {
-        num_p num_q = num_create(0, 0);
-        num_div_mod_finalize(out_num_q, out_num_r, num_q, num_1, num_2, 0);
-        return;
-    }
-
-    if(num_2->count == 1)
-    {
-        num_p num_q = num_div_mod_uint(num_1, num_2->chunk[0]);
-        num_div_mod_finalize(out_num_q, out_num_r, num_q, num_1, num_2, 0);
-        return;
-    }
-
-    uint64_t bits = num_div_normalize(&num_1, &num_2);
-    num_p num_q = num_div_mod_bz(num_1, num_2);
-    num_div_mod_finalize(out_num_q, out_num_r, num_q, num_1, num_2, bits);
 }
 
 
@@ -2333,7 +2304,7 @@ num_p num_shl(num_p num, uint64_t bits) // TODO TEST
     if(num->count == 0)
         return num;
 
-    num = num_shl_inner(num, bits & 0x3f);
+    num = num_shl_core(num, bits & 0x3f);
     return num_head_grow(num, bits >> 6);
 }
 
@@ -2346,7 +2317,7 @@ num_p num_shr(num_p num, uint64_t bits) // TODO TEST
         return num;
 
     num_head_trim(num, bits >> 6);
-    return num_shr_inner(num, bits & 0x3f);
+    return num_shr_core(num, bits & 0x3f);
 }
 
 num_p num_add_uint(num_p num, uint64_t value)
@@ -2409,7 +2380,7 @@ num_p num_mul(num_p num_1, num_p num_2)
     assert(num_1)
     assert(num_2)
 
-    num_p num_res = num_mul_pure(num_1, num_2);
+    num_p num_res = num_mul_core(num_1, num_2);
     num_free(num_1);
     num_free(num_2);
     return num_res;
@@ -2451,6 +2422,7 @@ num_p num_pow(num_p num, uint64_t value) // TODO TEST
     return num_res;
 }
 
+// out_num_q and out_num_r can be NULL
 void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_1)
@@ -2458,7 +2430,25 @@ void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
     assert(num_1)
     assert(num_2)
 
-    num_div_mod_inner(out_num_q, out_num_r, num_1, num_2);
+    assert(num_2->count);
+
+    if(num_cmp(num_1, num_2) < 0)
+    {
+        num_p num_q = num_create(0, 0);
+        num_div_mod_finalize(out_num_q, out_num_r, num_q, num_1, num_2, 0);
+        return;
+    }
+
+    if(num_2->count == 1)
+    {
+        num_p num_q = num_div_mod_uint(num_1, num_2->chunk[0]);
+        num_div_mod_finalize(out_num_q, out_num_r, num_q, num_1, num_2, 0);
+        return;
+    }
+
+    uint64_t bits = num_div_normalize(&num_1, &num_2);
+    num_p num_q = num_div_mod_bz(num_1, num_2);
+    num_div_mod_finalize(out_num_q, out_num_r, num_q, num_1, num_2, bits);
 }
 
 num_p num_div(num_p num_1, num_p num_2)
@@ -2469,7 +2459,7 @@ num_p num_div(num_p num_1, num_p num_2)
     assert(num_2)
 
     num_p num_q;
-    num_div_mod_inner(&num_q, NULL, num_1, num_2);
+    num_div_mod(&num_q, NULL, num_1, num_2);
     return num_q;
 }
 
@@ -2480,7 +2470,7 @@ num_p num_mod(num_p num_1, num_p num_2)
     assert(num_1)
     assert(num_2)
 
-    num_div_mod_inner(NULL, &num_1, num_1, num_2);
+    num_div_mod(NULL, &num_1, num_1, num_2);
     return num_1;
 }
 

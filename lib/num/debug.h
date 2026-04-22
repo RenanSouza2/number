@@ -43,8 +43,8 @@ bool num_normalize(num_p num);
 num_p num_wrap_dec(const char str[]);
 num_p num_wrap_hex(const char str[]);
 
-num_p num_shl_inner(num_p num, uint64_t bits);
-num_p num_shr_inner(num_p num, uint64_t bits);
+num_p num_shl_core(num_p num, uint64_t bits);
+num_p num_shr_core(num_p num, uint64_t bits);
 
 num_p num_add_uint_offset(num_p num, uint64_t pos, uint64_t value);
 num_p num_sub_uint_offset(num_p num, uint64_t pos, uint64_t value);
@@ -99,8 +99,10 @@ void num_ssm_fft_inv(num_p num, ssm_params_p p);
 num_p num_mul_ssm_fwd_transform(num_p num, uint64_t count);
 num_p num_mul_ssm_bwd_transform(num_p num_fft, uint64_t count);
 
-// num_p num_mul_classic(num_p num_1, num_p num_2);
-// num_p num_mul_ssm(num_p num_1, num_p num_2);
+num_p num_mul_karatsuba(num_p num_1, num_p num_2);
+num_p num_mul_classic(num_p num_1, num_p num_2);
+num_p num_mul_ssm(num_p num_1, num_p num_2);
+num_p num_mul_core(num_p num_1, num_p num_2);
 num_p num_sqr_classic(num_p num);
 num_p num_sqr_ssm(num_p num);
 

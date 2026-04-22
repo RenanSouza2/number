@@ -53,8 +53,4 @@ num_ssm_t num_mul_prepare(num_p num, uint64_t count);
 num_p num_mul_finish(num_p num_1, num_ssm_t num_ssm_2);
 void num_ssm_free(num_ssm_t num_ssm);
 
-num_p num_mul_karatsuba(num_p num_1, num_p num_2);
-num_p num_mul_classic(num_p num_1, num_p num_2);
-num_p num_mul_ssm(num_p num_1, num_p num_2);
-
 #endif
