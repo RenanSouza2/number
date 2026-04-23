@@ -512,9 +512,9 @@ void test_fuzz_flt_num_mul_ssm(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_FUZZ_FLT_NUM_MUL_SSM(RUNS, TAG, COUNT_1, COUNT_2)      \
+    #define TEST_FUZZ_FLT_NUM_MUL_SSM(TAG, COUNT_1, COUNT_2, RUNS)      \
     {                                                                   \
-        TEST_FUZZ_CASE_OPEN(RUNS, TAG)                                  \
+        TEST_FUZZ_CASE_OPEN(TAG, RUNS)                                  \
         {                                                               \
             uint64_t count = COUNT_1 + COUNT_2;                         \
             int64_t exponent_1 = int_rand(INT32_MIN, INT32_MAX);        \
