@@ -2475,9 +2475,9 @@ void test_fuzz_num_ssm_sh(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_FUZZ_NUM_SSM_SH(RUNS, TAG, N, BITS)                \
+    #define TEST_FUZZ_NUM_SSM_SH(TAG, N, BITS, RUNS)                \
     {                                                               \
-        TEST_FUZZ_CASE_OPEN(RUNS, TAG)                              \
+        TEST_FUZZ_CASE_OPEN(TAG, RUNS)                              \
         {                                                           \
             num_p num = num_create_rand(N);                         \
             num->chunk[N - 1] = 0;                                  \
@@ -2499,10 +2499,10 @@ void test_fuzz_num_ssm_sh(bool show)
         TEST_FUZZ_CASE_CLOSE                                        \
     }
 
-    TEST_FUZZ_NUM_SSM_SH(100, 1, 2, 1)
-    TEST_FUZZ_NUM_SSM_SH(100, 2, 3, 65)
-    TEST_FUZZ_NUM_SSM_SH(100, 3, 4, 80)
-    TEST_FUZZ_NUM_SSM_SH(100, 4, 5, 80)
+    TEST_FUZZ_NUM_SSM_SH(1, 2,  1, 100)
+    TEST_FUZZ_NUM_SSM_SH(2, 3, 65, 100)
+    TEST_FUZZ_NUM_SSM_SH(3, 4, 80, 100)
+    TEST_FUZZ_NUM_SSM_SH(4, 5, 80, 100)
 
     TEST_FN_CLOSE
 }
@@ -2511,9 +2511,9 @@ void test_fuzz_num_ssm_fft(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_FUZZ_NUM_SSM_FFT(RUNS, TAG, Nv, Kv)                \
+    #define TEST_FUZZ_NUM_SSM_FFT(TAG, Nv, Kv, RUNS)                \
     {                                                               \
-        TEST_FUZZ_CASE_OPEN(RUNS, TAG)                              \
+        TEST_FUZZ_CASE_OPEN(TAG, RUNS)                              \
         {                                                           \
             num_p num_0 = num_create_rand((Nv-1) * Kv);             \
             num_p num = num_create(Nv * Kv, Nv * Kv);               \
@@ -2545,11 +2545,11 @@ void test_fuzz_num_ssm_fft(bool show)
         TEST_FUZZ_CASE_CLOSE                                        \
     }
 
-    TEST_FUZZ_NUM_SSM_FFT(100, 1, 2, 4)
-    TEST_FUZZ_NUM_SSM_FFT(100, 2, 2, 8)
-    TEST_FUZZ_NUM_SSM_FFT(100, 3, 2, 16)
-    TEST_FUZZ_NUM_SSM_FFT(100, 4, 3, 16)
-    TEST_FUZZ_NUM_SSM_FFT(100, 5, 10, 128)
+    TEST_FUZZ_NUM_SSM_FFT(1, 2, 4, 100)
+    TEST_FUZZ_NUM_SSM_FFT(2, 2, 8, 100)
+    TEST_FUZZ_NUM_SSM_FFT(3, 2, 16, 100)
+    TEST_FUZZ_NUM_SSM_FFT(4, 3, 16, 100)
+    TEST_FUZZ_NUM_SSM_FFT(5, 10, 128, 100)
 
     TEST_FN_CLOSE
 }
@@ -2558,9 +2558,9 @@ void test_fuzz_num_ssm_fft_round_trip(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_FUZZ_NUM_SSM_FFT_ROUND_TRIP(RUNS, TAG, COUNT)          \
+    #define TEST_FUZZ_NUM_SSM_FFT_ROUND_TRIP(TAG, COUNT, RUNS)          \
     {                                                                   \
-        TEST_FUZZ_CASE_OPEN(RUNS, TAG)                                  \
+        TEST_FUZZ_CASE_OPEN(TAG, RUNS)                                  \
         {                                                               \
             num_p num_in = num_create_rand(COUNT);                      \
             num_p num_fft = num_mul_ssm_fwd_transform(num_in, COUNT);   \
@@ -2570,10 +2570,10 @@ void test_fuzz_num_ssm_fft_round_trip(bool show)
         TEST_FUZZ_CASE_CLOSE                                            \
     }
 
-    TEST_FUZZ_NUM_SSM_FFT_ROUND_TRIP(1000, 1, 256);
-    TEST_FUZZ_NUM_SSM_FFT_ROUND_TRIP( 100, 2, 1000);
-    TEST_FUZZ_NUM_SSM_FFT_ROUND_TRIP( 100, 3, 10000);
-    // TEST_FUZZ_NUM_SSM_FFT_ROUND_TRIP(1, 4, 17000000);
+    TEST_FUZZ_NUM_SSM_FFT_ROUND_TRIP(1, 256,  1000);
+    TEST_FUZZ_NUM_SSM_FFT_ROUND_TRIP(2, 1000,  100);
+    TEST_FUZZ_NUM_SSM_FFT_ROUND_TRIP(3, 10000, 100);
+    // TEST_FUZZ_NUM_SSM_FFT_ROUND_TRIP(4, 17000000, 1);
 
     TEST_FN_CLOSE
 }
@@ -2581,6 +2581,9 @@ void test_fuzz_num_ssm_fft_round_trip(bool show)
 void test_fuzz_num_ssm_mul(bool show)
 {
     TEST_FN_OPEN
+
+    show = true;
+    // clu_log_level_set(CLU_LOG_DYNAMIC);
 
     #define TEST_FUZZ_NUM_SSM_MUL_COUNT(COUNT_1, COUNT_2)   \
     {                                                       \
@@ -2593,25 +2596,25 @@ void test_fuzz_num_ssm_mul(bool show)
         num_free(num_2);                                    \
     }
 
-    #define TEST_FUZZ_NUM_SSM_MUL(RUNS, TAG, COUNT)     \
+    #define TEST_FUZZ_NUM_SSM_MUL(TAG, COUNT, RUNS)     \
     {                                                   \
-        TEST_FUZZ_CASE_OPEN(RUNS, TAG)                  \
+        TEST_FUZZ_CASE_OPEN(TAG, RUNS)                  \
         {                                               \
             TEST_FUZZ_NUM_SSM_MUL_COUNT(COUNT, COUNT)   \
         }                                               \
         TEST_FUZZ_CASE_CLOSE                            \
     }
 
-    TEST_FUZZ_NUM_SSM_MUL(100, 1, 500)
-    TEST_FUZZ_NUM_SSM_MUL( 10, 2, 1000)
-    TEST_FUZZ_NUM_SSM_MUL(  2, 3, 5000)
+    TEST_FUZZ_NUM_SSM_MUL(1, 500, 100)
+    TEST_FUZZ_NUM_SSM_MUL(2, 1000, 10)
+    TEST_FUZZ_NUM_SSM_MUL(3, 5000,  2)
     // TEST_FUZZ_NUM_SSM_MUL(1, 4, 20000)
 
     #undef TEST_FUZZ_NUM_SSM_MUL
     
-    #define TEST_FUZZ_NUM_SSM_MUL(RUNS, TAG, COUNT_MIN, COUNT_MAX)  \
+    #define TEST_FUZZ_NUM_SSM_MUL(TAG, COUNT_MIN, COUNT_MAX, RUNS)  \
     {                                                               \
-        TEST_FUZZ_CASE_OPEN(RUNS, TAG)                              \
+        TEST_FUZZ_CASE_OPEN(TAG, RUNS)                              \
         {                                                           \
             uint64_t count_1 = rand_64_range(COUNT_MIN, COUNT_MAX); \
             uint64_t count_2 = rand_64_range(COUNT_MIN, COUNT_MAX); \
@@ -2620,9 +2623,9 @@ void test_fuzz_num_ssm_mul(bool show)
         TEST_FUZZ_CASE_CLOSE                                        \
     }
 
-    TEST_FUZZ_NUM_SSM_MUL(100, 4, 10, 20);
-    TEST_FUZZ_NUM_SSM_MUL(100, 5, 50, 100);
-    TEST_FUZZ_NUM_SSM_MUL(100, 6, 500, 5000);
+    TEST_FUZZ_NUM_SSM_MUL(4, 10, 20, 100);
+    TEST_FUZZ_NUM_SSM_MUL(5, 50, 100, 100);
+    TEST_FUZZ_NUM_SSM_MUL(6, 500, 5000, 100);
 
     #undef TEST_FUZZ_NUM_SSM_MUL
 
@@ -2641,18 +2644,18 @@ void test_fuzz_num_ssm_sqr(bool show)
         assert(num_eq_dbg(num_res_1, num_res_2));       \
     }
 
-    #define TEST_FUZZ_NUM_SSM_SQR(RUNS, TAG, COUNT) \
+    #define TEST_FUZZ_NUM_SSM_SQR(TAG, COUNT, RUNS) \
     {                                               \
-        TEST_FUZZ_CASE_OPEN(RUNS, TAG)              \
+        TEST_FUZZ_CASE_OPEN(TAG, RUNS)              \
         {                                           \
             TEST_FUZZ_NUM_SSM_SQR_COUNT(COUNT)      \
         }                                           \
         TEST_FUZZ_CASE_CLOSE                        \
     }
 
-    TEST_FUZZ_NUM_SSM_SQR(100, 1,  500)
-    TEST_FUZZ_NUM_SSM_SQR( 10, 2, 1000)
-    TEST_FUZZ_NUM_SSM_SQR(  2, 3, 5000)
+    TEST_FUZZ_NUM_SSM_SQR(1,  500, 100)
+    TEST_FUZZ_NUM_SSM_SQR(2, 1000,  10)
+    TEST_FUZZ_NUM_SSM_SQR(3, 5000,   2)
 
     #undef TEST_FUZZ_NUM_SSM_MUL
 
@@ -2663,9 +2666,9 @@ void test_fuzz_num_bz_div(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_FUZZ_NUM_SSM_DIV(RUNS, TAG, COUNT_1, COUNT_2)              \
+    #define TEST_FUZZ_NUM_SSM_DIV(TAG, COUNT_1, COUNT_2, RUNS)              \
     {                                                                       \
-        TEST_FUZZ_CASE_OPEN(RUNS, TAG)                                      \
+        TEST_FUZZ_CASE_OPEN(TAG, RUNS)                                      \
         {                                                                   \
             num_p num_1 = num_create_rand(COUNT_1);                         \
             num_p num_2 = num_create_rand(COUNT_2);                         \
@@ -2691,17 +2694,17 @@ void test_fuzz_num_bz_div(bool show)
         TEST_FUZZ_CASE_CLOSE                                                \
     }
 
-    TEST_FUZZ_NUM_SSM_DIV(100, 1, 3, 1)
-    TEST_FUZZ_NUM_SSM_DIV(100, 1, 3, 2)
-    TEST_FUZZ_NUM_SSM_DIV(100, 2, 4, 2)
-    TEST_FUZZ_NUM_SSM_DIV(100, 3, 5, 2)
-    TEST_FUZZ_NUM_SSM_DIV(100, 4, 8, 5)
-    TEST_FUZZ_NUM_SSM_DIV(100, 5, 10, 7)
-    TEST_FUZZ_NUM_SSM_DIV(100, 6, 32, 19)
-    TEST_FUZZ_NUM_SSM_DIV(  5, 7, 20, 20)
-    TEST_FUZZ_NUM_SSM_DIV(  5, 8, 30, 20)
-    TEST_FUZZ_NUM_SSM_DIV(  5, 9, 40, 20)
-    TEST_FUZZ_NUM_SSM_DIV(  5, 10, 50, 20)
+    TEST_FUZZ_NUM_SSM_DIV( 1,  3,  1, 100)
+    TEST_FUZZ_NUM_SSM_DIV( 1,  3,  2, 100)
+    TEST_FUZZ_NUM_SSM_DIV( 2,  4,  2, 100)
+    TEST_FUZZ_NUM_SSM_DIV( 3,  5,  2, 100)
+    TEST_FUZZ_NUM_SSM_DIV( 4,  8,  5, 100)
+    TEST_FUZZ_NUM_SSM_DIV( 5, 10,  7, 100)
+    TEST_FUZZ_NUM_SSM_DIV( 6, 32, 19, 100)
+    TEST_FUZZ_NUM_SSM_DIV( 7, 20, 20,   5)
+    TEST_FUZZ_NUM_SSM_DIV( 8, 30, 20,   5)
+    TEST_FUZZ_NUM_SSM_DIV( 9, 40, 20,   5)
+    TEST_FUZZ_NUM_SSM_DIV(10, 50, 20,   5)
 
     #undef TEST_FUZZ_NUM_SSM_DIV
 
@@ -2781,7 +2784,6 @@ void test_num(void)
     test_fuzz_num_ssm_mul(show);
     test_fuzz_num_ssm_sqr(show);
     test_fuzz_num_bz_div(show);
-
 
     TEST_ASSERT_MEM_EMPTY
 }
