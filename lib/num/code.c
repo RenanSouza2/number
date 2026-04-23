@@ -1493,7 +1493,7 @@ void num_ssm_fft_inv(num_p num, ssm_params_p p)
     }
 }
 
-#define TRESHOLD 1024
+#define TRESHOLD 45
 
 bool ssm_is_recursive(uint64_t n)
 {
@@ -1697,8 +1697,8 @@ void num_ssm_mul_mod_span(num_p num_aux, num_p num_1, num_p num_2, uint64_t pos,
     num_span(&num_t_1, num_1, pos, pos + n);
     num_span(&num_t_2, num_2, pos, pos + n);
 
-    // num_mul_classic_buffer(num_aux, &num_t_1, &num_t_2);
-    num_mul_karatsuba_buffer(num_aux, &num_t_1, &num_t_2);
+    num_mul_classic_buffer(num_aux, &num_t_1, &num_t_2);
+    // num_mul_karatsuba_buffer(num_aux, &num_t_1, &num_t_2);
 
     memmove(&num_aux->chunk[n], &num_aux->chunk[n-1], n * sizeof(uint64_t));
     num_aux->chunk[n-1] = 0;
@@ -2126,9 +2126,6 @@ static num_p num_div_mod_bz_rec(
         num_span(&f->num_2_1, num_2, k, num_2->count);
     }
 
-    // no mem  : 0.010
-    // yes mem : 0.023
-
     num_p num_q[2];
     for(uint64_t i=1; i!=UINT64_MAX; i--)
     {
@@ -2143,15 +2140,15 @@ static num_p num_div_mod_bz_rec(
             continue;
         }
 
-        if(
-            k > 128 &&
-            num_q_tmp->count > 128 &&
-            memoize &&
-            !f->mul_memoized
-        ) {
-            f->mul_memoized = true;
-            f->num_ssm_2_0 = num_mul_prepare_core(&f->num_2_0, num_2->count);
-        }
+        // if(
+        //     k > 128 &&
+        //     num_q_tmp->count > 128 &&
+        //     memoize &&
+        //     !f->mul_memoized
+        // ) {
+        //     f->mul_memoized = true;
+        //     f->num_ssm_2_0 = num_mul_prepare_core(&f->num_2_0, num_2->count);
+        // }
 
         num_p num_aux_2;
         if(k > 128 && num_q_tmp->count > 128 && f->mul_memoized)

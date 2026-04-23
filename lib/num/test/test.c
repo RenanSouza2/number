@@ -2582,9 +2582,6 @@ void test_fuzz_num_ssm_mul(bool show)
 {
     TEST_FN_OPEN
 
-    show = true;
-    // clu_log_level_set(CLU_LOG_DYNAMIC);
-
     #define TEST_FUZZ_NUM_SSM_MUL_COUNT(COUNT_1, COUNT_2)   \
     {                                                       \
         num_p num_1 = num_create_rand(COUNT_1);             \
