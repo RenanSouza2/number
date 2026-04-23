@@ -1868,8 +1868,8 @@ void test_num_mul(bool show)
     {                                                                       \
         TEST_NUM_MUL(10 * TAG + 1, num_mul_classic, NUM_1, NUM_2, RES)      \
         TEST_NUM_MUL(10 * TAG + 2, num_mul_karatsuba, NUM_1, NUM_2, RES)    \
-        TEST_NUM_MUL(10 * TAG + 2, num_mul_ssm, NUM_1, NUM_2, RES)          \
-        TEST_NUM_MUL(10 * TAG + 3, num_mul_core, NUM_1, NUM_2, RES)         \
+        TEST_NUM_MUL(10 * TAG + 3, num_mul_ssm, NUM_1, NUM_2, RES)          \
+        TEST_NUM_MUL(10 * TAG + 4, num_mul_core, NUM_1, NUM_2, RES)         \
     }
 
     TEST_NUM_MUL_BATCH(4,
@@ -2593,19 +2593,19 @@ void test_fuzz_num_ssm_mul(bool show)
         num_free(num_2);                                    \
     }
 
-    #define TEST_FUZZ_NUM_SSM_MUL(RUNS, TAG, COUNT_1, COUNT_2)  \
-    {                                                           \
-        TEST_FUZZ_CASE_OPEN(RUNS, TAG)                          \
-        {                                                       \
-            TEST_FUZZ_NUM_SSM_MUL_COUNT(COUNT_1, COUNT_2)       \
-        }                                                       \
-        TEST_FUZZ_CASE_CLOSE                                    \
+    #define TEST_FUZZ_NUM_SSM_MUL(RUNS, TAG, COUNT)     \
+    {                                                   \
+        TEST_FUZZ_CASE_OPEN(RUNS, TAG)                  \
+        {                                               \
+            TEST_FUZZ_NUM_SSM_MUL_COUNT(COUNT, COUNT)   \
+        }                                               \
+        TEST_FUZZ_CASE_CLOSE                            \
     }
 
-    TEST_FUZZ_NUM_SSM_MUL(100, 1, 500, 500)
-    TEST_FUZZ_NUM_SSM_MUL( 10, 2, 1000, 500)
-    TEST_FUZZ_NUM_SSM_MUL(  2, 3, 5000, 5000)
-    // TEST_FUZZ_NUM_SSM_MUL(11, 20000, 20000, 1)
+    TEST_FUZZ_NUM_SSM_MUL(100, 1, 500)
+    TEST_FUZZ_NUM_SSM_MUL( 10, 2, 1000)
+    TEST_FUZZ_NUM_SSM_MUL(  2, 3, 5000)
+    // TEST_FUZZ_NUM_SSM_MUL(1, 4, 20000)
 
     #undef TEST_FUZZ_NUM_SSM_MUL
     
