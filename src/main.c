@@ -200,51 +200,51 @@ void time_3(void)
     }
 }
 
-void time_karatsuba(void)
-{
-    for(uint64_t base=1; base<20; base++)
-    {
-
-        num_p num_1 = num_generate_1(base + 1, 2);
-        // num_p num_2 = num_generate_1(base, 3);
-        num_p num_2 = num_add(num_copy(num_1), num_wrap(1));
-        
-        printf("\n");
-        printf("\n-----------------------");
-        printf("\nnum_1: ");
-        num_display(num_1);
-        printf("\nnum_2: ");
-        num_display(num_2);
-        printf("\n");
-        
-        TIME_SETUP
-        num_p num_res_1 = num_mul_classic(num_copy(num_1), num_copy(num_2));
-        TIME_END(t1)
-        num_free(num_res_1);
-        tprintf("classical time: %lu", t1);
-        
-        TIME_RESET
-        num_p num_res_2 = num_mul_karatsuba(num_copy(num_1), num_copy(num_2));
-        TIME_END(t2)
-        num_free(num_res_2);
-        tprintf("karatsuba time: %lu", t2);
-
-        TIME_RESET
-        num_p num_res_3 = num_mul_ssm(num_copy(num_1), num_copy(num_2));
-        TIME_END(t3)
-        num_free(num_res_3);
-        tprintf("ssm time      : %lu", t3);
-
-        TIME_RESET
-        num_p num_res_4 = num_mul(num_copy(num_1), num_copy(num_2));
-        TIME_END(t4)
-        num_free(num_res_4);
-        tprintf("mul time      : %lu", t4);
-        
-        printf("\n\nres\n\n");
-        num_display(num_1);
-    }
-}
+// void time_karatsuba(void)
+// {
+//     for(uint64_t base=1; base<20; base++)
+//     {
+//
+//         num_p num_1 = num_generate_1(base + 1, 2);
+//         // num_p num_2 = num_generate_1(base, 3);
+//         num_p num_2 = num_add(num_copy(num_1), num_wrap(1));
+//
+//         printf("\n");
+//         printf("\n-----------------------");
+//         printf("\nnum_1: ");
+//         num_display(num_1);
+//         printf("\nnum_2: ");
+//         num_display(num_2);
+//         printf("\n");
+//
+//         TIME_SETUP
+//         num_p num_res_1 = num_mul_classic(num_copy(num_1), num_copy(num_2));
+//         TIME_END(t1)
+//         num_free(num_res_1);
+//         tprintf("classical time: %lu", t1);
+//       
+//         TIME_RESET
+//         num_p num_res_2 = num_mul_karatsuba(num_copy(num_1), num_copy(num_2));
+//         TIME_END(t2)
+//         num_free(num_res_2);
+//         tprintf("karatsuba time: %lu", t2);
+//
+//         TIME_RESET
+//         num_p num_res_3 = num_mul_ssm(num_copy(num_1), num_copy(num_2));
+//         TIME_END(t3)
+//         num_free(num_res_3);
+//         tprintf("ssm time      : %lu", t3);
+//
+//         TIME_RESET
+//         num_p num_res_4 = num_mul(num_copy(num_1), num_copy(num_2));
+//         TIME_END(t4)
+//         num_free(num_res_4);
+//         tprintf("mul time      : %lu", t4);
+//
+//         printf("\n\nres\n\n");
+//         num_display(num_1);
+//     }
+// }
 
 // 96828600
 
