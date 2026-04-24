@@ -352,16 +352,16 @@ void test_flt_num_mul(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_FLT_NUM_MUL(TAG, FLT_1, FLT_2, RES)                  \
-    {                                                                   \
-        TEST_CASE_OPEN(TAG)                                             \
-        {                                                               \
+    #define TEST_FLT_NUM_MUL(TAG, FLT_1, FLT_2, RES)                \
+    {                                                               \
+        TEST_CASE_OPEN(TAG)                                         \
+        {                                                           \
             flt_num_t flt_1 = flt_num_create_immed(ARG_OPEN FLT_1); \
             flt_num_t flt_2 = flt_num_create_immed(ARG_OPEN FLT_2); \
-            flt_1 = flt_num_mul(flt_1, flt_2);                        \
-            assert(flt_num_immed(flt_1, ARG_OPEN RES))                \
-        }                                                               \
-        TEST_CASE_CLOSE                                                 \
+            flt_1 = flt_num_mul(flt_1, flt_2);                      \
+            assert(flt_num_immed(flt_1, ARG_OPEN RES))              \
+        }                                                           \
+        TEST_CASE_CLOSE                                             \
     }
 
     TEST_FLT_NUM_MUL(1,
@@ -394,15 +394,15 @@ void test_flt_num_sqr(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_FLT_NUM_SQR(TAG, FLT, RES)                       \
-    {                                                               \
-        TEST_CASE_OPEN(TAG)                                         \
-        {                                                           \
+    #define TEST_FLT_NUM_SQR(TAG, FLT, RES)                     \
+    {                                                           \
+        TEST_CASE_OPEN(TAG)                                     \
+        {                                                       \
             flt_num_t flt = flt_num_create_immed(ARG_OPEN FLT); \
-            flt = flt_num_sqr(flt);                               \
-            assert(flt_num_immed(flt, ARG_OPEN RES))              \
-        }                                                           \
-        TEST_CASE_CLOSE                                             \
+            flt = flt_num_sqr(flt);                             \
+            assert(flt_num_immed(flt, ARG_OPEN RES))            \
+        }                                                       \
+        TEST_CASE_CLOSE                                         \
     }
 
     TEST_FLT_NUM_SQR(1,
@@ -416,18 +416,18 @@ void test_flt_num_sqr(bool show)
 
     #undef TEST_FLT_NUM_SQR
 
-    #define TEST_FLT_NUM_SQR(TAG, FLT)                            \
-    {                                                               \
-        TEST_CASE_OPEN(TAG)                                         \
-        {                                                           \
+    #define TEST_FLT_NUM_SQR(TAG, FLT)                          \
+    {                                                           \
+        TEST_CASE_OPEN(TAG)                                     \
+        {                                                       \
             flt_num_t flt = flt_num_create_immed(ARG_OPEN FLT); \
-            TEST_REVERT_OPEN                                        \
-            {                                                       \
-                flt_num_sqr(flt);                                 \
-            }                                                       \
-            TEST_REVERT_CLOSE                                       \
-        }                                                           \
-        TEST_CASE_CLOSE                                             \
+            TEST_REVERT_OPEN                                    \
+            {                                                   \
+                flt_num_sqr(flt);                               \
+            }                                                   \
+            TEST_REVERT_CLOSE                                   \
+        }                                                       \
+        TEST_CASE_CLOSE                                         \
     }
 
     TEST_FLT_NUM_SQR(3, (INT64_MAX, 2, POSITIVE, 2, 1, 0));
@@ -470,16 +470,16 @@ void test_flt_num_div_sig(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_FLT_NUM_DIV_SIG(TAG, FLT, SIG, RES)              \
-    {                                                               \
-        TEST_CASE_OPEN(TAG)                                         \
-        {                                                           \
+    #define TEST_FLT_NUM_DIV_SIG(TAG, FLT, SIG, RES)            \
+    {                                                           \
+        TEST_CASE_OPEN(TAG)                                     \
+        {                                                       \
             flt_num_t flt = flt_num_create_immed(ARG_OPEN FLT); \
-            sig_num_t flt_2 = sig_num_create_immed(ARG_OPEN SIG);   \
-            flt = flt_num_div_sig(flt, flt_2);                    \
-            assert(flt_num_immed(flt, ARG_OPEN RES))              \
-        }                                                           \
-        TEST_CASE_CLOSE                                             \
+            sig_num_t sig = sig_num_create_immed(ARG_OPEN SIG); \
+            flt = flt_num_div_sig(flt, sig);                    \
+            assert(flt_num_immed(flt, ARG_OPEN RES))            \
+        }                                                       \
+        TEST_CASE_CLOSE                                         \
     }
 
     TEST_FLT_NUM_DIV_SIG(1,
@@ -504,6 +504,41 @@ void test_flt_num_div_sig(bool show)
     );
 
     #undef TEST_FLT_NUM_DIV_SIG
+
+    TEST_FN_CLOSE
+}
+
+void test_fuzz_flt_num_mul_ssm(bool show)
+{
+    TEST_FN_OPEN
+
+    #define TEST_FUZZ_FLT_NUM_MUL_SSM(TAG, COUNT_1, COUNT_2, RUNS)      \
+    {                                                                   \
+        TEST_FUZZ_CASE_OPEN(TAG, RUNS)                                  \
+        {                                                               \
+            uint64_t count = COUNT_1 + COUNT_2;                         \
+            int64_t exponent_1 = int_rand(INT32_MIN, INT32_MAX);        \
+            int64_t exponent_2 = int_rand(INT32_MIN, INT32_MAX);        \
+            flt_num_t flt_1 = flt_num_create_rand(exponent_1, COUNT_1); \
+            flt_num_t flt_2 = flt_num_create_rand(exponent_2, COUNT_2); \
+            flt_num_ssm_t flt_ssm_2 = flt_num_mul_prepare(              \
+                flt_num_copy(flt_2),                                    \
+                count                                                   \
+            );                                                          \
+            flt_num_t flt_res_1 = flt_num_mul_finish(                   \
+                flt_num_copy(flt_1),                                    \
+                flt_ssm_2                                               \
+            );                                                          \
+            flt_num_ssm_free(flt_ssm_2);                                \
+            flt_num_t flt_res_2 = flt_num_mul(flt_1, flt_2);            \
+            assert(flt_num_eq_dbg(flt_res_1, flt_res_2));               \
+        }                                                               \
+        TEST_FUZZ_CASE_CLOSE                                            \
+    }
+
+    TEST_FUZZ_FLT_NUM_MUL_SSM(1, 256, 256, 256);
+    TEST_FUZZ_FLT_NUM_MUL_SSM(2, 1000, 2000, 100);
+    TEST_FUZZ_FLT_NUM_MUL_SSM(3, 500000, 200000, 5);
 
     TEST_FN_CLOSE
 }
@@ -534,6 +569,8 @@ void test_flt(void)
     test_flt_num_div(show);
 
     test_flt_num_div_sig(show);
+
+    test_fuzz_flt_num_mul_ssm(show);
 
     TEST_ASSERT_MEM_EMPTY
 }

@@ -19,6 +19,16 @@
 #include "../sig/debug.h"
 
 
+int64_t int_rand(int64_t min, int64_t max)
+{
+    assert(min <= max);
+    uint64_t range = (uint64_t)(max - min);
+    uint64_t seed = rand_64() % range;
+    return min + (int64_t)seed;
+}
+
+
+
 static flt_num_t flt_num_create_variadic(
     int64_t exponent,
     uint64_t size,
@@ -51,9 +61,15 @@ flt_num_t flt_num_create_immed(
     return flt_num_create_variadic(exponent, size, signal, n, &args);
 }
 
+flt_num_t flt_num_create_rand(int64_t exponent, uint64_t count)
+{
+    sig_num_t sig = sig_num_create_rand(count);
+    return flt_num_create(exponent, count, sig);
+}
 
 
-static bool flt_num_inner(flt_num_t flt_1, flt_num_t flt_2)
+
+static bool flt_num_keep(flt_num_t flt_1, flt_num_t flt_2)
 {
     CLU_FLT_IS_SAFE(flt_1);
     CLU_FLT_IS_SAFE(flt_2);
@@ -70,7 +86,7 @@ static bool flt_num_inner(flt_num_t flt_1, flt_num_t flt_2)
         return false;
     }
 
-    if(!sig_num_inner(flt_1.sig, flt_2.sig))
+    if(!sig_num_keep(flt_1.sig, flt_2.sig))
     {
         printf("\n\tFLT NUM ASSERT ERROR\t| MISMATCH SIG NUM");
         return false;
@@ -89,12 +105,12 @@ static bool flt_num_inner(flt_num_t flt_1, flt_num_t flt_2)
     return true;
 }
 
-static bool flt_num_eq_dbg(flt_num_t flt_1, flt_num_t flt_2)
+bool flt_num_eq_dbg(flt_num_t flt_1, flt_num_t flt_2)
 {
     CLU_FLT_IS_SAFE(flt_1);
     CLU_FLT_IS_SAFE(flt_2);
 
-    if(!flt_num_inner(flt_1, flt_2))
+    if(!flt_num_keep(flt_1, flt_2))
     {
         printf("\n");
         printf("\n");
@@ -220,9 +236,12 @@ void flt_num_display_dec(flt_num_t flt_0) // TODO TEST
     flt_num_free(flt_ten);
 
     flt_num_free(flt_base);
-    flt_base = flt_num_pow(flt_num_wrap(10, flt_0.size), base);
-    flt_0 = flt_num_div(flt_num_copy(flt_0), flt_base);
-    // flt_0 = flt_num_set_size(flt_0, flt_0.size - 2);
+    if(base != 0)
+    {
+        flt_base = flt_num_pow(flt_num_wrap(10, flt_0.size), base);
+        flt_0 = flt_num_div(flt_num_copy(flt_0), flt_base);
+        // flt_0 = flt_num_set_size(flt_0, flt_0.size - 2);
+    }
 
     fxd_num_t fxd = (fxd_num_t)
     {
@@ -235,7 +254,6 @@ void flt_num_display_dec(flt_num_t flt_0) // TODO TEST
     };
     fxd_num_display_dec(fxd);
     printf(" * 10 ^ " D64P() "", base);
-    flt_num_free(flt_0);
 }
 
 
@@ -331,6 +349,18 @@ flt_num_t flt_num_wrap_sig(sig_num_t sig, uint64_t size) // TODO TEST
     return flt_num_create(0, size, sig);
 }
 
+flt_num_t flt_num_wrap_fxd(fxd_num_t fxd, uint64_t size) // TODO TEST
+{
+    flt_num_t flt = (flt_num_t)
+    {
+        .exponent = -(int64_t)fxd.pos,
+        .size = size,
+        .sig = fxd.sig
+    };
+
+    return flt_num_normalize(flt);
+}
+
 void flt_num_free(flt_num_t flt)
 {
     CLU_FLT_IS_SAFE(flt);
@@ -386,12 +416,13 @@ flt_num_t flt_num_load(const char file_path[])
 }
 
 
+
 fxd_num_t fxd_num_wrap_flt(flt_num_t flt, uint64_t pos) // TODO test
 {
-    flt = flt_num_set_exponent(flt, 1 - (int64_t)pos);
+    flt = flt_num_set_exponent(flt, -(int64_t)pos);
     return (fxd_num_t)
     {
-        .pos = pos - 1,
+        .pos = pos,
         .sig = flt.sig
     };
 }
@@ -551,9 +582,7 @@ flt_num_t flt_num_mul(flt_num_t flt_1, flt_num_t flt_2) // TODO TEST
     CLU_FLT_IS_SAFE(flt_1);
     CLU_FLT_IS_SAFE(flt_2);
 
-    uint64_t pos = 0;
     flt_1.exponent = int64_add(flt_1.exponent, flt_2.exponent);
-    flt_1.exponent = int64_add(flt_1.exponent, (int64_t)pos);
     flt_1.sig = sig_num_mul(flt_1.sig, flt_2.sig);
     return flt_num_normalize(flt_1);
 }
@@ -602,6 +631,36 @@ flt_num_t flt_num_div(flt_num_t flt_1, flt_num_t flt_2) // TODO TEST
     flt_1.exponent = int64_sub(flt_1.exponent, flt_2.exponent);
     flt_1.sig = sig_num_div(flt_1.sig, flt_2.sig);
     return flt_num_normalize(flt_1);
+}
+
+
+
+flt_num_ssm_t flt_num_mul_prepare(flt_num_t flt, uint64_t count)
+{
+    CLU_FLT_IS_SAFE(flt);
+
+    return (flt_num_ssm_t)
+    {
+        .exponent = flt.exponent,
+        .size = flt.size,
+        .sig_ssm = sig_num_mul_prepare(flt.sig, count)
+    };
+}
+
+flt_num_t flt_num_mul_finish(flt_num_t flt_1, flt_num_ssm_t flt_ssm_2)
+{
+    CLU_FLT_IS_SAFE(flt_1);
+
+    int64_t exponent = int64_add(flt_1.exponent, flt_ssm_2.exponent);
+    uint64_t size = flt_1.size;
+
+    sig_num_t sig = sig_num_mul_finish(flt_1.sig, flt_ssm_2.sig_ssm);
+    return flt_num_create(exponent, size, sig);
+}
+
+void flt_num_ssm_free(flt_num_ssm_t flt_ssm)
+{
+    sig_num_ssm_free(flt_ssm.sig_ssm);
 }
 
 

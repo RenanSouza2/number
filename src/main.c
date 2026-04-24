@@ -21,13 +21,18 @@ int64_t get_arg(int argc, char** argv)
 
 
 
-num_p num_generate(uint64_t max, uint64_t salt)
+num_p num_generate_1_step(num_p num, uint64_t salt)
+{
+    num = num_add(num, num_wrap(salt));
+    return num_sqr(num);
+}
+
+num_p num_generate_1(uint64_t max, uint64_t salt)
 {
     num_p num = num_wrap(2);
     for(uint64_t i=0; i<max; i++)
     {
-        num = num_add(num, num_wrap(salt));
-        num = num_sqr(num);
+        num = num_generate_1_step(num, salt);
     }
     return num;
 }
@@ -50,34 +55,29 @@ num_p num_generate_2(uint64_t index, uint64_t salt)
 void time_1(uint64_t begin, uint64_t end)
 {
     assert(begin);
-    num_p num_1 = num_generate(begin, 1);
-    num_p num_2 = num_generate(begin - 1, 2);
+    num_p num_1 = num_generate_1(begin, 1);
+    num_p num_2 = num_generate_1(begin - 1, 2);
     for(uint64_t i=begin; i<end; i++)
     {
         printf("\n" U64P() "", i);
 
         TIME_SETUP
-        num_1 = num_add(num_1, num_wrap(1));
-        num_1 = num_sqr(num_1);
+        num_1 = num_generate_1_step(num_1, 1);
         TIME_END(t1)
         printf("\t%10.3f", (double)t1 / 1e9);
 
-        num_2 = num_add(num_2, num_wrap(2));
-        num_2 = num_sqr(num_2);
+        TIME_RESET
+        num_2 = num_generate_1_step(num_2, 2);
         TIME_END(t2)
         printf("\t%10.3f", (double)t2 / 1e9);
 
         num_p num_1_copy = num_copy(num_1);
         num_p num_2_copy = num_copy(num_2);
 
-        // clu_log_enable(true);
-
         TIME_RESET
         num_p num = num_div(num_1_copy, num_2_copy);
         TIME_END(t3)
         printf("\t%10.3f", (double)t3 / 1e9);
-
-        // clu_log_enable(false);
 
         num_free(num);
     }
@@ -85,33 +85,62 @@ void time_1(uint64_t begin, uint64_t end)
     num_free(num_2);
 }
 
-void time_2(int argc, char** argv, uint64_t max)
+void ssm_params_display_main(ssm_params_t p)
 {
-    uint64_t id = (uint64_t)get_arg(argc, argv);
-    printf("\nid: " U64P() "", id);
+    printf("\t" U64P() "", p.M);
+    printf("\t" U64P() "", p.K);
+}
 
-    num_p num_1 = num_generate(max, 2);
-    num_display_tag("num_1", num_1);
+void time_2(int argc, char** argv, uint64_t max, uint64_t jumps)
+{
+    uint64_t id = argc > 1 ? (uint64_t)get_arg(argc, argv) : 0;
+    num_p num_1 = num_generate_1(max, 2);
+    
+    // printf("\nid: " U64P() "", id);
+    // num_display_tag("num_1", num_1);
+    // printf("\nN\ttime\tM\tK\tQ\tn\tdepth\tlast_n");
 
-    num_p num_2 = num_wrap(0xe6503424c62eef89);
-    for(uint64_t i=1; num_cmp(num_1, num_2) > 0; i++)
+    uint64_t first = jumps;
+    num_p num_2 = num_generate_2(first, 2);
+    uint64_t threads = 1;
+    for(uint64_t i=id + first; num_2->count < num_1->count; i += threads * jumps)
     {
-        num_2 = num_add(num_2, num_wrap(2));
-        num_2 = num_mul(num_2, num_wrap(0xe6503424c62eef89));
+        for(uint64_t j=0; j<threads * jumps; j++)
+        {
+            num_2 = num_generate_2_step(num_2, 2);
+        }
 
-        if(i % 8 != id)
-            continue;
+        printf("\n" U64P() "", i);
 
-        printf("\n" U64P(5) "", i);
+        uint64_t res = 0;
+        uint64_t repeat = 1;
+        for(uint64_t j=0; j<repeat; j ++)
+        {
+            num_p num_aux_1 = num_copy(num_1);
+            num_p num_aux_2 = num_copy(num_2);
 
-        num_p num_aux_1 = num_copy(num_1);
-        num_p num_aux_2 = num_copy(num_2);
+            uint64_t begin = get_time();
+            num_aux_1 = num_mul(num_aux_1, num_aux_2);
+            uint64_t end = get_time();
+            num_free(num_aux_1);
 
-        uint64_t begin = get_time();
-        num_aux_1 = num_div(num_aux_1, num_aux_2);
-        uint64_t end = get_time();
-        printf("\t%10.3lf", (double)(end - begin) / 1e3);
+            res += end - begin;
+        }
+
+        printf("\t%10.9lf", (double)(res / repeat) / 1e9);
     }
+}
+
+void time_2_total(int argc, char** argv)
+{
+    printf("\ncount\ttime");
+
+    time_2(argc, argv, 17, 10);
+    time_2(argc, argv, 18, 20);
+    time_2(argc, argv, 19, 40);
+    time_2(argc, argv, 20, 80);
+    time_2(argc, argv, 21, 160);
+    time_2(argc, argv, 22, 320);
 }
 
 void time_3(void)
@@ -170,6 +199,54 @@ void time_3(void)
         num_free(num_res);
     }
 }
+
+// void time_karatsuba(void)
+// {
+//     for(uint64_t base=1; base<20; base++)
+//     {
+//
+//         num_p num_1 = num_generate_1(base + 1, 2);
+//         // num_p num_2 = num_generate_1(base, 3);
+//         num_p num_2 = num_add(num_copy(num_1), num_wrap(1));
+//
+//         printf("\n");
+//         printf("\n-----------------------");
+//         printf("\nnum_1: ");
+//         num_display(num_1);
+//         printf("\nnum_2: ");
+//         num_display(num_2);
+//         printf("\n");
+//
+//         TIME_SETUP
+//         num_p num_res_1 = num_mul_classic(num_copy(num_1), num_copy(num_2));
+//         TIME_END(t1)
+//         num_free(num_res_1);
+//         tprintf("classical time: %lu", t1);
+//       
+//         TIME_RESET
+//         num_p num_res_2 = num_mul_karatsuba(num_copy(num_1), num_copy(num_2));
+//         TIME_END(t2)
+//         num_free(num_res_2);
+//         tprintf("karatsuba time: %lu", t2);
+//
+//         TIME_RESET
+//         num_p num_res_3 = num_mul_ssm(num_copy(num_1), num_copy(num_2));
+//         TIME_END(t3)
+//         num_free(num_res_3);
+//         tprintf("ssm time      : %lu", t3);
+//
+//         TIME_RESET
+//         num_p num_res_4 = num_mul(num_copy(num_1), num_copy(num_2));
+//         TIME_END(t4)
+//         num_free(num_res_4);
+//         tprintf("mul time      : %lu", t4);
+//
+//         printf("\n\nres\n\n");
+//         num_display(num_1);
+//     }
+// }
+
+// 96828600
 
 
 
@@ -340,7 +417,7 @@ void mod_num_fib(mod_num_p mod_a, mod_num_p mod_b)
 void time_dec(void)
 {
     printf("\n");
-    num_p num = num_generate(20, 2);
+    num_p num = num_generate_1(20, 2);
     printf("\ngenerated\n");
     printf("\n");
     uint64_t begin = get_time();
@@ -581,7 +658,7 @@ void sqrt_2(void)
         //     continue;
 
         printf("\n\n");
-        fxd_num_display_full("hex", fxd_x);
+        fxd_num_display_full(fxd_x);
         printf("\n");
         fxd_num_display_dec(fxd_x);
         printf("\n\npos: " U64P() "", i * 2);
@@ -600,8 +677,8 @@ void sqrt_2(void)
 #ifdef DEBUG
 void mem_1(uint64_t index)
 {
-    num_p num_1 = num_generate(index, 2);
-    num_p num_2 = num_generate(index, 3);
+    num_p num_1 = num_generate_1(index, 2);
+    num_p num_2 = num_generate_1(index, 3);
     
     clu_clean_max_occupancy();
     uint64_t count_bef = clu_get_register_count();
@@ -628,15 +705,19 @@ int main()
 {
     setbuf(stdout, NULL);
     srand((unsigned int)time(NULL));
-
-    // uint64_t arg = get_arg(argc, argv);
+    printf("\nbegin\n\n");
 
     // clu_log_enable(true);
+
     // num_generate(21, 2);
-    // time_1(16, 29);
+    // time_1(16, 28);
     // time_1(16, 17);
+    // time_2(argc, argv, 25, 10000);
+    // time_2_total(argc, argv);
     // time_3();
-    // time_2(argc, argv, 19);
+    // time_4();
+    // time_karatsuba();
+
     // fibonacci();
     // fibonacci_2(16, 23);
     // fibonacci_3(16, 40);
@@ -648,25 +729,23 @@ int main()
     // flt_num_pi_3(1000);
     // mem_1(21);
 
-    sig_num_t sig_1 = sig_num_wrap_int128(((int128_t)0x1234 << 64) + 0x5678);
-    sig_num_t sig_2 = sig_num_wrap(0xabcd);
+    uint64_t base = 26;
+    num_p num_1 = num_generate_1(base, 2);
+    num_p num_2 = num_add(num_copy(num_1), num_wrap(1));
     
-    file_t fp_w = file_write_open("num.bin", 2);
-
-    file_write_sig_num(&fp_w, sig_1);
-    file_write_sig_num(&fp_w, sig_2);
-    file_write_close(&fp_w);
-
-    FILE* fp_r = file_read_open("num.bin");
-    assert(fp_r);
-    sig_num_t sig_3 = file_read_sig_num(fp_r, 0);
-    sig_num_t sig_4 = file_read_sig_num(fp_r, 1);
-
-    sig_num_display_tag("sig_3", sig_3);
-    sig_num_display_tag("sig_4", sig_4);
-
-    // assert(clu_mem_is_empty("FINAL"));
+    TIME_SETUP
+    num_p num_res = num_mul(num_1, num_2);
+    TIME_END(t1)
+    num_free(num_res);
+    tprintf("time: %.3f", dtime(t1));
+ 
+    // assert(clu_mem_is_empty());
 
     printf("\n");
     return 0;
 }
+
+// num_mul_ssm     | time prepare: 0.782
+// num_mul_finish_inner    | time pointwise: 6.417
+// main    | time: 10.229
+

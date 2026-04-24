@@ -58,3 +58,5 @@ thread_log/*
 
 # Test
 runner
+
+**/out*.txt

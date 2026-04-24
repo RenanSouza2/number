@@ -53,10 +53,11 @@ fxd_num_t fxd_num_create_immed(
 
 
 
-static bool fxd_num_inner(fxd_num_t fxd_1, fxd_num_t fxd_2)
+static bool fxd_num_keep(fxd_num_t fxd_1, fxd_num_t fxd_2)
 {
     CLU_FXD_IS_SAFE(fxd_1);
     CLU_FXD_IS_SAFE(fxd_2);
+    assert(fxd_1.pos == fxd_2.pos);
 
     if(!uint64(fxd_1.pos, fxd_2.pos))
     {
@@ -64,7 +65,7 @@ static bool fxd_num_inner(fxd_num_t fxd_1, fxd_num_t fxd_2)
         return false;
     }
 
-    if(!sig_num_inner(fxd_1.sig, fxd_2.sig))
+    if(!sig_num_keep(fxd_1.sig, fxd_2.sig))
     {
         printf("\n\tFXD NUM ASSERT ERROR\t| MISMATCH SIG NUM");
         return false;
@@ -78,7 +79,7 @@ static bool fxd_num_eq_dbg(fxd_num_t fxd_1, fxd_num_t fxd_2)
     CLU_FXD_IS_SAFE(fxd_1);
     CLU_FXD_IS_SAFE(fxd_2);
 
-    if(!fxd_num_inner(fxd_1, fxd_2))
+    if(!fxd_num_keep(fxd_1, fxd_2))
     {
         printf("\n");
         printf("\n");
@@ -149,11 +150,19 @@ void fxd_num_display_dec(fxd_num_t fxd)
 
     num_p num = num_pow(num_wrap(1000000000000000000), t);
     num_lo = num_mul(num_lo, num);
-    num_break(&num_lo, &num_hi, num_lo, fxd.pos);
+    num_break(&num_lo, &num, num_lo, fxd.pos);
+    num_free(num);
 
     num_lo = num_base_to(num_lo, 1000000000000000000);
-    for(uint64_t i=num_lo->count-1; i!=0; i--)
+    for(uint64_t i=t-1; i!=num_lo->count-1; i--)
+    {
+        printf("" U64P(018) "", (uint64_t)0);
+    }
+
+    for(uint64_t i=num_lo->count-1; i!=UINT64_MAX; i--)
+    {
         printf("" U64P(018) "", num_lo->chunk[i]);
+    }
 
     num_free(num_lo);
 }
@@ -170,14 +179,15 @@ void fxd_num_display_tag(const char tag[], fxd_num_t fxd)
 {
     CLU_FXD_IS_SAFE(fxd);
 
-    sig_num_display_tag(tag, fxd.sig);
+    printf("\n%s:\t", tag);
+    fxd_num_display_full(fxd);
 }
 
-void fxd_num_display_full(const char tag[], fxd_num_t fxd)
+void fxd_num_display_full(fxd_num_t fxd)
 {
     CLU_FXD_IS_SAFE(fxd);
 
-    sig_num_display_full(tag, fxd.sig);
+    sig_num_display_full(fxd.sig);
 }
 
 
@@ -196,6 +206,14 @@ fxd_num_t fxd_num_create(sig_num_t sig, uint64_t pos) // TODO test
 fxd_num_t fxd_num_wrap(int64_t value, uint64_t pos) // TODO test
 {
     sig_num_t sig = sig_num_wrap(value);
+    sig.num = num_head_grow(sig.num, pos);
+    return fxd_num_create(sig, pos);
+}
+
+fxd_num_t fxd_num_wrap_sig(sig_num_t sig, uint64_t pos) // TODO test
+{
+    CLU_HANDLER_IS_SAFE(sig.num);
+
     sig = sig_num_head_grow(sig, pos);
     return fxd_num_create(sig, pos);
 }
@@ -281,6 +299,7 @@ int64_t fxd_num_cmp(fxd_num_t fxd_1, fxd_num_t fxd_2) // TODO test
 {
     CLU_FXD_IS_SAFE(fxd_1);
     CLU_FXD_IS_SAFE(fxd_2);
+    assert(fxd_1.pos == fxd_2.pos);
 
     return sig_num_cmp(fxd_1.sig, fxd_2.sig);
 }
@@ -316,6 +335,7 @@ fxd_num_t fxd_num_add(fxd_num_t fxd_1, fxd_num_t fxd_2) // TODO test
 {
     CLU_FXD_IS_SAFE(fxd_1);
     CLU_FXD_IS_SAFE(fxd_2);
+    assert(fxd_1.pos == fxd_2.pos);
 
     fxd_1.sig = sig_num_add(fxd_1.sig, fxd_2.sig);
     return fxd_1;
@@ -325,6 +345,7 @@ fxd_num_t fxd_num_sub(fxd_num_t fxd_1, fxd_num_t fxd_2) // TODO test
 {
     CLU_FXD_IS_SAFE(fxd_1);
     CLU_FXD_IS_SAFE(fxd_2);
+    assert(fxd_1.pos == fxd_2.pos);
 
     fxd_1.sig = sig_num_sub(fxd_1.sig, fxd_2.sig);
     return fxd_1;
@@ -334,6 +355,7 @@ fxd_num_t fxd_num_mul(fxd_num_t fxd_1, fxd_num_t fxd_2) // TODO test
 {
     CLU_FXD_IS_SAFE(fxd_1);
     CLU_FXD_IS_SAFE(fxd_2);
+    assert(fxd_1.pos == fxd_2.pos);
 
     fxd_1.sig = sig_num_mul(fxd_1.sig, fxd_2.sig);
     fxd_1.sig = sig_num_head_trim(fxd_1.sig, fxd_1.pos);
@@ -353,10 +375,33 @@ fxd_num_t fxd_num_div(fxd_num_t fxd_1, fxd_num_t fxd_2) // TODO test
 {
     CLU_FXD_IS_SAFE(fxd_1);
     CLU_FXD_IS_SAFE(fxd_2);
+    assert(fxd_1.pos == fxd_2.pos);
 
     sig_num_t sig = sig_num_head_grow(fxd_1.sig, fxd_1.pos);
     fxd_1.sig = sig_num_div(sig, fxd_2.sig);
     return fxd_1;
+}
+
+
+
+fxd_num_ssm_t fxd_num_mul_prepare(fxd_num_t fxd, uint64_t count)
+{
+    CLU_FXD_IS_SAFE(fxd);
+
+    return (fxd_num_ssm_t)
+    {
+        .pos = fxd.pos,
+        .sig_ssm = sig_num_mul_prepare(fxd.sig, count)
+    };
+}
+
+fxd_num_t fxd_num_mul_finish(fxd_num_t fxd_1, fxd_num_ssm_t fxd_ssm_2)
+{
+    CLU_FXD_IS_SAFE(fxd_1);
+
+    sig_num_t sig = sig_num_mul_finish(fxd_1.sig, fxd_ssm_2.sig_ssm);
+    sig = sig_num_head_trim(sig, fxd_ssm_2.pos);
+    return fxd_num_create(sig, fxd_1.pos);
 }
 
 
@@ -376,5 +421,50 @@ fxd_num_t fxd_num_div_sig(fxd_num_t fxd, sig_num_t sig) // TODO test
     CLU_HANDLER_IS_SAFE(sig.num);
 
     fxd.sig = sig_num_div(fxd.sig, sig);
+    return fxd;
+}
+
+
+
+void file_write_fxd_num_raw(file_p fp, fxd_num_t fxd)
+{
+    file_write_uint64(fp, fxd.pos);
+    file_write_sig_num_raw(fp, fxd.sig);
+}
+
+void file_write_fxd_num(file_p fp, fxd_num_t fxd)
+{
+    file_write_start(fp);
+    file_write_fxd_num_raw(fp, fxd);
+    file_write_end(fp);
+}
+
+void fxd_num_save(const char file_path[], fxd_num_t fxd)
+{
+    file_t fp = file_write_open(file_path, 1);
+    file_write_fxd_num(&fp, fxd);
+    file_write_close(&fp);
+}
+
+fxd_num_t file_read_fxd_num_raw(FILE *fp)
+{
+    uint64_t pos = file_read_uint64(fp);
+    sig_num_t sig = file_read_sig_num_raw(fp);
+    return fxd_num_create(sig, pos);
+}
+
+fxd_num_t file_read_fxd_num(FILE *fp, uint64_t index)
+{
+    file_read_move_to_index(fp, index);
+    return file_read_fxd_num_raw(fp);
+}
+
+fxd_num_t fxd_num_load(const char file_path[])
+{
+    FILE *fp = file_read_open(file_path);
+    assert(fp);
+    fxd_num_t fxd = file_read_fxd_num(fp, 0);
+    fclose(fp);
+
     return fxd;
 }

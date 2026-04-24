@@ -6,7 +6,7 @@
 #include "../../mods/macros/struct.h"
 #include "../../mods/macros/uint.h"
 
-PLACEHOLDER(num)
+#include "../num/struct.h"
 
 #define POSITIVE 1
 #define NEGATIVE 2
@@ -24,6 +24,12 @@ STRUCT(sig_num)
 {
     uint64_t signal;
     num_p num;
+};
+
+STRUCT(sig_num_ssm)
+{
+    uint64_t signal;
+    num_ssm_t num_ssm;
 };
 
 #endif
