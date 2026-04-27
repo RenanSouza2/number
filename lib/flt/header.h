@@ -20,9 +20,6 @@ void flt_num_free(flt_num_t flt);
 
 fxd_num_t fxd_num_wrap_flt(flt_num_t flt, uint64_t pos);
 
-void flt_num_save(const char file_path[], flt_num_t flt);
-flt_num_t flt_num_load(const char file_path[]);
-
 int64_t flt_num_cmp(flt_num_t flt_1, flt_num_t flt_2);
 bool flt_num_safe_add(flt_num_t flt_1, flt_num_t flt_2);
 
@@ -43,6 +40,11 @@ flt_num_t flt_num_mul_sig(flt_num_t flt, sig_num_t sig);
 flt_num_t flt_num_div_sig(flt_num_t flt, sig_num_t sig);
 
 void file_write_flt_num_raw(file_p fp, flt_num_t flt);
+void file_write_flt_num(file_p fp, flt_num_t flt);
+void flt_num_save(const char file_path[], flt_num_t flt);
+
 flt_num_t file_read_flt_num_raw(FILE *fp);
+flt_num_t file_read_flt_num(FILE *fp, uint64_t index);
+flt_num_t flt_num_load(const char file_path[]);
 
 #endif

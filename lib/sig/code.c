@@ -245,13 +245,13 @@ sig_num_t sig_num_head_trim(sig_num_t sig, uint64_t count) // TODO test
 
 
 
-void fseek_safe(FILE *fp, long pos, int whence)
+static void fseek_safe(FILE *fp, long pos, int whence)
 {
     if (fseek(fp, pos, whence) != 0)
         exit(EXIT_FAILURE);
 }
 
-uint64_t ftell_safe(FILE *fp)
+static uint64_t ftell_safe(FILE *fp)
 {
     int64_t res = ftell(fp);
     if (res < 0)
@@ -505,7 +505,7 @@ sig_num_t sig_num_sub(sig_num_t sig_1, sig_num_t sig_2)
     return sig_num_add(sig_1, sig_2);
 }
 
-uint64_t sig_signal_mul(uint64_t signal_1, uint64_t signal_2)
+static uint64_t sig_signal_mul(uint64_t signal_1, uint64_t signal_2)
 {
     return signal_1 & signal_2 ? POSITIVE : NEGATIVE;
 }

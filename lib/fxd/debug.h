@@ -22,6 +22,6 @@ bool fxd_num_immed(
 
 #endif
 
-fxd_num_t fxd_num_create(sig_num_t sig, uint64_t pos);
+static fxd_num_t fxd_num_create(sig_num_t sig, uint64_t pos);
 
 #endif

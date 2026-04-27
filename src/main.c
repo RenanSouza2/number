@@ -13,7 +13,8 @@
 
 
 
-int64_t get_arg(int argc, char** argv)
+__attribute__((unused))
+static int64_t get_arg(int argc, char** argv)
 {
     assert(argc > 1);
     return atoi(argv[1]);
@@ -21,13 +22,15 @@ int64_t get_arg(int argc, char** argv)
 
 
 
-num_p num_generate_1_step(num_p num, uint64_t salt)
+__attribute__((unused))
+static num_p num_generate_1_step(num_p num, uint64_t salt)
 {
     num = num_add(num, num_wrap(salt));
     return num_sqr(num);
 }
 
-num_p num_generate_1(uint64_t max, uint64_t salt)
+__attribute__((unused))
+static num_p num_generate_1(uint64_t max, uint64_t salt)
 {
     num_p num = num_wrap(2);
     for(uint64_t i=0; i<max; i++)
@@ -37,13 +40,15 @@ num_p num_generate_1(uint64_t max, uint64_t salt)
     return num;
 }
 
-num_p num_generate_2_step(num_p num, uint64_t salt)
+__attribute__((unused))
+static num_p num_generate_2_step(num_p num, uint64_t salt)
 {
     num = num_add_uint(num, salt);
     return num_mul_uint(num, 0xe6503424c62eef89);
 }
 
-num_p num_generate_2(uint64_t index, uint64_t salt)
+__attribute__((unused))
+static num_p num_generate_2(uint64_t index, uint64_t salt)
 {
     num_p num = num_wrap(0xe6503424c62eef89);
     for(uint64_t i=1; i<index; i++)
@@ -52,7 +57,8 @@ num_p num_generate_2(uint64_t index, uint64_t salt)
     return num;
 }
 
-void time_1(uint64_t begin, uint64_t end)
+__attribute__((unused))
+static void time_1(uint64_t begin, uint64_t end)
 {
     assert(begin);
     num_p num_1 = num_generate_1(begin, 1);
@@ -85,13 +91,15 @@ void time_1(uint64_t begin, uint64_t end)
     num_free(num_2);
 }
 
-void ssm_params_display_main(ssm_params_t p)
+__attribute__((unused))
+static void ssm_params_display_main(ssm_params_t p)
 {
     printf("\t" U64P() "", p.M);
     printf("\t" U64P() "", p.K);
 }
 
-void time_2(int argc, char** argv, uint64_t max, uint64_t jumps)
+__attribute__((unused))
+static void time_2(int argc, char** argv, uint64_t max, uint64_t jumps)
 {
     uint64_t id = argc > 1 ? (uint64_t)get_arg(argc, argv) : 0;
     num_p num_1 = num_generate_1(max, 2);
@@ -131,7 +139,8 @@ void time_2(int argc, char** argv, uint64_t max, uint64_t jumps)
     }
 }
 
-void time_2_total(int argc, char** argv)
+__attribute__((unused))
+static void time_2_total(int argc, char** argv)
 {
     printf("\ncount\ttime");
 
@@ -143,7 +152,8 @@ void time_2_total(int argc, char** argv)
     time_2(argc, argv, 22, 320);
 }
 
-void time_3(void)
+__attribute__((unused))
+static void time_3(void)
 {
     uint64_t i_last = 1;
     num_p num_1 = num_generate_2(i_last, 2);
@@ -250,7 +260,8 @@ void time_3(void)
 
 
 
-void fibonacci_1(void)
+__attribute__((unused))
+static void fibonacci_1(void)
 {
     num_p num_a = num_wrap(1);
     num_p num_b = num_wrap(1);
@@ -271,7 +282,8 @@ void fibonacci_1(void)
     }
 }
 
-void fibonacci_2(uint64_t min, uint64_t max)
+__attribute__((unused))
+static void fibonacci_2(uint64_t min, uint64_t max)
 {
     num_p num_a = num_wrap(0);
     num_p num_b = num_wrap(1);
@@ -300,7 +312,8 @@ void fibonacci_2(uint64_t min, uint64_t max)
     }
 }
 
-void fibonacci_3(uint64_t, uint64_t max)
+__attribute__((unused))
+static void fibonacci_3(uint64_t, uint64_t max)
 {
     num_p num_a = num_wrap(0);
     num_p num_b = num_wrap(1);
@@ -341,7 +354,8 @@ void fibonacci_3(uint64_t, uint64_t max)
     }
 }
 
-void factorial(void)
+__attribute__((unused))
+static void factorial(void)
 {
     num_p num = num_wrap(1);
     for(uint64_t i=1; ; i++)
@@ -356,7 +370,8 @@ void factorial(void)
     }
 }
 
-num_p fib_1(uint64_t index)
+__attribute__((unused))
+static num_p fib_1(uint64_t index)
 {
     if(index < 2)
         return num_wrap(1);
@@ -373,7 +388,8 @@ num_p fib_1(uint64_t index)
     return num_b;
 }
 
-num_p fib_2(uint64_t index)
+__attribute__((unused))
+static num_p fib_2(uint64_t index)
 {
     num_p num_a = num_wrap(1);
     num_p num_b = num_wrap(0);
@@ -406,7 +422,8 @@ num_p fib_2(uint64_t index)
 
 
 
-void mod_num_fib(mod_num_p mod_a, mod_num_p mod_b)
+__attribute__((unused))
+static void mod_num_fib(mod_num_p mod_a, mod_num_p mod_b)
 {
     mod_num_t mod_c = mod_num_add(*mod_a, mod_num_copy(*mod_b));
 
@@ -414,7 +431,8 @@ void mod_num_fib(mod_num_p mod_a, mod_num_p mod_b)
     *mod_b = mod_c;
 }
 
-void time_dec(void)
+__attribute__((unused))
+static void time_dec(void)
 {
     printf("\n");
     num_p num = num_generate_1(20, 2);
@@ -429,7 +447,8 @@ void time_dec(void)
 
 
 
-void pi_1(void)
+__attribute__((unused))
+static void pi_1(void)
 {
     uint64_t pos = 3;
     fxd_num_t fxd = fxd_num_wrap(0, pos);
@@ -452,7 +471,8 @@ void pi_1(void)
     }
 }
 
-void e(void)
+__attribute__((unused))
+static void e(void)
 {
     uint64_t pos = 1000;
     fxd_num_t fxd = fxd_num_wrap(0, pos);
@@ -471,7 +491,8 @@ void e(void)
     }
 }
 
-void pi_2(void)
+__attribute__((unused))
+static void pi_2(void)
 {
     uint64_t pos = 2;
     fxd_num_t fxd = fxd_num_wrap(2, pos);
@@ -489,7 +510,8 @@ void pi_2(void)
     }
 }
 
-void flt_num_pi_1(void)
+__attribute__((unused))
+static void flt_num_pi_1(void)
 {
     uint64_t size = 3;
     flt_num_t flt = flt_num_wrap(2, size);
@@ -522,7 +544,8 @@ void flt_num_pi_1(void)
     }
 }
 
-void flt_num_pi_2(uint64_t size)
+__attribute__((unused))
+static void flt_num_pi_2(uint64_t size)
 {
     flt_num_t flt = flt_num_wrap(3, size);
     flt_num_t flt_1_4 = flt_num_div(
@@ -579,7 +602,8 @@ void flt_num_pi_2(uint64_t size)
     flt_num_free(flt_m_1_2);
 }
 
-void flt_num_pi_3(uint64_t size)
+__attribute__((unused))
+static void flt_num_pi_3(uint64_t size)
 {
     flt_num_t flt_a = flt_num_wrap(6, size);
     flt_num_t flt_pi = flt_num_wrap(3, size);
@@ -614,7 +638,8 @@ void flt_num_pi_3(uint64_t size)
 
 
 
-void display_bit(uint64_t value)
+__attribute__((unused))
+static void display_bit(uint64_t value)
 {
     for(uint64_t i=0; i<64; i++, value <<= 1)
         printf("" U64PX "", value >> 63);
@@ -622,14 +647,16 @@ void display_bit(uint64_t value)
 
 
 
-fxd_num_t fxd_step(fxd_num_t fxd, uint64_t pos)
+__attribute__((unused))
+static fxd_num_t fxd_step(fxd_num_t fxd, uint64_t pos)
 {
     fxd_num_t fxd_a = fxd_num_shr(fxd_num_copy(fxd), 1);
     fxd = fxd_num_div(fxd_num_wrap(1, pos), fxd);
     return fxd_num_add(fxd, fxd_a);
 }
 
-void sqrt_2(void)
+__attribute__((unused))
+static void sqrt_2(void)
 {
     fxd_num_t fxd_x = fxd_num_wrap(1, 1);
     num_p num = num_wrap(10);
@@ -675,7 +702,8 @@ void sqrt_2(void)
 
 
 #ifdef DEBUG
-void mem_1(uint64_t index)
+__attribute__((unused))
+static void mem_1(uint64_t index)
 {
     num_p num_1 = num_generate_1(index, 2);
     num_p num_2 = num_generate_1(index, 3);
@@ -691,7 +719,8 @@ void mem_1(uint64_t index)
     num_free(num_1);
 }
 #else
-void mem_1(uint64_t)
+__attribute__((unused))
+static void mem_1(uint64_t)
 {
     printf("\n\tfunction should be run with ./run_debug");
     assert(false);

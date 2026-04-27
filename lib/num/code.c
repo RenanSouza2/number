@@ -228,18 +228,6 @@ static uint64_t uint_read(FILE *fp, uint64_t size, uint64_t base)
     return uint_from_str(str, size, base);
 }
 
-uint64_t uint_inv(uint64_t value, uint64_t q) // TODO TEST
-{
-    uint64_t res = 0;
-    for(uint64_t i=0; i<q; i++)
-    {
-        res <<= 1;
-        res |= value & 1;
-        value >>= 1;
-    }
-    return res;
-}
-
 
 
 void num_display_dec(num_p num)
@@ -375,14 +363,6 @@ num_p num_expand_to(num_p num, uint64_t target)
 
     memset(&num->chunk[size_old], 0, (size - size_old) * sizeof(uint64_t));
     return num;
-}
-
-num_p num_expand(num_p num)
-{
-    CLU_HANDLER_IS_SAFE(num);
-    assert(num);
-
-    return num_expand_to(num, num->size + 1);
 }
 
 static void num_set_count(num_p num, uint64_t count)
@@ -1009,6 +989,7 @@ static void num_display_span(num_p num, uint64_t pos, uint64_t count)
         printf("" U64PX " ", num->chunk[pos + i]);
 }
 
+__attribute__((unused))
 void num_display_span_full(const char tag[], num_p num, uint64_t n, uint64_t k)
 {
     CLU_HANDLER_IS_SAFE(num)
@@ -1495,14 +1476,14 @@ void num_ssm_fft_inv(num_p num, ssm_params_p p)
 
 #define TRESHOLD 45
 
-bool ssm_is_recursive(uint64_t n)
+static bool ssm_is_recursive(uint64_t n)
 {
     return n > TRESHOLD && (((n - 1) & (1 - n)) > 4);
 }
 
 // 45: 633608800
 
-ssm_params_t ssm_get_params(uint64_t count)
+static ssm_params_t ssm_get_params(uint64_t count)
 {
     uint64_t M = 1 << (stdc_bit_width(count) / 2);
     uint64_t K = 4 * stdc_bit_ceil((count + M - 1) / M);
@@ -1548,7 +1529,7 @@ ssm_params_t ssm_get_params(uint64_t count)
     };
 }
 
-ssm_params_t ssm_get_params_wrap(uint64_t n)
+static ssm_params_t ssm_get_params_wrap(uint64_t n)
 {
     uint64_t K1 = 2 * B(stdc_bit_width(n-1) / 2);
     uint64_t K2 = (n - 1) & (1 - n);
@@ -1590,7 +1571,7 @@ ssm_params_t ssm_get_params_wrap(uint64_t n)
     };
 }
 
-uint64_t ssm_get_last_n(uint64_t count)
+static uint64_t ssm_get_last_n(uint64_t count)
 {
     ssm_params_t params = ssm_get_params(count);
     while(ssm_is_recursive(params.n))
@@ -1611,7 +1592,7 @@ static void num_mul_ssm_fwd_step_buffer(num_p num_fft_res, num_p num, ssm_params
     num_ssm_fft_fwd(num_fft_res, params);
 }
 
-num_p num_mul_ssm_fwd_step(num_p num, ssm_params_p params)
+static num_p num_mul_ssm_fwd_step(num_p num, ssm_params_p params)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)   
@@ -1656,7 +1637,7 @@ num_p num_mul_ssm_fwd_transform(num_p num, uint64_t count)
 }
 
 // KEEP NUM
-num_ssm_t num_mul_prepare_core(num_p num, uint64_t count)
+static num_ssm_t num_mul_prepare_core(num_p num, uint64_t count)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
@@ -1686,7 +1667,7 @@ void num_ssm_free(num_ssm_t num_ssm)
     num_free(num_ssm.num_fft);
 }
 
-void num_ssm_mul_mod_span(num_p num_aux, num_p num_1, num_p num_2, uint64_t pos, uint64_t n)
+static void num_ssm_mul_mod_span(num_p num_aux, num_p num_1, num_p num_2, uint64_t pos, uint64_t n)
 {
     CLU_HANDLER_IS_SAFE(num_1)
     CLU_HANDLER_IS_SAFE(num_2)
@@ -1705,7 +1686,7 @@ void num_ssm_mul_mod_span(num_p num_aux, num_p num_1, num_p num_2, uint64_t pos,
     num_ssm_sub_mod(num_1, pos, num_aux, 0, num_aux, n, n);
 }
 
-void num_ssm_pointwise_product(num_ssm_t num_ssm_1, num_ssm_t num_ssm_2)
+static void num_ssm_pointwise_product(num_ssm_t num_ssm_1, num_ssm_t num_ssm_2)
 {
     CLU_HANDLER_IS_SAFE(num_ssm_1.num_fft)
     CLU_HANDLER_IS_SAFE(num_ssm_2.num_fft)
@@ -1726,7 +1707,7 @@ void num_ssm_pointwise_product(num_ssm_t num_ssm_1, num_ssm_t num_ssm_2)
     }
 }
 
-num_p num_mul_ssm_bwd_transform_rec(num_p num_fft, uint64_t n)
+static num_p num_mul_ssm_bwd_transform_rec(num_p num_fft, uint64_t n)
 {
     CLU_HANDLER_IS_SAFE(num_fft)
     assert(num_fft)
@@ -1772,7 +1753,7 @@ num_p num_mul_ssm_bwd_transform(num_p num_fft, uint64_t count)
 #include "../../mods/macros/time.h" // DELETE
 
 // KEEPS NUM_1
-num_p num_mul_finish_core(num_p num_1, num_ssm_t num_ssm_2)
+static num_p num_mul_finish_core(num_p num_1, num_ssm_t num_ssm_2)
 {
     CLU_HANDLER_IS_SAFE(num_ssm_2.num_fft)
     CLU_HANDLER_IS_SAFE(num_1)
@@ -1803,7 +1784,7 @@ num_p num_mul_finish(num_p num_1, num_ssm_t num_ssm_2)
 
 
 
-void num_ssm_sqr_mod_span(num_p num, uint64_t pos, uint64_t n)
+static void num_ssm_sqr_mod_span(num_p num, uint64_t pos, uint64_t n)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
@@ -1841,7 +1822,8 @@ num_p num_mul_classic(num_p num_1, num_p num_2)
 }
 
 // KEEPS NUM_1 NUM_2
-num_p num_mul_karatsuba(num_p num_1, num_p num_2)
+__attribute__((unused))
+static num_p num_mul_karatsuba(num_p num_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_1)
     CLU_HANDLER_IS_SAFE(num_2)
@@ -1851,17 +1833,6 @@ num_p num_mul_karatsuba(num_p num_1, num_p num_2)
     num_p num_res = num_create(num_1->count + num_2->count, 0);
     return num_mul_karatsuba_buffer(num_res, num_1, num_2);
 }
-
-//   5: 982592400
-//  16: 656533600
-//  24: 652941300
-//  28: 647962000
-//  32: 625284000
-//  36: 738506100
-//  40: 717307700
-//  48: 734585600
-//  64: 713112800
-// 128: 901370300
 
 num_p num_mul_karatsuba_buffer(num_p num_res, num_p num_1, num_p num_2)
 {
