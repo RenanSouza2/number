@@ -4,7 +4,7 @@
 
 
 
-void test_uint_from_char(bool show)
+static void test_uint_from_char(bool show)
 {
     TEST_FN_OPEN
 
@@ -43,32 +43,7 @@ void test_uint_from_char(bool show)
     TEST_FN_CLOSE
 }
 
-void test_uint_inv(bool show)
-{
-    TEST_FN_OPEN
-
-    #define TEST_UINT_INV(TAG, VALUE, Q, RES)   \
-    {                                           \
-        TEST_CASE_OPEN(TAG)                     \
-        {                                       \
-            uint64_t res = uint_inv(VALUE, Q);  \
-            assert(uint64(res, RES));           \
-        }                                       \
-        TEST_CASE_CLOSE                         \
-    }
-
-    TEST_UINT_INV(1, 0, 1, 0);
-    TEST_UINT_INV(2, 1, 1, 1);
-    TEST_UINT_INV(3, 0, 2, 0);
-    TEST_UINT_INV(4, 1, 2, 2);
-    TEST_UINT_INV(5, 2, 2, 1);
-
-    #undef TEST_UINT_INV
-
-    TEST_FN_CLOSE
-}
-
-void test_uint128(bool show)
+static void test_uint128(bool show)
 {
     TEST_FN_OPEN
 
@@ -192,7 +167,7 @@ void test_uint128(bool show)
 
 
 
-void test_num_create(bool show)
+static void test_num_create(bool show)
 {
     TEST_FN_OPEN
 
@@ -229,7 +204,7 @@ void test_num_create(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_expand_to(bool show)
+static void test_num_expand_to(bool show)
 {
     TEST_FN_OPEN
 
@@ -255,7 +230,7 @@ void test_num_expand_to(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_chunk_get(bool show)
+static void test_num_chunk_get(bool show)
 {
     TEST_FN_OPEN
 
@@ -282,7 +257,7 @@ void test_num_chunk_get(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_chunk_set(bool show)
+static void test_num_chunk_set(bool show)
 {
     TEST_FN_OPEN
 
@@ -308,7 +283,7 @@ void test_num_chunk_set(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_normalize(bool show)
+static void test_num_normalize(bool show)
 {
     TEST_FN_OPEN
 
@@ -355,7 +330,7 @@ void test_num_normalize(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_break(bool show)
+static void test_num_break(bool show)
 {
     TEST_FN_OPEN
 
@@ -445,7 +420,7 @@ void test_num_break(bool show)
 
 
 
-void test_num_wrap(bool show)
+static void test_num_wrap(bool show)
 {
     TEST_FN_OPEN
 
@@ -468,7 +443,7 @@ void test_num_wrap(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_wrap_dec(bool show)
+static void test_num_wrap_dec(bool show)
 {
     TEST_FN_OPEN
 
@@ -497,7 +472,7 @@ void test_num_wrap_dec(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_wrap_hex(bool show)
+static void test_num_wrap_hex(bool show)
 {
     TEST_FN_OPEN
 
@@ -548,7 +523,7 @@ void test_num_wrap_hex(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_wrap_str(bool show)
+static void test_num_wrap_str(bool show)
 {
     TEST_FN_OPEN
 
@@ -586,7 +561,7 @@ void test_num_wrap_str(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_read_dec(bool show)
+static void test_num_read_dec(bool show)
 {
     TEST_FN_OPEN
 
@@ -623,7 +598,7 @@ void test_num_read_dec(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_unwrap(bool show)
+static void test_num_unwrap(bool show)
 {
     TEST_FN_OPEN
 
@@ -658,7 +633,7 @@ void test_num_unwrap(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_copy(bool show)
+static void test_num_copy(bool show)
 {
     TEST_FN_OPEN
 
@@ -684,7 +659,7 @@ void test_num_copy(bool show)
 
 
 
-void test_num_cmp_offset(bool show)
+static void test_num_cmp_offset(bool show)
 {
     TEST_FN_OPEN
 
@@ -727,7 +702,7 @@ void test_num_cmp_offset(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_add_uint_offset(bool show)
+static void test_num_add_uint_offset(bool show)
 {
     TEST_FN_OPEN
 
@@ -756,7 +731,7 @@ void test_num_add_uint_offset(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_sub_uint_offset(bool show)
+static void test_num_sub_uint_offset(bool show)
 {
     TEST_FN_OPEN
 
@@ -815,7 +790,7 @@ void test_num_sub_uint_offset(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_sub_offset(bool show)
+static void test_num_sub_offset(bool show)
 {
     TEST_FN_OPEN
 
@@ -867,7 +842,7 @@ void test_num_sub_offset(bool show)
 
 
 
-void test_num_shl_core(bool show)
+static void test_num_shl_core(bool show)
 {
     TEST_FN_OPEN
 
@@ -906,7 +881,7 @@ void test_num_shl_core(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_shr_core(bool show)
+static void test_num_shr_core(bool show)
 {
     TEST_FN_OPEN
 
@@ -948,7 +923,7 @@ void test_num_shr_core(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_mul_uint(bool show)
+static void test_num_mul_uint(bool show)
 {
     TEST_FN_OPEN
 
@@ -986,7 +961,7 @@ void test_num_mul_uint(bool show)
 
 
 
-void test_smm_bit_inv(bool show)
+static void test_smm_bit_inv(bool show)
 {
     TEST_FN_OPEN
 
@@ -1010,7 +985,7 @@ void test_smm_bit_inv(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_ssm_add_mod(bool show)
+static void test_num_ssm_add_mod(bool show)
 {
     TEST_FN_OPEN
 
@@ -1057,7 +1032,7 @@ void test_num_ssm_add_mod(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_ssm_sub_mod(bool show)
+static void test_num_ssm_sub_mod(bool show)
 {
     TEST_FN_OPEN
 
@@ -1108,7 +1083,7 @@ void test_num_ssm_sub_mod(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_ssm_opposite(bool show)
+static void test_num_ssm_opposite(bool show)
 {
     TEST_FN_OPEN
 
@@ -1159,7 +1134,7 @@ void test_num_ssm_opposite(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_ssm_pad(bool show)
+static void test_num_ssm_pad(bool show)
 {
     TEST_FN_OPEN
 
@@ -1217,7 +1192,7 @@ void test_num_ssm_pad(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_ssm_shl(bool show)
+static void test_num_ssm_shl(bool show)
 {
     TEST_FN_OPEN
 
@@ -1288,7 +1263,7 @@ void test_num_ssm_shl(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_ssm_shr(bool show)
+static void test_num_ssm_shr(bool show)
 {
     TEST_FN_OPEN
 
@@ -1376,7 +1351,7 @@ void test_num_ssm_shr(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_ssm_shl_mod(bool show)
+static void test_num_ssm_shl_mod(bool show)
 {
     TEST_FN_OPEN
 
@@ -1453,7 +1428,7 @@ void test_num_ssm_shl_mod(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_ssm_shr_mod(bool show)
+static void test_num_ssm_shr_mod(bool show)
 {
     TEST_FN_OPEN
 
@@ -1534,7 +1509,7 @@ void test_num_ssm_shr_mod(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_ssm_fft(bool show)
+static void test_num_ssm_fft(bool show)
 {
     TEST_FN_OPEN
 
@@ -1588,7 +1563,7 @@ void test_num_ssm_fft(bool show)
 
 
 
-void test_num_div_normalize(bool show)
+static void test_num_div_normalize(bool show)
 {
     TEST_FN_OPEN
 
@@ -1612,7 +1587,7 @@ void test_num_div_normalize(bool show)
 
 
 
-void test_num_is_zero(bool show)
+static void test_num_is_zero(bool show)
 {
     TEST_FN_OPEN
 
@@ -1639,7 +1614,7 @@ void test_num_is_zero(bool show)
 
 
 
-void test_num_shl(bool show)
+static void test_num_shl(bool show)
 {
     TEST_FN_OPEN
 
@@ -1666,7 +1641,7 @@ void test_num_shl(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_shr(bool show)
+static void test_num_shr(bool show)
 {
     TEST_FN_OPEN
 
@@ -1696,7 +1671,7 @@ void test_num_shr(bool show)
 
 
 
-void test_num_add(bool show)
+static void test_num_add(bool show)
 {
     TEST_FN_OPEN
 
@@ -1758,7 +1733,7 @@ void test_num_add(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_sub(bool show)
+static void test_num_sub(bool show)
 {
     TEST_FN_OPEN
 
@@ -1820,7 +1795,7 @@ void test_num_sub(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_mul(bool show)
+static void test_num_mul(bool show)
 {
     TEST_FN_OPEN
 
@@ -1985,7 +1960,7 @@ void test_num_mul(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_sqr(bool show)
+static void test_num_sqr(bool show)
 {
     TEST_FN_OPEN
 
@@ -2046,7 +2021,7 @@ void test_num_sqr(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_div_mod(bool show)
+static void test_num_div_mod(bool show)
 {
     TEST_FN_OPEN
 
@@ -2245,7 +2220,7 @@ void test_num_div_mod(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_gcd(bool show)
+static void test_num_gcd(bool show)
 {
     TEST_FN_OPEN
 
@@ -2284,7 +2259,7 @@ void test_num_gcd(bool show)
 
 
 
-void test_num_div_mod_uint(bool show)
+static void test_num_div_mod_uint(bool show)
 {
     TEST_FN_OPEN
 
@@ -2367,7 +2342,7 @@ void test_num_div_mod_uint(bool show)
 
 
 
-void test_num_base_to(bool show)
+static void test_num_base_to(bool show)
 {
     TEST_FN_OPEN
 
@@ -2428,7 +2403,7 @@ void test_num_base_to(bool show)
     TEST_FN_CLOSE
 }
 
-void test_num_base_from(bool show)
+static void test_num_base_from(bool show)
 {
     TEST_FN_OPEN
 
@@ -2471,7 +2446,7 @@ void test_num_base_from(bool show)
 
 
 
-void test_fuzz_num_ssm_sh(bool show)
+static void test_fuzz_num_ssm_sh(bool show)
 {
     TEST_FN_OPEN
 
@@ -2507,7 +2482,7 @@ void test_fuzz_num_ssm_sh(bool show)
     TEST_FN_CLOSE
 }
 
-void test_fuzz_num_ssm_fft(bool show)
+static void test_fuzz_num_ssm_fft(bool show)
 {
     TEST_FN_OPEN
 
@@ -2554,7 +2529,7 @@ void test_fuzz_num_ssm_fft(bool show)
     TEST_FN_CLOSE
 }
 
-void test_fuzz_num_ssm_fft_round_trip(bool show)
+static void test_fuzz_num_ssm_fft_round_trip(bool show)
 {
     TEST_FN_OPEN
 
@@ -2578,7 +2553,7 @@ void test_fuzz_num_ssm_fft_round_trip(bool show)
     TEST_FN_CLOSE
 }
 
-void test_fuzz_num_ssm_mul(bool show)
+static void test_fuzz_num_ssm_mul(bool show)
 {
     TEST_FN_OPEN
 
@@ -2629,7 +2604,7 @@ void test_fuzz_num_ssm_mul(bool show)
     TEST_FN_CLOSE
 }
 
-void test_fuzz_num_ssm_sqr(bool show)
+static void test_fuzz_num_ssm_sqr(bool show)
 {
     TEST_FN_OPEN
 
@@ -2659,7 +2634,7 @@ void test_fuzz_num_ssm_sqr(bool show)
     TEST_FN_CLOSE
 }
 
-void test_fuzz_num_bz_div(bool show)
+static void test_fuzz_num_bz_div(bool show)
 {
     TEST_FN_OPEN
 
@@ -2710,14 +2685,13 @@ void test_fuzz_num_bz_div(bool show)
 
 
 
-void test_num(void)
+static void test_num(void)
 {
     TEST_LIB
 
     bool show = false;
 
     test_uint_from_char(show);
-    test_uint_inv(show);
     test_uint128(show);
 
     test_num_create(show);

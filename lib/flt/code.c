@@ -240,7 +240,6 @@ void flt_num_display_dec(flt_num_t flt_0) // TODO TEST
     {
         flt_base = flt_num_pow(flt_num_wrap(10, flt_0.size), base);
         flt_0 = flt_num_div(flt_num_copy(flt_0), flt_base);
-        // flt_0 = flt_num_set_size(flt_0, flt_0.size - 2);
     }
 
     fxd_num_t fxd = (fxd_num_t)
@@ -260,7 +259,11 @@ void flt_num_display_dec(flt_num_t flt_0) // TODO TEST
 
 uint64_t int64_get_sign(int64_t i)
 {
-    if(i == (int64_t)0) return ZERO;
+    if(i == (int64_t)0)
+    {
+        return ZERO;
+    }
+
     return i > (int64_t)0 ? POSITIVE : NEGATIVE;
 }
 
@@ -271,7 +274,9 @@ int64_t int64_add(int64_t a, int64_t b)
     {
         uint64_t sign_a = int64_get_sign(a);
         if(sign_a == int64_get_sign(b))
+        {
             assert(sign_a == int64_get_sign(res));
+        }
     }
     return res;
 }

@@ -6,7 +6,7 @@
 
 
 
-void test_sig_num_create(bool show)
+static void test_sig_num_create(bool show)
 {
     TEST_FN_OPEN
 
@@ -43,7 +43,7 @@ void test_sig_num_create(bool show)
     TEST_FN_CLOSE
 }
 
-void test_sig_num_create_immed(bool show)
+static void test_sig_num_create_immed(bool show)
 {
     TEST_FN_OPEN
 
@@ -92,7 +92,7 @@ void test_sig_num_create_immed(bool show)
 
 
 
-void test_sig_num_wrap(bool show)
+static void test_sig_num_wrap(bool show)
 {
     TEST_FN_OPEN
 
@@ -117,7 +117,7 @@ void test_sig_num_wrap(bool show)
     TEST_FN_CLOSE
 }
 
-void test_sig_num_wrap_int128(bool show)
+static void test_sig_num_wrap_int128(bool show)
 {
     TEST_FN_OPEN
 
@@ -187,7 +187,7 @@ void test_sig_num_wrap_int128(bool show)
     TEST_FN_CLOSE
 }
 
-void test_sig_num_wrap_str(bool show)
+static void test_sig_num_wrap_str(bool show)
 {
     TEST_FN_OPEN
 
@@ -231,7 +231,7 @@ void test_sig_num_wrap_str(bool show)
     TEST_FN_CLOSE
 }
 
-void test_sig_num_copy(bool show)
+static void test_sig_num_copy(bool show)
 {
     TEST_FN_OPEN
 
@@ -262,7 +262,7 @@ void test_sig_num_copy(bool show)
 
 
 
-void test_sig_num_is_zero(bool show)
+static void test_sig_num_is_zero(bool show)
 {
     TEST_FN_OPEN
 
@@ -287,7 +287,7 @@ void test_sig_num_is_zero(bool show)
     TEST_FN_CLOSE
 }
 
-void test_sig_num_cmp(bool show)
+static void test_sig_num_cmp(bool show)
 {
     TEST_FN_OPEN
 
@@ -332,7 +332,7 @@ void test_sig_num_cmp(bool show)
 
 
 
-void test_sig_num_shl(bool show)
+static void test_sig_num_shl(bool show)
 {
     TEST_FN_OPEN
 
@@ -362,7 +362,7 @@ void test_sig_num_shl(bool show)
     TEST_FN_CLOSE
 }
 
-void test_sig_num_shr(bool show)
+static void test_sig_num_shr(bool show)
 {
     TEST_FN_OPEN
 
@@ -397,7 +397,7 @@ void test_sig_num_shr(bool show)
 
 
 
-void test_sig_num_opposite(bool show)
+static void test_sig_num_opposite(bool show)
 {
     TEST_FN_OPEN
 
@@ -419,7 +419,7 @@ void test_sig_num_opposite(bool show)
     TEST_FN_CLOSE
 }
 
-void test_sig_num_add(bool show)
+static void test_sig_num_add(bool show)
 {
     TEST_FN_OPEN
 
@@ -506,7 +506,7 @@ void test_sig_num_add(bool show)
     TEST_FN_CLOSE
 }
 
-void test_sig_num_sub(bool show)
+static void test_sig_num_sub(bool show)
 {
     TEST_FN_OPEN
 
@@ -543,7 +543,7 @@ void test_sig_num_sub(bool show)
     TEST_FN_CLOSE
 }
 
-void test_sig_num_mul(bool show)
+static void test_sig_num_mul(bool show)
 {
     TEST_FN_OPEN
 
@@ -605,7 +605,7 @@ void test_sig_num_mul(bool show)
     TEST_FN_CLOSE
 }
 
-void test_sig_num_div(bool show)
+static void test_sig_num_div(bool show)
 {
     TEST_FN_OPEN
 
@@ -652,7 +652,7 @@ void test_sig_num_div(bool show)
     TEST_FN_CLOSE
 }
 
-void test_fuzz_sig_num_mul_ssm(bool show)
+static void test_fuzz_sig_num_mul_ssm(bool show)
 {
     TEST_FN_OPEN
 
@@ -687,7 +687,7 @@ void test_fuzz_sig_num_mul_ssm(bool show)
 
 
 
-void test_sig_num(void)
+static void test_sig_num(void)
 {
     TEST_LIB
 

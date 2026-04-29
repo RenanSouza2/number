@@ -9,7 +9,7 @@
 
 #define FLT_NUM_ZERO(SIZE) (0, SIZE, ZERO, 0)
 
-void test_int64_get_sign(bool show)
+static void test_int64_get_sign(bool show)
 {
     TEST_FN_OPEN
 
@@ -34,7 +34,7 @@ void test_int64_get_sign(bool show)
     TEST_FN_CLOSE
 }
 
-void test_int64_add(bool show)
+static void test_int64_add(bool show)
 {
     TEST_FN_OPEN
 
@@ -88,7 +88,7 @@ void test_int64_add(bool show)
 
 
 
-void test_flt_num_normalize(bool show)
+static void test_flt_num_normalize(bool show)
 {
     TEST_FN_OPEN
 
@@ -137,7 +137,7 @@ void test_flt_num_normalize(bool show)
 
 
 
-void test_flt_num_set_exponent(bool show)
+static void test_flt_num_set_exponent(bool show)
 {
     TEST_FN_OPEN
 
@@ -167,7 +167,7 @@ void test_flt_num_set_exponent(bool show)
 
 
 
-void test_flt_num_is_zero(bool show)
+static void test_flt_num_is_zero(bool show)
 {
     TEST_FN_OPEN
 
@@ -192,7 +192,7 @@ void test_flt_num_is_zero(bool show)
 }
 
 
-void test_flt_num_shr(bool show)
+static void test_flt_num_shr(bool show)
 {
     TEST_FN_OPEN
 
@@ -239,7 +239,7 @@ void test_flt_num_shr(bool show)
 
 
 
-void test_flt_num_add(bool show)
+static void test_flt_num_add(bool show)
 {
     TEST_FN_OPEN
 
@@ -316,7 +316,7 @@ void test_flt_num_add(bool show)
     TEST_FN_CLOSE
 }
 
-void test_flt_num_sub(bool show)
+static void test_flt_num_sub(bool show)
 {
     TEST_FN_OPEN
 
@@ -348,7 +348,7 @@ void test_flt_num_sub(bool show)
     TEST_FN_CLOSE
 }
 
-void test_flt_num_mul(bool show)
+static void test_flt_num_mul(bool show)
 {
     TEST_FN_OPEN
 
@@ -390,7 +390,7 @@ void test_flt_num_mul(bool show)
     TEST_FN_CLOSE
 }
 
-void test_flt_num_sqr(bool show)
+static void test_flt_num_sqr(bool show)
 {
     TEST_FN_OPEN
 
@@ -437,7 +437,7 @@ void test_flt_num_sqr(bool show)
     TEST_FN_CLOSE
 }
 
-void test_flt_num_div(bool show)
+static void test_flt_num_div(bool show)
 {
     TEST_FN_OPEN
 
@@ -466,7 +466,7 @@ void test_flt_num_div(bool show)
 
 
 
-void test_flt_num_div_sig(bool show)
+static void test_flt_num_div_sig(bool show)
 {
     TEST_FN_OPEN
 
@@ -508,7 +508,7 @@ void test_flt_num_div_sig(bool show)
     TEST_FN_CLOSE
 }
 
-void test_fuzz_flt_num_mul_ssm(bool show)
+static void test_fuzz_flt_num_mul_ssm(bool show)
 {
     TEST_FN_OPEN
 
@@ -545,7 +545,7 @@ void test_fuzz_flt_num_mul_ssm(bool show)
 
 
 
-void test_flt(void)
+static void test_flt(void)
 {
     TEST_LIB
 

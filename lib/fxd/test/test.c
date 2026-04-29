@@ -4,7 +4,7 @@
 
 
 
-void test_fxd_div(bool show)
+static void test_fxd_div(bool show)
 {
     TEST_FN_OPEN
 
@@ -31,7 +31,7 @@ void test_fxd_div(bool show)
 
 
 
-void test_fxd(void)
+static void test_fxd(void)
 {
     TEST_LIB
 

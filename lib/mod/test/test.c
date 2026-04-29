@@ -6,7 +6,7 @@
 
 
 
-void test_mod_num_create(bool show)
+static void test_mod_num_create(bool show)
 {
     TEST_FN_OPEN
 
@@ -35,7 +35,7 @@ void test_mod_num_create(bool show)
     TEST_FN_CLOSE
 }
 
-void test_mod_num_wrap(bool show)
+static void test_mod_num_wrap(bool show)
 {
     TEST_FN_OPEN
 
@@ -65,7 +65,7 @@ void test_mod_num_wrap(bool show)
 
 
 
-void test_mod_num_add(bool show)
+static void test_mod_num_add(bool show)
 {
     TEST_FN_OPEN
 
@@ -95,7 +95,7 @@ void test_mod_num_add(bool show)
     TEST_FN_CLOSE
 }
 
-void test_mod_num_sub(bool show)
+static void test_mod_num_sub(bool show)
 {
     TEST_FN_OPEN
 
@@ -126,7 +126,7 @@ void test_mod_num_sub(bool show)
     TEST_FN_CLOSE
 }
 
-void test_mod_num_mul(bool show)
+static void test_mod_num_mul(bool show)
 {
     TEST_FN_OPEN
 
@@ -171,7 +171,7 @@ void test_mod_num_mul(bool show)
     TEST_FN_CLOSE
 }
 
-void test_mod_num_div(bool show)
+static void test_mod_num_div(bool show)
 {
     TEST_FN_OPEN
 
@@ -222,7 +222,7 @@ void test_mod_num_div(bool show)
 
 
 
-void test_mod(void)
+static void test_mod(void)
 {
     TEST_LIB
 

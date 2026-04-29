@@ -1,6 +1,8 @@
 #ifndef __FXD_DEBUG_H__
 #define __FXD_DEBUG_H__
 
+#include "../../mods/macros/static.h"
+
 #include "header.h"
 
 #ifdef DEBUG
@@ -22,6 +24,6 @@ bool fxd_num_immed(
 
 #endif
 
-static fxd_num_t fxd_num_create(sig_num_t sig, uint64_t pos);
+STATIC fxd_num_t fxd_num_create(sig_num_t sig, uint64_t pos);
 
 #endif

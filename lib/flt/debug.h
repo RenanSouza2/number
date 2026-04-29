@@ -3,6 +3,8 @@
 
 #include <stdbool.h>
 
+#include "../../mods/macros/static.h"
+
 #include "header.h"
 
 #ifdef DEBUG
@@ -30,14 +32,14 @@ bool flt_num_immed(
 
 #endif
 
-static uint64_t int64_get_sign(int64_t i);
-static int64_t int64_add(int64_t a, int64_t b);
+STATIC uint64_t int64_get_sign(int64_t i);
+STATIC int64_t int64_add(int64_t a, int64_t b);
 
-static flt_num_t flt_num_normalize(flt_num_t flt);
-static flt_num_t flt_num_create(int64_t exponent, uint64_t size_cap, sig_num_t sig);
+STATIC flt_num_t flt_num_normalize(flt_num_t flt);
+STATIC flt_num_t flt_num_create(int64_t exponent, uint64_t size_cap, sig_num_t sig);
 
-static flt_num_t flt_num_set_exponent(flt_num_t flt, int64_t exponent);
-static flt_num_t flt_num_set_size(flt_num_t flt, uint64_t size);
+STATIC flt_num_t flt_num_set_exponent(flt_num_t flt, int64_t exponent);
+STATIC flt_num_t flt_num_set_size(flt_num_t flt, uint64_t size);
 
 bool flt_num_is_zero(flt_num_t flt);
 
