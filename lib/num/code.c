@@ -22,7 +22,7 @@ static uint32_t rand_32(void)
     return ((uint32_t)rand_16() << 16) | rand_16();
 }
 
-uint64_t rand_64(void)
+uint64_t rand_64()
 {
     return (U64(rand_32()) << 32) | rand_32();
 }
@@ -193,7 +193,7 @@ bool num_immed(num_p num, uint64_t n, ...)
 
 uint64_t uint_from_char(char c)
 {
-    static uint64_t map[256] = {
+    constexpr uint64_t map[256] = {
         ['0'] = 0, ['1'] = 1, ['2'] = 2, ['3'] = 3, ['4'] = 4,
         ['5'] = 5, ['6'] = 6, ['7'] = 7, ['8'] = 8, ['9'] = 9,
         ['a'] = 0xa, ['b'] = 0xb, ['c'] = 0xc,
@@ -241,7 +241,7 @@ void num_display_dec(num_p num)
         return;
     }
 
-    num = num_base_to(num_copy(num), 1000000000000000000);
+    num = num_base_to(num_copy(num), 1'000'000'000'000'000'000);
     printf(U64P(), num->chunk[num->count-1]);
     for(uint64_t i=num->count-2; i!=UINT64_MAX; i--)
         printf(U64P(018), num->chunk[i]);
@@ -567,7 +567,7 @@ num_p num_wrap_dec(const char str[])
     }
 
     while(num_normalize(num));
-    return num_base_from(num, 1000000000000000000);
+    return num_base_from(num, 1'000'000'000'000'000'000);
 }
 
 num_p num_wrap_hex(const char str[])
@@ -637,7 +637,7 @@ num_p num_read_dec(const char file_name[])
     fclose(fp);
 
     while(num_normalize(num));
-    return num_base_from(num, 1000000000000000000);
+    return num_base_from(num, 1'000'000'000'000'000'000);
 }
 
 uint64_t num_unwrap(num_p num)
