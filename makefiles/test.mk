@@ -1,3 +1,5 @@
+.PHONY: test clean
+
 test: runner
 	echo "running test $(DIR)"
 	./runner
@@ -12,3 +14,5 @@ test.o: test.c
 
 clean:
 	rm -rf test.o runner
+
+-include $(wildcard *.d)
