@@ -14,5 +14,3 @@ test.o: test.c
 
 clean:
 	rm -rf test.o runner
-
--include $(wildcard *.d)

@@ -3,7 +3,7 @@ FLAGS = -std=c23 -Wall -Wextra -Wpedantic -Werror -Wfatal-errors -Wshadow -Wpoin
 FLAGS_PRD = -O2 -march=native -fstack-protector-strong -D_FORTIFY_SOURCE=3 -flto -ffunction-sections -fdata-sections
 FLAGS_DBG = -D DEBUG -O0 -g3 -ggdb -fno-omit-frame-pointer -fsanitize=address,undefined -fno-optimize-sibling-calls
 
-FLAGS_CMP = -c -MMD -MP
+FLAGS_CMP = -c
 FLAGS_LNK = -r -nostdlib
 FLAGS_EXE = 
 
@@ -18,7 +18,7 @@ ifeq ($(shell uname -s),Linux)
 endif
 
 ifeq ($(shell uname -s),Darwin)
-    FLAGS += -Wunreachable-code -Wunreachable-code-break -Wconditional-uninitialized -Wmissing-variable-declarations -Wcast-align -Walloca
+    FLAGS += -Wunreachable-code -Wunreachable-code-break -Wconditional-uninitialized -Wmissing-variable-declarations -Wcast-align -Walloca -Wshadow-all -Wassign-enum -Wcomma -Wcovered-switch-default -Wthread-safety -Wconsumed -Wformat-security
 
     FLAGS_EXE += -Wl,-fatal_warnings -Wl,-dead_strip
 endif
