@@ -103,7 +103,7 @@ static void time_2(int argc, char** argv, uint64_t max, uint64_t jumps)
 {
     uint64_t id = argc > 1 ? (uint64_t)get_arg(argc, argv) : 0;
     num_p num_1 = num_generate_1(max, 2);
-    
+
     // printf("\nid: " U64P() "", id);
     // num_display_tag("num_1", num_1);
     // printf("\nN\ttime\tM\tK\tQ\tn\tdepth\tlast_n");
@@ -232,7 +232,7 @@ static void time_3(void)
 //         TIME_END(t1)
 //         num_free(num_res_1);
 //         tprintf("classical time: %lu", t1);
-//       
+//
 //         TIME_RESET
 //         num_p num_res_2 = num_mul_karatsuba(num_copy(num_1), num_copy(num_2));
 //         TIME_END(t2)
@@ -707,7 +707,7 @@ static void mem_1(uint64_t index)
 {
     num_p num_1 = num_generate_1(index, 2);
     num_p num_2 = num_generate_1(index, 3);
-    
+
     clu_clean_max_occupancy();
     uint64_t count_bef = clu_get_register_count();
     num_1 = num_mul(num_1, num_2);
@@ -761,13 +761,13 @@ int main()
     uint64_t base = 26;
     num_p num_1 = num_generate_1(base, 2);
     num_p num_2 = num_add(num_copy(num_1), num_wrap(1));
-    
+
     TIME_SETUP
     num_p num_res = num_mul(num_1, num_2);
     TIME_END(t1)
     num_free(num_res);
     tprintf("time: %.3f", dtime(t1));
- 
+
     // assert(clu_mem_is_empty());
 
     printf("\n");
@@ -777,4 +777,3 @@ int main()
 // num_mul_ssm     | time prepare: 0.782
 // num_mul_finish_inner    | time pointwise: 6.417
 // main    | time: 10.229
-

@@ -844,7 +844,7 @@ static num_p num_add_offset(num_p num_1, uint64_t pos_1, num_p num_2, uint64_t p
 
     uint64_t delta = pos_1 - pos_2;
     uint64_t count_max = delta + num_2->count;
-    
+
     num_1 = num_expand_to(num_1, count_max);
 
     uint128_t carry = 0;
@@ -1010,7 +1010,7 @@ uint64_t ssm_bit_inv(uint64_t i, uint64_t K)
     for(; K > 1; K>>=1)
     {
         res = (res << 1) | (i & 1);
-        i >>= 1; 
+        i >>= 1;
     }
     return res;
 }
@@ -1043,7 +1043,7 @@ static int64_t num_ssm_cmp_uint_offset(
     uint64_t value_num = num->chunk[pos];
     if(value_num > value)
         return 1;
-    
+
     if(value_num < value)
         return -1;
 
@@ -1518,7 +1518,7 @@ static ssm_params_t ssm_get_params(uint64_t count)
     }
     assert(64 * (n - 1) % K == 0);
     assert(n > 2 * M);
-    
+
     return (ssm_params_t)
     {
         .count = count,
@@ -1595,7 +1595,7 @@ static void num_mul_ssm_fwd_step_buffer(num_p num_fft_res, num_p num, ssm_params
 static num_p num_mul_ssm_fwd_step(num_p num, ssm_params_p params)
 {
     CLU_HANDLER_IS_SAFE(num)
-    assert(num)   
+    assert(num)
 
     num_p num_fft = num_create(params->n * params->K, 0);
     num_mul_ssm_fwd_step_buffer(num_fft, num, params);
@@ -1610,14 +1610,14 @@ num_p num_mul_ssm_fwd_transform(num_p num, uint64_t count)
 
     ssm_params_t params = ssm_get_params(count);
     num_p num_fft = num_mul_ssm_fwd_step(num, &params);
-    
+
     uint64_t n = params.n;
     uint64_t K = params.K;
     while(ssm_is_recursive(n))
     {
         ssm_params_t params_next = ssm_get_params_wrap(n);
         num_p num_fft_next = num_create(K * params_next.K * params_next.n, 0);
-        
+
         for(uint64_t i=0; i<K; i++)
         {
             num_t num_in, num_out;
@@ -1692,7 +1692,7 @@ static void num_ssm_pointwise_product(num_ssm_t num_ssm_1, num_ssm_t num_ssm_2)
     CLU_HANDLER_IS_SAFE(num_ssm_2.num_fft)
     assert(num_ssm_1.num_fft)
     assert(num_ssm_2.num_fft)
-    
+
     uint64_t n = ssm_get_last_n(num_ssm_2.count);
     uint64_t block_count = num_ssm_1.num_fft->size / n;
     assert(block_count * n == num_ssm_1.num_fft->size);
@@ -1866,7 +1866,7 @@ num_p num_mul_karatsuba_buffer(num_p num_res, num_p num_1, num_p num_2)
     num_res_next = num_mul_karatsuba_buffer(num_res_next, &num_1_1, &num_2_1);
     num_res = num_add_offset(num_res, 2 * count, num_res_next, 0);
     num_res = num_sub_offset(num_res, count, num_res_next);
-    
+
     num_p num_add_2 = num_add_offset(num_copy(&num_2_0), 0, &num_2_1, 0);
     num_p num_add_1 = num_add_offset(num_copy(&num_1_0), 0, &num_1_1, 0);
 
@@ -1916,7 +1916,7 @@ num_p num_sqr_ssm(num_p num)
     {
         num_ssm_sqr_mod_span(num_ssm.num_fft, i * n, n);
     }
-        
+
     return num_mul_ssm_bwd_transform(num_ssm.num_fft, count);
 }
 
@@ -2489,7 +2489,7 @@ num_p num_base_to(num_p num, uint64_t base)
 
     num_p num_base = num_wrap(base);
     num_p num_bases[100];
-    
+
     uint64_t max;
     for(max=0; num_cmp(num_base, num) <= 0; max++)
     {
@@ -2503,7 +2503,7 @@ num_p num_base_to(num_p num, uint64_t base)
         return num;
 
     num_p num_res = num_base_to_rec(num, num_bases, max - 1);
-    
+
     for(uint64_t i=0; i<max; i++)
         num_free(num_bases[i]);
 

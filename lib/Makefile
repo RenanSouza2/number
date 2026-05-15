@@ -13,7 +13,7 @@ DGB_FILES = $(foreach DIR,$(DIRS),$(dir $(DIR))debug.o)
 
 build: $(LIB_FILE)
 
-dbg: $(DBG_FULL_FILE) 
+dbg: $(DBG_FULL_FILE)
 
 
 
@@ -50,7 +50,7 @@ _clean:
 	for DIR in $(DIRS) ; do \
 		( $(MAKE) _clean --directory=$$DIR ) || exit $$? ; \
 	done
-	$(MAKE) clean --directory $(dir ${CLU_FILE}) 
+	$(MAKE) clean --directory $(dir ${CLU_FILE})
 
 
 

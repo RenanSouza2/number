@@ -1532,27 +1532,27 @@ static void test_num_ssm_fft(bool show)
     }
 
     TEST_SSM_FFT(1,
-        (4, 0, 0, 0, 1), 2, 2, 
+        (4, 0, 0, 0, 1), 2, 2,
         (4, 0, 1, 0, 1)
     )
     TEST_SSM_FFT(2,
-        (4, 0, 1, 0, 0), 2, 2, 
+        (4, 0, 1, 0, 0), 2, 2,
         (4, 0, 0xffffffff00000001, 0, B(32))
     )
     TEST_SSM_FFT(3,
-        (4, 0, 1, 0, 1), 2, 2, 
+        (4, 0, 1, 0, 1), 2, 2,
         (4, 0, 0xffffffff00000002, 0, 0x100000001)
     )
     TEST_SSM_FFT(4,
-        (8, 0, 0, 0, 0, 0, 0, 0, 1), 2, 4, 
+        (8, 0, 0, 0, 0, 0, 0, 0, 1), 2, 4,
         (8, 0, 1, 0, 1, 0, 1, 0, 1)
     )
     TEST_SSM_FFT(5,
-        (8, 0, 0, 0, 0, 0, 1, 0, 0), 2, 4, 
+        (8, 0, 0, 0, 0, 0, 1, 0, 0), 2, 4,
         (8, 0, 0xffff000000000001, 0, B(48), 0, 0xffffffffffff0001, 0, B(16))
     )
     TEST_SSM_FFT(6,
-        (8, 0, 0, 0, 1, 0, 0, 0, 0), 2, 4, 
+        (8, 0, 0, 0, 1, 0, 0, 0, 0), 2, 4,
         (8, 0, 0xffffffff00000001, 0, 0xffffffff00000001, 0, B(32), 0, B(32))
     )
 
@@ -1981,7 +1981,6 @@ static void test_num_sqr(bool show)
         TEST_NUM_SQR_FN(10 * TAG + 2, num_sqr_ssm, NUM, RES)        \
         TEST_NUM_SQR_FN(10 * TAG + 3, num_sqr, NUM, RES)            \
     }
-    
 
     TEST_NUM_SQR(1,
         (0),
@@ -2583,7 +2582,7 @@ static void test_fuzz_num_ssm_mul(bool show)
     // TEST_FUZZ_NUM_SSM_MUL(1, 4, 20000)
 
     #undef TEST_FUZZ_NUM_SSM_MUL
-    
+
     #define TEST_FUZZ_NUM_SSM_MUL(TAG, COUNT_MIN, COUNT_MAX, RUNS)  \
     {                                                               \
         TEST_FUZZ_CASE_OPEN(TAG, RUNS)                              \
