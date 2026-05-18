@@ -13,7 +13,7 @@
 
 
 
-__attribute__((unused))
+[[maybe_unused]]
 static int64_t get_arg(int argc, char** argv)
 {
     assert(argc > 1);
@@ -22,14 +22,14 @@ static int64_t get_arg(int argc, char** argv)
 
 
 
-__attribute__((unused))
+[[maybe_unused]]
 static num_p num_generate_1_step(num_p num, uint64_t salt)
 {
     num = num_add(num, num_wrap(salt));
     return num_sqr(num);
 }
 
-__attribute__((unused))
+[[maybe_unused]]
 static num_p num_generate_1(uint64_t max, uint64_t salt)
 {
     num_p num = num_wrap(2);
@@ -40,14 +40,14 @@ static num_p num_generate_1(uint64_t max, uint64_t salt)
     return num;
 }
 
-__attribute__((unused))
+[[maybe_unused]]
 static num_p num_generate_2_step(num_p num, uint64_t salt)
 {
     num = num_add_uint(num, salt);
     return num_mul_uint(num, 0xe6503424c62eef89);
 }
 
-__attribute__((unused))
+[[maybe_unused]]
 static num_p num_generate_2(uint64_t index, uint64_t salt)
 {
     num_p num = num_wrap(0xe6503424c62eef89);
@@ -57,7 +57,7 @@ static num_p num_generate_2(uint64_t index, uint64_t salt)
     return num;
 }
 
-__attribute__((unused))
+[[maybe_unused]]
 static void time_1(uint64_t begin, uint64_t end)
 {
     assert(begin);
@@ -91,14 +91,14 @@ static void time_1(uint64_t begin, uint64_t end)
     num_free(num_2);
 }
 
-__attribute__((unused))
+[[maybe_unused]]
 static void ssm_params_display_main(ssm_params_t p)
 {
     printf("\t" U64P() "", p.M);
     printf("\t" U64P() "", p.K);
 }
 
-__attribute__((unused))
+[[maybe_unused]]
 static void time_2(int argc, char** argv, uint64_t max, uint64_t jumps)
 {
     uint64_t id = argc > 1 ? (uint64_t)get_arg(argc, argv) : 0;
@@ -139,7 +139,7 @@ static void time_2(int argc, char** argv, uint64_t max, uint64_t jumps)
     }
 }
 
-__attribute__((unused))
+[[maybe_unused]]
 static void time_2_total(int argc, char** argv)
 {
     printf("\ncount\ttime");
@@ -152,8 +152,8 @@ static void time_2_total(int argc, char** argv)
     time_2(argc, argv, 22, 320);
 }
 
-__attribute__((unused))
-static void time_3(void)
+[[maybe_unused]]
+static void time_3()
 {
     uint64_t i_last = 1;
     num_p num_1 = num_generate_2(i_last, 2);
@@ -210,7 +210,7 @@ static void time_3(void)
     }
 }
 
-// void time_karatsuba(void)
+// void time_karatsuba()
 // {
 //     for(uint64_t base=1; base<20; base++)
 //     {
@@ -260,8 +260,8 @@ static void time_3(void)
 
 
 
-__attribute__((unused))
-static void fibonacci_1(void)
+[[maybe_unused]]
+static void fibonacci_1()
 {
     num_p num_a = num_wrap(1);
     num_p num_b = num_wrap(1);
@@ -282,7 +282,7 @@ static void fibonacci_1(void)
     }
 }
 
-__attribute__((unused))
+[[maybe_unused]]
 static void fibonacci_2(uint64_t min, uint64_t max)
 {
     num_p num_a = num_wrap(0);
@@ -312,7 +312,7 @@ static void fibonacci_2(uint64_t min, uint64_t max)
     }
 }
 
-__attribute__((unused))
+[[maybe_unused]]
 static void fibonacci_3(uint64_t, uint64_t max)
 {
     num_p num_a = num_wrap(0);
@@ -354,8 +354,8 @@ static void fibonacci_3(uint64_t, uint64_t max)
     }
 }
 
-__attribute__((unused))
-static void factorial(void)
+[[maybe_unused]]
+static void factorial()
 {
     num_p num = num_wrap(1);
     for(uint64_t i=1; ; i++)
@@ -370,7 +370,7 @@ static void factorial(void)
     }
 }
 
-__attribute__((unused))
+[[maybe_unused]]
 static num_p fib_1(uint64_t index)
 {
     if(index < 2)
@@ -388,7 +388,7 @@ static num_p fib_1(uint64_t index)
     return num_b;
 }
 
-__attribute__((unused))
+[[maybe_unused]]
 static num_p fib_2(uint64_t index)
 {
     num_p num_a = num_wrap(1);
@@ -422,7 +422,7 @@ static num_p fib_2(uint64_t index)
 
 
 
-__attribute__((unused))
+[[maybe_unused]]
 static void mod_num_fib(mod_num_p mod_a, mod_num_p mod_b)
 {
     mod_num_t mod_c = mod_num_add(*mod_a, mod_num_copy(*mod_b));
@@ -431,8 +431,8 @@ static void mod_num_fib(mod_num_p mod_a, mod_num_p mod_b)
     *mod_b = mod_c;
 }
 
-__attribute__((unused))
-static void time_dec(void)
+[[maybe_unused]]
+static void time_dec()
 {
     printf("\n");
     num_p num = num_generate_1(20, 2);
@@ -447,8 +447,8 @@ static void time_dec(void)
 
 
 
-__attribute__((unused))
-static void pi_1(void)
+[[maybe_unused]]
+static void pi_1()
 {
     uint64_t pos = 3;
     fxd_num_t fxd = fxd_num_wrap(0, pos);
@@ -471,8 +471,8 @@ static void pi_1(void)
     }
 }
 
-__attribute__((unused))
-static void e(void)
+[[maybe_unused]]
+static void e()
 {
     uint64_t pos = 1000;
     fxd_num_t fxd = fxd_num_wrap(0, pos);
@@ -491,8 +491,8 @@ static void e(void)
     }
 }
 
-__attribute__((unused))
-static void pi_2(void)
+[[maybe_unused]]
+static void pi_2()
 {
     uint64_t pos = 2;
     fxd_num_t fxd = fxd_num_wrap(2, pos);
@@ -510,8 +510,8 @@ static void pi_2(void)
     }
 }
 
-__attribute__((unused))
-static void flt_num_pi_1(void)
+[[maybe_unused]]
+static void flt_num_pi_1()
 {
     uint64_t size = 3;
     flt_num_t flt = flt_num_wrap(2, size);
@@ -544,7 +544,7 @@ static void flt_num_pi_1(void)
     }
 }
 
-__attribute__((unused))
+[[maybe_unused]]
 static void flt_num_pi_2(uint64_t size)
 {
     flt_num_t flt = flt_num_wrap(3, size);
@@ -602,7 +602,7 @@ static void flt_num_pi_2(uint64_t size)
     flt_num_free(flt_m_1_2);
 }
 
-__attribute__((unused))
+[[maybe_unused]]
 static void flt_num_pi_3(uint64_t size)
 {
     flt_num_t flt_a = flt_num_wrap(6, size);
@@ -638,7 +638,7 @@ static void flt_num_pi_3(uint64_t size)
 
 
 
-__attribute__((unused))
+[[maybe_unused]]
 static void display_bit(uint64_t value)
 {
     for(uint64_t i=0; i<64; i++, value <<= 1)
@@ -647,7 +647,7 @@ static void display_bit(uint64_t value)
 
 
 
-__attribute__((unused))
+[[maybe_unused]]
 static fxd_num_t fxd_step(fxd_num_t fxd, uint64_t pos)
 {
     fxd_num_t fxd_a = fxd_num_shr(fxd_num_copy(fxd), 1);
@@ -655,8 +655,8 @@ static fxd_num_t fxd_step(fxd_num_t fxd, uint64_t pos)
     return fxd_num_add(fxd, fxd_a);
 }
 
-__attribute__((unused))
-static void sqrt_2(void)
+[[maybe_unused]]
+static void sqrt_2()
 {
     fxd_num_t fxd_x = fxd_num_wrap(1, 1);
     num_p num = num_wrap(10);
@@ -702,7 +702,7 @@ static void sqrt_2(void)
 
 
 #ifdef DEBUG
-__attribute__((unused))
+[[maybe_unused]]
 static void mem_1(uint64_t index)
 {
     num_p num_1 = num_generate_1(index, 2);
@@ -719,7 +719,7 @@ static void mem_1(uint64_t index)
     num_free(num_1);
 }
 #else
-__attribute__((unused))
+[[maybe_unused]]
 static void mem_1(uint64_t)
 {
     printf("\n\tfunction should be run with ./run_debug");
@@ -732,8 +732,8 @@ static void mem_1(uint64_t)
 // int main(int argc, char** argv)
 int main()
 {
-    setbuf(stdout, NULL);
-    srand((unsigned int)time(NULL));
+    setbuf(stdout, nullptr);
+    srand((unsigned int)time(nullptr));
     printf("\nbegin\n\n");
 
     // clu_log_enable(true);

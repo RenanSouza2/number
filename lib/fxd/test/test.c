@@ -31,7 +31,7 @@ static void test_fxd_div(bool show)
 
 
 
-static void test_fxd(void)
+static void test_fxd()
 {
     TEST_LIB
 
@@ -44,7 +44,7 @@ static void test_fxd(void)
 
 
 
-int main(void)
+int main()
 {
     setbuf(stdout, NULL);
     test_fxd();

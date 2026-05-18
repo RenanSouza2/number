@@ -12,12 +12,12 @@
 
 #ifdef DEBUG
 
-static uint16_t rand_16(void)
+static uint16_t rand_16()
 {
     return (uint16_t)rand();
 }
 
-static uint32_t rand_32(void)
+static uint32_t rand_32()
 {
     return ((uint32_t)rand_16() << 16) | rand_16();
 }

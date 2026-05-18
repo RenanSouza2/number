@@ -2684,7 +2684,7 @@ static void test_fuzz_num_bz_div(bool show)
 
 
 
-static void test_num(void)
+static void test_num()
 {
     TEST_LIB
 
@@ -2760,7 +2760,7 @@ static void test_num(void)
 
 
 
-int main(void)
+int main()
 {
     setbuf(stdout, NULL);
     srand((unsigned int)time(NULL));

@@ -687,7 +687,7 @@ static void test_fuzz_sig_num_mul_ssm(bool show)
 
 
 
-static void test_sig_num(void)
+static void test_sig_num()
 {
     TEST_LIB
 
@@ -720,7 +720,7 @@ static void test_sig_num(void)
 
 
 
-int main(void)
+int main()
 {
     setbuf(stdout, NULL);
     test_sig_num();

@@ -545,7 +545,7 @@ static void test_fuzz_flt_num_mul_ssm(bool show)
 
 
 
-static void test_flt(void)
+static void test_flt()
 {
     TEST_LIB
 
@@ -577,7 +577,7 @@ static void test_flt(void)
 
 
 
-int main(void)
+int main()
 {
     setbuf(stdout, NULL);
     test_flt();

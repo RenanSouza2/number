@@ -9,7 +9,7 @@
 
 #include <stdarg.h>
 
-uint64_t rand_64(void);
+uint64_t rand_64();
 uint64_t rand_64_range(uint64_t min, uint64_t max);
 
 num_p num_create_variadic(uint64_t n, va_list *args);

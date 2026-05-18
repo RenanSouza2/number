@@ -222,7 +222,7 @@ static void test_mod_num_div(bool show)
 
 
 
-static void test_mod(void)
+static void test_mod()
 {
     TEST_LIB
 
@@ -241,7 +241,7 @@ static void test_mod(void)
 
 
 
-int main(void)
+int main()
 {
     setbuf(stdout, NULL);
     test_mod();
