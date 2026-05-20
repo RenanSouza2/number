@@ -46,7 +46,7 @@ static void test_fxd()
 
 int main()
 {
-    setbuf(stdout, NULL);
+    setbuf(stdout, nullptr);
     test_fxd();
     printf("\n\n\tTest successful\n\n");
     return 0;

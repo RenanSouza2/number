@@ -2762,7 +2762,7 @@ static void test_num()
 
 int main()
 {
-    setbuf(stdout, NULL);
+    setbuf(stdout, nullptr);
     srand((unsigned int)time(NULL));
     test_num();
     printf("\n\n\tTest successful\n\n");
