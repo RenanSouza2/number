@@ -135,9 +135,9 @@ bool num_keep(num_p num_1, num_p num_2)
         return false;
     }
 
-    if(num_1->chunk == NULL)
+    if(num_1->chunk == nullptr)
     {
-        printf("\n\n\tNUMBER ASSERT ERROR\t| CHUNK IS NULL");
+        printf("\n\n\tNUMBER ASSERT ERROR\t| CHUNK IS nullptr");
         return false;
     }
 
@@ -292,7 +292,7 @@ void num_display(num_p num)
     CLU_HANDLER_IS_SAFE(num);
     assert(num);
 
-    num_display_opts(num, NULL, true, false);
+    num_display_opts(num, nullptr, true, false);
 }
 
 void num_display_tag(const char tag[], num_p num)
@@ -2212,7 +2212,7 @@ uint64_t num_div_normalize(num_p *num_1, num_p *num_2) // TODO TEST
     return bits;
 }
 
-// out_num_q and out_num_r can be NULL
+// out_num_q and out_num_r can be nullptr
 static void num_div_mod_finalize(
     num_p *out_num_q,
     num_p *out_num_r,
@@ -2390,7 +2390,7 @@ num_p num_pow(num_p num, uint64_t value) // TODO TEST
     return num_res;
 }
 
-// out_num_q and out_num_r can be NULL
+// out_num_q and out_num_r can be nullptr
 void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_1)
@@ -2427,7 +2427,7 @@ num_p num_div(num_p num_1, num_p num_2)
     assert(num_2)
 
     num_p num_q;
-    num_div_mod(&num_q, NULL, num_1, num_2);
+    num_div_mod(&num_q, nullptr, num_1, num_2);
     return num_q;
 }
 
@@ -2438,7 +2438,7 @@ num_p num_mod(num_p num_1, num_p num_2)
     assert(num_1)
     assert(num_2)
 
-    num_div_mod(NULL, &num_1, num_1, num_2);
+    num_div_mod(nullptr, &num_1, num_1, num_2);
     return num_1;
 }
 

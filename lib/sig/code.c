@@ -105,7 +105,7 @@ void sig_num_display(sig_num_t sig, bool full)
     printf("%c ", sig.signal & POSITIVE ? '+': '-');
 
     printf("[");
-    num_display_opts(sig.num, NULL, true, full);
+    num_display_opts(sig.num, nullptr, true, full);
     printf("]");
 }
 
@@ -337,15 +337,15 @@ void sig_num_save(const char file_path[], sig_num_t sig)
 FILE* file_read_open(const char file_path[])
 {
     FILE *fp = fopen(file_path, "rb");
-    if(fp == NULL)
-        return NULL;
+    if(fp == nullptr)
+        return nullptr;
 
     fseek_safe(fp, 0, SEEK_END);
     uint64_t size = ftell_safe(fp);
     if(size < sizeof(uint64_t))
     {
         fclose(fp);
-        return NULL;
+        return nullptr;
     }
 
     fseek_safe(fp, -(long)sizeof(uint64_t), SEEK_END);
@@ -354,7 +354,7 @@ FILE* file_read_open(const char file_path[])
     if(code != 0xd0bbe)
     {
         fclose(fp);
-        return NULL;
+        return nullptr;
     }
 
     return fp;

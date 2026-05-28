@@ -178,7 +178,7 @@ static void test_num_create(bool show)
             num_p num = num_create(SIZE, COUNT);        \
             assert(uint64(num->size, res_size));        \
             assert(uint64(num->count, COUNT));          \
-            assert(num->chunk != NULL);                 \
+            assert(num->chunk != nullptr);                 \
             num_free(num);                              \
         }                                               \
         TEST_CASE_CLOSE                                 \
@@ -2763,7 +2763,7 @@ static void test_num()
 int main()
 {
     setbuf(stdout, nullptr);
-    srand((unsigned int)time(NULL));
+    srand((unsigned int)time(nullptr));
     test_num();
     printf("\n\n\tTest successful\n\n");
     return 0;

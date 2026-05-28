@@ -38,9 +38,9 @@ void mod_num_display(char tag[], mod_num_t mod)
     CLU_MOD_IS_SAFE(mod);
 
     printf("\n%s: (", tag);
-    num_display_opts(mod.num, NULL, false, true);
+    num_display_opts(mod.num, nullptr, false, true);
     printf(") / (");
-    num_display_opts(mod.max, NULL, false, true);
+    num_display_opts(mod.max, nullptr, false, true);
     printf(")");
 }
 
