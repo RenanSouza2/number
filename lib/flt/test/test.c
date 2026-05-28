@@ -579,7 +579,7 @@ static void test_flt()
 
 int main()
 {
-    setbuf(stdout, nullptr);
+    setvbuf(stdout, nullptr, _IONBF, 0);
     test_flt();
     printf("\n\n\tTest successful\n\n");
     return 0;

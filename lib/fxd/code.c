@@ -1,10 +1,9 @@
 #include <stdio.h>
-#include <stdlib.h>
 
 #include "debug.h"
 #include "../../mods/clu/header.h"
 
-#include "../../mods/macros/assert.h"
+#include "../../mods/macros/assert.h" // IWYU pragma: keep
 #include "../../mods/macros/uint.h"
 
 #include "../num/header.h"
@@ -22,12 +21,14 @@
 
 
 
+// NOLINTBEGIN(bugprone-easily-swappable-parameters)
 static fxd_num_t fxd_num_create_variadic(
     uint64_t pos,
     uint64_t signal,
     uint64_t n,
     va_list *args
 )
+// NOLINTEND(bugprone-easily-swappable-parameters)
 {
     sig_num_t sig = sig_num_create_variadic(signal, n, args);
 
@@ -119,6 +120,7 @@ void fxd_num_display_dec(fxd_num_t fxd)
 
     printf("%c ", fxd.sig.signal == NEGATIVE ? '-' : '+');
 
+    // NOLINTNEXTLINE(readability-isolate-declaration)
     num_p num_hi, num_lo;
     num_break(&num_hi, &num_lo, num_copy(fxd.sig.num), fxd.pos);
 
@@ -136,9 +138,10 @@ void fxd_num_display_dec(fxd_num_t fxd)
 
     uint64_t t = 0;
     num_p num_u = num_wrap(1);
+    constexpr uint64_t FXD_DEC_BASE = 1'000'000'000'000'000'000ULL;
     for(uint64_t pos = fxd.pos; num_u->count < pos + 1; t++)
     {
-        num_u = num_mul_uint(num_u, 1000000000000000000);
+        num_u = num_mul_uint(num_u, FXD_DEC_BASE);
 
         if(num_u->count > 2)
         {
@@ -148,12 +151,12 @@ void fxd_num_display_dec(fxd_num_t fxd)
     }
     num_free(num_u);
 
-    num_p num = num_pow(num_wrap(1000000000000000000), t);
+    num_p num = num_pow(num_wrap(FXD_DEC_BASE), t);
     num_lo = num_mul(num_lo, num);
     num_break(&num_lo, &num, num_lo, fxd.pos);
     num_free(num);
 
-    num_lo = num_base_to(num_lo, 1000000000000000000);
+    num_lo = num_base_to(num_lo, FXD_DEC_BASE);
     for(uint64_t i=t-1; i!=num_lo->count-1; i--)
     {
         printf("" U64P(018) "", (uint64_t)0);
@@ -203,6 +206,7 @@ fxd_num_t fxd_num_create(sig_num_t sig, uint64_t pos) // TODO test
     };
 }
 
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 fxd_num_t fxd_num_wrap(int64_t value, uint64_t pos) // TODO test
 {
     sig_num_t sig = sig_num_wrap(value);
@@ -239,19 +243,23 @@ fxd_num_t fxd_num_reposition(fxd_num_t fxd, uint64_t pos) // TODO test
 {
     CLU_FXD_IS_SAFE(fxd);
 
-    if(sig_num_is_zero(fxd.sig) == 0)
+    if(sig_num_is_zero(fxd.sig))
+    {
         return (fxd_num_t)
         {
             .sig = fxd.sig,
             .pos = pos
         };
+    }
 
     if(pos > fxd.pos)
+    {
         return (fxd_num_t)
         {
             .sig = sig_num_head_grow(fxd.sig, pos - fxd.pos),
             .pos = pos
         };
+    }
 
     return (fxd_num_t)
     {
@@ -266,6 +274,7 @@ fxd_num_t fxd_num_base_to(fxd_num_t fxd, uint64_t base) // TODO test
 {
     CLU_FXD_IS_SAFE(fxd);
 
+    // NOLINTNEXTLINE(readability-isolate-declaration)
     num_p num_hi, num_lo;
     num_break(&num_hi, &num_lo, fxd.sig.num, fxd.pos);
 
@@ -274,13 +283,15 @@ fxd_num_t fxd_num_base_to(fxd_num_t fxd, uint64_t base) // TODO test
     uint64_t pos = fxd.pos;
     fxd.pos = 0;
     num_p num_u = num_wrap(1);
-    for(;;)
+    while(true)
     {
         num_lo = num_mul(num_lo, num_wrap(base));
         num_u = num_mul(num_u, num_wrap(base));
 
         if(num_u->count > pos)
+        {
             break;
+        }
 
         num_p num_aux;
         num_break(&num_aux, &num_lo, num_lo, pos);

@@ -722,7 +722,7 @@ static void test_sig_num()
 
 int main()
 {
-    setbuf(stdout, nullptr);
+    setvbuf(stdout, nullptr, _IONBF, 0);
     test_sig_num();
     printf("\n\n\tTest successful\n\n");
     return 0;

@@ -293,7 +293,7 @@ static void test_num_normalize(bool show)
         {                                                   \
             num_p num = num_create_immed(ARG_OPEN NUM_BEF); \
             bool res = num_normalize(num);                  \
-            assert(res == RES);                             \
+            assert(res == (RES));                           \
             assert(num_immed(num, ARG_OPEN NUM_AFT));       \
         }                                                   \
         TEST_CASE_CLOSE                                     \
@@ -608,7 +608,7 @@ static void test_num_unwrap(bool show)
         {                                               \
             num_p num = num_create_immed(ARG_OPEN NUM); \
             uint64_t res = num_unwrap(num);             \
-            assert(res == RES);                         \
+            assert(res == (RES));                       \
         }                                               \
         TEST_CASE_CLOSE                                 \
     }
@@ -1138,24 +1138,24 @@ static void test_num_ssm_pad(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_SSM_PAD(TAG, NUM, Mv, Nv, Kv, RES)         \
-    {                                                       \
-        TEST_CASE_OPEN(TAG)                                 \
-        {                                                   \
-            num_p num = num_create_immed(ARG_OPEN NUM);     \
-            num_p num_res = num_create(Nv * Kv, Nv * Kv);   \
-            ssm_params_t p = (ssm_params_t)                 \
-            {                                               \
-                .M = Mv,                                    \
-                .K = Kv,                                    \
-                .n = Nv                                     \
-            };                                              \
-            num_ssm_pad(num_res, num, &p);                  \
-            num_res->count = Nv * Kv;                       \
-            assert(num_immed(num_res, ARG_OPEN RES))        \
-            assert(num_immed(num, ARG_OPEN NUM))            \
-        }                                                   \
-        TEST_CASE_CLOSE                                     \
+    #define TEST_SSM_PAD(TAG, NUM, Mv, Nv, Kv, RES)                 \
+    {                                                               \
+        TEST_CASE_OPEN(TAG)                                         \
+        {                                                           \
+            num_p num = num_create_immed(ARG_OPEN NUM);             \
+            num_p num_res = num_create((Nv) * (Kv), (Nv) * (Kv));   \
+            ssm_params_t p = (ssm_params_t)                         \
+            {                                                       \
+                .M = (Mv),                                          \
+                .K = (Kv),                                          \
+                .n = (Nv)                                           \
+            };                                                      \
+            num_ssm_pad(num_res, num, &p);                          \
+            num_res->count = (Nv) * (Kv);                           \
+            assert(num_immed(num_res, ARG_OPEN RES))                \
+            assert(num_immed(num, ARG_OPEN NUM))                    \
+        }                                                           \
+        TEST_CASE_CLOSE                                             \
     }
 
     TEST_SSM_PAD(1,
@@ -1291,10 +1291,10 @@ static void test_num_ssm_shr(bool show)
         TEST_CASE_CLOSE                                     \
     }
 
-    #define TEST_SSM_SHR(TAG, NUM, POS, N, BITS, RES)               \
-    {                                                               \
-        TEST_SSM_SHR_RES(10 * TAG + 1, NUM, POS, N, BITS, RES)      \
-        TEST_SSM_SHR_PLACE(10 * TAG + 2, NUM, POS, N, BITS, RES)    \
+    #define TEST_SSM_SHR(TAG, NUM, POS, N, BITS, RES)                   \
+    {                                                                   \
+        TEST_SSM_SHR_RES((10 * (TAG)) + 1, NUM, POS, N, BITS, RES)      \
+        TEST_SSM_SHR_PLACE((10 * (TAG)) + 2, NUM, POS, N, BITS, RES)    \
     }
 
     TEST_SSM_SHR(1,
@@ -1518,12 +1518,12 @@ static void test_num_ssm_fft(bool show)
         TEST_CASE_OPEN(TAG)                             \
         {                                               \
             num_p num = num_create_immed(ARG_OPEN NUM); \
-            uint64_t Q = 64 * (Nv - 1) / Kv;            \
+            uint64_t Q = 64 * ((Nv) - 1) / (Kv);        \
             ssm_params_t p = (ssm_params_t)             \
             {                                           \
-                .K = Kv,                                \
+                .K = (Kv),                              \
                 .Q = Q,                                 \
-                .n = Nv,                                \
+                .n = (Nv),                              \
             };                                          \
             num_ssm_fft_fwd(num, &p);                   \
             assert(num_immed(num, ARG_OPEN RES));       \
@@ -1597,7 +1597,7 @@ static void test_num_is_zero(bool show)
         {                                               \
             num_p num = num_create_immed(ARG_OPEN NUM); \
             bool res = num_is_zero(num);                \
-            assert(res == IS_ZERO);                     \
+            assert(res == (IS_ZERO));                   \
             num_free(num);                              \
         }                                               \
         TEST_CASE_CLOSE                                 \
@@ -1839,12 +1839,12 @@ static void test_num_mul(bool show)
         num_free(num_1);    \
         num_free(num_2);
 
-    #define TEST_NUM_MUL_BATCH(TAG, NUM_1, NUM_2, RES)                      \
-    {                                                                       \
-        TEST_NUM_MUL(10 * TAG + 1, num_mul_classic, NUM_1, NUM_2, RES)      \
-        TEST_NUM_MUL(10 * TAG + 2, num_mul_karatsuba, NUM_1, NUM_2, RES)    \
-        TEST_NUM_MUL(10 * TAG + 3, num_mul_ssm, NUM_1, NUM_2, RES)          \
-        TEST_NUM_MUL(10 * TAG + 4, num_mul_core, NUM_1, NUM_2, RES)         \
+    #define TEST_NUM_MUL_BATCH(TAG, NUM_1, NUM_2, RES)                          \
+    {                                                                           \
+        TEST_NUM_MUL((10 * (TAG)) + 1, num_mul_classic, NUM_1, NUM_2, RES)      \
+        TEST_NUM_MUL((10 * (TAG)) + 2, num_mul_karatsuba, NUM_1, NUM_2, RES)    \
+        TEST_NUM_MUL((10 * (TAG)) + 3, num_mul_ssm, NUM_1, NUM_2, RES)          \
+        TEST_NUM_MUL((10 * (TAG)) + 4, num_mul_core, NUM_1, NUM_2, RES)         \
     }
 
     TEST_NUM_MUL_BATCH(4,
@@ -1975,11 +1975,11 @@ static void test_num_sqr(bool show)
         TEST_CASE_CLOSE                                 \
     }
 
-    #define TEST_NUM_SQR(TAG, NUM, RES)                             \
-    {                                                               \
-        TEST_NUM_SQR_FN(10 * TAG + 1, num_sqr_classic, NUM, RES)    \
-        TEST_NUM_SQR_FN(10 * TAG + 2, num_sqr_ssm, NUM, RES)        \
-        TEST_NUM_SQR_FN(10 * TAG + 3, num_sqr, NUM, RES)            \
+    #define TEST_NUM_SQR(TAG, NUM, RES)                                 \
+    {                                                                   \
+        TEST_NUM_SQR_FN((10 * (TAG)) + 1, num_sqr_classic, NUM, RES)    \
+        TEST_NUM_SQR_FN((10 * (TAG)) + 2, num_sqr_ssm, NUM, RES)        \
+        TEST_NUM_SQR_FN((10 * (TAG)) + 3, num_sqr, NUM, RES)            \
     }
 
     TEST_NUM_SQR(1,
@@ -2454,7 +2454,7 @@ static void test_fuzz_num_ssm_sh(bool show)
         TEST_FUZZ_CASE_OPEN(TAG, RUNS)                              \
         {                                                           \
             num_p num = num_create_rand(N);                         \
-            num->chunk[N - 1] = 0;                                  \
+            num->chunk[(N) - 1] = 0;                                \
             num_p num_res = num_copy(num);                          \
             num_ssm_shl_mod(num_res, 0, N, BITS);                   \
             num_ssm_shr_mod(num_res, 0, N, BITS);                   \
@@ -2485,38 +2485,38 @@ static void test_fuzz_num_ssm_fft(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_FUZZ_NUM_SSM_FFT(TAG, Nv, Kv, RUNS)                \
-    {                                                               \
-        TEST_FUZZ_CASE_OPEN(TAG, RUNS)                              \
-        {                                                           \
-            num_p num_0 = num_create_rand((Nv-1) * Kv);             \
-            num_p num = num_create(Nv * Kv, Nv * Kv);               \
-            uint64_t Q = 64 * (Nv-1) / Kv;                          \
-            ssm_params_t p = (ssm_params_t)                         \
-            {                                                       \
-                .M = Nv-1,                                          \
-                .K = Kv,                                            \
-                .Q = Q,                                             \
-                .n = Nv,                                            \
-            };                                                      \
-            num_ssm_pad(num, num_0, &p);                            \
-            num_free(num_0);                                        \
-            num_p num_res = num_copy(num);                          \
-            num_ssm_fft_fwd(num_res, &p);                           \
-            num_ssm_fft_inv(num_res, &p);                           \
-            if(!num_eq_dbg(num_copy(num_res), num_copy(num)))       \
-            {                                                       \
-                printf("\ncase: (K: %d) (n: %d)", Kv, Nv);          \
-                printf("\nentrie");                                 \
-                num_display_span_full("num", num, Nv, Kv);          \
-                printf("\nroundrip results in");                    \
-                num_display_span_full("num_res", num_res, Nv, Kv);  \
-                assert(false);                                      \
-            }                                                       \
-            num_free(num_res);                                      \
-            num_free(num);                                          \
-        }                                                           \
-        TEST_FUZZ_CASE_CLOSE                                        \
+    #define TEST_FUZZ_NUM_SSM_FFT(TAG, Nv, Kv, RUNS)                    \
+    {                                                                   \
+        TEST_FUZZ_CASE_OPEN(TAG, RUNS)                                  \
+        {                                                               \
+            num_p num_0 = num_create_rand(((Nv)-1) * (Kv));             \
+            num_p num = num_create((Nv) * (Kv), (Nv) * (Kv));           \
+            uint64_t Q = 64 * ((Nv)-1) / (Kv);                          \
+            ssm_params_t p = (ssm_params_t)                             \
+            {                                                           \
+                .M = (Nv)-1,                                            \
+                .K = (Kv),                                              \
+                .Q = Q,                                                 \
+                .n = (Nv),                                              \
+            };                                                          \
+            num_ssm_pad(num, num_0, &p);                                \
+            num_free(num_0);                                            \
+            num_p num_res = num_copy(num);                              \
+            num_ssm_fft_fwd(num_res, &p);                               \
+            num_ssm_fft_inv(num_res, &p);                               \
+            if(!num_eq_dbg(num_copy(num_res), num_copy(num)))           \
+            {                                                           \
+                printf("\ncase: (K: %d) (n: %d)", (Kv), (Nv));          \
+                printf("\nentrie");                                     \
+                num_display_span_full("num", num, (Nv), (Kv));          \
+                printf("\nroundrip results in");                        \
+                num_display_span_full("num_res", num_res, (Nv), (Kv));  \
+                assert(false);                                          \
+            }                                                           \
+            num_free(num_res);                                          \
+            num_free(num);                                              \
+        }                                                               \
+        TEST_FUZZ_CASE_CLOSE                                            \
     }
 
     TEST_FUZZ_NUM_SSM_FFT(1, 2, 4, 100)
@@ -2688,7 +2688,7 @@ static void test_num()
 {
     TEST_LIB
 
-    bool show = false;
+    bool show = true;
 
     test_uint_from_char(show);
     test_uint128(show);
@@ -2762,7 +2762,7 @@ static void test_num()
 
 int main()
 {
-    setbuf(stdout, nullptr);
+    setvbuf(stdout, nullptr, _IONBF, 0);
     srand((unsigned int)time(nullptr));
     test_num();
     printf("\n\n\tTest successful\n\n");

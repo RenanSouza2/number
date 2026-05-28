@@ -732,7 +732,7 @@ static void mem_1(uint64_t)
 // int main(int argc, char** argv)
 int main()
 {
-    setbuf(stdout, nullptr);
+    setvbuf(stdout, nullptr, _IONBF, 0);
     srand((unsigned int)time(nullptr));
     printf("\nbegin\n\n");
 

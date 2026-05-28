@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#include "../fxd/header.h"
+#include "../fxd/header.h" // IWYU pragma: keep
 
 #include "struct.h"
 

@@ -243,7 +243,7 @@ static void test_mod()
 
 int main()
 {
-    setbuf(stdout, nullptr);
+    setvbuf(stdout, nullptr, _IONBF, 0);
     test_mod();
     printf("\n\n\tTest successful\n\n");
     return 0;
