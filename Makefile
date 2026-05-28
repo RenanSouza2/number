@@ -7,8 +7,10 @@ build b:
 dbg d:
 	$(MAKE) dbg --directory=$(SRC) -s -j
 
-clean c _clean:
+clean c:
 	$(MAKE) clean --directory=$(SRC) -s -j
 
 test t:
-	$(MAKE) test --directory=$(LIB) -s
+	$(MAKE) test --directory=$(LIB) -s -j
+
+# 7m35.121s
