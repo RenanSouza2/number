@@ -24,13 +24,7 @@ bool num_keep(num_p num_1, num_p num_2);
 bool num_eq_dbg(num_p num_1, num_p num_2);
 bool num_immed(num_p num, uint64_t n, ...);
 
-#endif
-
-#define U128(V) ((uint128_t)(V))
-#define U128HL(V1, V2) ((U128(V1) << 64) | (V2))
-#define MUL(V1, V2) U128(V1) * U128(V2)
-#define LOW(V) U64(V)
-#define HIGH(V) U64((V) >> 64)
+#endif // DEBUG
 
 STATIC uint64_t uint_from_char(char c);
 
@@ -108,4 +102,4 @@ STATIC num_p num_sqr_ssm(num_p num);
 
 STATIC uint64_t num_div_normalize(num_p *num_1, num_p *num_2);
 
-#endif
+#endif // __NUM_DEBUG_H__
