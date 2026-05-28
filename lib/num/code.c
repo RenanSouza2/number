@@ -7,6 +7,7 @@
 #include "../../mods/macros/stdbit.h" // IWYU pragma: keep
 #include "../../mods/macros/uint.h"
 #include "../../mods/clu/header.h"
+#include "struct.h"
 
 
 
@@ -731,7 +732,7 @@ num_p num_add_uint_offset(num_p num, uint64_t pos, uint64_t value)
     {
         carry += num->chunk[i];
         num->chunk[i] = LOW(carry);
-        carry >>= sizeof(uint64_t);
+        carry >>= chunk_bit_size;
     }
 
     if(carry)
@@ -754,7 +755,7 @@ num_p num_sub_uint_offset(num_p num, uint64_t pos, uint64_t value)
     {
         carry += num->chunk[i];
         num->chunk[i] = LOW(carry);
-        carry = (uint128_t)((int128_t)carry >> sizeof(uint64_t));
+        carry = (uint128_t)((int128_t)carry >> chunk_bit_size);
     }
     assert(carry == 0);
 
@@ -812,7 +813,7 @@ num_p num_shl_core(num_p num, uint64_t bits) // TODO test
     {
         uint64_t value = num->chunk[i];
         num->chunk[i] = (value << bits) | carry;
-        carry = value >> (sizeof(uint64_t) - bits);
+        carry = value >> (chunk_bit_size - bits);
     }
 
     if(carry)
@@ -840,7 +841,7 @@ num_p num_shr_core(num_p num, uint64_t bits) // TODO test
     {
         uint64_t value = num->chunk[i];
         num->chunk[i] = (value >> bits) | carry;
-        carry = value << (sizeof(uint64_t) - bits);
+        carry = value << (chunk_bit_size - bits);
     }
     num_normalize(num);
 
@@ -909,7 +910,7 @@ static num_p num_add_offset(num_p num_1, uint64_t pos_1, num_p num_2, uint64_t p
     {
         carry += (uint128_t)num_1->chunk[delta + i] + num_2->chunk[i];
         num_1->chunk[delta + i] = LOW(carry);
-        carry >>= sizeof(uint64_t);
+        carry >>= chunk_bit_size;
     }
 
     if(carry)
@@ -1138,7 +1139,7 @@ static void num_ssm_add_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value
     {
         carry += num->chunk[pos + i];
         num->chunk[pos + i] = LOW(carry);
-        carry = carry >> sizeof(uint64_t);
+        carry = carry >> chunk_bit_size;
     }
 }
 
@@ -1153,7 +1154,7 @@ static void num_ssm_sub_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value
     {
         carry += num->chunk[pos + i];
         num->chunk[pos + i] = LOW(carry);
-        carry = (uint128_t)((int128_t)carry >> sizeof(uint64_t));
+        carry = (uint128_t)((int128_t)carry >> chunk_bit_size);
     }
 }
 
@@ -1207,7 +1208,7 @@ void num_ssm_add_mod(
     {
         carry += (uint128_t)num_1->chunk[pos_1 + i] + num_2->chunk[pos_2 + i];
         num_res->chunk[pos_res + i] = LOW(carry);
-        carry >>= sizeof(uint64_t);
+        carry >>= chunk_bit_size;
     }
 
     num_ssm_normalize(num_res, pos_res, n);
@@ -1239,7 +1240,7 @@ void num_ssm_sub_mod(
     {
         carry += (uint128_t)num_1->chunk[pos_1 + i] - num_2->chunk[pos_2 + i];
         num_res->chunk[pos_res + i] = LOW(carry);
-        carry = (uint128_t)((int128_t)carry >> sizeof(uint64_t));
+        carry = (uint128_t)((int128_t)carry >> chunk_bit_size);
     }
 
     num_ssm_normalize(num_1, pos_1, n);
@@ -1256,7 +1257,7 @@ void num_ssm_opposite(num_p num, uint64_t pos, uint64_t n)
     {
         carry -= num->chunk[pos + i];
         num->chunk[pos + i] = LOW(carry);
-        carry = carry >> sizeof(uint64_t);
+        carry = carry >> chunk_bit_size;
     }
     num->chunk[pos + n - 1]++;
     num_ssm_normalize(num, pos, n);

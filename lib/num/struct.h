@@ -7,6 +7,7 @@
 #include "../../mods/macros/uint.h"
 
 typedef uint64_t * chunk_p;
+constexpr uint64_t chunk_bit_size = 64;
 
 STRUCT(num)
 {
