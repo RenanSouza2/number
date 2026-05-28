@@ -6,7 +6,7 @@ dbg d: $(DBG_FULL_FILE)
 
 
 
-$(DBG_FULL_FILE): $(DBG_FILE) $(CLU_FILE)
+$(DBG_FULL_FILE): debug.o $(CLU_FILE)
 	echo " linking $(PRJ_NAME) full debug $(DIR)"
 	gcc $(FLAGS) $(FLAGS_DBG) $(FLAGS_LNK) -o $@ $^
 

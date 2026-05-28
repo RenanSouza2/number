@@ -12,5 +12,3 @@ clean c:
 
 test t:
 	$(MAKE) test --directory=$(LIB) -s -j
-
-# 7m35.121s
