@@ -3,7 +3,7 @@
 
 #include "../../mods/macros/static.h"
 
-#include "header.h"
+#include "header.h" // IWYU pragma: keep
 
 #ifdef DEBUG
 

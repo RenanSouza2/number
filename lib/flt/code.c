@@ -549,17 +549,15 @@ flt_num_t flt_num_shr(flt_num_t flt, uint64_t bits) // TODO TEST
     }
 
     constexpr uint64_t mask = 0x3f;
-    constexpr uint64_t chunk_bits_log2 = 6;
-    constexpr uint64_t chunk_bits = 64;
     uint64_t rem = bits & mask;
     if(flt.sig.num->chunk[flt.size - 1] >> rem)
     {
-        flt.exponent = int64_sub(flt.exponent, (int64_t)(bits >> chunk_bits_log2));
+        flt.exponent = int64_sub(flt.exponent, (int64_t)(bits >> chunk_bits_log_2));
         flt.sig.num = num_shr(flt.sig.num, rem);
         return flt;
     }
 
-    flt.exponent = int64_sub(flt.exponent, (int64_t)(1 + (bits >> chunk_bits_log2)));
+    flt.exponent = int64_sub(flt.exponent, (int64_t)(1 + (bits >> chunk_bits_log_2)));
     flt.sig.num = num_shl(flt.sig.num, chunk_bits - rem);
     return flt;
 }

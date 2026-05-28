@@ -3,7 +3,7 @@
 
 #include "debug.h"
 #include "../../mods/clu/header.h"
-#include "../../mods/macros/assert.h"
+#include "../../mods/macros/assert.h" // IWYU pragma: keep
 
 #include "../num/header.h"
 #include "../num/struct.h"
@@ -16,6 +16,7 @@
 
 #include "../num/debug.h"
 
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 sig_num_t sig_num_create_variadic(uint64_t signal, uint64_t n, va_list *args)
 {
     num_p num = num_create_variadic(n, args);
@@ -248,14 +249,18 @@ sig_num_t sig_num_head_trim(sig_num_t sig, uint64_t count) // TODO test
 static void fseek_safe(FILE *fp, long pos, int whence)
 {
     if (fseek(fp, pos, whence) != 0)
+    {
         exit(EXIT_FAILURE);
+    }
 }
 
 static uint64_t ftell_safe(FILE *fp)
 {
     int64_t res = ftell(fp);
     if (res < 0)
+    {
         exit(EXIT_FAILURE);
+    }
 
     return (uint64_t)res;
 }
@@ -287,11 +292,13 @@ file_t file_write_open(const char file_path[], uint64_t amount)
     return res;
 }
 
+static constexpr uint64_t MAGIC = 0xd0bbe;
+
 void file_write_close(file_p fp)
 {
     assert(fp->amount == fp->count);
 
-    file_write_uint64(fp, 0xd0bbe);
+    file_write_uint64(fp, MAGIC);
     fclose(fp->fp);
 }
 
@@ -300,7 +307,9 @@ void file_write_sig_num_raw(file_p fp, sig_num_t sig)
     file_write_uint64(fp, sig.signal);
     file_write_uint64(fp, sig.num->count);
     for(uint64_t i=0; i<sig.num->count; i++)
+    {
         file_write_uint64(fp, sig.num->chunk[i]);
+    }
 }
 
 void file_write_start(file_p fp)
@@ -338,7 +347,9 @@ FILE* file_read_open(const char file_path[])
 {
     FILE *fp = fopen(file_path, "rb");
     if(fp == nullptr)
+    {
         return nullptr;
+    }
 
     fseek_safe(fp, 0, SEEK_END);
     uint64_t size = ftell_safe(fp);
@@ -351,7 +362,7 @@ FILE* file_read_open(const char file_path[])
     fseek_safe(fp, -(long)sizeof(uint64_t), SEEK_END);
     uint64_t code = file_read_uint64(fp);
 
-    if(code != 0xd0bbe)
+    if(code != MAGIC)
     {
         fclose(fp);
         return nullptr;
@@ -392,7 +403,9 @@ sig_num_t file_read_sig_num_raw(FILE *fp)
     uint64_t count = file_read_uint64(fp);
     num_p num = num_create(count, count);
     for(uint64_t i=0; i<count; i++)
+    {
         num->chunk[i] = file_read_uint64(fp);
+    }
 
     return sig_num_create(signal, num);
 }
@@ -431,13 +444,17 @@ int64_t sig_num_cmp(sig_num_t sig_1, sig_num_t sig_2)
     if(sig_1.signal & POSITIVE)
     {
         if(sig_2.signal & POSITIVE)
+        {
             return num_cmp(sig_1.num, sig_2.num);
+        }
 
         return 1;
     }
 
     if(sig_2.signal & POSITIVE)
+    {
         return -1;
+    }
 
     return -num_cmp(sig_1.num, sig_2.num);
 }

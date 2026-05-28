@@ -31,7 +31,7 @@ static void test_sig_num_create(bool show)
 
     TEST_CASE_OPEN(6)
     {
-        num_p num = num_create_immed(1, 5);
+        num_p num = num_create_immed(1, 2);
         TEST_REVERT_OPEN
         {
             sig_num_create(ZERO, num);
@@ -660,7 +660,7 @@ static void test_fuzz_sig_num_mul_ssm(bool show)
     {                                                               \
         TEST_FUZZ_CASE_OPEN(TAG, RUNS)                              \
         {                                                           \
-            uint64_t count = COUNT_1 + COUNT_2;                     \
+            uint64_t count = (COUNT_1) + (COUNT_2);                 \
             sig_num_t sig_1 = sig_num_create_rand(COUNT_1);         \
             sig_num_t sig_2 = sig_num_create_rand(COUNT_2);         \
             sig_num_ssm_t sig_ssm_2 = sig_num_mul_prepare(          \
