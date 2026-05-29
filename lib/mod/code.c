@@ -1,17 +1,16 @@
 #include <stdio.h>
-#include <stdlib.h>
 
 #include "debug.h"
 #include "../../mods/clu/header.h"
-#include "../../mods/macros/assert.h"
+#include "../../mods/macros/assert.h" // IWYU pragma: keep
 
 #include "../num/header.h"
 
-#define CLU_MOD_IS_SAFE(MOD)        \
-    {                               \
+#define CLU_MOD_IS_SAFE(MOD)            \
+    {                                   \
         CLU_HANDLER_IS_SAFE((MOD).num); \
         CLU_HANDLER_IS_SAFE((MOD).max); \
-    }                               \
+    }
 
 
 
@@ -38,29 +37,30 @@ void mod_num_display(char tag[], mod_num_t mod)
     CLU_MOD_IS_SAFE(mod);
 
     printf("\n%s: (", tag);
-    num_display_opts(mod.num, NULL, false, true);
+    num_display_opts(mod.num, nullptr, false, true);
     printf(") / (");
-    num_display_opts(mod.max, NULL, false, true);
+    num_display_opts(mod.max, nullptr, false, true);
     printf(")");
 }
 
 
 
-mod_num_t mod_num_create(num_p num, num_p max)
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+mod_num_t mod_num_create(num_p num, num_p p)
 {
     CLU_HANDLER_IS_SAFE(num);
 
     return (mod_num_t)
     {
-        .num = num_mod(num, num_copy(max)),
-        .max = max
+        .num = num_mod(num, num_copy(p)),
+        .max = p
     };
 }
 
-mod_num_t mod_num_wrap(uint64_t value, num_p max)
+mod_num_t mod_num_wrap(uint64_t value, num_p P)
 {
     num_p num = num_wrap(value);
-    return mod_num_create(num, max);
+    return mod_num_create(num, P);
 }
 
 mod_num_t mod_num_copy(mod_num_t mod) // TODO test
@@ -151,7 +151,9 @@ mod_num_t mod_num_pow(mod_num_t mod, uint64_t value) // TODO test
     {
         mod_res = mod_num_sqr(mod_res);
         if(value & mask)
+        {
             mod_res = mod_num_mul(mod_res, mod_num_copy(mod));
+        }
     }
     mod_num_free(mod);
     return mod_res;
@@ -161,6 +163,7 @@ mod_num_t mod_num_div(mod_num_t mod_1, mod_num_t mod_2)
 {
     assert(!num_is_zero(mod_2.num));
 
+    // NOLINTNEXTLINE(readability-isolate-declaration)
     num_p num_q, num_r;
     num_div_mod(&num_q, &num_r, num_copy(mod_1.num), num_copy(mod_2.num));
     if(num_is_zero(num_r))

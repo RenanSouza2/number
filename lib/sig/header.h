@@ -56,8 +56,10 @@ int64_t file_read_int64(FILE *fp);
 
 void file_write_sig_num_raw(file_p fp, sig_num_t sig);
 void file_write_sig_num(file_p fp, sig_num_t sig);
+void sig_num_save(const char file_path[], sig_num_t sig);
+
 sig_num_t file_read_sig_num_raw(FILE *fp);
 sig_num_t file_read_sig_num(FILE *fp, uint64_t index);
-void sig_num_save(const char file_path[], sig_num_t sig);
+sig_num_t sig_num_load(char file_path[]);
 
 #endif

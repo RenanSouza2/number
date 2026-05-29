@@ -1,7 +1,7 @@
 #ifndef __MOD_DEBUG_H__
 #define __MOD_DEBUG_H__
 
-#include "header.h"
+#include "header.h" // IWYU pragma: keep
 
 #ifdef DEBUG
 

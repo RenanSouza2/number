@@ -1,7 +1,9 @@
 #ifndef __FXD_DEBUG_H__
 #define __FXD_DEBUG_H__
 
-#include "header.h"
+#include "../../mods/macros/static.h"
+
+#include "header.h" // IWYU pragma: keep
 
 #ifdef DEBUG
 
@@ -22,6 +24,6 @@ bool fxd_num_immed(
 
 #endif
 
-fxd_num_t fxd_num_create(sig_num_t sig, uint64_t pos);
+STATIC fxd_num_t fxd_num_create(sig_num_t sig, uint64_t pos);
 
 #endif

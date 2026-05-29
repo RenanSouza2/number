@@ -1,0 +1,10 @@
+Diagnostics:
+  ClangTidy:
+    Remove:
+      - "readability-function-cognitive-complexity"
+      - "readability-function-size"
+      - "performance-no-int-to-ptr"
+      - "bugprone-implicit-widening-of-multiplication-result"
+      - "readability-magic-numbers"
+      - "readability-isolate-declaration"
+      - "readability-suspicious-call-argument"

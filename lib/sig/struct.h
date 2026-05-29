@@ -4,7 +4,6 @@
 #include <stdio.h>
 
 #include "../../mods/macros/struct.h"
-#include "../../mods/macros/uint.h"
 
 #include "../num/struct.h"
 
