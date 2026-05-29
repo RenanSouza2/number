@@ -21,14 +21,12 @@
 
 
 
-// NOLINTBEGIN(bugprone-easily-swappable-parameters)
 static fxd_num_t fxd_num_create_variadic(
     uint64_t pos,
     uint64_t signal,
     uint64_t n,
     va_list *args
 )
-// NOLINTEND(bugprone-easily-swappable-parameters)
 {
     sig_num_t sig = sig_num_create_variadic(signal, n, args);
 
@@ -206,7 +204,6 @@ fxd_num_t fxd_num_create(sig_num_t sig, uint64_t pos) // TODO test
     };
 }
 
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 fxd_num_t fxd_num_wrap(int64_t value, uint64_t pos) // TODO test
 {
     sig_num_t sig = sig_num_wrap(value);

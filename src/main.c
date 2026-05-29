@@ -43,16 +43,20 @@ static num_p num_generate_1(uint64_t max, uint64_t salt)
 [[maybe_unused]]
 static num_p num_generate_2_step(num_p num, uint64_t salt)
 {
+    constexpr uint64_t seed = 0xe6503424c62eef89;
     num = num_add_uint(num, salt);
-    return num_mul_uint(num, 0xe6503424c62eef89);
+    return num_mul_uint(num, seed);
 }
 
 [[maybe_unused]]
 static num_p num_generate_2(uint64_t index, uint64_t salt)
 {
-    num_p num = num_wrap(0xe6503424c62eef89);
+    constexpr uint64_t seed = 0xe6503424c62eef89;
+    num_p num = num_wrap(seed);
     for(uint64_t i=1; i<index; i++)
+    {
         num = num_generate_2_step(num, salt);
+    }
 
     return num;
 }
@@ -135,7 +139,7 @@ static void time_2(int argc, char** argv, uint64_t max, uint64_t jumps)
             res += end - begin;
         }
 
-        printf("\t%10.9lf", (double)(res / repeat) / 1e9);
+        printf("\t%10.9lf", ((double)res / (double)repeat) / 1e9);
     }
 }
 
@@ -266,7 +270,7 @@ static void fibonacci_1()
     num_p num_a = num_wrap(1);
     num_p num_b = num_wrap(1);
 
-    uint64_t space = 1e4;
+    uint64_t space = 10'000;
     for(uint64_t i=0; ; i++)
     {
         num_p num_c = num_add(num_a, num_copy(num_b));
@@ -293,7 +297,9 @@ static void fibonacci_2(uint64_t min, uint64_t max)
     for(uint64_t i=0; i < max; i++)
     {
         if(i > min)
+        {
             printf("\n" U64P() "", i);
+        }
 
         uint64_t begin = get_time();
         num_p num_a_2 = num_sqr(num_copy(num_a));
@@ -308,7 +314,9 @@ static void fibonacci_2(uint64_t min, uint64_t max)
         uint64_t end = get_time();
 
         if(i > min)
+        {
             printf("\t%10.3f", (double)(end - begin) / 1e3);
+        }
     }
 }
 
@@ -374,7 +382,9 @@ static void factorial()
 static num_p fib_1(uint64_t index)
 {
     if(index < 2)
+    {
         return num_wrap(1);
+    }
 
     num_p num_a = num_wrap(1);
     num_p num_b = num_wrap(1);
@@ -407,7 +417,9 @@ static num_p fib_2(uint64_t index)
         num_c = num_add(num_b_2, num_c_2);
 
         if((mask & index) == 0)
+        {
             continue;
+        }
 
         num_c_2 = num_add(num_copy(num_b), num_copy(num_c));
         num_free(num_a);
@@ -454,7 +466,7 @@ static void pi_1()
     fxd_num_t fxd = fxd_num_wrap(0, pos);
     for(uint64_t i=1; ; i++)
     {
-        int64_t base = (int64_t)(16 * i * i - 16 * i + 3);
+        int64_t base = (int64_t)((16 * i * i) - (16 * i) + 3);
         fxd_num_t fxd_1 = fxd_num_wrap(8, pos);
         fxd_num_t fxd_2 = fxd_num_wrap(base, pos);
         fxd_1 = fxd_num_div(fxd_1, fxd_2);
@@ -570,7 +582,7 @@ static void flt_num_pi_2(uint64_t size)
         flt_tmp = flt_num_add(flt_num_copy(flt_1_4), flt_tmp);
         flt_a = flt_num_mul(flt_a, flt_tmp);
 
-        flt_tmp = flt_num_wrap((int64_t)(2*i + 1), size);
+        flt_tmp = flt_num_wrap((int64_t)((2*i) + 1), size);
         flt_tmp = flt_num_div(flt_num_copy(flt_1), flt_tmp);
         flt_tmp = flt_num_add(flt_tmp, flt_num_copy(flt_m_1_2));
 
@@ -614,7 +626,9 @@ static void flt_num_pi_3(uint64_t size)
         flt_a = flt_num_div_sig(flt_a, sig_num_wrap((int64_t)(8 * i)));
 
         if(i%1000 == 0)
+        {
             fprintf(stderr, "\nexp: " D64P() "", -((int64_t)flt_a.size + flt_a.exponent));
+        }
 
         flt_num_t flt_b = flt_num_copy(flt_a);
         flt_b = flt_num_mul_sig(flt_b, sig_num_wrap(1 - (int64_t)(2 * i)));
@@ -642,7 +656,9 @@ static void flt_num_pi_3(uint64_t size)
 static void display_bit(uint64_t value)
 {
     for(uint64_t i=0; i<64; i++, value <<= 1)
+    {
         printf("" U64PX "", value >> 63);
+    }
 }
 
 
@@ -673,7 +689,9 @@ static void sqrt_2()
         bool res = num_cmp(fxd_2.sig.num, num) < 0;
         fxd_num_free(fxd_2);
         if(res)
+        {
             break;
+        }
     }
 
     for(uint64_t i = 2; ; i *= 2)
@@ -736,7 +754,7 @@ int main()
     srand((unsigned int)time(nullptr));
     printf("\nbegin\n\n");
 
-    // clu_log_enable(true);
+    // clu_log_level_set(CLU_LOG_ALL);
 
     // num_generate(21, 2);
     // time_1(16, 28);
@@ -758,7 +776,7 @@ int main()
     // flt_num_pi_3(1000);
     // mem_1(21);
 
-    uint64_t base = 26;
+    uint64_t base = 20;
     num_p num_1 = num_generate_1(base, 2);
     num_p num_2 = num_add(num_copy(num_1), num_wrap(1));
 
@@ -774,6 +792,4 @@ int main()
     return 0;
 }
 
-// num_mul_ssm     | time prepare: 0.782
-// num_mul_finish_inner    | time pointwise: 6.417
-// main    | time: 10.229
+// begin:

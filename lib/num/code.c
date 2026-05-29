@@ -209,7 +209,6 @@ uint64_t uint_from_char(char c)
     return res;
 }
 
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 static uint64_t uint_from_str(const char str[], uint64_t size, uint64_t base) // TODO test
 {
     uint64_t value = 0;
@@ -498,7 +497,6 @@ void num_head_trim(num_p num, uint64_t count) // TODO test
     num->count = count_res;
 }
 
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 void num_break(num_p *out_num_hi, num_p *out_num_lo, num_p num, uint64_t count)
 {
     CLU_HANDLER_IS_SAFE(num);
@@ -715,7 +713,6 @@ void num_free(num_p num)
 
 
 
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 num_p num_add_uint_offset(num_p num, uint64_t pos, uint64_t value)
 {
     CLU_HANDLER_IS_SAFE(num);
@@ -738,7 +735,6 @@ num_p num_add_uint_offset(num_p num, uint64_t pos, uint64_t value)
     return num;
 }
 
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 num_p num_sub_uint_offset(num_p num, uint64_t pos, uint64_t value)
 {
     CLU_HANDLER_IS_SAFE(num);
@@ -760,7 +756,6 @@ num_p num_sub_uint_offset(num_p num, uint64_t pos, uint64_t value)
 // keeps NUM
 // NUM_RES must be reseted before
 // num_res->size >= pos_res + num->count + 1 - pos
-// NOLINTBEGIN(bugprone-easily-swappable-parameters)
 static num_p num_add_mul_uint_offset(
     num_p num_res,
     uint64_t pos_res,
@@ -768,7 +763,6 @@ static num_p num_add_mul_uint_offset(
     uint64_t pos,
     uint64_t value
 )
-// NOLINTEND(bugprone-easily-swappable-parameters)
 {
     CLU_HANDLER_IS_SAFE(num_res)
     CLU_HANDLER_IS_SAFE(num)
@@ -1045,7 +1039,6 @@ static void num_display_span(num_p num, uint64_t pos, uint64_t count)
 }
 
 [[maybe_unused]]
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 void num_display_span_full(const char tag[], num_p num, uint64_t n, uint64_t k)
 {
     CLU_HANDLER_IS_SAFE(num)
@@ -1060,7 +1053,6 @@ void num_display_span_full(const char tag[], num_p num, uint64_t n, uint64_t k)
     }
 }
 
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 uint64_t ssm_bit_inv(uint64_t i, uint64_t K)
 {
     uint64_t res = 0;
@@ -1072,7 +1064,6 @@ uint64_t ssm_bit_inv(uint64_t i, uint64_t K)
     return res;
 }
 
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 static bool num_is_span_zero(num_p num, uint64_t pos, uint64_t count)
 {
     CLU_HANDLER_IS_SAFE(num)
@@ -1089,14 +1080,12 @@ static bool num_is_span_zero(num_p num, uint64_t pos, uint64_t count)
     return true;
 }
 
-// NOLINTBEGIN(bugprone-easily-swappable-parameters)
 static int64_t num_ssm_cmp_uint_offset(
     num_p num,
     uint64_t pos,
     uint64_t value,
     uint64_t n
 )
-// NOLINTEND(bugprone-easily-swappable-parameters)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
@@ -1120,7 +1109,6 @@ static int64_t num_ssm_cmp_uint_offset(
     return 0;
 }
 
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 static void num_ssm_add_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value)
 {
     CLU_HANDLER_IS_SAFE(num)
@@ -1135,7 +1123,6 @@ static void num_ssm_add_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value
     }
 }
 
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 static void num_ssm_sub_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value)
 {
     CLU_HANDLER_IS_SAFE(num)
@@ -1176,7 +1163,6 @@ static void num_ssm_denormalize(num_p num, uint64_t pos, uint64_t n)
     num_ssm_add_uint(num, pos + n - 1, 1, 1);
 }
 
-// NOLINTBEGIN(bugprone-easily-swappable-parameters)
 void num_ssm_add_mod(
     num_p num_res,
     uint64_t pos_res,
@@ -1186,7 +1172,6 @@ void num_ssm_add_mod(
     uint64_t pos_2,
     uint64_t n
 )
-// NOLINTEND(bugprone-easily-swappable-parameters)
 {
     CLU_HANDLER_IS_SAFE(num_res)
     CLU_HANDLER_IS_SAFE(num_1)
@@ -1206,7 +1191,6 @@ void num_ssm_add_mod(
     num_ssm_normalize(num_res, pos_res, n);
 }
 
-// NOLINTBEGIN(bugprone-easily-swappable-parameters)
 void num_ssm_sub_mod(
     num_p num_res,
     uint64_t pos_res,
@@ -1216,7 +1200,6 @@ void num_ssm_sub_mod(
     uint64_t pos_2,
     uint64_t n
 )
-// NOLINTEND(bugprone-easily-swappable-parameters)
 {
     CLU_HANDLER_IS_SAFE(num_res)
     CLU_HANDLER_IS_SAFE(num_1)
@@ -1338,7 +1321,6 @@ void num_ssm_depad_wrap(num_p num_res, num_p num, ssm_params_p p, uint64_t n0)
 
 // operation can be done in place if num_res is the same as num and pos_res is pos
 // num_res->size >= pos_res + n
-// NOLINTBEGIN(bugprone-easily-swappable-parameters)
 void num_ssm_shl(
     num_p num_res,
     uint64_t pos_res,
@@ -1347,7 +1329,6 @@ void num_ssm_shl(
     uint64_t n,
     uint64_t bits
 )
-// NOLINTEND(bugprone-easily-swappable-parameters)
 {
     CLU_HANDLER_IS_SAFE(num_res)
     CLU_HANDLER_IS_SAFE(num)

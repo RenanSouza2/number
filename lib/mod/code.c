@@ -45,7 +45,6 @@ void mod_num_display(char tag[], mod_num_t mod)
 
 
 
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 mod_num_t mod_num_create(num_p num, num_p p)
 {
     CLU_HANDLER_IS_SAFE(num);

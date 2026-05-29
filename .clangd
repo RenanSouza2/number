@@ -12,7 +12,7 @@ CompileFlags:
 Diagnostics:
   ClangTidy:
     Add: [bugprone-*, clang-analyzer-*, performance-*, readability-*]
-    Remove: [abseil-*, llvm-*, readability-identifier-length]
+    Remove: [abseil-*, llvm-*, readability-identifier-length, bugprone-easily-swappable-parameters]
 
 Index:
   Background: Build

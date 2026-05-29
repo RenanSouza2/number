@@ -16,7 +16,6 @@
 
 #include "../num/debug.h"
 
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 sig_num_t sig_num_create_variadic(uint64_t signal, uint64_t n, va_list *args)
 {
     num_p num = num_create_variadic(n, args);
