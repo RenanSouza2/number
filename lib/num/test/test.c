@@ -1362,8 +1362,8 @@ static void test_num_ssm_shl_mod(bool show)
             num_p num = num_create_immed(ARG_OPEN NUM); \
             num_p num_aux = num_create(6, 0);           \
             num_ssm_shl_mod(num_aux, num, 0, 3, BITS);  \
-            assert(num_immed(num, ARG_OPEN RES));       \
             num_free(num_aux);                          \
+            assert(num_immed(num, ARG_OPEN RES));       \
         }                                               \
         TEST_CASE_CLOSE                                 \
     }
@@ -1439,7 +1439,9 @@ static void test_num_ssm_shr_mod(bool show)
         TEST_CASE_OPEN(TAG)                             \
         {                                               \
             num_p num = num_create_immed(ARG_OPEN NUM); \
-            num_ssm_shr_mod(num, 0, 3, BITS);           \
+            num_p num_aux = num_create(6, 0);           \
+            num_ssm_shr_mod(num_aux, num, 0, 3, BITS);  \
+            num_free(num_aux);                          \
             assert(num_immed(num, ARG_OPEN RES));       \
         }                                               \
         TEST_CASE_CLOSE                                 \
@@ -2460,8 +2462,8 @@ static void test_fuzz_num_ssm_sh(bool show)
             num_p num_res = num_copy(num);                          \
             num_p num_aux = num_create(2 *(N), 0);                  \
             num_ssm_shl_mod(num_aux, num_res, 0, N, BITS);          \
+            num_ssm_shr_mod(num_aux, num_res, 0, N, BITS);          \
             num_free(num_aux);                                      \
-            num_ssm_shr_mod(num_res, 0, N, BITS);                   \
             if(!num_eq_dbg(num_copy(num_res), num_copy(num)))       \
             {                                                       \
                 printf("\ncase: (n: %d) (bits: %d)", N, BITS);      \

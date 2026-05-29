@@ -1406,7 +1406,9 @@ void num_ssm_shl_mod(
     uint64_t bits
 )
 {
+    CLU_HANDLER_IS_SAFE(num_aux)
     CLU_HANDLER_IS_SAFE(num)
+    assert(num_aux)
     assert(num)
     assert(num_aux->size >= 2 * n)
 
@@ -1421,23 +1423,30 @@ void num_ssm_shl_mod(
     num_ssm_sub_mod(num, pos, num, pos, num_aux, 0, n);
 }
 
-void num_ssm_shr_mod(num_p num, uint64_t pos, uint64_t n, uint64_t bits)
+void num_ssm_shr_mod(
+    num_p num_aux,
+    num_p num,
+    uint64_t pos,
+    uint64_t n,
+    uint64_t bits
+)
 {
+    CLU_HANDLER_IS_SAFE(num_aux)
     CLU_HANDLER_IS_SAFE(num)
+    assert(num_aux)
     assert(num)
-    assert(bits <= 64 * (n - 1));
+    assert(bits <= 64 * (n - 1))
+    assert(num_aux->size >= n)
 
     if(bits == 0 || num_is_span_zero(num, pos, n))
     {
         return;
     }
 
-    num_p num_aux = num_create(n, 0);
     num_ssm_shl(num_aux, 0, num, pos, n, (chunk_bits * n) - chunk_bits - bits);
     num_ssm_shr(num, pos, num, pos, n, bits);
     num_aux->chunk[n - 1] = 0;
     num_ssm_sub_mod(num, pos, num, pos, num_aux, 0, n);
-    num_free(num_aux);
 }
 
 // num_aux->size >= 2 * n
@@ -1522,7 +1531,7 @@ static void num_ssm_fft_inv_rec(
         uint64_t pos_1 = (pos + i) * n;
         uint64_t pos_2 = (pos + i + (k/2)) * n;
 
-        num_ssm_shr_mod(num, pos_2, n, i * bits);
+        num_ssm_shr_mod(num_aux, num, pos_2, n, i * bits);
 
         num_ssm_add_mod(num_aux, 0, num, pos_1, num, pos_2, n);
         num_ssm_sub_mod(num_aux, n, num, pos_1, num, pos_2, n);
@@ -1539,14 +1548,14 @@ void num_ssm_fft_inv(num_p num, ssm_params_p p)
 
     num_p num_aux = num_create(2 * p->n, 0);
     num_ssm_fft_inv_rec(num_aux, num, 0, p->n, p->K, 2 * p->Q);
-    num_free(num_aux);
 
     uint64_t k_ = stdc_trailing_zeros(p->K);
     for(uint64_t i=0; i<p->K; i++)
     {
-        num_ssm_shr_mod(num, p->n * i, p->n, p->Q * i);
-        num_ssm_shr_mod(num, p->n * i, p->n, k_);
+        num_ssm_shr_mod(num_aux, num, p->n * i, p->n, p->Q * i);
+        num_ssm_shr_mod(num_aux, num, p->n * i, p->n, k_);
     }
+    num_free(num_aux);
 }
 
 #define TRESHOLD 45
