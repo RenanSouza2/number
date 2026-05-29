@@ -351,7 +351,7 @@ num_p num_create(uint64_t size, uint64_t count)
     return num;
 }
 
-// num_p num_create_delete(uint64_t size, uint64_t count, char const func[], uint64_t line)
+// static num_p num_create_delete(uint64_t size, uint64_t count, char const func[], uint64_t line)
 // {
 //     num_p num = num_create(size, count);
 //     clu_handler_unregister(num, __func__, __LINE__);
@@ -601,7 +601,7 @@ num_p num_wrap_dec(const char str[])
         num = num_chunk_set(num, pos, value);
     }
 
-    while(num_normalize(num));
+    while(num_normalize(num)) {};
     return num_base_from(num, chunk_base);
 }
 
@@ -1298,23 +1298,25 @@ void num_ssm_depad_wrap(num_p num_res, num_p num, ssm_params_p p, uint64_t n0)
     assert(num)
 
     num_p num_aux = num_create(n0, 0);
+    num_p num_aux_2 = num_create(2 * n0, 0);
     for(uint64_t i=0; i<p->K; i++)
     {
         num_set_count(num_aux, 0);
         if(num_ssm_cmp_uint_offset(num, (p->n * i) + (2 * p->M), i + 1, p->n - (2 * p->M)) < 0)
         {
             memcpy(num_aux->chunk, &num->chunk[i * p->n], p->n * sizeof(uint64_t));
-            num_ssm_shl_mod(num_aux, 0, n0, chunk_bits * i * p->M);
+            num_ssm_shl_mod(num_aux_2, num_aux, 0, n0, chunk_bits * i * p->M);
             num_ssm_add_mod(num_res, 0, num_res, 0, num_aux, 0, n0);
             continue;
         }
 
         num_ssm_opposite(num, p->n * i, p->n);
         memcpy(num_aux->chunk, &num->chunk[i * p->n], p->n * sizeof(uint64_t));
-        num_ssm_shl_mod(num_aux, 0, n0, chunk_bits * i * p->M);
+        num_ssm_shl_mod(num_aux_2, num_aux, 0, n0, chunk_bits * i * p->M);
         num_ssm_sub_mod(num_res, 0, num_res, 0, num_aux, 0, n0);
     }
     num_free(num_aux);
+    num_free(num_aux_2);
     num_set_count(num_res, n0);
     while(num_normalize(num_res)) {};
 }
@@ -1396,22 +1398,27 @@ void num_ssm_shr(
     memset(&num_res->chunk[pos_res + n - count], 0, count * sizeof(uint64_t));
 }
 
-void num_ssm_shl_mod(num_p num, uint64_t pos, uint64_t n, uint64_t bits)
+void num_ssm_shl_mod(
+    num_p num_aux,
+    num_p num,
+    uint64_t pos,
+    uint64_t n,
+    uint64_t bits
+)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
+    assert(num_aux->size >= 2 * n)
 
     if(bits == 0 || num_is_span_zero(num, pos, n))
     {
         return;
     }
 
-    num_p num_aux = num_create(n, 0);
     num_ssm_shr(num_aux, 0, num, pos, n, (chunk_bits * n) - chunk_bits - bits);
     num_ssm_shl(num, pos, num, pos, n, bits);
     num->chunk[pos + n - 1] = 0;
     num_ssm_sub_mod(num, pos, num, pos, num_aux, 0, n);
-    num_free(num_aux);
 }
 
 void num_ssm_shr_mod(num_p num, uint64_t pos, uint64_t n, uint64_t bits)
@@ -1462,7 +1469,7 @@ static void num_ssm_fft_fwd_rec(
         uint64_t pos_2 = (pos + (step * ((2 * i) + 1))) * n;
 
         uint64_t shift = ssm_bit_inv(i, K / 2) * bits;
-        num_ssm_shl_mod(num, pos_2, n, shift);
+        num_ssm_shl_mod(num_aux, num, pos_2, n, shift);
 
         num_ssm_add_mod(num_aux, 0, num, pos_1, num, pos_2, n);
         num_ssm_sub_mod(num_aux, n, num, pos_1, num, pos_2, n);
@@ -1478,12 +1485,12 @@ void num_ssm_fft_fwd(num_p num, ssm_params_p p)
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
 
+    num_p num_aux = num_create(2 * p->n, 0);
     for(uint64_t i=0; i<p->K; i++)
     {
-        num_ssm_shl_mod(num, p->n * i, p->n, p->Q * i);
+        num_ssm_shl_mod(num_aux, num, p->n * i, p->n, p->Q * i);
     }
 
-    num_p num_aux = num_create(2 * p->n, 0);
     num_ssm_fft_fwd_rec(num_aux, num, 0, 1, p->n, p->K, 2 * p->Q);
     num_free(num_aux);
 }

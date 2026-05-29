@@ -776,7 +776,11 @@ int main()
     // flt_num_pi_3(1000);
     // mem_1(21);
 
-    uint64_t base = 20;
+    // clu_log_level_set(CLU_LOG_ALL);
+    // uint64_t base = 20;
+
+    uint64_t base = 26;
+
     num_p num_1 = num_generate_1(base, 2);
     num_p num_2 = num_add(num_copy(num_1), num_wrap(1));
 
@@ -793,3 +797,5 @@ int main()
 }
 
 // begin:
+//      time 26: 11.323
+//      logs 20: 1269092
