@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1489,19 +1490,20 @@ static void num_ssm_fft_fwd_rec(
 }
 
 // num_aux->size >= 2 * n
-void num_ssm_fft_fwd(num_p num, ssm_params_p p)
+void num_ssm_fft_fwd(num_p num_aux, num_p num, ssm_params_p p)
 {
+    CLU_HANDLER_IS_SAFE(num_aux)
     CLU_HANDLER_IS_SAFE(num)
+    assert(num_aux)
     assert(num)
+    assert(num_aux->size >= 2 * p->n)
 
-    num_p num_aux = num_create(2 * p->n, 0);
     for(uint64_t i=0; i<p->K; i++)
     {
         num_ssm_shl_mod(num_aux, num, p->n * i, p->n, p->Q * i);
     }
 
     num_ssm_fft_fwd_rec(num_aux, num, 0, 1, p->n, p->K, 2 * p->Q);
-    num_free(num_aux);
 }
 
 // num_aux->size >= 2 * n
@@ -1667,25 +1669,17 @@ static uint64_t ssm_get_last_n(uint64_t count)
     return params.n;
 }
 
-static void num_mul_ssm_fwd_step_buffer(num_p num_fft_res, num_p num, ssm_params_p params)
+static void num_mul_ssm_fwd_step_buffer(num_p num_aux, num_p num_fft_res, num_p num, ssm_params_p params)
 {
+    CLU_HANDLER_IS_SAFE(num_aux)
     CLU_HANDLER_IS_SAFE(num_fft_res)
     CLU_HANDLER_IS_SAFE(num)
+    assert(num_aux)
     assert(num_fft_res)
     assert(num)
 
     num_ssm_pad(num_fft_res, num, params);
-    num_ssm_fft_fwd(num_fft_res, params);
-}
-
-static num_p num_mul_ssm_fwd_step(num_p num, ssm_params_p params)
-{
-    CLU_HANDLER_IS_SAFE(num)
-    assert(num)
-
-    num_p num_fft = num_create(params->n * params->K, 0);
-    num_mul_ssm_fwd_step_buffer(num_fft, num, params);
-    return num_fft;
+    num_ssm_fft_fwd(num_aux, num_fft_res, params);
 }
 
 // KEEP NUM
@@ -1695,7 +1689,9 @@ num_p num_mul_ssm_fwd_transform(num_p num, uint64_t count)
     assert(num)
 
     ssm_params_t params = ssm_get_params(count);
-    num_p num_fft = num_mul_ssm_fwd_step(num, &params);
+    num_p num_fft = num_create(params.n * params.K, 0);
+    num_p num_aux = num_create(2 * params.n, 0);
+    num_mul_ssm_fwd_step_buffer(num_aux, num_fft, num, &params);
 
     uint64_t n = params.n;
     uint64_t K = params.K;
@@ -1710,7 +1706,7 @@ num_p num_mul_ssm_fwd_transform(num_p num, uint64_t count)
             num_t num_in, num_out;
             num_span(&num_in,  num_fft, i * n, (i + 1) * n);
             num_span(&num_out, num_fft_next, i * params_next.K * params_next.n, (i + 1) * params_next.K * params_next.n);
-            num_mul_ssm_fwd_step_buffer(&num_out, &num_in, &params_next);
+            num_mul_ssm_fwd_step_buffer(num_aux, &num_out, &num_in, &params_next);
         }
 
         num_free(num_fft);
@@ -1754,10 +1750,18 @@ void num_ssm_free(num_ssm_t num_ssm)
     num_free(num_ssm.num_fft);
 }
 
-static void num_ssm_mul_mod_span(num_p num_aux, num_p num_1, num_p num_2, uint64_t pos, uint64_t n)
+static void num_ssm_mul_mod_span(
+    num_p num_aux,
+    num_p num_1,
+    num_p num_2,
+    uint64_t pos,
+    uint64_t n
+)
 {
+    CLU_HANDLER_IS_SAFE(num_aux)
     CLU_HANDLER_IS_SAFE(num_1)
     CLU_HANDLER_IS_SAFE(num_2)
+    assert(num_aux)
     assert(num_1)
     assert(num_2)
 
