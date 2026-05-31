@@ -1819,7 +1819,6 @@ num_p num_mul_ssm_fwd_transform(num_p num, uint64_t count)
 
         for(uint64_t i=0; i<K; i++)
         {
-            // NOLINTNEXTLINE(readability-isolate-declaration)
             num_t num_in, num_out;
             num_span(&num_in,  num_fft, i * n, (i + 1) * n);
             num_span(&num_out, num_fft_next, i * params_next.K * params_next.n, (i + 1) * params_next.K * params_next.n);
@@ -1883,7 +1882,6 @@ static void num_ssm_mul_mod_span(
     assert(num_1)
     assert(num_2)
 
-    // NOLINTNEXTLINE(readability-isolate-declaration)
     num_t num_t_1, num_t_2;
     num_span(&num_t_1, num_1, pos, pos + n);
     num_span(&num_t_2, num_2, pos, pos + n);
@@ -1939,7 +1937,6 @@ static num_p num_mul_ssm_bwd_transform_rec(num_p num_aux_1, num_p num_aux_2, num
     num_p num_tmp = num_create(block_count * n, 0);
     for(uint64_t i=0; i<block_count; i++)
     {
-        // NOLINTNEXTLINE(readability-isolate-declaration)
         num_t num_in, num_out;
         num_span(&num_in, num_fft, i * params.K * params.n, (i + 1) * params.K * params.n);
         num_span(&num_out, num_tmp, i * n, (i + 1) * n);
@@ -2065,7 +2062,6 @@ static num_p num_mul_karatsuba_buffer(num_p num_res, num_p num_1, num_p num_2)
 
     num_p num_res_next = num_create((2 * count) + 2, 0);
 
-    // NOLINTNEXTLINE(readability-isolate-declaration)
     num_t num_1_0, num_1_1, num_2_0, num_2_1;
     num_span(&num_1_0, num_1, 0, count);
     num_span(&num_1_1, num_1, count, num_1->count);
@@ -2724,7 +2720,6 @@ static num_p num_base_to_rec(num_p num, num_p num_bases[], uint64_t i)
         return num_base_to_rec(num, num_bases, i - 1);
     }
 
-    // NOLINTNEXTLINE(readability-isolate-declaration)
     num_p num_q, num_r;
     num_div_mod(&num_q, &num_r, num, num_copy(num_bases[i]));
     num_q = num_base_to_rec(num_q, num_bases, i - 1);

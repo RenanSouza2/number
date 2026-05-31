@@ -118,7 +118,6 @@ void fxd_num_display_dec(fxd_num_t fxd)
 
     printf("%c ", fxd.sig.signal == NEGATIVE ? '-' : '+');
 
-    // NOLINTNEXTLINE(readability-isolate-declaration)
     num_p num_hi, num_lo;
     num_break(&num_hi, &num_lo, num_copy(fxd.sig.num), fxd.pos);
 
@@ -271,7 +270,6 @@ fxd_num_t fxd_num_base_to(fxd_num_t fxd, uint64_t base) // TODO test
 {
     CLU_FXD_IS_SAFE(fxd);
 
-    // NOLINTNEXTLINE(readability-isolate-declaration)
     num_p num_hi, num_lo;
     num_break(&num_hi, &num_lo, fxd.sig.num, fxd.pos);
 
