@@ -738,8 +738,6 @@ num_p num_sub_uint_offset(num_p num, uint64_t pos, uint64_t value)
 }
 
 // keeps NUM
-// NUM_RES must be reseted before
-// num_res->size >= pos_res + num->count + 1 - pos
 static num_p num_add_mul_uint_offset(
     num_p num_res,
     uint64_t pos_res,
@@ -752,20 +750,49 @@ static num_p num_add_mul_uint_offset(
     CLU_HANDLER_IS_SAFE(num)
     assert(num_res)
     assert(num)
-    assert(num_res->size >= pos_res + num->count + 1 - pos)
 
-    if(value == 0)
+    if(value == 0 || pos >= num->count)
     {
         return num_res;
     }
 
-    for(uint64_t i=pos; i<num->count; i++)
+    uint64_t iter_count = num->count - pos;
+    uint64_t target_count = pos_res + iter_count;
+
+    // 1. Safely expand capacity if the result will exceed current memory
+    if(num_res->size <= target_count)
     {
-        uint128_t u = MUL(num->chunk[i], value);
-        num_res = num_add_uint_offset(num_res, pos_res + i - pos, LOW(u));
-        num_res = num_add_uint_offset(num_res, pos_res + i - pos + 1, HIGH(u));
+        num_res = num_expand_to(num_res, target_count + 1);
     }
-    return num_res;
+
+    // 2. Explicitly update the active length and guarantee the gap is zero-initialized
+    if(num_res->count < target_count)
+    {
+        memset(&num_res->chunk[num_res->count], 0, (target_count - num_res->count) * sizeof(uint64_t));
+        num_res->count = target_count;
+    }
+
+    uint64_t carry = 0;
+    for(uint64_t i = 0; i < iter_count; i++)
+    {
+        uint64_t dest_idx = pos_res + i;
+
+        // 3. Inline MAC: Calculate sum and extract high/low bounds directly
+        uint128_t u = MUL(num->chunk[pos + i], value);
+        u += num_res->chunk[dest_idx];
+        u += carry;
+
+        num_res->chunk[dest_idx] = LOW(u);
+        carry = HIGH(u);
+    }
+
+    // 4. Delegate remaining carry overflow back to your safe offset logic
+    if(carry)
+    {
+        num_res = num_add_uint_offset(num_res, target_count, carry);
+    }
+
+    return num_normalize(num_res);
 }
 
 // BITS shoud be less than 64
@@ -2436,7 +2463,7 @@ num_p num_mul_uint(num_p num, uint64_t value)
 
     num_p num_res = num_create(num->count + 1, 0);
     num_res->cannot_expand = true;
-    num_add_mul_uint_offset(num_res, 0, num, 0, value);
+    num_res = num_add_mul_uint_offset(num_res, 0, num, 0, value);
     num_free(num);
     num_res->cannot_expand = false;
     return num_res;

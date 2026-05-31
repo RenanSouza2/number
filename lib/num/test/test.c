@@ -825,6 +825,8 @@ static void test_num_sub_offset(bool show)
                 num_sub_offset(num_1, POS, num_2);         \
             }                                               \
             TEST_REVERT_CLOSE                               \
+            num_free(num_1);                                \
+            num_free(num_2);                                \
         }                                                   \
         TEST_CASE_CLOSE                                     \
     }
@@ -873,6 +875,7 @@ static void test_num_shl_core(bool show)
             num_shl_core(num, 64);
         }
         TEST_REVERT_CLOSE
+        num_free(num);
     }
     TEST_CASE_CLOSE
 
@@ -915,6 +918,7 @@ static void test_num_shr_core(bool show)
             num_shr_core(num, 64);
         }
         TEST_REVERT_CLOSE
+        num_free(num);
     }
     TEST_CASE_CLOSE
 
@@ -2217,6 +2221,8 @@ static void test_num_div_mod(bool show)
             num_div_mod(&num_q, &num_r, num_1, num_2);
         }
         TEST_REVERT_CLOSE
+        num_free(num_1);
+        num_free(num_2);
     }
     TEST_CASE_CLOSE
 
@@ -2337,6 +2343,7 @@ static void test_num_div_mod_uint(bool show)
             num_div_mod_uint(num, 0);
         }
         TEST_REVERT_CLOSE
+        num_free(num);
     }
     TEST_CASE_CLOSE
 
