@@ -1529,7 +1529,9 @@ static void test_num_ssm_fft(bool show)
                 .Q = Q,                                 \
                 .n = (Nv),                              \
             };                                          \
-            num_ssm_fft_fwd(num, &p);                   \
+            num_p num_aux = num_create(2 * (Nv), 0);    \
+            num_ssm_fft_fwd(num_aux, num, &p);          \
+            num_free(num_aux);                          \
             assert(num_immed(num, ARG_OPEN RES));       \
         }                                               \
         TEST_CASE_CLOSE                                 \
@@ -2508,8 +2510,10 @@ static void test_fuzz_num_ssm_fft(bool show)
             num_ssm_pad(num, num_0, &p);                                \
             num_free(num_0);                                            \
             num_p num_res = num_copy(num);                              \
-            num_ssm_fft_fwd(num_res, &p);                               \
-            num_ssm_fft_inv(num_res, &p);                               \
+            num_p num_aux = num_create(2 * (Nv), 0);                    \
+            num_ssm_fft_fwd(num_aux, num_res, &p);                      \
+            num_ssm_fft_inv(num_aux, num_res, &p);                      \
+            num_free(num_aux);                                          \
             if(!num_eq_dbg(num_copy(num_res), num_copy(num)))           \
             {                                                           \
                 printf("\ncase: (K: %d) (n: %d)", (Kv), (Nv));          \

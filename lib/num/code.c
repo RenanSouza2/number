@@ -1291,33 +1291,41 @@ num_p num_ssm_depad_no_wrap(num_p num, ssm_params_p p)
 // Separate number to a base 2^(64*b)
 // Each place will be represented in n chunks
 // the final vector is padded to k places
-void num_ssm_depad_wrap(num_p num_res, num_p num, ssm_params_p p, uint64_t n0)
+void num_ssm_depad_wrap(num_p num_aux_1,
+    num_p num_aux_2,
+    num_p num_res,
+    num_p num,
+    ssm_params_p p,
+    uint64_t n0
+)
 {
+    CLU_HANDLER_IS_SAFE(num_aux_1)
+    CLU_HANDLER_IS_SAFE(num_aux_2)
     CLU_HANDLER_IS_SAFE(num_res)
     CLU_HANDLER_IS_SAFE(num)
+    assert(num_aux_1)
+    assert(num_aux_2)
     assert(num_res)
     assert(num)
+    assert(num_aux_1->size >= n0)
+    assert(num_aux_2->size >= 2 * n0)
 
-    num_p num_aux = num_create(n0, 0);
-    num_p num_aux_2 = num_create(2 * n0, 0);
     for(uint64_t i=0; i<p->K; i++)
     {
-        num_set_count(num_aux, 0);
+        num_set_count(num_aux_1, 0);
         if(num_ssm_cmp_uint_offset(num, (p->n * i) + (2 * p->M), i + 1, p->n - (2 * p->M)) < 0)
         {
-            memcpy(num_aux->chunk, &num->chunk[i * p->n], p->n * sizeof(uint64_t));
-            num_ssm_shl_mod(num_aux_2, num_aux, 0, n0, chunk_bits * i * p->M);
-            num_ssm_add_mod(num_res, 0, num_res, 0, num_aux, 0, n0);
+            memcpy(num_aux_1->chunk, &num->chunk[i * p->n], p->n * sizeof(uint64_t));
+            num_ssm_shl_mod(num_aux_2, num_aux_1, 0, n0, chunk_bits * i * p->M);
+            num_ssm_add_mod(num_res, 0, num_res, 0, num_aux_1, 0, n0);
             continue;
         }
 
         num_ssm_opposite(num, p->n * i, p->n);
-        memcpy(num_aux->chunk, &num->chunk[i * p->n], p->n * sizeof(uint64_t));
-        num_ssm_shl_mod(num_aux_2, num_aux, 0, n0, chunk_bits * i * p->M);
-        num_ssm_sub_mod(num_res, 0, num_res, 0, num_aux, 0, n0);
+        memcpy(num_aux_1->chunk, &num->chunk[i * p->n], p->n * sizeof(uint64_t));
+        num_ssm_shl_mod(num_aux_2, num_aux_1, 0, n0, chunk_bits * i * p->M);
+        num_ssm_sub_mod(num_res, 0, num_res, 0, num_aux_1, 0, n0);
     }
-    num_free(num_aux);
-    num_free(num_aux_2);
     num_set_count(num_res, n0);
     while(num_normalize(num_res)) {};
 }
@@ -1543,12 +1551,14 @@ static void num_ssm_fft_inv_rec(
     }
 }
 
-void num_ssm_fft_inv(num_p num, ssm_params_p p)
+void num_ssm_fft_inv(num_p num_aux, num_p num, ssm_params_p p)
 {
+    CLU_HANDLER_IS_SAFE(num_aux)
     CLU_HANDLER_IS_SAFE(num)
+    assert(num_aux)
     assert(num)
+    assert(num_aux->size >= 2 * p->n)
 
-    num_p num_aux = num_create(2 * p->n, 0);
     num_ssm_fft_inv_rec(num_aux, num, 0, p->n, p->K, 2 * p->Q);
 
     uint64_t k_ = stdc_trailing_zeros(p->K);
@@ -1557,7 +1567,6 @@ void num_ssm_fft_inv(num_p num, ssm_params_p p)
         num_ssm_shr_mod(num_aux, num, p->n * i, p->n, p->Q * i);
         num_ssm_shr_mod(num_aux, num, p->n * i, p->n, k_);
     }
-    num_free(num_aux);
 }
 
 #define TRESHOLD 45
@@ -1715,6 +1724,7 @@ num_p num_mul_ssm_fwd_transform(num_p num, uint64_t count)
         n  = params_next.n;
         K *= params_next.K;
     }
+    num_free(num_aux);
 
     return num_fft;
 }
@@ -1797,9 +1807,13 @@ static void num_ssm_pointwise_product(num_ssm_t num_ssm_1, num_ssm_t num_ssm_2)
     num_free(num_aux);
 }
 
-static num_p num_mul_ssm_bwd_transform_rec(num_p num_fft, uint64_t n)
+static num_p num_mul_ssm_bwd_transform_rec(num_p num_aux_1, num_p num_aux_2, num_p num_fft, uint64_t n)
 {
+    CLU_HANDLER_IS_SAFE(num_aux_1)
+    CLU_HANDLER_IS_SAFE(num_aux_2)
     CLU_HANDLER_IS_SAFE(num_fft)
+    assert(num_aux_1)
+    assert(num_aux_2)
     assert(num_fft)
 
     if(!ssm_is_recursive(n))
@@ -1808,7 +1822,7 @@ static num_p num_mul_ssm_bwd_transform_rec(num_p num_fft, uint64_t n)
     }
 
     ssm_params_t params = ssm_get_params_wrap(n);
-    num_fft = num_mul_ssm_bwd_transform_rec(num_fft, params.n);
+    num_fft = num_mul_ssm_bwd_transform_rec(num_aux_1, num_aux_2, num_fft, params.n);
 
     uint64_t block_count = num_fft->size / (params.K * params.n);
     assert(block_count * params.K * params.n == num_fft->size);
@@ -1821,8 +1835,8 @@ static num_p num_mul_ssm_bwd_transform_rec(num_p num_fft, uint64_t n)
         num_span(&num_in, num_fft, i * params.K * params.n, (i + 1) * params.K * params.n);
         num_span(&num_out, num_tmp, i * n, (i + 1) * n);
 
-        num_ssm_fft_inv(&num_in, &params);
-        num_ssm_depad_wrap(&num_out, &num_in, &params, n);
+        num_ssm_fft_inv(num_aux_2, &num_in, &params);
+        num_ssm_depad_wrap(num_aux_1, num_aux_2, &num_out, &num_in, &params, n);
     }
 
     num_free(num_fft);
@@ -1835,9 +1849,13 @@ num_p num_mul_ssm_bwd_transform(num_p num_fft, uint64_t count)
     assert(num_fft)
 
     ssm_params_t params = ssm_get_params(count);
-    num_p num_tmp = num_mul_ssm_bwd_transform_rec(num_fft, params.n);
+    num_p num_aux_1 = num_create(params.n, 0);
+    num_p num_aux_2 = num_create(2 * params.n, 0);
+    num_p num_tmp = num_mul_ssm_bwd_transform_rec(num_aux_1, num_aux_2, num_fft, params.n);
+    num_free(num_aux_1);
 
-    num_ssm_fft_inv(num_tmp, &params);
+    num_ssm_fft_inv(num_aux_2, num_tmp, &params);
+    num_free(num_aux_2);
     return num_ssm_depad_no_wrap(num_tmp, &params);
 }
 

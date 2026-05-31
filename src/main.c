@@ -776,7 +776,7 @@ int main()
     // flt_num_pi_3(1000);
     // mem_1(21);
 
-    clu_log_level_set(CLU_LOG_ALL);
+    // clu_log_level_set(CLU_LOG_DYNAMIC);
     uint64_t base = 20;
 
     // uint64_t base = 26;
