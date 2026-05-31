@@ -357,6 +357,27 @@ num_p num_create(uint64_t size, uint64_t count)
     return num;
 }
 
+#ifdef DEBUG
+num_p num_create_dirty_dbg(uint64_t size, uint64_t count, char const func[], uint64_t line)
+#else
+num_p num_create_dirty(uint64_t size, uint64_t count)
+#endif
+{
+    assert(size >= count);
+    size = size ? size : 1;
+    uint64_t total_size = sizeof(num_t) + (size * sizeof(uint64_t));
+    num_p num = malloc_tag(total_size, "f|%s|l|%d", func, line);
+    assert(num);
+
+    *num = (num_t)
+    {
+        .size = size,
+        .count = count,
+        .chunk = (chunk_p)&num[1]
+    };
+    return num;
+}
+
 num_p num_expand_to(num_p num, uint64_t target)
 {
     CLU_HANDLER_IS_SAFE(num);
@@ -505,7 +526,7 @@ void num_break(num_p *out_num_hi, num_p *out_num_lo, num_p num, uint64_t count)
     }
 
     uint64_t size = num->count - count;
-    num_p num_hi = num_create(size, size);
+    num_p num_hi = num_create_dirty(size, size);
     memcpy(num_hi->chunk, &num->chunk[count], size * sizeof(uint64_t));
 
     memset(&num->chunk[count], 0, (num->size - count) * sizeof(uint64_t));
@@ -685,7 +706,7 @@ num_p num_copy(num_p num) // TODO TEST
     CLU_HANDLER_IS_SAFE(num);
     assert(num);
 
-    num_p num_res = num_create(num->count, num->count);
+    num_p num_res = num_create_dirty(num->count, num->count);
     memcpy(num_res->chunk, num->chunk, num->count * sizeof(uint64_t));
 
     return num_res;
@@ -2086,7 +2107,7 @@ num_p num_div_mod_uint(num_p num, uint64_t value)
     assert(num);
     assert(value);
 
-    num_p num_q = num_create(num->count, num->count);
+    num_p num_q = num_create_dirty(num->count, num->count);
     for(uint64_t i = num->count - 1; i != UINT64_MAX; i--)
     {
         if((num->count < i) || ((num->count - 1 == i) && (num->chunk[i] < value)))
@@ -2129,7 +2150,7 @@ static num_p num_div_mod_classic(num_p num_aux, num_p num_1, num_p num_2)
     assert(num_1->count >= num_2->count);
 
     uint64_t count = num_1->count - num_2->count + 1;
-    num_p num_q = num_create(count, count);
+    num_p num_q = num_create_dirty(count, count);
     uint64_t value_2 = num_2->chunk[num_2->count-1];
     for(uint64_t i = count - 1; i != UINT64_MAX; i--)
     {
@@ -2685,7 +2706,7 @@ num_p num_base_from(num_p num, uint64_t base)
     assert(num);
     assert(base > 1);
 
-    num_p num_res = num_create(2 * num->count, 0);
+    num_p num_res = num_create(num->count, 0);
     for(uint64_t i=num->count-1; i!=UINT64_MAX; i--)
     {
         assert(num->chunk[i] < base);
