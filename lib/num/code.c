@@ -426,24 +426,16 @@ num_p num_chunk_set(num_p num, uint64_t pos, uint64_t value)
     return num;
 }
 
-// returns true if NUM had to be corrected
-bool num_normalize(num_p num)
+num_p num_normalize(num_p num)
 {
     CLU_HANDLER_IS_SAFE(num);
     assert(num);
 
-    if(num->count == 0)
-    {
-        return false;
+    while (num->count > 0 && num->chunk[num->count-1] == 0) {
+        num->count--;
     }
 
-    if(num->chunk[num->count-1] != 0)
-    {
-        return false;
-    }
-
-    num->count--;
-    return true;
+    return num;
 }
 
 num_p num_head_grow(num_p num, uint64_t count) // TODO test
@@ -518,7 +510,7 @@ void num_break(num_p *out_num_hi, num_p *out_num_lo, num_p num, uint64_t count)
 
     memset(&num->chunk[count], 0, (num->size - count) * sizeof(uint64_t));
     num->count = count;
-    while(num_normalize(num)) {};
+    num_normalize(num);
 
     *out_num_hi = num_hi;
     *out_num_lo = num;
@@ -597,7 +589,7 @@ num_p num_wrap_dec(const char str[])
         num = num_chunk_set(num, pos, value);
     }
 
-    while(num_normalize(num)) {};
+    num_normalize(num);
     return num_base_from(num, chunk_base);
 }
 
@@ -624,7 +616,7 @@ num_p num_wrap_hex(const char str[])
         num = num_chunk_set(num, pos, value);
     }
 
-    while(num_normalize(num)) {};
+    num_normalize(num);
     return num;
 }
 
@@ -672,7 +664,7 @@ num_p num_read_dec(const char file_name[])
     }
     fclose(fp);
 
-    while(num_normalize(num)) {};
+    num_normalize(num);
     return num_base_from(num, chunk_base);
 }
 
@@ -714,12 +706,10 @@ num_p num_add_uint_offset(num_p num, uint64_t pos, uint64_t value)
     CLU_HANDLER_IS_SAFE(num);
     assert(num);
 
-    uint128_t carry = value;
+    uint64_t carry = value;
     for(uint64_t i=pos; i<num->count && carry; i++)
     {
-        carry += num->chunk[i];
-        num->chunk[i] = LOW(carry);
-        carry >>= chunk_bits;
+        carry = (uint64_t)__builtin_add_overflow(num->chunk[i], carry, &num->chunk[i]);
     }
 
     if(carry)
@@ -736,16 +726,14 @@ num_p num_sub_uint_offset(num_p num, uint64_t pos, uint64_t value)
     CLU_HANDLER_IS_SAFE(num);
     assert(num);
 
-    uint128_t carry = -(uint128_t)value;
-    for(uint64_t i=pos; i<num->count && carry; i++)
+    uint64_t borrow = value;
+    for(uint64_t i = pos; i < num->count && borrow; i++)
     {
-        carry += num->chunk[i];
-        num->chunk[i] = LOW(carry);
-        carry = (uint128_t)((int128_t)carry >> chunk_bits);
+        borrow = (uint64_t)__builtin_sub_overflow(num->chunk[i], borrow, &num->chunk[i]);
     }
-    assert(carry == 0);
+    assert(borrow == 0);
 
-    while(num_normalize(num)) {};
+    num_normalize(num);
     return num;
 }
 
@@ -889,17 +877,18 @@ static num_p num_add_offset(num_p num_1, uint64_t pos_1, num_p num_2, uint64_t p
 
     num_1 = num_expand_to(num_1, count_max);
 
-    uint128_t carry = 0;
+    uint64_t carry = 0;
     for(uint64_t i=pos_2; i<num_2->count; i++)
     {
-        carry += (uint128_t)num_1->chunk[delta + i] + num_2->chunk[i];
-        num_1->chunk[delta + i] = LOW(carry);
-        carry >>= chunk_bits;
+        uint64_t sum;
+        uint64_t c1 = (uint64_t)__builtin_add_overflow(num_1->chunk[delta + i], num_2->chunk[i], &sum);
+        uint64_t c2 = (uint64_t)__builtin_add_overflow(sum, carry, &num_1->chunk[delta + i]);
+        carry = c1 | c2; // Combine overflow states
     }
 
     if(carry)
     {
-        num_1 = num_add_uint_offset(num_1, count_max, LOW(carry));
+        num_1 = num_add_uint_offset(num_1, count_max, carry);
     }
     else
     {
@@ -921,12 +910,24 @@ num_p num_sub_offset(num_p num_1, uint64_t pos_1, num_p num_2)
     assert(num_1)
     assert(num_2)
 
-    for(uint64_t i = num_2->count-1; i!=UINT64_MAX; i--)
+    uint64_t borrow = 0;
+    uint64_t i = 0;
+    for(; i < num_2->count; i++)
     {
-        num_1 = num_sub_uint_offset(num_1, pos_1 + i, num_2->chunk[i]);
+        uint64_t diff;
+        uint64_t b1 = (uint64_t)__builtin_sub_overflow(num_1->chunk[pos_1 + i], num_2->chunk[i], &diff);
+        uint64_t b2 = (uint64_t)__builtin_sub_overflow(diff, borrow, &num_1->chunk[pos_1 + i]);
+        borrow = b1 | b2;
     }
 
-    return num_1;
+    // 2. Propagate any leftover borrow upwards
+    for(uint64_t j = pos_1 + i; j < num_1->count && borrow; j++)
+    {
+        borrow = (uint64_t)__builtin_sub_overflow(num_1->chunk[j], borrow, &num_1->chunk[j]);
+    }
+    assert(borrow == 0);
+
+    return num_normalize(num_1);
 }
 
 
@@ -1104,15 +1105,13 @@ static int64_t num_ssm_cmp_uint_offset(
 
 static void num_ssm_add_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value)
 {
-    CLU_HANDLER_IS_SAFE(num)
-    assert(num)
+    CLU_HANDLER_IS_SAFE(num);
+    assert(num);
 
-    uint128_t carry = value;
-    for(uint64_t i=0; i<n && carry; i++)
+    uint64_t carry = value;
+    for(uint64_t i = 0; i < n && carry; i++)
     {
-        carry += num->chunk[pos + i];
-        num->chunk[pos + i] = LOW(carry);
-        carry = carry >> chunk_bits;
+        carry = (uint64_t)__builtin_add_overflow(num->chunk[pos + i], carry, &num->chunk[pos + i]);
     }
 }
 
@@ -1121,12 +1120,10 @@ static void num_ssm_sub_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
 
-    uint128_t carry = -(uint128_t)value;
-    for(uint64_t i=0; i<n && carry; i++)
+    uint64_t borrow = value;
+    for(uint64_t i = 0; i < n && borrow; i++)
     {
-        carry += num->chunk[pos + i];
-        num->chunk[pos + i] = LOW(carry);
-        carry = (uint128_t)((int128_t)carry >> chunk_bits);
+        borrow = (uint64_t)__builtin_sub_overflow(num->chunk[pos + i], borrow, &num->chunk[pos + i]);
     }
 }
 
@@ -1173,12 +1170,13 @@ void num_ssm_add_mod(
     assert(num_1)
     assert(num_2)
 
-    uint128_t carry = 0;
+    uint64_t carry = 0;
     for(uint64_t i=0; i<n; i++)
     {
-        carry += (uint128_t)num_1->chunk[pos_1 + i] + num_2->chunk[pos_2 + i];
-        num_res->chunk[pos_res + i] = LOW(carry);
-        carry >>= chunk_bits;
+        uint64_t sum;
+        uint64_t c1 = (uint64_t)__builtin_add_overflow(num_1->chunk[pos_1 + i], num_2->chunk[pos_2 + i], &sum);
+        uint64_t c2 = (uint64_t)__builtin_add_overflow(sum, carry, &num_res->chunk[pos_res + i]);
+        carry = c1 | c2;
     }
 
     num_ssm_normalize(num_res, pos_res, n);
@@ -1203,12 +1201,13 @@ void num_ssm_sub_mod(
 
     num_ssm_denormalize(num_1, pos_1, n);
 
-    uint128_t carry = 0;
+    uint64_t borrow = 0;
     for(uint64_t i=0; i<n; i++)
     {
-        carry += (uint128_t)num_1->chunk[pos_1 + i] - num_2->chunk[pos_2 + i];
-        num_res->chunk[pos_res + i] = LOW(carry);
-        carry = (uint128_t)((int128_t)carry >> chunk_bits);
+        uint64_t diff;
+        uint64_t b1 = (uint64_t)__builtin_sub_overflow(num_1->chunk[pos_1 + i], num_2->chunk[pos_2 + i], &diff);
+        uint64_t b2 = (uint64_t)__builtin_sub_overflow(diff, borrow, &num_res->chunk[pos_res + i]);
+        borrow = b1 | b2;
     }
 
     num_ssm_normalize(num_1, pos_1, n);
@@ -1220,12 +1219,13 @@ void num_ssm_opposite(num_p num, uint64_t pos, uint64_t n)
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
 
-    int128_t carry = 1;
-    for(uint64_t i=0; i<n; i++)
+    uint64_t borrow = (uint64_t)__builtin_sub_overflow(1, num->chunk[pos], &num->chunk[pos]);
+    for(uint64_t i = 1; i < n; i++)
     {
-        carry -= num->chunk[pos + i];
-        num->chunk[pos + i] = LOW(carry);
-        carry = carry >> chunk_bits;
+        uint64_t diff;
+        uint64_t b1 = (uint64_t)__builtin_sub_overflow(0, num->chunk[pos + i], &diff);
+        uint64_t b2 = (uint64_t)__builtin_sub_overflow(diff, borrow, &num->chunk[pos + i]);
+        borrow = b1 | b2;
     }
     num->chunk[pos + n - 1]++;
     num_ssm_normalize(num, pos, n);
@@ -1319,7 +1319,7 @@ void num_ssm_depad_wrap(num_p num_aux_1,
         num_ssm_sub_mod(num_res, 0, num_res, 0, num_aux_1, 0, n0);
     }
     num_set_count(num_res, n0);
-    while(num_normalize(num_res)) {};
+    num_normalize(num_res);
 }
 
 // operation can be done in place if num_res is the same as num and pos_res is pos
@@ -2222,7 +2222,7 @@ static num_p num_div_mod_bz_rec(
             &f[1],
             (bool)(memoize || i)
         );
-        while(num_normalize(num_1)) {};
+        num_normalize(num_1);
 
         if(num_is_zero(num_q_tmp))
         {
@@ -2295,7 +2295,7 @@ static num_p num_div_mod_bz(num_p num_1, num_p num_2)
         num_span(&num_1_1, num_1, n_1 - (2 * n_2), num_1->count);
 
         num_p num_q_tmp = num_div_mod_bz_rec(num_aux, &num_1_1, num_2, f, true);
-        while(num_normalize(num_1)) {};
+        num_normalize(num_1);
         num_p num_tmp = num_add_offset(num_q_tmp, n_2, num_q, 0);
         num_free(num_q);
         num_q = num_tmp;

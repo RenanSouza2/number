@@ -32,7 +32,7 @@ STATIC num_p num_expand_to(num_p num, uint64_t target);
 STATIC uint64_t num_chunk_get(num_p num, uint64_t pos);
 STATIC num_p num_chunk_set(num_p num, uint64_t pos, uint64_t value);
 
-STATIC bool num_normalize(num_p num);
+STATIC num_p num_normalize(num_p num);
 
 STATIC num_p num_wrap_dec(const char str[]);
 STATIC num_p num_wrap_hex(const char str[]);

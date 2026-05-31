@@ -287,13 +287,12 @@ static void test_num_normalize(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_NUM_NORMALIZE(TAG, NUM_BEF, RES, NUM_AFT)  \
+    #define TEST_NUM_NORMALIZE(TAG, NUM_BEF, NUM_AFT)       \
     {                                                       \
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
             num_p num = num_create_immed(ARG_OPEN NUM_BEF); \
-            bool res = num_normalize(num);                  \
-            assert(res == (RES));                           \
+            num_normalize(num);                             \
             assert(num_immed(num, ARG_OPEN NUM_AFT));       \
         }                                                   \
         TEST_CASE_CLOSE                                     \
@@ -301,28 +300,27 @@ static void test_num_normalize(bool show)
 
     TEST_NUM_NORMALIZE(1,
         (0),
-        false,
         (0)
     );
     TEST_NUM_NORMALIZE(2,
         (1, 1),
-        false,
         (1, 1)
     );
     TEST_NUM_NORMALIZE(3,
         (1, 0),
-        true,
         (0)
     );
     TEST_NUM_NORMALIZE(4,
         (2, 0, 1),
-        true,
         (1, 1)
     );
     TEST_NUM_NORMALIZE(5,
         (2, 0, 0),
-        true,
-        (1, 0)
+        (0)
+    );
+    TEST_NUM_NORMALIZE(6,
+        (3, 0, 0, 1),
+        (1, 1)
     );
 
     #undef TEST_NUM_NORMALIZE

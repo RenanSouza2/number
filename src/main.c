@@ -776,10 +776,12 @@ int main()
     // flt_num_pi_3(1000);
     // mem_1(21);
 
-    // clu_log_level_set(CLU_LOG_DYNAMIC);
-    // uint64_t base = 20;
-
+    #ifdef DEBUG
+    clu_log_level_set(CLU_LOG_DYNAMIC);
+    uint64_t base = 20;
+    #else
     uint64_t base = 26;
+    #endif
 
     num_p num_1 = num_generate_1(base, 2);
     num_p num_2 = num_add(num_copy(num_1), num_wrap(1));
