@@ -2,13 +2,10 @@ ROOT = $(shell git rev-parse --show-toplevel)
 include $(ROOT)/makefiles/flags.mk
 include $(ROOT)/makefiles/vars.mk
 
-FLAGS := $(subst -std=c11,-std=c2x,$(FLAGS))
 
 
-
-build: main.o
-
-dbg: debug.o
+build b: main.o
+dbg d: debug.o
 
 
 
