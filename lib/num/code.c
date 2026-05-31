@@ -336,11 +336,16 @@ void num_display_full(const char tag[], num_p num)
 
 
 
+#ifdef DEBUG
+num_p num_create_dbg(uint64_t size, uint64_t count, char const func[], uint64_t line)
+#else
 num_p num_create(uint64_t size, uint64_t count)
+#endif
 {
     assert(size >= count);
     size = size ? size : 1;
-    num_p num = calloc(1, sizeof(num_t) + (size * sizeof(uint64_t)));
+    uint64_t total_size = sizeof(num_t) + (size * sizeof(uint64_t));
+    num_p num = calloc_tag(1, total_size, "f|%s|l|%d", func, line);
     assert(num);
 
     *num = (num_t)
@@ -351,16 +356,6 @@ num_p num_create(uint64_t size, uint64_t count)
     };
     return num;
 }
-
-// static num_p num_create_delete(uint64_t size, uint64_t count, char const func[], uint64_t line)
-// {
-//     num_p num = num_create(size, count);
-//     clu_handler_unregister(num, __func__, __LINE__);
-//     clu_handler_register(num, "f|%s|l|%d", func, line);
-//     return num;
-// }
-
-// #define num_create(size, count) num_create_delete(size, count, __func__, __LINE__)
 
 num_p num_expand_to(num_p num, uint64_t target)
 {
@@ -992,12 +987,9 @@ static num_p num_sqr_classic_buffer(num_p num_res, num_p num)
     CLU_HANDLER_IS_SAFE(num)
     assert(num_res)
     assert(num)
+    assert(num_res->size >= 2 * num->count)
 
-    if(num->count == 0)
-    {
-        return num_res;
-    }
-
+    num_set_count(num_res, 0);
     for(uint64_t i=0; i<num->count; i++)
     {
         uint64_t value = num->chunk[i];
@@ -1800,6 +1792,7 @@ static void num_ssm_pointwise_product(num_ssm_t num_ssm_1, num_ssm_t num_ssm_2)
     assert(block_count * n == num_ssm_1.num_fft->size);
 
     num_p num_aux = num_create(2 * n, 0);
+    num_aux->cannot_expand = true;
     for(uint64_t i=0; i<block_count; i++)
     {
         num_ssm_mul_mod_span(num_aux, num_ssm_1.num_fft, num_ssm_2.num_fft, i * n, n);
@@ -1851,6 +1844,8 @@ num_p num_mul_ssm_bwd_transform(num_p num_fft, uint64_t count)
     ssm_params_t params = ssm_get_params(count);
     num_p num_aux_1 = num_create(params.n, 0);
     num_p num_aux_2 = num_create(2 * params.n, 0);
+    num_aux_1->cannot_expand = true;
+    num_aux_2->cannot_expand = true;
     num_p num_tmp = num_mul_ssm_bwd_transform_rec(num_aux_1, num_aux_2, num_fft, params.n);
     num_free(num_aux_1);
 
@@ -1893,21 +1888,22 @@ num_p num_mul_finish(num_p num_1, num_ssm_t num_ssm_2)
 
 
 
-static void num_ssm_sqr_mod_span(num_p num, uint64_t pos, uint64_t n)
+static void num_ssm_sqr_mod_span(num_p num_aux, num_p num, uint64_t pos, uint64_t n)
 {
+    CLU_HANDLER_IS_SAFE(num_aux)
     CLU_HANDLER_IS_SAFE(num)
+    assert(num_aux)
     assert(num)
+    assert(num_aux->size >= 2 * n)
 
     num_t num_aux_piece;
     num_span(&num_aux_piece, num, pos, pos + n);
 
-    num_p num_aux = num_create(2 * n, 0);
     num_sqr_classic_buffer(num_aux, &num_aux_piece);
 
     memmove(&num_aux->chunk[n], &num_aux->chunk[n-1], n * sizeof(uint64_t));
     num_aux->chunk[n-1] = 0;
     num_ssm_sub_mod(num, pos, num_aux, 0, num_aux, n, n);
-    num_free(num_aux);
 }
 
 
@@ -2022,10 +2018,13 @@ num_p num_sqr_ssm(num_p num)
     uint64_t n = ssm_get_last_n(count);
     uint64_t block_count = num_ssm.num_fft->size / n;
     assert(block_count * n == num_ssm.num_fft->size);
+    num_p num_aux = num_create(2 * n, 0);
+    num_aux->cannot_expand = true;
     for(uint64_t i=0; i<block_count; i++)
     {
-        num_ssm_sqr_mod_span(num_ssm.num_fft, i * n, n);
+        num_ssm_sqr_mod_span(num_aux, num_ssm.num_fft, i * n, n);
     }
+    num_free(num_aux);
 
     return num_mul_ssm_bwd_transform(num_ssm.num_fft, count);
 }

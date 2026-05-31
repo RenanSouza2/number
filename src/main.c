@@ -777,9 +777,9 @@ int main()
     // mem_1(21);
 
     // clu_log_level_set(CLU_LOG_DYNAMIC);
-    uint64_t base = 20;
+    // uint64_t base = 20;
 
-    // uint64_t base = 26;
+    uint64_t base = 26;
 
     num_p num_1 = num_generate_1(base, 2);
     num_p num_2 = num_add(num_copy(num_1), num_wrap(1));
@@ -801,3 +801,5 @@ int main()
 //      logs 20: 1269092
 // v1:  logs 20:  689072
 // v2:  logs 20:  226904
+// 69519
+//   414
