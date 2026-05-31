@@ -23,7 +23,7 @@ num_p num_create_dbg(uint64_t size, uint64_t count, char const func[], uint64_t 
 num_p num_create_dirty_dbg(uint64_t size, uint64_t count, char const func[], uint64_t line);
 
 #define num_create(SIZE, COUNT) num_create_dbg(SIZE, COUNT, __func__, __LINE__);
-#define num_create_dirty(SIZE) num_create_dirty_dbg(SIZE, __func__, __LINE__);
+#define num_create_dirty(SIZE, COUNT) num_create_dirty_dbg(SIZE, COUNT, __func__, __LINE__);
 
 #else
 

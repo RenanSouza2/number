@@ -230,33 +230,6 @@ static void test_num_expand_to(bool show)
     TEST_FN_CLOSE
 }
 
-static void test_num_chunk_get(bool show)
-{
-    TEST_FN_OPEN
-
-    #define TEST_NUM_CHUNK_GET(TAG, NUM, POS, RES)      \
-    {                                                   \
-        TEST_CASE_OPEN(TAG)                             \
-        {                                               \
-            num_p num = num_create_immed(ARG_OPEN NUM); \
-            uint64_t value = num_chunk_get(num, POS);   \
-            assert(uint64(value, RES));                 \
-            num_free(num);                              \
-        }                                               \
-        TEST_CASE_CLOSE                                 \
-    }
-
-    TEST_NUM_CHUNK_GET(1, (0), 0, 0);
-    TEST_NUM_CHUNK_GET(2, (0), 1, 0);
-    TEST_NUM_CHUNK_GET(3, (2, 1, 2), 0, 2);
-    TEST_NUM_CHUNK_GET(4, (2, 1, 2), 1, 1);
-    TEST_NUM_CHUNK_GET(5, (2, 1, 2), 2, 0);
-
-    #undef TEST_NUM_CHUNK_GET
-
-    TEST_FN_CLOSE
-}
-
 static void test_num_chunk_set(bool show)
 {
     TEST_FN_OPEN
@@ -997,7 +970,7 @@ static void test_num_ssm_add_mod(bool show)
         {                                                       \
             num_p num = num_create_immed(ARG_OPEN NUM);         \
             num_p num_res = num_create(N, N);                   \
-            num_ssm_add_mod(num_res, 0, num, POS_1, num, POS_2, N);  \
+            num_ssm_add_mod_(num_res, 0, num, POS_1, num, POS_2, N);  \
             assert(num_immed(num_res, ARG_OPEN RES));           \
             assert(num_immed(num, ARG_OPEN NUM));               \
         }                                                       \
@@ -1044,7 +1017,7 @@ static void test_num_ssm_sub_mod(bool show)
         {                                                           \
             num_p num = num_create_immed(ARG_OPEN NUM);             \
             num_p num_res = num_create(N, N);                       \
-            num_ssm_sub_mod(num_res, 0, num, POS_1, num, POS_2, N); \
+            num_ssm_sub_mod_(num_res, 0, num, POS_1, num, POS_2, N); \
             assert(num_immed(num_res, ARG_OPEN RES));               \
             assert(num_immed(num, ARG_OPEN NUM));                   \
         }                                                           \
@@ -2710,7 +2683,6 @@ static void test_num()
 
     test_num_create(show);
     test_num_expand_to(show);
-    test_num_chunk_get(show);
     test_num_chunk_set(show);
 
     test_num_normalize(show);
