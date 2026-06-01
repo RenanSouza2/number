@@ -28,7 +28,7 @@ int64_t int_rand(int64_t min, int64_t max)
 }
 
 
-// NOLINTBEGIN(bugprone-easily-swappable-parameters)
+
 static flt_num_t flt_num_create_variadic(
     int64_t exponent,
     uint64_t size,
@@ -36,7 +36,6 @@ static flt_num_t flt_num_create_variadic(
     uint64_t n,
     va_list *args
 )
-// NOLINTEND(bugprone-easily-swappable-parameters)
 {
     sig_num_t sig = sig_num_create_variadic(signal, n, args);
 
@@ -344,7 +343,6 @@ flt_num_t flt_num_copy(flt_num_t flt) // TODO TEST
     return flt_num_create(flt.exponent, flt.size, sig);
 }
 
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 flt_num_t flt_num_wrap(int64_t value, uint64_t size) // TODO TEST
 {
     sig_num_t sig = sig_num_wrap(value);

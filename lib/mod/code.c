@@ -45,7 +45,6 @@ void mod_num_display(char tag[], mod_num_t mod)
 
 
 
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 mod_num_t mod_num_create(num_p num, num_p p)
 {
     CLU_HANDLER_IS_SAFE(num);
@@ -163,7 +162,6 @@ mod_num_t mod_num_div(mod_num_t mod_1, mod_num_t mod_2)
 {
     assert(!num_is_zero(mod_2.num));
 
-    // NOLINTNEXTLINE(readability-isolate-declaration)
     num_p num_q, num_r;
     num_div_mod(&num_q, &num_r, num_copy(mod_1.num), num_copy(mod_2.num));
     if(num_is_zero(num_r))

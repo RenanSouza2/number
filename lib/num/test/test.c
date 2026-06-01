@@ -230,33 +230,6 @@ static void test_num_expand_to(bool show)
     TEST_FN_CLOSE
 }
 
-static void test_num_chunk_get(bool show)
-{
-    TEST_FN_OPEN
-
-    #define TEST_NUM_CHUNK_GET(TAG, NUM, POS, RES)      \
-    {                                                   \
-        TEST_CASE_OPEN(TAG)                             \
-        {                                               \
-            num_p num = num_create_immed(ARG_OPEN NUM); \
-            uint64_t value = num_chunk_get(num, POS);   \
-            assert(uint64(value, RES));                 \
-            num_free(num);                              \
-        }                                               \
-        TEST_CASE_CLOSE                                 \
-    }
-
-    TEST_NUM_CHUNK_GET(1, (0), 0, 0);
-    TEST_NUM_CHUNK_GET(2, (0), 1, 0);
-    TEST_NUM_CHUNK_GET(3, (2, 1, 2), 0, 2);
-    TEST_NUM_CHUNK_GET(4, (2, 1, 2), 1, 1);
-    TEST_NUM_CHUNK_GET(5, (2, 1, 2), 2, 0);
-
-    #undef TEST_NUM_CHUNK_GET
-
-    TEST_FN_CLOSE
-}
-
 static void test_num_chunk_set(bool show)
 {
     TEST_FN_OPEN
@@ -287,13 +260,12 @@ static void test_num_normalize(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_NUM_NORMALIZE(TAG, NUM_BEF, RES, NUM_AFT)  \
+    #define TEST_NUM_NORMALIZE(TAG, NUM_BEF, NUM_AFT)       \
     {                                                       \
         TEST_CASE_OPEN(TAG)                                 \
         {                                                   \
             num_p num = num_create_immed(ARG_OPEN NUM_BEF); \
-            bool res = num_normalize(num);                  \
-            assert(res == (RES));                           \
+            num_normalize(num);                             \
             assert(num_immed(num, ARG_OPEN NUM_AFT));       \
         }                                                   \
         TEST_CASE_CLOSE                                     \
@@ -301,28 +273,27 @@ static void test_num_normalize(bool show)
 
     TEST_NUM_NORMALIZE(1,
         (0),
-        false,
         (0)
     );
     TEST_NUM_NORMALIZE(2,
         (1, 1),
-        false,
         (1, 1)
     );
     TEST_NUM_NORMALIZE(3,
         (1, 0),
-        true,
         (0)
     );
     TEST_NUM_NORMALIZE(4,
         (2, 0, 1),
-        true,
         (1, 1)
     );
     TEST_NUM_NORMALIZE(5,
         (2, 0, 0),
-        true,
-        (1, 0)
+        (0)
+    );
+    TEST_NUM_NORMALIZE(6,
+        (3, 0, 0, 1),
+        (1, 1)
     );
 
     #undef TEST_NUM_NORMALIZE
@@ -827,6 +798,8 @@ static void test_num_sub_offset(bool show)
                 num_sub_offset(num_1, POS, num_2);         \
             }                                               \
             TEST_REVERT_CLOSE                               \
+            num_free(num_1);                                \
+            num_free(num_2);                                \
         }                                                   \
         TEST_CASE_CLOSE                                     \
     }
@@ -875,6 +848,7 @@ static void test_num_shl_core(bool show)
             num_shl_core(num, 64);
         }
         TEST_REVERT_CLOSE
+        num_free(num);
     }
     TEST_CASE_CLOSE
 
@@ -917,6 +891,7 @@ static void test_num_shr_core(bool show)
             num_shr_core(num, 64);
         }
         TEST_REVERT_CLOSE
+        num_free(num);
     }
     TEST_CASE_CLOSE
 
@@ -995,7 +970,7 @@ static void test_num_ssm_add_mod(bool show)
         {                                                       \
             num_p num = num_create_immed(ARG_OPEN NUM);         \
             num_p num_res = num_create(N, N);                   \
-            num_ssm_add_mod(num_res, 0, num, POS_1, num, POS_2, N);  \
+            num_ssm_add_mod_(num_res, 0, num, POS_1, num, POS_2, N);  \
             assert(num_immed(num_res, ARG_OPEN RES));           \
             assert(num_immed(num, ARG_OPEN NUM));               \
         }                                                       \
@@ -1042,7 +1017,7 @@ static void test_num_ssm_sub_mod(bool show)
         {                                                           \
             num_p num = num_create_immed(ARG_OPEN NUM);             \
             num_p num_res = num_create(N, N);                       \
-            num_ssm_sub_mod(num_res, 0, num, POS_1, num, POS_2, N); \
+            num_ssm_sub_mod_(num_res, 0, num, POS_1, num, POS_2, N); \
             assert(num_immed(num_res, ARG_OPEN RES));               \
             assert(num_immed(num, ARG_OPEN NUM));                   \
         }                                                           \
@@ -1360,7 +1335,9 @@ static void test_num_ssm_shl_mod(bool show)
         TEST_CASE_OPEN(TAG)                             \
         {                                               \
             num_p num = num_create_immed(ARG_OPEN NUM); \
-            num_ssm_shl_mod(num, 0, 3, BITS);           \
+            num_p num_aux = num_create(6, 0);           \
+            num_ssm_shl_mod(num_aux, num, 0, 3, BITS);  \
+            num_free(num_aux);                          \
             assert(num_immed(num, ARG_OPEN RES));       \
         }                                               \
         TEST_CASE_CLOSE                                 \
@@ -1437,7 +1414,9 @@ static void test_num_ssm_shr_mod(bool show)
         TEST_CASE_OPEN(TAG)                             \
         {                                               \
             num_p num = num_create_immed(ARG_OPEN NUM); \
-            num_ssm_shr_mod(num, 0, 3, BITS);           \
+            num_p num_aux = num_create(6, 0);           \
+            num_ssm_shr_mod(num_aux, num, 0, 3, BITS);  \
+            num_free(num_aux);                          \
             assert(num_immed(num, ARG_OPEN RES));       \
         }                                               \
         TEST_CASE_CLOSE                                 \
@@ -1525,7 +1504,9 @@ static void test_num_ssm_fft(bool show)
                 .Q = Q,                                 \
                 .n = (Nv),                              \
             };                                          \
-            num_ssm_fft_fwd(num, &p);                   \
+            num_p num_aux = num_create(2 * (Nv), 0);    \
+            num_ssm_fft_fwd(num_aux, num, &p);          \
+            num_free(num_aux);                          \
             assert(num_immed(num, ARG_OPEN RES));       \
         }                                               \
         TEST_CASE_CLOSE                                 \
@@ -2213,6 +2194,8 @@ static void test_num_div_mod(bool show)
             num_div_mod(&num_q, &num_r, num_1, num_2);
         }
         TEST_REVERT_CLOSE
+        num_free(num_1);
+        num_free(num_2);
     }
     TEST_CASE_CLOSE
 
@@ -2333,6 +2316,7 @@ static void test_num_div_mod_uint(bool show)
             num_div_mod_uint(num, 0);
         }
         TEST_REVERT_CLOSE
+        num_free(num);
     }
     TEST_CASE_CLOSE
 
@@ -2456,8 +2440,10 @@ static void test_fuzz_num_ssm_sh(bool show)
             num_p num = num_create_rand(N);                         \
             num->chunk[(N) - 1] = 0;                                \
             num_p num_res = num_copy(num);                          \
-            num_ssm_shl_mod(num_res, 0, N, BITS);                   \
-            num_ssm_shr_mod(num_res, 0, N, BITS);                   \
+            num_p num_aux = num_create(2 *(N), 0);                  \
+            num_ssm_shl_mod(num_aux, num_res, 0, N, BITS);          \
+            num_ssm_shr_mod(num_aux, num_res, 0, N, BITS);          \
+            num_free(num_aux);                                      \
             if(!num_eq_dbg(num_copy(num_res), num_copy(num)))       \
             {                                                       \
                 printf("\ncase: (n: %d) (bits: %d)", N, BITS);      \
@@ -2502,8 +2488,10 @@ static void test_fuzz_num_ssm_fft(bool show)
             num_ssm_pad(num, num_0, &p);                                \
             num_free(num_0);                                            \
             num_p num_res = num_copy(num);                              \
-            num_ssm_fft_fwd(num_res, &p);                               \
-            num_ssm_fft_inv(num_res, &p);                               \
+            num_p num_aux = num_create(2 * (Nv), 0);                    \
+            num_ssm_fft_fwd(num_aux, num_res, &p);                      \
+            num_ssm_fft_inv(num_aux, num_res, &p);                      \
+            num_free(num_aux);                                          \
             if(!num_eq_dbg(num_copy(num_res), num_copy(num)))           \
             {                                                           \
                 printf("\ncase: (K: %d) (n: %d)", (Kv), (Nv));          \
@@ -2695,7 +2683,6 @@ static void test_num()
 
     test_num_create(show);
     test_num_expand_to(show);
-    test_num_chunk_get(show);
     test_num_chunk_set(show);
 
     test_num_normalize(show);

@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -209,7 +210,6 @@ uint64_t uint_from_char(char c)
     return res;
 }
 
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 static uint64_t uint_from_str(const char str[], uint64_t size, uint64_t base) // TODO test
 {
     uint64_t value = 0;
@@ -225,7 +225,10 @@ static uint64_t uint_from_str(const char str[], uint64_t size, uint64_t base) //
 
 static uint64_t uint_read(FILE *fp, uint64_t size, uint64_t base)
 {
-    char str[size];
+    constexpr uint64_t size_max = 18;
+    assert(size <= size_max);
+
+    char str[size_max];
     for(uint64_t i=0; i<size; i++)
     {
         str[i] = (char)fgetc(fp);
@@ -333,11 +336,16 @@ void num_display_full(const char tag[], num_p num)
 
 
 
+#ifdef DEBUG
+num_p num_create_dbg(uint64_t size, uint64_t count, char const func[], uint64_t line)
+#else
 num_p num_create(uint64_t size, uint64_t count)
+#endif
 {
     assert(size >= count);
     size = size ? size : 1;
-    num_p num = calloc(1, sizeof(num_t) + (size * sizeof(uint64_t)));
+    uint64_t total_size = sizeof(num_t) + (size * sizeof(uint64_t));
+    num_p num = calloc_tag(1, total_size, "f|%s|l|%d", func, line);
     assert(num);
 
     *num = (num_t)
@@ -349,15 +357,26 @@ num_p num_create(uint64_t size, uint64_t count)
     return num;
 }
 
-// num_p num_create_delete(uint64_t size, uint64_t count, char const func[], uint64_t line)
-// {
-//     num_p num = num_create(size, count);
-//     clu_handler_unregister(num, __func__, __LINE__);
-//     clu_handler_register(num, "f|%s|l|%d", func, line);
-//     return num;
-// }
+#ifdef DEBUG
+num_p num_create_dirty_dbg(uint64_t size, uint64_t count, char const func[], uint64_t line)
+#else
+num_p num_create_dirty(uint64_t size, uint64_t count)
+#endif
+{
+    assert(size >= count);
+    size = size ? size : 1;
+    uint64_t total_size = sizeof(num_t) + (size * sizeof(uint64_t));
+    num_p num = malloc_tag(total_size, "f|%s|l|%d", func, line);
+    assert(num);
 
-// #define num_create(size, count) num_create_delete(size, count, __func__, __LINE__)
+    *num = (num_t)
+    {
+        .size = size,
+        .count = count,
+        .chunk = (chunk_p)&num[1]
+    };
+    return num;
+}
 
 num_p num_expand_to(num_p num, uint64_t target)
 {
@@ -396,13 +415,13 @@ static void num_set_count(num_p num, uint64_t count)
     memset(&num->chunk[count], 0, (num->size - count) * sizeof(uint64_t));
 }
 
-uint64_t num_chunk_get(num_p num, uint64_t pos)
-{
-    CLU_HANDLER_IS_SAFE(num);
-    assert(num);
+// uint64_t num_chunk_get(num_p num, uint64_t pos)
+// {
+//     CLU_HANDLER_IS_SAFE(num);
+//     assert(num);
 
-    return pos < num->count ? num->chunk[pos] : 0;
-}
+//     return pos < num->count ? num->chunk[pos] : 0;
+// }
 
 num_p num_chunk_set(num_p num, uint64_t pos, uint64_t value)
 {
@@ -428,24 +447,16 @@ num_p num_chunk_set(num_p num, uint64_t pos, uint64_t value)
     return num;
 }
 
-// returns true if NUM had to be corrected
-bool num_normalize(num_p num)
+num_p num_normalize(num_p num)
 {
     CLU_HANDLER_IS_SAFE(num);
     assert(num);
 
-    if(num->count == 0)
-    {
-        return false;
+    while (num->count > 0 && num->chunk[num->count-1] == 0) {
+        num->count--;
     }
 
-    if(num->chunk[num->count-1] != 0)
-    {
-        return false;
-    }
-
-    num->count--;
-    return true;
+    return num;
 }
 
 num_p num_head_grow(num_p num, uint64_t count) // TODO test
@@ -495,7 +506,6 @@ void num_head_trim(num_p num, uint64_t count) // TODO test
     num->count = count_res;
 }
 
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 void num_break(num_p *out_num_hi, num_p *out_num_lo, num_p num, uint64_t count)
 {
     CLU_HANDLER_IS_SAFE(num);
@@ -516,12 +526,12 @@ void num_break(num_p *out_num_hi, num_p *out_num_lo, num_p num, uint64_t count)
     }
 
     uint64_t size = num->count - count;
-    num_p num_hi = num_create(size, size);
+    num_p num_hi = num_create_dirty(size, size);
     memcpy(num_hi->chunk, &num->chunk[count], size * sizeof(uint64_t));
 
     memset(&num->chunk[count], 0, (num->size - count) * sizeof(uint64_t));
     num->count = count;
-    while(num_normalize(num)) {};
+    num_normalize(num);
 
     *out_num_hi = num_hi;
     *out_num_lo = num;
@@ -546,20 +556,6 @@ static void num_span(num_p num_res, num_p num, uint64_t pos_init, uint64_t pos_m
         .cannot_expand = true
     };
     // while(num_normalize(num_res));
-}
-
-static void num_static(num_p num, uint64_t chunk[], uint64_t size)
-{
-    memset(chunk, 0, size);
-    *num = (num_t)
-    {
-        .cannot_expand = true,
-        .count = 0,
-        .size = size,
-        .chunk = chunk
-    };
-    CLU_HANDLER_REGISTER_STATIC(num);
-    num_set_count(num, 0);
 }
 
 
@@ -614,7 +610,7 @@ num_p num_wrap_dec(const char str[])
         num = num_chunk_set(num, pos, value);
     }
 
-    while(num_normalize(num));
+    num_normalize(num);
     return num_base_from(num, chunk_base);
 }
 
@@ -641,7 +637,7 @@ num_p num_wrap_hex(const char str[])
         num = num_chunk_set(num, pos, value);
     }
 
-    while(num_normalize(num)) {};
+    num_normalize(num);
     return num;
 }
 
@@ -689,7 +685,7 @@ num_p num_read_dec(const char file_name[])
     }
     fclose(fp);
 
-    while(num_normalize(num)) {};
+    num_normalize(num);
     return num_base_from(num, chunk_base);
 }
 
@@ -710,7 +706,7 @@ num_p num_copy(num_p num) // TODO TEST
     CLU_HANDLER_IS_SAFE(num);
     assert(num);
 
-    num_p num_res = num_create(num->count, num->count);
+    num_p num_res = num_create_dirty(num->count, num->count);
     memcpy(num_res->chunk, num->chunk, num->count * sizeof(uint64_t));
 
     return num_res;
@@ -726,18 +722,15 @@ void num_free(num_p num)
 
 
 
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 num_p num_add_uint_offset(num_p num, uint64_t pos, uint64_t value)
 {
     CLU_HANDLER_IS_SAFE(num);
     assert(num);
 
-    uint128_t carry = value;
+    uint64_t carry = value;
     for(uint64_t i=pos; i<num->count && carry; i++)
     {
-        carry += num->chunk[i];
-        num->chunk[i] = LOW(carry);
-        carry >>= chunk_bits;
+        carry = (uint64_t)__builtin_add_overflow(num->chunk[i], carry, &num->chunk[i]);
     }
 
     if(carry)
@@ -749,29 +742,23 @@ num_p num_add_uint_offset(num_p num, uint64_t pos, uint64_t value)
     return num;
 }
 
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 num_p num_sub_uint_offset(num_p num, uint64_t pos, uint64_t value)
 {
     CLU_HANDLER_IS_SAFE(num);
     assert(num);
 
-    uint128_t carry = -(uint128_t)value;
-    for(uint64_t i=pos; i<num->count && carry; i++)
+    uint64_t borrow = value;
+    for(uint64_t i = pos; i < num->count && borrow; i++)
     {
-        carry += num->chunk[i];
-        num->chunk[i] = LOW(carry);
-        carry = (uint128_t)((int128_t)carry >> chunk_bits);
+        borrow = (uint64_t)__builtin_sub_overflow(num->chunk[i], borrow, &num->chunk[i]);
     }
-    assert(carry == 0);
+    assert(borrow == 0);
 
-    while(num_normalize(num)) {};
+    num_normalize(num);
     return num;
 }
 
 // keeps NUM
-// NUM_RES must be reseted before
-// num_res->size >= pos_res + num->count + 1 - pos
-// NOLINTBEGIN(bugprone-easily-swappable-parameters)
 static num_p num_add_mul_uint_offset(
     num_p num_res,
     uint64_t pos_res,
@@ -779,26 +766,54 @@ static num_p num_add_mul_uint_offset(
     uint64_t pos,
     uint64_t value
 )
-// NOLINTEND(bugprone-easily-swappable-parameters)
 {
     CLU_HANDLER_IS_SAFE(num_res)
     CLU_HANDLER_IS_SAFE(num)
     assert(num_res)
     assert(num)
-    assert(num_res->size >= pos_res + num->count + 1 - pos)
 
-    if(value == 0)
+    if(value == 0 || pos >= num->count)
     {
         return num_res;
     }
 
-    for(uint64_t i=pos; i<num->count; i++)
+    uint64_t iter_count = num->count - pos;
+    uint64_t target_count = pos_res + iter_count;
+
+    if(num_res->size <= target_count)
     {
-        uint128_t u = MUL(num->chunk[i], value);
-        num_res = num_add_uint_offset(num_res, pos_res + i - pos, LOW(u));
-        num_res = num_add_uint_offset(num_res, pos_res + i - pos + 1, HIGH(u));
+        num_res = num_expand_to(num_res, target_count + 1);
     }
-    return num_res;
+
+    if(num_res->count < target_count)
+    {
+        memset(&num_res->chunk[num_res->count], 0, (target_count - num_res->count) * sizeof(uint64_t));
+        num_res->count = target_count;
+    }
+
+    uint64_t carry = 0;
+
+    uint64_t * restrict dest = num_res->chunk;
+    const uint64_t * restrict src = num->chunk;
+
+    for(uint64_t i = 0; i < iter_count; i++)
+    {
+        uint64_t dest_idx = pos_res + i;
+
+        uint128_t u = MUL(src[pos + i], value);
+        u += dest[dest_idx];
+        u += carry;
+
+        dest[dest_idx] = LOW(u);
+        carry = HIGH(u);
+    }
+
+    if(carry)
+    {
+        num_res = num_add_uint_offset(num_res, target_count, carry);
+    }
+
+    return num_normalize(num_res);
 }
 
 // BITS shoud be less than 64
@@ -910,17 +925,18 @@ static num_p num_add_offset(num_p num_1, uint64_t pos_1, num_p num_2, uint64_t p
 
     num_1 = num_expand_to(num_1, count_max);
 
-    uint128_t carry = 0;
+    uint64_t carry = 0;
     for(uint64_t i=pos_2; i<num_2->count; i++)
     {
-        carry += (uint128_t)num_1->chunk[delta + i] + num_2->chunk[i];
-        num_1->chunk[delta + i] = LOW(carry);
-        carry >>= chunk_bits;
+        uint64_t sum;
+        uint64_t c1 = (uint64_t)__builtin_add_overflow(num_1->chunk[delta + i], num_2->chunk[i], &sum);
+        uint64_t c2 = (uint64_t)__builtin_add_overflow(sum, carry, &num_1->chunk[delta + i]);
+        carry = c1 | c2; // Combine overflow states
     }
 
     if(carry)
     {
-        num_1 = num_add_uint_offset(num_1, count_max, LOW(carry));
+        num_1 = num_add_uint_offset(num_1, count_max, carry);
     }
     else
     {
@@ -942,12 +958,24 @@ num_p num_sub_offset(num_p num_1, uint64_t pos_1, num_p num_2)
     assert(num_1)
     assert(num_2)
 
-    for(uint64_t i = num_2->count-1; i!=UINT64_MAX; i--)
+    uint64_t borrow = 0;
+    uint64_t i = 0;
+    for(; i < num_2->count; i++)
     {
-        num_1 = num_sub_uint_offset(num_1, pos_1 + i, num_2->chunk[i]);
+        uint64_t diff;
+        uint64_t b1 = (uint64_t)__builtin_sub_overflow(num_1->chunk[pos_1 + i], num_2->chunk[i], &diff);
+        uint64_t b2 = (uint64_t)__builtin_sub_overflow(diff, borrow, &num_1->chunk[pos_1 + i]);
+        borrow = b1 | b2;
     }
 
-    return num_1;
+    // 2. Propagate any leftover borrow upwards
+    for(uint64_t j = pos_1 + i; j < num_1->count && borrow; j++)
+    {
+        borrow = (uint64_t)__builtin_sub_overflow(num_1->chunk[j], borrow, &num_1->chunk[j]);
+    }
+    assert(borrow == 0);
+
+    return num_normalize(num_1);
 }
 
 
@@ -1002,20 +1030,15 @@ static num_p num_mul_classic_buffer(num_p num_res, num_p num_1, num_p num_2)
     return num_res;
 }
 
-num_p num_mul_karatsuba_buffer(num_p num_res, num_p num_1, num_p num_2);
-
 static num_p num_sqr_classic_buffer(num_p num_res, num_p num)
 {
     CLU_HANDLER_IS_SAFE(num_res)
     CLU_HANDLER_IS_SAFE(num)
     assert(num_res)
     assert(num)
+    assert(num_res->size >= 2 * num->count)
 
-    if(num->count == 0)
-    {
-        return num_res;
-    }
-
+    num_set_count(num_res, 0);
     for(uint64_t i=0; i<num->count; i++)
     {
         uint64_t value = num->chunk[i];
@@ -1058,7 +1081,6 @@ static void num_display_span(num_p num, uint64_t pos, uint64_t count)
 }
 
 [[maybe_unused]]
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 void num_display_span_full(const char tag[], num_p num, uint64_t n, uint64_t k)
 {
     CLU_HANDLER_IS_SAFE(num)
@@ -1073,7 +1095,6 @@ void num_display_span_full(const char tag[], num_p num, uint64_t n, uint64_t k)
     }
 }
 
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 uint64_t ssm_bit_inv(uint64_t i, uint64_t K)
 {
     uint64_t res = 0;
@@ -1085,7 +1106,6 @@ uint64_t ssm_bit_inv(uint64_t i, uint64_t K)
     return res;
 }
 
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 static bool num_is_span_zero(num_p num, uint64_t pos, uint64_t count)
 {
     CLU_HANDLER_IS_SAFE(num)
@@ -1102,14 +1122,12 @@ static bool num_is_span_zero(num_p num, uint64_t pos, uint64_t count)
     return true;
 }
 
-// NOLINTBEGIN(bugprone-easily-swappable-parameters)
 static int64_t num_ssm_cmp_uint_offset(
     num_p num,
     uint64_t pos,
     uint64_t value,
     uint64_t n
 )
-// NOLINTEND(bugprone-easily-swappable-parameters)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
@@ -1133,33 +1151,27 @@ static int64_t num_ssm_cmp_uint_offset(
     return 0;
 }
 
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 static void num_ssm_add_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value)
 {
-    CLU_HANDLER_IS_SAFE(num)
-    assert(num)
+    CLU_HANDLER_IS_SAFE(num);
+    assert(num);
 
-    uint128_t carry = value;
-    for(uint64_t i=0; i<n && carry; i++)
+    uint64_t carry = value;
+    for(uint64_t i = 0; i < n && carry; i++)
     {
-        carry += num->chunk[pos + i];
-        num->chunk[pos + i] = LOW(carry);
-        carry = carry >> chunk_bits;
+        carry = (uint64_t)__builtin_add_overflow(num->chunk[pos + i], carry, &num->chunk[pos + i]);
     }
 }
 
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 static void num_ssm_sub_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
 
-    uint128_t carry = -(uint128_t)value;
-    for(uint64_t i=0; i<n && carry; i++)
+    uint64_t borrow = value;
+    for(uint64_t i = 0; i < n && borrow; i++)
     {
-        carry += num->chunk[pos + i];
-        num->chunk[pos + i] = LOW(carry);
-        carry = (uint128_t)((int128_t)carry >> chunk_bits);
+        borrow = (uint64_t)__builtin_sub_overflow(num->chunk[pos + i], borrow, &num->chunk[pos + i]);
     }
 }
 
@@ -1189,8 +1201,7 @@ static void num_ssm_denormalize(num_p num, uint64_t pos, uint64_t n)
     num_ssm_add_uint(num, pos + n - 1, 1, 1);
 }
 
-// NOLINTBEGIN(bugprone-easily-swappable-parameters)
-void num_ssm_add_mod(
+void num_ssm_add_mod_(
     num_p num_res,
     uint64_t pos_res,
     num_p num_1,
@@ -1199,7 +1210,6 @@ void num_ssm_add_mod(
     uint64_t pos_2,
     uint64_t n
 )
-// NOLINTEND(bugprone-easily-swappable-parameters)
 {
     CLU_HANDLER_IS_SAFE(num_res)
     CLU_HANDLER_IS_SAFE(num_1)
@@ -1208,19 +1218,50 @@ void num_ssm_add_mod(
     assert(num_1)
     assert(num_2)
 
-    uint128_t carry = 0;
-    for(uint64_t i=0; i<n; i++)
+    uint64_t * restrict dest = &num_res->chunk[pos_res];
+    const uint64_t * restrict src1 = &num_1->chunk[pos_1];
+    const uint64_t * restrict src2 = &num_2->chunk[pos_2];
+
+    uint64_t carry = 0;
+    for(uint64_t i = 0; i < n; i++)
     {
-        carry += (uint128_t)num_1->chunk[pos_1 + i] + num_2->chunk[pos_2 + i];
-        num_res->chunk[pos_res + i] = LOW(carry);
-        carry >>= chunk_bits;
+        uint64_t sum;
+        uint64_t c1 = (uint64_t)__builtin_add_overflow(src1[i], src2[i], &sum);
+        uint64_t c2 = (uint64_t)__builtin_add_overflow(sum, carry, &dest[i]);
+        carry = c1 | c2;
     }
 
     num_ssm_normalize(num_res, pos_res, n);
 }
 
-// NOLINTBEGIN(bugprone-easily-swappable-parameters)
-void num_ssm_sub_mod(
+static void num_ssm_add_mod_immed(
+    num_p num_1,
+    uint64_t pos_1,
+    num_p num_2,
+    uint64_t pos_2,
+    uint64_t n
+)
+{
+    CLU_HANDLER_IS_SAFE(num_1)
+    CLU_HANDLER_IS_SAFE(num_2)
+    assert(num_1)
+    assert(num_2)
+
+    uint64_t * restrict dest = &num_1->chunk[pos_1];
+    const uint64_t * restrict src2 = &num_2->chunk[pos_2];
+
+    uint64_t carry = 0;
+    for(uint64_t i = 0; i < n; i++)
+    {
+        uint64_t c1 = (uint64_t)__builtin_add_overflow(dest[i], src2[i], &dest[i]);
+        uint64_t c2 = (uint64_t)__builtin_add_overflow(dest[i], carry, &dest[i]);
+        carry = c1 | c2;
+    }
+
+    num_ssm_normalize(num_1, pos_1, n);
+}
+
+void num_ssm_sub_mod_(
     num_p num_res,
     uint64_t pos_res,
     num_p num_1,
@@ -1229,7 +1270,6 @@ void num_ssm_sub_mod(
     uint64_t pos_2,
     uint64_t n
 )
-// NOLINTEND(bugprone-easily-swappable-parameters)
 {
     CLU_HANDLER_IS_SAFE(num_res)
     CLU_HANDLER_IS_SAFE(num_1)
@@ -1240,16 +1280,47 @@ void num_ssm_sub_mod(
 
     num_ssm_denormalize(num_1, pos_1, n);
 
-    uint128_t carry = 0;
+    uint64_t * restrict dest = &num_res->chunk[pos_res];
+    const uint64_t * restrict src1 = &num_1->chunk[pos_1];
+    const uint64_t * restrict src2 = &num_2->chunk[pos_2];
+
+    uint64_t borrow = 0;
     for(uint64_t i=0; i<n; i++)
     {
-        carry += (uint128_t)num_1->chunk[pos_1 + i] - num_2->chunk[pos_2 + i];
-        num_res->chunk[pos_res + i] = LOW(carry);
-        carry = (uint128_t)((int128_t)carry >> chunk_bits);
+        uint64_t diff;
+        uint64_t b1 = (uint64_t)__builtin_sub_overflow(src1[i], src2[i], &diff);
+        uint64_t b2 = (uint64_t)__builtin_sub_overflow(diff, borrow, &dest[i]);
+        borrow = b1 | b2;
     }
 
     num_ssm_normalize(num_1, pos_1, n);
     num_ssm_normalize(num_res, pos_res, n);
+}
+
+static void num_ssm_sub_mod_immed(
+    num_p num_1, uint64_t pos_1,
+    num_p num_2, uint64_t pos_2,
+    uint64_t n
+)
+{
+    CLU_HANDLER_IS_SAFE(num_1) CLU_HANDLER_IS_SAFE(num_2)
+    assert(num_1 && num_2)
+
+    num_ssm_denormalize(num_1, pos_1, n);
+
+    // FIX: Native memory mutation. No temporary `diff` variables needed!
+    uint64_t * restrict dest = &num_1->chunk[pos_1];
+    const uint64_t * restrict src2 = &num_2->chunk[pos_2];
+
+    uint64_t borrow = 0;
+    for(uint64_t i=0; i<n; i++)
+    {
+        uint64_t b1 = (uint64_t)__builtin_sub_overflow(dest[i], src2[i], &dest[i]);
+        uint64_t b2 = (uint64_t)__builtin_sub_overflow(dest[i], borrow, &dest[i]);
+        borrow = b1 | b2;
+    }
+
+    num_ssm_normalize(num_1, pos_1, n);
 }
 
 void num_ssm_opposite(num_p num, uint64_t pos, uint64_t n)
@@ -1257,12 +1328,13 @@ void num_ssm_opposite(num_p num, uint64_t pos, uint64_t n)
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
 
-    int128_t carry = 1;
-    for(uint64_t i=0; i<n; i++)
+    uint64_t borrow = (uint64_t)__builtin_sub_overflow(1, num->chunk[pos], &num->chunk[pos]);
+    for(uint64_t i = 1; i < n; i++)
     {
-        carry -= num->chunk[pos + i];
-        num->chunk[pos + i] = LOW(carry);
-        carry = carry >> chunk_bits;
+        uint64_t diff;
+        uint64_t b1 = (uint64_t)__builtin_sub_overflow(0, num->chunk[pos + i], &diff);
+        uint64_t b2 = (uint64_t)__builtin_sub_overflow(diff, borrow, &num->chunk[pos + i]);
+        borrow = b1 | b2;
     }
     num->chunk[pos + n - 1]++;
     num_ssm_normalize(num, pos, n);
@@ -1281,17 +1353,23 @@ void num_ssm_pad(num_p num_res, num_p num, ssm_params_p p)
 
     num_set_count(num_res, 0);
     num_res->count = p->n * p->K;
+
+    uint64_t * restrict dest = num_res->chunk;
+    const uint64_t * restrict src = num->chunk;
+
     for(uint64_t i=0; i<p->K-1; i++)
     {
         for(uint64_t j=0; j<p->M; j++)
         {
-            num_res->chunk[(p->n * i) + j] = num_chunk_get(num, (p->M * i) + j);
+            uint64_t src_idx = (p->M * i) + j;
+            dest[(p->n * i) + j] = (src_idx < num->count) ? src[src_idx] : 0;
         }
     }
 
     for(uint64_t j=0; j<=p->M; j++)
     {
-        num_res->chunk[(p->n * (p->K-1)) + j] = num_chunk_get(num, (p->M * (p->K-1)) + j);
+        uint64_t src_idx = (p->M * (p->K-1)) + j;
+        dest[(p->n * (p->K-1)) + j] = (src_idx < num->count) ? src[src_idx] : 0;
     }
 }
 
@@ -1303,57 +1381,65 @@ num_p num_ssm_depad_no_wrap(num_p num, ssm_params_p p)
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
 
-    // TODO: impove size estimation
-    num_p num_res = num_create(0, 0);
-    for(uint64_t i=0; i<p->K; i++)
+    uint64_t target_count = (p->M * (p->K - 1)) + p->n;
+    num_p num_res = num_create(target_count, 0);
+
+    for(uint64_t i = 0; i < p->K; i++)
     {
-        for(uint64_t j=0; j<p->n; j++)
-        {
-            uint64_t value = num->chunk[(p->n * i) + j];
-            num_res = num_add_uint_offset(num_res, (p->M * i) + j, value);
-        }
+        num_t block;
+        num_span(&block, num, p->n * i, p->n * (i + 1));
+        num_res = num_add_offset(num_res, p->M * i, &block, 0);
     }
+
     num_free(num);
-    return num_res;
+    return num_normalize(num_res);
 }
 
 // Separate number to a base 2^(64*b)
 // Each place will be represented in n chunks
 // the final vector is padded to k places
-void num_ssm_depad_wrap(num_p num_res, num_p num, ssm_params_p p, uint64_t n0)
+void num_ssm_depad_wrap(
+    num_p num_aux_1,
+    num_p num_aux_2,
+    num_p num_res,
+    num_p num,
+    ssm_params_p p,
+    uint64_t n0
+)
 {
+    CLU_HANDLER_IS_SAFE(num_aux_1)
+    CLU_HANDLER_IS_SAFE(num_aux_2)
     CLU_HANDLER_IS_SAFE(num_res)
     CLU_HANDLER_IS_SAFE(num)
+    assert(num_aux_1)
+    assert(num_aux_2)
     assert(num_res)
     assert(num)
+    assert(num_aux_1->size >= n0)
+    assert(num_aux_2->size >= 2 * n0)
 
-    uint64_t chunk[n0];
-    num_t num_aux_1;
-    num_static(&num_aux_1, chunk, n0);
-    num_set_count(num_res, 0);
     for(uint64_t i=0; i<p->K; i++)
     {
-        num_set_count(&num_aux_1, 0);
+        num_set_count(num_aux_1, 0);
         if(num_ssm_cmp_uint_offset(num, (p->n * i) + (2 * p->M), i + 1, p->n - (2 * p->M)) < 0)
         {
-            memcpy(chunk, &num->chunk[i * p->n], p->n * sizeof(uint64_t));
-            num_ssm_shl_mod(&num_aux_1, 0, n0, chunk_bits * i * p->M);
-            num_ssm_add_mod(num_res, 0, num_res, 0, &num_aux_1, 0, n0);
+            memcpy(num_aux_1->chunk, &num->chunk[i * p->n], p->n * sizeof(uint64_t));
+            num_ssm_shl_mod(num_aux_2, num_aux_1, 0, n0, chunk_bits * i * p->M);
+            num_ssm_add_mod_immed(num_res, 0, num_aux_1, 0, n0);
             continue;
         }
 
         num_ssm_opposite(num, p->n * i, p->n);
-        memcpy(chunk, &num->chunk[i * p->n], p->n * sizeof(uint64_t));
-        num_ssm_shl_mod(&num_aux_1, 0, n0, chunk_bits * i * p->M);
-        num_ssm_sub_mod(num_res, 0, num_res, 0, &num_aux_1, 0, n0);
+        memcpy(num_aux_1->chunk, &num->chunk[i * p->n], p->n * sizeof(uint64_t));
+        num_ssm_shl_mod(num_aux_2, num_aux_1, 0, n0, chunk_bits * i * p->M);
+        num_ssm_sub_mod_immed(num_res, 0, num_aux_1, 0, n0);
     }
     num_set_count(num_res, n0);
-    while(num_normalize(num_res)) {};
+    num_normalize(num_res);
 }
 
 // operation can be done in place if num_res is the same as num and pos_res is pos
 // num_res->size >= pos_res + n
-// NOLINTBEGIN(bugprone-easily-swappable-parameters)
 void num_ssm_shl(
     num_p num_res,
     uint64_t pos_res,
@@ -1362,7 +1448,6 @@ void num_ssm_shl(
     uint64_t n,
     uint64_t bits
 )
-// NOLINTEND(bugprone-easily-swappable-parameters)
 {
     CLU_HANDLER_IS_SAFE(num_res)
     CLU_HANDLER_IS_SAFE(num)
@@ -1430,43 +1515,55 @@ void num_ssm_shr(
     memset(&num_res->chunk[pos_res + n - count], 0, count * sizeof(uint64_t));
 }
 
-void num_ssm_shl_mod(num_p num, uint64_t pos, uint64_t n, uint64_t bits)
+void num_ssm_shl_mod(
+    num_p num_aux,
+    num_p num,
+    uint64_t pos,
+    uint64_t n,
+    uint64_t bits
+)
 {
+    CLU_HANDLER_IS_SAFE(num_aux)
     CLU_HANDLER_IS_SAFE(num)
+    assert(num_aux)
     assert(num)
+    assert(num_aux->size >= 2 * n)
 
     if(bits == 0 || num_is_span_zero(num, pos, n))
     {
         return;
     }
 
-    uint64_t chunk[n];
-    num_t num_aux;
-    num_static(&num_aux, chunk, n);
-    num_ssm_shr(&num_aux, 0, num, pos, n, (chunk_bits * n) - chunk_bits - bits);
+    num_ssm_shr(num_aux, 0, num, pos, n, (chunk_bits * n) - chunk_bits - bits);
     num_ssm_shl(num, pos, num, pos, n, bits);
     num->chunk[pos + n - 1] = 0;
-    num_ssm_sub_mod(num, pos, num, pos, &num_aux, 0, n);
+    num_ssm_sub_mod_immed(num, pos, num_aux, 0, n);
 }
 
-void num_ssm_shr_mod(num_p num, uint64_t pos, uint64_t n, uint64_t bits)
+void num_ssm_shr_mod(
+    num_p num_aux,
+    num_p num,
+    uint64_t pos,
+    uint64_t n,
+    uint64_t bits
+)
 {
+    CLU_HANDLER_IS_SAFE(num_aux)
     CLU_HANDLER_IS_SAFE(num)
+    assert(num_aux)
     assert(num)
-    assert(bits <= 64 * (n - 1));
+    assert(bits <= 64 * (n - 1))
+    assert(num_aux->size >= n)
 
     if(bits == 0 || num_is_span_zero(num, pos, n))
     {
         return;
     }
 
-    uint64_t chunk[n];
-    num_t num_aux;
-    num_static(&num_aux, chunk, n);
-    num_ssm_shl(&num_aux, 0, num, pos, n, (chunk_bits * n) - chunk_bits - bits);
+    num_ssm_shl(num_aux, 0, num, pos, n, (chunk_bits * n) - chunk_bits - bits);
     num_ssm_shr(num, pos, num, pos, n, bits);
-    num_aux.chunk[n - 1] = 0;
-    num_ssm_sub_mod(num, pos, num, pos, &num_aux, 0, n);
+    num_aux->chunk[n - 1] = 0;
+    num_ssm_sub_mod_immed(num, pos, num_aux, 0, n);
 }
 
 // num_aux->size >= 2 * n
@@ -1498,10 +1595,10 @@ static void num_ssm_fft_fwd_rec(
         uint64_t pos_2 = (pos + (step * ((2 * i) + 1))) * n;
 
         uint64_t shift = ssm_bit_inv(i, K / 2) * bits;
-        num_ssm_shl_mod(num, pos_2, n, shift);
+        num_ssm_shl_mod(num_aux, num, pos_2, n, shift);
 
-        num_ssm_add_mod(num_aux, 0, num, pos_1, num, pos_2, n);
-        num_ssm_sub_mod(num_aux, n, num, pos_1, num, pos_2, n);
+        num_ssm_add_mod_(num_aux, 0, num, pos_1, num, pos_2, n);
+        num_ssm_sub_mod_(num_aux, n, num, pos_1, num, pos_2, n);
 
         memcpy(&num->chunk[pos_1],  num_aux->chunk   , n * sizeof(uint64_t));
         memcpy(&num->chunk[pos_2], &num_aux->chunk[n], n * sizeof(uint64_t));
@@ -1509,20 +1606,20 @@ static void num_ssm_fft_fwd_rec(
 }
 
 // num_aux->size >= 2 * n
-void num_ssm_fft_fwd(num_p num, ssm_params_p p)
+void num_ssm_fft_fwd(num_p num_aux, num_p num, ssm_params_p p)
 {
+    CLU_HANDLER_IS_SAFE(num_aux)
     CLU_HANDLER_IS_SAFE(num)
+    assert(num_aux)
     assert(num)
+    assert(num_aux->size >= 2 * p->n)
 
     for(uint64_t i=0; i<p->K; i++)
     {
-        num_ssm_shl_mod(num, p->n * i, p->n, p->Q * i);
+        num_ssm_shl_mod(num_aux, num, p->n * i, p->n, p->Q * i);
     }
 
-    uint64_t chunk[2 * p->n];
-    num_t num_aux;
-    num_static(&num_aux, chunk, 2 * p->n);
-    num_ssm_fft_fwd_rec(&num_aux, num, 0, 1, p->n, p->K, 2 * p->Q);
+    num_ssm_fft_fwd_rec(num_aux, num, 0, 1, p->n, p->K, 2 * p->Q);
 }
 
 // num_aux->size >= 2 * n
@@ -1552,31 +1649,31 @@ static void num_ssm_fft_inv_rec(
         uint64_t pos_1 = (pos + i) * n;
         uint64_t pos_2 = (pos + i + (k/2)) * n;
 
-        num_ssm_shr_mod(num, pos_2, n, i * bits);
+        num_ssm_shr_mod(num_aux, num, pos_2, n, i * bits);
 
-        num_ssm_add_mod(num_aux, 0, num, pos_1, num, pos_2, n);
-        num_ssm_sub_mod(num_aux, n, num, pos_1, num, pos_2, n);
+        num_ssm_add_mod_(num_aux, 0, num, pos_1, num, pos_2, n);
+        num_ssm_sub_mod_(num_aux, n, num, pos_1, num, pos_2, n);
 
         memcpy(&num->chunk[pos_1],  num_aux->chunk   , n * sizeof(uint64_t));
         memcpy(&num->chunk[pos_2], &num_aux->chunk[n], n * sizeof(uint64_t));
     }
 }
 
-void num_ssm_fft_inv(num_p num, ssm_params_p p)
+void num_ssm_fft_inv(num_p num_aux, num_p num, ssm_params_p p)
 {
+    CLU_HANDLER_IS_SAFE(num_aux)
     CLU_HANDLER_IS_SAFE(num)
+    assert(num_aux)
     assert(num)
+    assert(num_aux->size >= 2 * p->n)
 
-    uint64_t chunk[2 * p->n];
-    num_t num_aux;
-    num_static(&num_aux, chunk, 2 * p->n);
-    num_ssm_fft_inv_rec(&num_aux, num, 0, p->n, p->K, 2 * p->Q);
+    num_ssm_fft_inv_rec(num_aux, num, 0, p->n, p->K, 2 * p->Q);
 
     uint64_t k_ = stdc_trailing_zeros(p->K);
     for(uint64_t i=0; i<p->K; i++)
     {
-        num_ssm_shr_mod(num, p->n * i, p->n, p->Q * i);
-        num_ssm_shr_mod(num, p->n * i, p->n, k_);
+        num_ssm_shr_mod(num_aux, num, p->n * i, p->n, p->Q * i);
+        num_ssm_shr_mod(num_aux, num, p->n * i, p->n, k_);
     }
 }
 
@@ -1689,25 +1786,17 @@ static uint64_t ssm_get_last_n(uint64_t count)
     return params.n;
 }
 
-static void num_mul_ssm_fwd_step_buffer(num_p num_fft_res, num_p num, ssm_params_p params)
+static void num_mul_ssm_fwd_step_buffer(num_p num_aux, num_p num_fft_res, num_p num, ssm_params_p params)
 {
+    CLU_HANDLER_IS_SAFE(num_aux)
     CLU_HANDLER_IS_SAFE(num_fft_res)
     CLU_HANDLER_IS_SAFE(num)
+    assert(num_aux)
     assert(num_fft_res)
     assert(num)
 
     num_ssm_pad(num_fft_res, num, params);
-    num_ssm_fft_fwd(num_fft_res, params);
-}
-
-static num_p num_mul_ssm_fwd_step(num_p num, ssm_params_p params)
-{
-    CLU_HANDLER_IS_SAFE(num)
-    assert(num)
-
-    num_p num_fft = num_create(params->n * params->K, 0);
-    num_mul_ssm_fwd_step_buffer(num_fft, num, params);
-    return num_fft;
+    num_ssm_fft_fwd(num_aux, num_fft_res, params);
 }
 
 // KEEP NUM
@@ -1717,7 +1806,9 @@ num_p num_mul_ssm_fwd_transform(num_p num, uint64_t count)
     assert(num)
 
     ssm_params_t params = ssm_get_params(count);
-    num_p num_fft = num_mul_ssm_fwd_step(num, &params);
+    num_p num_fft = num_create(params.n * params.K, 0);
+    num_p num_aux = num_create(2 * params.n, 0);
+    num_mul_ssm_fwd_step_buffer(num_aux, num_fft, num, &params);
 
     uint64_t n = params.n;
     uint64_t K = params.K;
@@ -1728,11 +1819,10 @@ num_p num_mul_ssm_fwd_transform(num_p num, uint64_t count)
 
         for(uint64_t i=0; i<K; i++)
         {
-            // NOLINTNEXTLINE(readability-isolate-declaration)
             num_t num_in, num_out;
             num_span(&num_in,  num_fft, i * n, (i + 1) * n);
             num_span(&num_out, num_fft_next, i * params_next.K * params_next.n, (i + 1) * params_next.K * params_next.n);
-            num_mul_ssm_fwd_step_buffer(&num_out, &num_in, &params_next);
+            num_mul_ssm_fwd_step_buffer(num_aux, &num_out, &num_in, &params_next);
         }
 
         num_free(num_fft);
@@ -1741,6 +1831,7 @@ num_p num_mul_ssm_fwd_transform(num_p num, uint64_t count)
         n  = params_next.n;
         K *= params_next.K;
     }
+    num_free(num_aux);
 
     return num_fft;
 }
@@ -1776,25 +1867,31 @@ void num_ssm_free(num_ssm_t num_ssm)
     num_free(num_ssm.num_fft);
 }
 
-static void num_ssm_mul_mod_span(num_p num_aux, num_p num_1, num_p num_2, uint64_t pos, uint64_t n)
+static void num_ssm_mul_mod_span(
+    num_p num_aux,
+    num_p num_1,
+    num_p num_2,
+    uint64_t pos,
+    uint64_t n
+)
 {
+    CLU_HANDLER_IS_SAFE(num_aux)
     CLU_HANDLER_IS_SAFE(num_1)
     CLU_HANDLER_IS_SAFE(num_2)
+    assert(num_aux)
     assert(num_1)
     assert(num_2)
 
-    // NOLINTNEXTLINE(readability-isolate-declaration)
     num_t num_t_1, num_t_2;
     num_span(&num_t_1, num_1, pos, pos + n);
     num_span(&num_t_2, num_2, pos, pos + n);
 
     num_mul_classic_buffer(num_aux, &num_t_1, &num_t_2);
-    // num_mul_karatsuba_buffer(num_aux, &num_t_1, &num_t_2);
 
     memmove(&num_aux->chunk[n], &num_aux->chunk[n-1], n * sizeof(uint64_t));
     num_aux->chunk[n-1] = 0;
     // NOLINTNEXTLINE(readability-suspicious-call-argument)
-    num_ssm_sub_mod(num_1, pos, num_aux, 0, num_aux, n, n);
+    num_ssm_sub_mod_(num_1, pos, num_aux, 0, num_aux, n, n);
 }
 
 static void num_ssm_pointwise_product(num_ssm_t num_ssm_1, num_ssm_t num_ssm_2)
@@ -1808,19 +1905,22 @@ static void num_ssm_pointwise_product(num_ssm_t num_ssm_1, num_ssm_t num_ssm_2)
     uint64_t block_count = num_ssm_1.num_fft->size / n;
     assert(block_count * n == num_ssm_1.num_fft->size);
 
-    uint64_t chunk[2 * n];
-    num_t num_aux;
-    num_static(&num_aux, chunk, 2 * n);
-
+    num_p num_aux = num_create(2 * n, 0);
+    num_aux->cannot_expand = true;
     for(uint64_t i=0; i<block_count; i++)
     {
-        num_ssm_mul_mod_span(&num_aux, num_ssm_1.num_fft, num_ssm_2.num_fft, i * n, n);
+        num_ssm_mul_mod_span(num_aux, num_ssm_1.num_fft, num_ssm_2.num_fft, i * n, n);
     }
+    num_free(num_aux);
 }
 
-static num_p num_mul_ssm_bwd_transform_rec(num_p num_fft, uint64_t n)
+static num_p num_mul_ssm_bwd_transform_rec(num_p num_aux_1, num_p num_aux_2, num_p num_fft, uint64_t n)
 {
+    CLU_HANDLER_IS_SAFE(num_aux_1)
+    CLU_HANDLER_IS_SAFE(num_aux_2)
     CLU_HANDLER_IS_SAFE(num_fft)
+    assert(num_aux_1)
+    assert(num_aux_2)
     assert(num_fft)
 
     if(!ssm_is_recursive(n))
@@ -1829,7 +1929,7 @@ static num_p num_mul_ssm_bwd_transform_rec(num_p num_fft, uint64_t n)
     }
 
     ssm_params_t params = ssm_get_params_wrap(n);
-    num_fft = num_mul_ssm_bwd_transform_rec(num_fft, params.n);
+    num_fft = num_mul_ssm_bwd_transform_rec(num_aux_1, num_aux_2, num_fft, params.n);
 
     uint64_t block_count = num_fft->size / (params.K * params.n);
     assert(block_count * params.K * params.n == num_fft->size);
@@ -1837,13 +1937,12 @@ static num_p num_mul_ssm_bwd_transform_rec(num_p num_fft, uint64_t n)
     num_p num_tmp = num_create(block_count * n, 0);
     for(uint64_t i=0; i<block_count; i++)
     {
-        // NOLINTNEXTLINE(readability-isolate-declaration)
         num_t num_in, num_out;
         num_span(&num_in, num_fft, i * params.K * params.n, (i + 1) * params.K * params.n);
         num_span(&num_out, num_tmp, i * n, (i + 1) * n);
 
-        num_ssm_fft_inv(&num_in, &params);
-        num_ssm_depad_wrap(&num_out, &num_in, &params, n);
+        num_ssm_fft_inv(num_aux_2, &num_in, &params);
+        num_ssm_depad_wrap(num_aux_1, num_aux_2, &num_out, &num_in, &params, n);
     }
 
     num_free(num_fft);
@@ -1856,9 +1955,15 @@ num_p num_mul_ssm_bwd_transform(num_p num_fft, uint64_t count)
     assert(num_fft)
 
     ssm_params_t params = ssm_get_params(count);
-    num_p num_tmp = num_mul_ssm_bwd_transform_rec(num_fft, params.n);
+    num_p num_aux_1 = num_create(params.n, 0);
+    num_p num_aux_2 = num_create(2 * params.n, 0);
+    num_aux_1->cannot_expand = true;
+    num_aux_2->cannot_expand = true;
+    num_p num_tmp = num_mul_ssm_bwd_transform_rec(num_aux_1, num_aux_2, num_fft, params.n);
+    num_free(num_aux_1);
 
-    num_ssm_fft_inv(num_tmp, &params);
+    num_ssm_fft_inv(num_aux_2, num_tmp, &params);
+    num_free(num_aux_2);
     return num_ssm_depad_no_wrap(num_tmp, &params);
 }
 
@@ -1896,30 +2001,30 @@ num_p num_mul_finish(num_p num_1, num_ssm_t num_ssm_2)
 
 
 
-static void num_ssm_sqr_mod_span(num_p num, uint64_t pos, uint64_t n)
+static void num_ssm_sqr_mod_span(num_p num_aux, num_p num, uint64_t pos, uint64_t n)
 {
+    CLU_HANDLER_IS_SAFE(num_aux)
     CLU_HANDLER_IS_SAFE(num)
+    assert(num_aux)
     assert(num)
+    assert(num_aux->size >= 2 * n)
 
     num_t num_aux_piece;
     num_span(&num_aux_piece, num, pos, pos + n);
 
-    uint64_t chunk[2 * n];
-    num_t num_aux;
-    num_static(&num_aux, chunk, 2 * n);
-    num_sqr_classic_buffer(&num_aux, &num_aux_piece);
+    num_sqr_classic_buffer(num_aux, &num_aux_piece);
 
-    memmove(&num_aux.chunk[n], &num_aux.chunk[n-1], n * sizeof(uint64_t));
-    num_aux.chunk[n-1] = 0;
-    num_ssm_sub_mod(num, pos, &num_aux, 0, &num_aux, n, n);
+    memmove(&num_aux->chunk[n], &num_aux->chunk[n-1], n * sizeof(uint64_t));
+    num_aux->chunk[n-1] = 0;
+    num_ssm_sub_mod_(num, pos, num_aux, 0, num_aux, n, n);
 }
 
 
 
 static bool mul_is_classic(uint64_t count_1, uint64_t count_2)
 {
-    // NOLINTNEXTLINE(readability-magic-numbers)
-    return (bool)((count_1 < 128) || (count_2 < 128));
+    constexpr uint64_t threshold = 128;
+    return (bool)((count_1 < threshold) || (count_2 < threshold));
 }
 
 // KEEPS NUM_1 NUM_2
@@ -1934,20 +2039,7 @@ num_p num_mul_classic(num_p num_1, num_p num_2)
     return num_mul_classic_buffer(num_res, num_1, num_2);
 }
 
-// KEEPS NUM_1 NUM_2
-[[maybe_unused]]
-STATIC num_p num_mul_karatsuba(num_p num_1, num_p num_2)
-{
-    CLU_HANDLER_IS_SAFE(num_1)
-    CLU_HANDLER_IS_SAFE(num_2)
-    assert(num_1)
-    assert(num_2)
-
-    num_p num_res = num_create(num_1->count + num_2->count, 0);
-    return num_mul_karatsuba_buffer(num_res, num_1, num_2);
-}
-
-num_p num_mul_karatsuba_buffer(num_p num_res, num_p num_1, num_p num_2)
+static num_p num_mul_karatsuba_buffer(num_p num_res, num_p num_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_res)
     CLU_HANDLER_IS_SAFE(num_1)
@@ -1970,7 +2062,6 @@ num_p num_mul_karatsuba_buffer(num_p num_res, num_p num_1, num_p num_2)
 
     num_p num_res_next = num_create((2 * count) + 2, 0);
 
-    // NOLINTNEXTLINE(readability-isolate-declaration)
     num_t num_1_0, num_1_1, num_2_0, num_2_1;
     num_span(&num_1_0, num_1, 0, count);
     num_span(&num_1_1, num_1, count, num_1->count);
@@ -1992,6 +2083,19 @@ num_p num_mul_karatsuba_buffer(num_p num_res, num_p num_1, num_p num_2)
     num_res_next = num_mul_karatsuba_buffer(num_res_next, &num_1_0, &num_2_0);
     num_res = num_add_offset(num_res, 0, num_res_next, 0);
     return num_sub_offset(num_res, count, num_res_next);
+}
+
+// KEEPS NUM_1 NUM_2
+[[maybe_unused]]
+STATIC num_p num_mul_karatsuba(num_p num_1, num_p num_2)
+{
+    CLU_HANDLER_IS_SAFE(num_1)
+    CLU_HANDLER_IS_SAFE(num_2)
+    assert(num_1)
+    assert(num_2)
+
+    num_p num_res = num_create(num_1->count + num_2->count, 0);
+    return num_mul_karatsuba_buffer(num_res, num_1, num_2);
 }
 
 // KEEPS NUM_1 NUM_2
@@ -2026,10 +2130,13 @@ num_p num_sqr_ssm(num_p num)
     uint64_t n = ssm_get_last_n(count);
     uint64_t block_count = num_ssm.num_fft->size / n;
     assert(block_count * n == num_ssm.num_fft->size);
+    num_p num_aux = num_create(2 * n, 0);
+    num_aux->cannot_expand = true;
     for(uint64_t i=0; i<block_count; i++)
     {
-        num_ssm_sqr_mod_span(num_ssm.num_fft, i * n, n);
+        num_ssm_sqr_mod_span(num_aux, num_ssm.num_fft, i * n, n);
     }
+    num_free(num_aux);
 
     return num_mul_ssm_bwd_transform(num_ssm.num_fft, count);
 }
@@ -2064,7 +2171,7 @@ num_p num_div_mod_uint(num_p num, uint64_t value)
     assert(num);
     assert(value);
 
-    num_p num_q = num_create(num->count, num->count);
+    num_p num_q = num_create_dirty(num->count, num->count);
     for(uint64_t i = num->count - 1; i != UINT64_MAX; i--)
     {
         if((num->count < i) || ((num->count - 1 == i) && (num->chunk[i] < value)))
@@ -2107,7 +2214,7 @@ static num_p num_div_mod_classic(num_p num_aux, num_p num_1, num_p num_2)
     assert(num_1->count >= num_2->count);
 
     uint64_t count = num_1->count - num_2->count + 1;
-    num_p num_q = num_create(count, count);
+    num_p num_q = num_create_dirty(count, count);
     uint64_t value_2 = num_2->chunk[num_2->count-1];
     for(uint64_t i = count - 1; i != UINT64_MAX; i--)
     {
@@ -2227,7 +2334,7 @@ static num_p num_div_mod_bz_rec(
             &f[1],
             (bool)(memoize || i)
         );
-        while(num_normalize(num_1)) {};
+        num_normalize(num_1);
 
         if(num_is_zero(num_q_tmp))
         {
@@ -2284,7 +2391,7 @@ static num_p num_div_mod_bz(num_p num_1, num_p num_2)
     assert(num_2)
 
     uint64_t frame_count = stdc_bit_width(num_2->count) + 1;
-    bz_frame_t f[frame_count];
+    bz_frame_t f[chunk_bits];
     memset(f, 0, sizeof(f));
 
     uint64_t count = stdc_bit_ceil(8 * num_2->count);
@@ -2300,7 +2407,7 @@ static num_p num_div_mod_bz(num_p num_1, num_p num_2)
         num_span(&num_1_1, num_1, n_1 - (2 * n_2), num_1->count);
 
         num_p num_q_tmp = num_div_mod_bz_rec(num_aux, &num_1_1, num_2, f, true);
-        while(num_normalize(num_1)) {};
+        num_normalize(num_1);
         num_p num_tmp = num_add_offset(num_q_tmp, n_2, num_q, 0);
         num_free(num_q);
         num_q = num_tmp;
@@ -2441,7 +2548,7 @@ num_p num_mul_uint(num_p num, uint64_t value)
 
     num_p num_res = num_create(num->count + 1, 0);
     num_res->cannot_expand = true;
-    num_add_mul_uint_offset(num_res, 0, num, 0, value);
+    num_res = num_add_mul_uint_offset(num_res, 0, num, 0, value);
     num_free(num);
     num_res->cannot_expand = false;
     return num_res;
@@ -2613,7 +2720,6 @@ static num_p num_base_to_rec(num_p num, num_p num_bases[], uint64_t i)
         return num_base_to_rec(num, num_bases, i - 1);
     }
 
-    // NOLINTNEXTLINE(readability-isolate-declaration)
     num_p num_q, num_r;
     num_div_mod(&num_q, &num_r, num, num_copy(num_bases[i]));
     num_q = num_base_to_rec(num_q, num_bases, i - 1);
@@ -2663,7 +2769,7 @@ num_p num_base_from(num_p num, uint64_t base)
     assert(num);
     assert(base > 1);
 
-    num_p num_res = num_create(2 * num->count, 0);
+    num_p num_res = num_create(num->count, 0);
     for(uint64_t i=num->count-1; i!=UINT64_MAX; i--)
     {
         assert(num->chunk[i] < base);
