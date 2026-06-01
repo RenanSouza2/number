@@ -5,9 +5,10 @@ CompileFlags:
     - "-D_GNU_SOURCE"
     - "-Wall"
     - "-Wextra"
-    - "-Werror"
-    - "-fsanitize=address"
+    - "-Wpedantic"
     - "-xc"
+  Remove:
+    - "-Werror"
 
 Diagnostics:
   ClangTidy:
@@ -16,6 +17,9 @@ Diagnostics:
       - "clang-analyzer-*"
       - "performance-*"
       - "readability-*"
+      - "cert-*"
+    CheckOptions:
+      cert-err33-c.CheckedFunctions: "-::fprintf;-::printf;-::sprintf"
     Remove:
       - "abseil-*"
       - "llvm-*"
