@@ -1,7 +1,10 @@
 #include <assert.h>
+// #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/mman.h>
 
 #include "debug.h"
 #include "../../mods/macros/assert.h" // IWYU pragma: keep
@@ -239,6 +242,17 @@ static uint64_t uint_read(FILE *fp, uint64_t size, uint64_t base)
 
 
 
+static num_config_t s_num_config = {
+    .disk_threshold = UINT64_MAX
+};
+
+void num_config_set(num_config_p config)
+{
+    s_num_config = *config;
+}
+
+
+
 void num_display_dec(num_p num)
 {
     CLU_HANDLER_IS_SAFE(num);
@@ -336,27 +350,54 @@ void num_display_full(const char tag[], num_p num)
 
 
 
+// num_create
 #ifdef DEBUG
 num_p num_create_dbg(uint64_t size, uint64_t count, char const func[], uint64_t line)
 #else
 num_p num_create(uint64_t size, uint64_t count)
 #endif
 {
-    assert(size >= count);
+    assert(size >= count)
     size = size ? size : 1;
     uint64_t total_size = sizeof(num_t) + (size * sizeof(uint64_t));
-    num_p num = calloc_tag(1, total_size, "f|%s|l|%d", func, line);
-    assert(num);
 
+    if(size < s_num_config.disk_threshold)
+    {
+        num_p num = calloc_tag(1, total_size, "f|%s|l|%d", func, line);
+        assert(num);
+
+        *num = (num_t)
+        {
+            .size = size,
+            .count = count,
+            .cannot_expand = false,
+            .is_mmap = false,
+            .chunk = (chunk_p)&num[1]
+        };
+        return num;
+    }
+
+    constexpr uint64_t path_max = 1024;
+    char template_path[path_max];
+    snprintf(template_path, sizeof(template_path), "%s/bignum_XXXXXX", s_num_config.disk_path);
+    int fd = mkstemp(template_path);
+    assert(fd != -1);
+    unlink(template_path);
+
+    assert(ftruncate(fd, (off_t)total_size) == 0);
+    num_p num = mmap(NULL, total_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     *num = (num_t)
     {
         .size = size,
         .count = count,
+        .is_mmap = true,
         .chunk = (chunk_p)&num[1]
     };
+    CLU_HANDLER_REGISTER_TAG(num, "f|%s|l|%d", func, line);
     return num;
 }
 
+// num_create_dirty
 #ifdef DEBUG
 num_p num_create_dirty_dbg(uint64_t size, uint64_t count, char const func[], uint64_t line)
 #else
@@ -366,15 +407,38 @@ num_p num_create_dirty(uint64_t size, uint64_t count)
     assert(size >= count);
     size = size ? size : 1;
     uint64_t total_size = sizeof(num_t) + (size * sizeof(uint64_t));
-    num_p num = malloc_tag(total_size, "f|%s|l|%d", func, line);
-    assert(num);
 
+    if(size < s_num_config.disk_threshold)
+    {
+        num_p num = calloc_tag(1, total_size, "f|%s|l|%d", func, line);
+        assert(num);
+
+        *num = (num_t)
+        {
+            .size = size,
+            .count = count,
+            .chunk = (chunk_p)&num[1]
+        };
+        return num;
+    }
+
+    constexpr uint64_t path_max = 1024;
+    char template_path[path_max];
+    snprintf(template_path, sizeof(template_path), "%s/bignum_XXXXXX", s_num_config.disk_path);
+    int fd = mkstemp(template_path);
+    assert(fd != -1);
+    unlink(template_path);
+
+    assert(ftruncate(fd, (off_t)total_size) == 0);
+    num_p num = mmap(NULL, total_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     *num = (num_t)
     {
         .size = size,
         .count = count,
+        .is_mmap = true,
         .chunk = (chunk_p)&num[1]
     };
+    CLU_HANDLER_REGISTER_TAG(num, "f|%s|l|%d", func, line);
     return num;
 }
 
@@ -414,14 +478,6 @@ static void num_set_count(num_p num, uint64_t count)
     num->count = count;
     memset(&num->chunk[count], 0, (num->size - count) * sizeof(uint64_t));
 }
-
-// uint64_t num_chunk_get(num_p num, uint64_t pos)
-// {
-//     CLU_HANDLER_IS_SAFE(num);
-//     assert(num);
-
-//     return pos < num->count ? num->chunk[pos] : 0;
-// }
 
 num_p num_chunk_set(num_p num, uint64_t pos, uint64_t value)
 {
@@ -555,7 +611,7 @@ static void num_span(num_p num_res, num_p num, uint64_t pos_init, uint64_t pos_m
         .chunk = &num->chunk[pos_init],
         .cannot_expand = true
     };
-    // while(num_normalize(num_res));
+    num_normalize(num_res);
 }
 
 
@@ -717,7 +773,15 @@ void num_free(num_p num)
     CLU_HANDLER_IS_SAFE(num);
     assert(num);
 
-    free(num);
+    if(!num->is_mmap)
+    {
+        free(num);
+        return;
+    }
+
+    uint64_t total_size = sizeof(num_t) + (num->size * sizeof(uint64_t));
+    assert(munmap(num, total_size) == 0);
+    CLU_HANDLER_UNREGISTER(num)
 }
 
 

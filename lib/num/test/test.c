@@ -2671,13 +2671,8 @@ static void test_fuzz_num_bz_div(bool show)
 }
 
 
-
-static void test_num()
+static void test_all(bool show)
 {
-    TEST_LIB
-
-    bool show = false;
-
     test_uint_from_char(show);
     test_uint128(show);
 
@@ -2741,6 +2736,24 @@ static void test_num()
     test_fuzz_num_ssm_mul(show);
     test_fuzz_num_ssm_sqr(show);
     test_fuzz_num_bz_div(show);
+}
+
+
+static void test_num()
+{
+    TEST_LIB
+
+    bool show = false;
+
+    // test_all(show);
+
+    num_config_t config = {
+        .disk_path = "./cache",
+        .disk_threshold = 0
+    };
+    num_config_set(&config);
+
+    test_all(show);
 
     TEST_ASSERT_MEM_EMPTY
 }

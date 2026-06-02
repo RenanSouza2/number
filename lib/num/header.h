@@ -5,7 +5,10 @@
 #include "../../mods/macros/struct.h"
 #include "../../mods/macros/uint.h"
 
+PLACEHOLDER(num_config)
 PLACEHOLDER(num)
+
+void num_config_set(num_config_p config);
 
 void num_display_dec(num_p num);
 void num_display_opts(num_p num, const char tag[], bool length, bool full);
@@ -22,8 +25,8 @@ void num_break(num_p *out_num_hi, num_p *out_num_lo, num_p num, uint64_t count);
 num_p num_create_dbg(uint64_t size, uint64_t count, char const func[], uint64_t line);
 num_p num_create_dirty_dbg(uint64_t size, uint64_t count, char const func[], uint64_t line);
 
-#define num_create(SIZE, COUNT) num_create_dbg(SIZE, COUNT, __func__, __LINE__);
-#define num_create_dirty(SIZE, COUNT) num_create_dirty_dbg(SIZE, COUNT, __func__, __LINE__);
+#define num_create(SIZE, COUNT) num_create_dbg(SIZE, COUNT, __func__, __LINE__)
+#define num_create_dirty(SIZE, COUNT) num_create_dirty_dbg(SIZE, COUNT, __func__, __LINE__)
 
 #else
 
