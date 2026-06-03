@@ -19,6 +19,7 @@
 
 static uint16_t rand_16()
 {
+    // NOLINTNEXTLINE()
     return (uint16_t)rand();
 }
 
@@ -45,7 +46,7 @@ uint64_t rand_64_range(uint64_t min, uint64_t max)
 
 num_p num_create_variadic(uint64_t n, va_list *args)
 {
-    num_p num = num_create(n, n);
+    num_p num = num_create(CLU_ARGS(n, n));
     for(uint64_t i=0; i<n; i++)
     {
         num->chunk[n-1-i] = va_arg(*args, uint64_t);
@@ -63,7 +64,7 @@ num_p num_create_immed(uint64_t n, ...)
 
 num_p num_create_rand(uint64_t count)
 {
-    num_p num = num_create(count, count);
+    num_p num = num_create(CLU_ARGS(count, count));
     for(uint64_t i=0; i<count; i++)
     {
         num->chunk[i] = rand_64();
@@ -350,12 +351,8 @@ void num_display_full(const char tag[], num_p num)
 
 
 
-// num_create
-#ifdef DEBUG
-num_p num_create_dbg(uint64_t size, uint64_t count, char const func[], uint64_t line)
-#else
-num_p num_create(uint64_t size, uint64_t count)
-#endif
+
+num_p num_create(CLU_PARAMS(uint64_t size, uint64_t count))
 {
     assert(size >= count)
     size = size ? size : 1;
@@ -363,7 +360,7 @@ num_p num_create(uint64_t size, uint64_t count)
 
     if(size < s_num_config.disk_threshold)
     {
-        num_p num = calloc_tag(1, total_size, "f|%s|l|%d", func, line);
+        num_p num = calloc_tag(1, total_size, CLU_STACK_TAG);
         assert(num);
 
         *num = (num_t)
@@ -386,6 +383,7 @@ num_p num_create(uint64_t size, uint64_t count)
 
     assert(ftruncate(fd, (off_t)total_size) == 0);
     num_p num = mmap(NULL, total_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    close(fd);
     *num = (num_t)
     {
         .size = size,
@@ -393,16 +391,11 @@ num_p num_create(uint64_t size, uint64_t count)
         .is_mmap = true,
         .chunk = (chunk_p)&num[1]
     };
-    CLU_HANDLER_REGISTER_TAG(num, "f|%s|l|%d", func, line);
+    CLU_HANDLER_REGISTER_TAG(num, CLU_STACK_TAG);
     return num;
 }
 
-// num_create_dirty
-#ifdef DEBUG
-num_p num_create_dirty_dbg(uint64_t size, uint64_t count, char const func[], uint64_t line)
-#else
-num_p num_create_dirty(uint64_t size, uint64_t count)
-#endif
+num_p num_create_dirty(CLU_PARAMS(uint64_t size, uint64_t count))
 {
     assert(size >= count);
     size = size ? size : 1;
@@ -410,7 +403,7 @@ num_p num_create_dirty(uint64_t size, uint64_t count)
 
     if(size < s_num_config.disk_threshold)
     {
-        num_p num = calloc_tag(1, total_size, "f|%s|l|%d", func, line);
+        num_p num = calloc_tag(1, total_size, CLU_STACK_TAG);
         assert(num);
 
         *num = (num_t)
@@ -431,6 +424,7 @@ num_p num_create_dirty(uint64_t size, uint64_t count)
 
     assert(ftruncate(fd, (off_t)total_size) == 0);
     num_p num = mmap(NULL, total_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    close(fd);
     *num = (num_t)
     {
         .size = size,
@@ -438,7 +432,7 @@ num_p num_create_dirty(uint64_t size, uint64_t count)
         .is_mmap = true,
         .chunk = (chunk_p)&num[1]
     };
-    CLU_HANDLER_REGISTER_TAG(num, "f|%s|l|%d", func, line);
+    CLU_HANDLER_REGISTER_TAG(num, CLU_STACK_TAG);
     return num;
 }
 
@@ -454,20 +448,14 @@ num_p num_expand_to(num_p num, uint64_t target)
 
     assert(!num->cannot_expand);
 
-    uint64_t size = target * 2;
-    num = realloc(num, sizeof(num_t) + (size * sizeof(uint64_t)));
-    assert(num);
-
+    uint64_t size_new = 2 * target;
     uint64_t size_old = num->size;
-    *num = (num_t)
-    {
-        .size = size,
-        .count = num->count,
-        .chunk = (chunk_p)&num[1]
-    };
 
-    memset(&num->chunk[size_old], 0, (size - size_old) * sizeof(uint64_t));
-    return num;
+    num_p num_new = num_create_dirty(CLU_ARGS(size_new, num->count));
+    memcpy(num_new->chunk, num->chunk, size_old * sizeof(uint64_t));
+    memset(&num_new->chunk[size_old], 0, (size_new - size_old) * sizeof(uint64_t));
+    num_free(num);
+    return num_new;
 }
 
 static void num_set_count(num_p num, uint64_t count)
@@ -570,19 +558,19 @@ void num_break(num_p *out_num_hi, num_p *out_num_lo, num_p num, uint64_t count)
     if(count == 0)
     {
         *out_num_hi = num;
-        *out_num_lo = num_create(0, 0);
+        *out_num_lo = num_create(CLU_ARGS(0, 0));
         return;
     }
 
     if(num->count <= count)
     {
-        *out_num_hi = num_create(0, 0);
+        *out_num_hi = num_create(CLU_ARGS(0, 0));
         *out_num_lo = num;
         return;
     }
 
     uint64_t size = num->count - count;
-    num_p num_hi = num_create_dirty(size, size);
+    num_p num_hi = num_create_dirty(CLU_ARGS(size, size));
     memcpy(num_hi->chunk, &num->chunk[count], size * sizeof(uint64_t));
 
     memset(&num->chunk[count], 0, (num->size - count) * sizeof(uint64_t));
@@ -620,10 +608,10 @@ num_p num_wrap(uint64_t value)
 {
     if(value == 0)
     {
-        return num_create(0, 0);
+        return num_create(CLU_ARGS(0, 0));
     }
 
-    num_p num = num_create(1, 1);
+    num_p num = num_create(CLU_ARGS(1, 1));
     num->chunk[0] = value;
     return num;
 }
@@ -635,7 +623,7 @@ num_p num_wrap_uint128(uint128_t value)
         return num_wrap((uint64_t)value);
     }
 
-    num_p num = num_create(2, 2);
+    num_p num = num_create(CLU_ARGS(2, 2));
     num->chunk[0] = LOW(value);
     num->chunk[1] = HIGH(value);
     return num;
@@ -651,7 +639,7 @@ num_p num_wrap_dec(const char str[])
     uint64_t len = strlen(str);
     uint64_t pos = len / chunk_len;
     uint64_t extra = len % chunk_len != 0;
-    num_p num = num_create(pos + extra, 0);
+    num_p num = num_create(CLU_ARGS(pos + extra, 0));
 
     if(extra)
     {
@@ -678,7 +666,7 @@ num_p num_wrap_hex(const char str[])
     constexpr uint64_t chars_per_chunk = 16;
     uint64_t pos = (len - 2) / chars_per_chunk;
     uint64_t extra = (len - 2) % chars_per_chunk != 0;
-    num_p num = num_create(pos + extra, 0);
+    num_p num = num_create(CLU_ARGS(pos + extra, 0));
 
     if(extra)
     {
@@ -726,7 +714,7 @@ num_p num_read_dec(const char file_name[])
     uint64_t pos = size / chunk_len;
     uint64_t extra = size % chunk_len;
 
-    num_p num = num_create(pos + extra, 0);
+    num_p num = num_create(CLU_ARGS(pos + extra, 0));
     if(extra)
     {
         uint64_t value = uint_read(fp, size % chunk_len, dec_base);
@@ -762,7 +750,7 @@ num_p num_copy(num_p num) // TODO TEST
     CLU_HANDLER_IS_SAFE(num);
     assert(num);
 
-    num_p num_res = num_create_dirty(num->count, num->count);
+    num_p num_res = num_create_dirty(CLU_ARGS(num->count, num->count));
     memcpy(num_res->chunk, num->chunk, num->count * sizeof(uint64_t));
 
     return num_res;
@@ -1124,7 +1112,7 @@ static num_p num_sqr_classic_buffer(num_p num_res, num_p num)
 
 num_p num_sqr_classic(num_p num)
 {
-    num_p num_res = num_create(2 * num->count, 0);
+    num_p num_res = num_create(CLU_ARGS(2 * num->count, 0));
     num_res->cannot_expand = true;
     num_res = num_sqr_classic_buffer(num_res, num);
     num_res->cannot_expand = false;
@@ -1446,7 +1434,7 @@ num_p num_ssm_depad_no_wrap(num_p num, ssm_params_p p)
     assert(num)
 
     uint64_t target_count = (p->M * (p->K - 1)) + p->n;
-    num_p num_res = num_create(target_count, 0);
+    num_p num_res = num_create(CLU_ARGS(target_count, 0));
 
     for(uint64_t i = 0; i < p->K; i++)
     {
@@ -1870,8 +1858,8 @@ num_p num_mul_ssm_fwd_transform(num_p num, uint64_t count)
     assert(num)
 
     ssm_params_t params = ssm_get_params(count);
-    num_p num_fft = num_create(params.n * params.K, 0);
-    num_p num_aux = num_create(2 * params.n, 0);
+    num_p num_fft = num_create(CLU_ARGS(params.n * params.K, 0));
+    num_p num_aux = num_create(CLU_ARGS(2 * params.n, 0));
     num_mul_ssm_fwd_step_buffer(num_aux, num_fft, num, &params);
 
     uint64_t n = params.n;
@@ -1879,7 +1867,7 @@ num_p num_mul_ssm_fwd_transform(num_p num, uint64_t count)
     while(ssm_is_recursive(n))
     {
         ssm_params_t params_next = ssm_get_params_wrap(n);
-        num_p num_fft_next = num_create(K * params_next.K * params_next.n, 0);
+        num_p num_fft_next = num_create(CLU_ARGS(K * params_next.K * params_next.n, 0));
 
         for(uint64_t i=0; i<K; i++)
         {
@@ -1969,7 +1957,7 @@ static void num_ssm_pointwise_product(num_ssm_t num_ssm_1, num_ssm_t num_ssm_2)
     uint64_t block_count = num_ssm_1.num_fft->size / n;
     assert(block_count * n == num_ssm_1.num_fft->size);
 
-    num_p num_aux = num_create(2 * n, 0);
+    num_p num_aux = num_create(CLU_ARGS(2 * n, 0));
     num_aux->cannot_expand = true;
     for(uint64_t i=0; i<block_count; i++)
     {
@@ -1998,7 +1986,7 @@ static num_p num_mul_ssm_bwd_transform_rec(num_p num_aux_1, num_p num_aux_2, num
     uint64_t block_count = num_fft->size / (params.K * params.n);
     assert(block_count * params.K * params.n == num_fft->size);
 
-    num_p num_tmp = num_create(block_count * n, 0);
+    num_p num_tmp = num_create(CLU_ARGS(block_count * n, 0));
     for(uint64_t i=0; i<block_count; i++)
     {
         num_t num_in, num_out;
@@ -2019,8 +2007,8 @@ num_p num_mul_ssm_bwd_transform(num_p num_fft, uint64_t count)
     assert(num_fft)
 
     ssm_params_t params = ssm_get_params(count);
-    num_p num_aux_1 = num_create(params.n, 0);
-    num_p num_aux_2 = num_create(2 * params.n, 0);
+    num_p num_aux_1 = num_create(CLU_ARGS(params.n, 0));
+    num_p num_aux_2 = num_create(CLU_ARGS(2 * params.n, 0));
     num_aux_1->cannot_expand = true;
     num_aux_2->cannot_expand = true;
     num_p num_tmp = num_mul_ssm_bwd_transform_rec(num_aux_1, num_aux_2, num_fft, params.n);
@@ -2099,7 +2087,7 @@ num_p num_mul_classic(num_p num_1, num_p num_2)
     assert(num_1)
     assert(num_2)
 
-    num_p num_res = num_create(num_1->count + num_2->count, 0);
+    num_p num_res = num_create(CLU_ARGS(num_1->count + num_2->count, 0));
     return num_mul_classic_buffer(num_res, num_1, num_2);
 }
 
@@ -2124,7 +2112,7 @@ static num_p num_mul_karatsuba_buffer(num_p num_res, num_p num_1, num_p num_2)
     uint64_t bigger_count = num_1->count > num_2->count ? num_1->count : num_2->count;
     uint64_t count = (bigger_count + 1) / 2;
 
-    num_p num_res_next = num_create((2 * count) + 2, 0);
+    num_p num_res_next = num_create(CLU_ARGS((2 * count) + 2, 0));
 
     num_t num_1_0, num_1_1, num_2_0, num_2_1;
     num_span(&num_1_0, num_1, 0, count);
@@ -2158,7 +2146,7 @@ STATIC num_p num_mul_karatsuba(num_p num_1, num_p num_2)
     assert(num_1)
     assert(num_2)
 
-    num_p num_res = num_create(num_1->count + num_2->count, 0);
+    num_p num_res = num_create(CLU_ARGS(num_1->count + num_2->count, 0));
     return num_mul_karatsuba_buffer(num_res, num_1, num_2);
 }
 
@@ -2194,7 +2182,7 @@ num_p num_sqr_ssm(num_p num)
     uint64_t n = ssm_get_last_n(count);
     uint64_t block_count = num_ssm.num_fft->size / n;
     assert(block_count * n == num_ssm.num_fft->size);
-    num_p num_aux = num_create(2 * n, 0);
+    num_p num_aux = num_create(CLU_ARGS(2 * n, 0));
     num_aux->cannot_expand = true;
     for(uint64_t i=0; i<block_count; i++)
     {
@@ -2235,7 +2223,7 @@ num_p num_div_mod_uint(num_p num, uint64_t value)
     assert(num);
     assert(value);
 
-    num_p num_q = num_create_dirty(num->count, num->count);
+    num_p num_q = num_create_dirty(CLU_ARGS(num->count, num->count));
     for(uint64_t i = num->count - 1; i != UINT64_MAX; i--)
     {
         if((num->count < i) || ((num->count - 1 == i) && (num->chunk[i] < value)))
@@ -2278,7 +2266,7 @@ static num_p num_div_mod_classic(num_p num_aux, num_p num_1, num_p num_2)
     assert(num_1->count >= num_2->count);
 
     uint64_t count = num_1->count - num_2->count + 1;
-    num_p num_q = num_create_dirty(count, count);
+    num_p num_q = num_create_dirty(CLU_ARGS(count, count));
     uint64_t value_2 = num_2->chunk[num_2->count-1];
     for(uint64_t i = count - 1; i != UINT64_MAX; i--)
     {
@@ -2334,7 +2322,7 @@ static num_p num_div_mod_fallback(num_p num_aux, num_p num_1, num_p num_2)
 
     if(num_cmp(num_1, num_2) < 0)
     {
-        return num_create(0, 0);
+        return num_create(CLU_ARGS(0, 0));
     }
 
     if(num_2->count == 1)
@@ -2459,8 +2447,8 @@ static num_p num_div_mod_bz(num_p num_1, num_p num_2)
     memset(f, 0, sizeof(f));
 
     uint64_t count = stdc_bit_ceil(8 * num_2->count);
-    num_p num_aux = num_create(count, 0);
-    num_p num_q = num_create(num_1->count - num_2->count + 1, 0);
+    num_p num_aux = num_create(CLU_ARGS(count, 0));
+    num_p num_q = num_create(CLU_ARGS(num_1->count - num_2->count + 1, 0));
     num_aux->cannot_expand = true;
 
     uint64_t n_1 = num_1->count;
@@ -2610,7 +2598,7 @@ num_p num_mul_uint(num_p num, uint64_t value)
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
 
-    num_p num_res = num_create(num->count + 1, 0);
+    num_p num_res = num_create(CLU_ARGS(num->count + 1, 0));
     num_res->cannot_expand = true;
     num_res = num_add_mul_uint_offset(num_res, 0, num, 0, value);
     num_free(num);
@@ -2710,7 +2698,7 @@ void num_div_mod(num_p *out_num_q, num_p *out_num_r, num_p num_1, num_p num_2)
 
     if(num_cmp(num_1, num_2) < 0)
     {
-        num_p num_q = num_create(0, 0);
+        num_p num_q = num_create(CLU_ARGS(0, 0));
         num_div_mod_finalize(out_num_q, out_num_r, num_q, num_1, num_2, 0);
         return;
     }
@@ -2833,7 +2821,7 @@ num_p num_base_from(num_p num, uint64_t base)
     assert(num);
     assert(base > 1);
 
-    num_p num_res = num_create(num->count, 0);
+    num_p num_res = num_create(CLU_ARGS(num->count, 0));
     for(uint64_t i=num->count-1; i!=UINT64_MAX; i--)
     {
         assert(num->chunk[i] < base);

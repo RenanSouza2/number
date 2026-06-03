@@ -8,3 +8,4 @@ Diagnostics:
       - "readability-magic-numbers"
       - "readability-isolate-declaration"
       - "readability-suspicious-call-argument"
+      - "cert-dcl03-c"

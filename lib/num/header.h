@@ -4,6 +4,7 @@
 #include "struct.h"
 #include "../../mods/macros/struct.h"
 #include "../../mods/macros/uint.h"
+#include "../../mods/clu/header.h"
 
 PLACEHOLDER(num_config)
 PLACEHOLDER(num)
@@ -20,20 +21,8 @@ num_p num_head_grow(num_p num, uint64_t count);
 void num_head_trim(num_p num, uint64_t count);
 void num_break(num_p *out_num_hi, num_p *out_num_lo, num_p num, uint64_t count);
 
-#ifdef DEBUG
-
-num_p num_create_dbg(uint64_t size, uint64_t count, char const func[], uint64_t line);
-num_p num_create_dirty_dbg(uint64_t size, uint64_t count, char const func[], uint64_t line);
-
-#define num_create(SIZE, COUNT) num_create_dbg(SIZE, COUNT, __func__, __LINE__)
-#define num_create_dirty(SIZE, COUNT) num_create_dirty_dbg(SIZE, COUNT, __func__, __LINE__)
-
-#else
-
-num_p num_create(uint64_t size, uint64_t count);
-num_p num_create_dirty(uint64_t size, uint64_t count);
-
-#endif
+num_p num_create(CLU_PARAMS(uint64_t size, uint64_t count));
+num_p num_create_dirty(CLU_PARAMS(uint64_t size, uint64_t count));
 
 num_p num_wrap(uint64_t value);
 num_p num_wrap_uint128(uint128_t value);
