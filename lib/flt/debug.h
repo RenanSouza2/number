@@ -1,5 +1,5 @@
-#ifndef __FLT_DEBUG_H__
-#define __FLT_DEBUG_H__
+#ifndef FLT_DEBUG_H
+#define FLT_DEBUG_H
 
 #include <stdbool.h>
 

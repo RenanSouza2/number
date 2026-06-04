@@ -1,5 +1,5 @@
-#ifndef __NUM_H__
-#define __NUM_H__
+#ifndef NUM_H
+#define NUM_H
 
 #include "struct.h"
 #include "../../mods/macros/struct.h"

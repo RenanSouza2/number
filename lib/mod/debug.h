@@ -1,5 +1,5 @@
-#ifndef __MOD_DEBUG_H__
-#define __MOD_DEBUG_H__
+#ifndef MOD_DEBUG_H
+#define MOD_DEBUG_H
 
 #include "header.h" // IWYU pragma: keep
 

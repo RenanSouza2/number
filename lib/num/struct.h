@@ -1,5 +1,5 @@
-#ifndef __NUM_STRUCT_H__
-#define __NUM_STRUCT_H__
+#ifndef NUM_STRUCT_H
+#define NUM_STRUCT_H
 
 #include <stdbool.h>
 

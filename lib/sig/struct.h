@@ -1,5 +1,5 @@
-#ifndef __SIG_STRUCT_H__
-#define __SIG_STRUCT_H__
+#ifndef SIG_STRUCT_H
+#define SIG_STRUCT_H
 
 #include <stdio.h>
 

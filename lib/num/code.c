@@ -19,7 +19,8 @@
 
 static uint16_t rand_16()
 {
-    // NOLINTNEXTLINE()
+    
+    // NOLINTNEXTLINE(cert-msc30-cpp, cert-msc30-c, cert-msc50-cpp)
     return (uint16_t)rand();
 }
 

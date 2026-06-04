@@ -1,5 +1,5 @@
-#ifndef __FXD_DEBUG_H__
-#define __FXD_DEBUG_H__
+#ifndef FXD_DEBUG_H
+#define FXD_DEBUG_H
 
 #include "../../mods/macros/static.h"
 

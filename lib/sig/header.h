@@ -1,5 +1,5 @@
-#ifndef __SIG_H__
-#define __SIG_H__
+#ifndef SIG_H
+#define SIG_H
 
 #include <stdio.h>
 #include <stdbool.h>

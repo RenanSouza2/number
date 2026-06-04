@@ -1,5 +1,5 @@
-#ifndef __NUM_DEBUG_H__
-#define __NUM_DEBUG_H__
+#ifndef NUM_DEBUG_H
+#define NUM_DEBUG_H
 
 #include "../../mods/macros/static.h"
 
@@ -120,4 +120,4 @@ STATIC num_p num_sqr_ssm(num_p num);
 
 STATIC uint64_t num_div_normalize(num_p *num_1, num_p *num_2);
 
-#endif // __NUM_DEBUG_H__
+#endif // NUM_DEBUG_H
