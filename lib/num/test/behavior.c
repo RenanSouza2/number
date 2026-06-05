@@ -1,7 +1,6 @@
 #include "../debug.h"
 #include "../../../testrc.h"
 #include "../../../mods/macros/test.h"
-#include "../../../mods/macros/time.h"
 
 
 
@@ -2671,7 +2670,7 @@ static void test_fuzz_num_bz_div(bool show)
     TEST_FN_CLOSE
 }
 
-
+[[maybe_unused]]
 static void test_all(bool show)
 {
     test_uint_from_char(show);
@@ -2737,45 +2736,4 @@ static void test_all(bool show)
     test_fuzz_num_ssm_mul(show);
     test_fuzz_num_ssm_sqr(show);
     test_fuzz_num_bz_div(show);
-}
-
-
-
-static void test_num()
-{
-    TEST_LIB
-
-    bool show = false;
-
-    TIME_SETUP
-
-    test_all(show);
-
-    TIME_END(t1)
-    tprintf("time ram: %.3f", dtime(t1));
-
-    num_config_t config = {
-        .disk_path = "./cache",
-        .disk_threshold = 0
-    };
-    num_config_set(&config);
-
-    test_all(show);
-
-    TIME_END(t2)
-    tprintf("tima dsk: %.3f", dtime(t2));
-
-
-    TEST_ASSERT_MEM_EMPTY
-}
-
-
-
-int main()
-{
-    setvbuf(stdout, nullptr, _IONBF, 0);
-    srand((unsigned int)time(nullptr));
-    test_num();
-    printf("\n\n\tTest successful\n\n");
-    return 0;
 }

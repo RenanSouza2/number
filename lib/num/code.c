@@ -1044,8 +1044,7 @@ static num_p num_mul_uint_buffer(num_p num_res, num_p num, uint64_t value) // TO
         num_res->chunk[i+1] = HIGH(u);
         num_res = num_add_uint_offset(num_res, i, LOW(u));
     }
-    num_normalize(num_res);
-    return num_res;
+    return num_normalize(num_res);
 }
 
 // Keeps NUM_1
@@ -1432,7 +1431,7 @@ num_p num_ssm_depad_no_wrap(num_p num, ssm_params_p p)
     }
 
     num_free(num);
-    return num_normalize(num_res);
+    return num_res;
 }
 
 // Separate number to a base 2^(64*b)
