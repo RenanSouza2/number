@@ -1,5 +1,5 @@
-#ifndef __SIG_DEBUG_H__
-#define __SIG_DEBUG_H__
+#ifndef SIG_DEBUG_H
+#define SIG_DEBUG_H
 
 #include "../../mods/macros/static.h"
 

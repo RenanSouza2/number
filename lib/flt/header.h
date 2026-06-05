@@ -1,5 +1,5 @@
-#ifndef __FLT_H__
-#define __FLT_H__
+#ifndef FLT_H
+#define FLT_H
 
 #include <stdio.h>
 #include <stdbool.h>

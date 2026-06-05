@@ -400,7 +400,7 @@ sig_num_t file_read_sig_num_raw(FILE *fp)
 {
     uint64_t signal = file_read_uint64(fp);
     uint64_t count = file_read_uint64(fp);
-    num_p num = num_create(count, count);
+    num_p num = num_create(CLU_ARGS(count, count));
     for(uint64_t i=0; i<count; i++)
     {
         num->chunk[i] = file_read_uint64(fp);

@@ -1,5 +1,5 @@
-#ifndef __FXD_H__
-#define __FXD_H__
+#ifndef FXD_H
+#define FXD_H
 
 #include <stdbool.h>
 

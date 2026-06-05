@@ -1,5 +1,5 @@
-#ifndef __FLT_STRUCT_H__
-#define __FLT_STRUCT_H__
+#ifndef FLT_STRUCT_H
+#define FLT_STRUCT_H
 
 #include "../sig/struct.h"
 

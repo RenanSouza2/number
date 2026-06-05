@@ -1,5 +1,5 @@
-#ifndef __NUM_STRUCT_H__
-#define __NUM_STRUCT_H__
+#ifndef NUM_STRUCT_H
+#define NUM_STRUCT_H
 
 #include <stdbool.h>
 
@@ -12,12 +12,19 @@ constexpr uint64_t chunk_bits_log_2 = 6;
 [[maybe_unused]]
 constexpr uint64_t chunk_bits = 64;
 
+STRUCT(num_config)
+{
+    uint64_t disk_threshold;
+    const char* disk_path;
+};
+
 STRUCT(num)
 {
     uint64_t size;
     uint64_t count;
-    chunk_p chunk;
     bool cannot_expand;
+    bool is_mmap;
+    chunk_p chunk;
 };
 
 STRUCT(num_ssm)

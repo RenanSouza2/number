@@ -1,5 +1,5 @@
-#ifndef __FXD_STRUCT_H__
-#define __FXD_STRUCT_H__
+#ifndef FXD_STRUCT_H
+#define FXD_STRUCT_H
 
 #include "../sig/struct.h"
 

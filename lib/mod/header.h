@@ -1,5 +1,5 @@
-#ifndef __MOD_H__
-#define __MOD_H__
+#ifndef MOD_H
+#define MOD_H
 
 #include <stdbool.h>
 
