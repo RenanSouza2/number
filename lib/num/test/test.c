@@ -971,7 +971,7 @@ static void test_num_ssm_add_mod(bool show)
         {                                                               \
             num_p num = num_create_immed(ARG_OPEN NUM);                 \
             num_p num_res = num_create(CLU_ARGS(N, N));                 \
-            num_ssm_add_mod_(num_res, 0, num, POS_1, num, POS_2, N);    \
+            num_ssm_add_mod(num_res, 0, num, POS_1, num, POS_2, N);    \
             assert(num_immed(num_res, ARG_OPEN RES));                   \
             assert(num_immed(num, ARG_OPEN NUM));                       \
         }                                                               \
@@ -1018,7 +1018,7 @@ static void test_num_ssm_sub_mod(bool show)
         {                                                           \
             num_p num = num_create_immed(ARG_OPEN NUM);             \
             num_p num_res = num_create(CLU_ARGS(N, N));                       \
-            num_ssm_sub_mod_(num_res, 0, num, POS_1, num, POS_2, N); \
+            num_ssm_sub_mod(num_res, 0, num, POS_1, num, POS_2, N); \
             assert(num_immed(num_res, ARG_OPEN RES));               \
             assert(num_immed(num, ARG_OPEN NUM));                   \
         }                                                           \

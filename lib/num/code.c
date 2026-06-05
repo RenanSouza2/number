@@ -1241,7 +1241,7 @@ static void num_ssm_denormalize(num_p num, uint64_t pos, uint64_t n)
     num_ssm_add_uint(num, pos + n - 1, 1, 1);
 }
 
-void num_ssm_add_mod_(
+void num_ssm_add_mod(
     num_p num_res,
     uint64_t pos_res,
     num_p num_1,
@@ -1301,7 +1301,7 @@ static void num_ssm_add_mod_immed(
     num_ssm_normalize(num_1, pos_1, n);
 }
 
-void num_ssm_sub_mod_(
+void num_ssm_sub_mod(
     num_p num_res,
     uint64_t pos_res,
     num_p num_1,
@@ -1637,8 +1637,8 @@ static void num_ssm_fft_fwd_rec(
         uint64_t shift = ssm_bit_inv(i, K / 2) * bits;
         num_ssm_shl_mod(num_aux, num, pos_2, n, shift);
 
-        num_ssm_add_mod_(num_aux, 0, num, pos_1, num, pos_2, n);
-        num_ssm_sub_mod_(num_aux, n, num, pos_1, num, pos_2, n);
+        num_ssm_add_mod(num_aux, 0, num, pos_1, num, pos_2, n);
+        num_ssm_sub_mod(num_aux, n, num, pos_1, num, pos_2, n);
 
         memcpy(&num->chunk[pos_1],  num_aux->chunk   , n * sizeof(uint64_t));
         memcpy(&num->chunk[pos_2], &num_aux->chunk[n], n * sizeof(uint64_t));
@@ -1691,8 +1691,8 @@ static void num_ssm_fft_inv_rec(
 
         num_ssm_shr_mod(num_aux, num, pos_2, n, i * bits);
 
-        num_ssm_add_mod_(num_aux, 0, num, pos_1, num, pos_2, n);
-        num_ssm_sub_mod_(num_aux, n, num, pos_1, num, pos_2, n);
+        num_ssm_add_mod(num_aux, 0, num, pos_1, num, pos_2, n);
+        num_ssm_sub_mod(num_aux, n, num, pos_1, num, pos_2, n);
 
         memcpy(&num->chunk[pos_1],  num_aux->chunk   , n * sizeof(uint64_t));
         memcpy(&num->chunk[pos_2], &num_aux->chunk[n], n * sizeof(uint64_t));
@@ -1931,7 +1931,7 @@ static void num_ssm_mul_mod_span(
     memmove(&num_aux->chunk[n], &num_aux->chunk[n-1], n * sizeof(uint64_t));
     num_aux->chunk[n-1] = 0;
     // NOLINTNEXTLINE(readability-suspicious-call-argument)
-    num_ssm_sub_mod_(num_1, pos, num_aux, 0, num_aux, n, n);
+    num_ssm_sub_mod(num_1, pos, num_aux, 0, num_aux, n, n);
 }
 
 static void num_ssm_pointwise_product(num_ssm_t num_ssm_1, num_ssm_t num_ssm_2)
@@ -2056,7 +2056,7 @@ static void num_ssm_sqr_mod_span(num_p num_aux, num_p num, uint64_t pos, uint64_
 
     memmove(&num_aux->chunk[n], &num_aux->chunk[n-1], n * sizeof(uint64_t));
     num_aux->chunk[n-1] = 0;
-    num_ssm_sub_mod_(num, pos, num_aux, 0, num_aux, n, n);
+    num_ssm_sub_mod(num, pos, num_aux, 0, num_aux, n, n);
 }
 
 
