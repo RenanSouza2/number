@@ -1192,8 +1192,8 @@ static int64_t num_ssm_cmp_uint_offset(
 
 static void num_ssm_add_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value)
 {
-    CLU_HANDLER_IS_SAFE(num);
-    assert(num);
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num)
 
     uint64_t carry = value;
     for(uint64_t i = 0; i < n && carry; i++)
@@ -1237,7 +1237,7 @@ static void num_ssm_denormalize(num_p num, uint64_t pos, uint64_t n)
     assert(num)
 
     num_ssm_add_uint(num, pos        , n, 1);
-    num_ssm_add_uint(num, pos + n - 1, 1, 1);
+    num->chunk[pos + n - 1] += 1;
 }
 
 void num_ssm_add_mod(
@@ -1347,7 +1347,6 @@ static void num_ssm_sub_mod_immed(
 
     num_ssm_denormalize(num_1, pos_1, n);
 
-    // FIX: Native memory mutation. No temporary `diff` variables needed!
     uint64_t * restrict dest = &num_1->chunk[pos_1];
     const uint64_t * restrict src2 = &num_2->chunk[pos_2];
 
