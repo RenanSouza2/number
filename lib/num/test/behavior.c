@@ -1,6 +1,27 @@
 #include "../debug.h"
 #include "../../../testrc.h"
 #include "../../../mods/macros/test.h"
+#include <stdio.h>
+
+
+
+static char buffer[256];
+
+#ifndef NAME
+// Fallback definition to keep the IDE/linter happy 
+// when it parses behavior.c in isolation.
+#define NAME "UNDEFINED_TAG"
+#endif
+
+[[maybe_unused]]
+static char* format_buffer(const char* func)
+{
+    snprintf(buffer, 256, "%s %s", func, NAME);
+    return buffer;
+}
+
+#undef FUNC_TAG
+#define FUNC_TAG format_buffer(__func__)
 
 
 

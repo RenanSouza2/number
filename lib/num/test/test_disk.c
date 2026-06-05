@@ -1,4 +1,6 @@
+#define NAME "disk"
 #include "behavior.c"
+
 
 
 static void test_num_disk()

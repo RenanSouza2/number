@@ -11,3 +11,4 @@ Diagnostics:
       - "readability-suspicious-call-argument"
       - "cert-dcl03-c"
       - "cert-msc51-cpp"
+      - "cert-msc32-c"

@@ -3,7 +3,7 @@ TEST_OBJS = $(TEST_SRCS:.c=.o)
 RUNNERS = $(TEST_SRCS:%.c=runner_%)
 RUN_TARGETS = $(TEST_SRCS:%.c=run_%)
 
-.PHONY: test clean FORCE
+.PHONY: test clean
 
 test: $(RUN_TARGETS)
 	@echo "All tests completed in $(DIR)."
