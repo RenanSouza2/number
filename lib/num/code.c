@@ -1846,8 +1846,8 @@ num_p num_mul_ssm_fwd_transform(num_p num, uint64_t count)
     assert(num)
 
     ssm_params_t params = ssm_get_params(count);
-    num_p num_fft = num_create(CLU_ARGS(params.n * params.K, 0));
-    num_p num_aux = num_create(CLU_ARGS(2 * params.n, 0));
+    num_p num_fft = num_create_dirty(CLU_ARGS(params.n * params.K, 0));
+    num_p num_aux = num_create_dirty(CLU_ARGS(2 * params.n, 0));
     num_mul_ssm_fwd_step_buffer(num_aux, num_fft, num, &params);
 
     uint64_t n = params.n;
@@ -1945,7 +1945,7 @@ static void num_ssm_pointwise_product(num_ssm_t num_ssm_1, num_ssm_t num_ssm_2)
     uint64_t block_count = num_ssm_1.num_fft->size / n;
     assert(block_count * n == num_ssm_1.num_fft->size);
 
-    num_p num_aux = num_create(CLU_ARGS(2 * n, 0));
+    num_p num_aux = num_create_dirty(CLU_ARGS(2 * n, 0));
     num_aux->cannot_expand = true;
     for(uint64_t i=0; i<block_count; i++)
     {
@@ -1974,7 +1974,7 @@ static num_p num_mul_ssm_bwd_transform_rec(num_p num_aux_1, num_p num_aux_2, num
     uint64_t block_count = num_fft->size / (params.K * params.n);
     assert(block_count * params.K * params.n == num_fft->size);
 
-    num_p num_tmp = num_create(CLU_ARGS(block_count * n, 0));
+    num_p num_tmp = num_create_dirty(CLU_ARGS(block_count * n, 0));
     for(uint64_t i=0; i<block_count; i++)
     {
         num_t num_in, num_out;
@@ -1995,8 +1995,8 @@ num_p num_mul_ssm_bwd_transform(num_p num_fft, uint64_t count)
     assert(num_fft)
 
     ssm_params_t params = ssm_get_params(count);
-    num_p num_aux_1 = num_create(CLU_ARGS(params.n, 0));
-    num_p num_aux_2 = num_create(CLU_ARGS(2 * params.n, 0));
+    num_p num_aux_1 = num_create_dirty(CLU_ARGS(params.n, 0));
+    num_p num_aux_2 = num_create_dirty(CLU_ARGS(2 * params.n, 0));
     num_aux_1->cannot_expand = true;
     num_aux_2->cannot_expand = true;
     num_p num_tmp = num_mul_ssm_bwd_transform_rec(num_aux_1, num_aux_2, num_fft, params.n);
@@ -2170,7 +2170,7 @@ num_p num_sqr_ssm(num_p num)
     uint64_t n = ssm_get_last_n(count);
     uint64_t block_count = num_ssm.num_fft->size / n;
     assert(block_count * n == num_ssm.num_fft->size);
-    num_p num_aux = num_create(CLU_ARGS(2 * n, 0));
+    num_p num_aux = num_create_dirty(CLU_ARGS(2 * n, 0));
     num_aux->cannot_expand = true;
     for(uint64_t i=0; i<block_count; i++)
     {
