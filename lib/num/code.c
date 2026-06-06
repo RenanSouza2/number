@@ -1069,7 +1069,7 @@ static num_p num_mul_classic_buffer(num_p num_res, num_p num_1, num_p num_2)
     uint64_t target_count = n1 + n2;
 
     // THE CRASH FIX: Safely zero the ENTIRE capacity to prevent trash memory
-    num_set_count(num_res, 0); 
+    num_set_count(num_res, 0);
     num_res->count = target_count;
 
     uint64_t * restrict dest = num_res->chunk;
@@ -1085,7 +1085,7 @@ static num_p num_mul_classic_buffer(num_p num_res, num_p num_1, num_p num_2)
         for(uint64_t j = 0; j < n1; j++)
         {
             uint64_t dest_idx = i + j;
-            
+
             // 128-bit multiplication maps cleanly to the hardware (mul + umulh)
             uint128_t u = MUL(src1[j], v2);
             uint64_t p_low = LOW(u);
@@ -1543,7 +1543,7 @@ STATIC void num_ssm_depad_wrap(
         if(is_add) num_ssm_add_mod_immed(num_res, 0, num_aux_1, 0, n0);
         else       num_ssm_sub_mod_immed(num_res, 0, num_aux_1, 0, n0);
     }
-    
+
     num_set_count(num_res, n0);
     num_normalize(num_res);
 }
@@ -2019,11 +2019,11 @@ static void num_ssm_mul_mod_span(
         {
             uint64_t dest_idx = i + j;
             uint128_t u = MUL(src1[j], v2);
-            
+
             uint64_t sum;
             uint64_t c1 = (uint64_t)__builtin_add_overflow(LOW(u), dest[dest_idx], &sum);
             uint64_t c2 = (uint64_t)__builtin_add_overflow(sum, carry, &dest[dest_idx]);
-            
+
             carry = HIGH(u) + c1 + c2;
         }
         dest[i + n] = carry;
@@ -2032,7 +2032,7 @@ static void num_ssm_mul_mod_span(
     // 2. Fermat Ring Wrap-Around Modulo 2^(64*(n-1)) + 1
     memmove(&dest[n], &dest[n-1], n * sizeof(uint64_t));
     dest[n-1] = 0;
-    
+
     // 3. Modulo Subtraction
     num_ssm_sub_mod(num_1, pos, num_aux, 0, num_aux, n, n);
 }
@@ -2050,13 +2050,13 @@ static void num_ssm_pointwise_product(num_ssm_t num_ssm_1, num_ssm_t num_ssm_2)
 
     num_p num_aux = num_create_dirty(CLU_ARGS(2 * n, 0));
     num_aux->cannot_expand = true;
-    
+
     // --> IT IS USED HERE <--
     for(uint64_t i=0; i<block_count; i++)
     {
         num_ssm_mul_mod_span(num_aux, num_ssm_1.num_fft, num_ssm_2.num_fft, i * n, n);
     }
-    
+
     num_free(num_aux);
 }
 
@@ -2125,8 +2125,6 @@ STATIC num_p num_mul_ssm_bwd_transform(num_p num_fft, uint64_t count)
     return num_res;
 }
 
-#include "../../mods/macros/time.h" // DELETE
-
 // KEEPS NUM_1
 static num_p num_mul_finish_core(num_p num_1, num_ssm_t num_ssm_2)
 {
@@ -2135,7 +2133,6 @@ static num_p num_mul_finish_core(num_p num_1, num_ssm_t num_ssm_2)
     assert(num_ssm_2.num_fft)
     assert(num_1)
 
-    
     // TIME_SETUP
     num_ssm_t num_ssm_1 = num_mul_prepare_core(num_1, num_ssm_2.count);
     // TIME_END(t1)

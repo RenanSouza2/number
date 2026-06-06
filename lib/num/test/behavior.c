@@ -8,7 +8,7 @@
 static char buffer[256];
 
 #ifndef NAME
-// Fallback definition to keep the IDE/linter happy 
+// Fallback definition to keep the IDE/linter happy
 // when it parses behavior.c in isolation.
 #define NAME "UNDEFINED_TAG"
 #endif
