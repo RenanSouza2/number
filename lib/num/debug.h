@@ -1,7 +1,7 @@
 #ifndef NUM_DEBUG_H
 #define NUM_DEBUG_H
 
-#include "../../mods/macros/static.h"
+#include "../../mods/macros/specifiers.h"
 
 #include "header.h"
 

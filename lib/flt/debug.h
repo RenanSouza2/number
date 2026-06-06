@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-#include "../../mods/macros/static.h"
+#include "../../mods/macros/specifiers.h"
 
 #include "header.h" // IWYU pragma: keep
 

@@ -1,5 +1,4 @@
 #include <assert.h>
-// #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1255,7 +1254,7 @@ STATIC inline void num_ssm_sub_uint(num_p num, uint64_t pos, uint64_t n, uint64_
 
 // normalizes coeficient if it is less than 2 modulus
 [[gnu::always_inline]]
-STATIC inline void num_ssm_normalize(num_p num, uint64_t pos, uint64_t n)
+static inline void num_ssm_normalize(num_p num, uint64_t pos, uint64_t n)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
@@ -1282,7 +1281,7 @@ STATIC inline void num_ssm_denormalize(num_p num, uint64_t pos, uint64_t n)
 }
 
 [[gnu::always_inline]]
-STATIC inline void num_ssm_add_mod(
+STATIC INLINE void num_ssm_add_mod(
     num_p num_res,
     uint64_t pos_res,
     num_p num_1,
@@ -1316,7 +1315,7 @@ STATIC inline void num_ssm_add_mod(
 }
 
 [[gnu::always_inline]]
-STATIC inline void num_ssm_add_mod_immed(
+static inline void num_ssm_add_mod_immed(
     num_p num_1,
     uint64_t pos_1,
     num_p num_2,
@@ -1344,7 +1343,7 @@ STATIC inline void num_ssm_add_mod_immed(
 }
 
 [[gnu::always_inline]]
-STATIC inline void num_ssm_sub_mod(
+STATIC INLINE void num_ssm_sub_mod(
     num_p num_res,
     uint64_t pos_res,
     num_p num_1,
@@ -1381,7 +1380,7 @@ STATIC inline void num_ssm_sub_mod(
 }
 
 [[gnu::always_inline]]
-STATIC inline void num_ssm_sub_mod_immed(
+static inline void num_ssm_sub_mod_immed(
     num_p num_1, uint64_t pos_1,
     num_p num_2, uint64_t pos_2,
     uint64_t n
@@ -1407,7 +1406,7 @@ STATIC inline void num_ssm_sub_mod_immed(
 }
 
 [[gnu::always_inline]]
-STATIC inline void num_ssm_opposite(num_p num, uint64_t pos, uint64_t n)
+STATIC INLINE void num_ssm_opposite(num_p num, uint64_t pos, uint64_t n)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
@@ -1509,13 +1508,19 @@ STATIC void num_ssm_depad_wrap(
 
         bool is_add = num_ssm_cmp_uint_offset(num, src_pos + (2 * p->M), i + 1, p->n - (2 * p->M)) < 0;
 
-        if(!is_add) num_ssm_opposite(num, src_pos, src_len);
+        if(!is_add)
+        {
+            num_ssm_opposite(num, src_pos, src_len);
+        }
 
         // Bypass num_set_count completely to avoid massive memsets
         num_aux_1->count = n0;
 
         uint64_t non_wrap_len = (K > C) ? (K - C) : 0;
-        if (non_wrap_len > src_len) non_wrap_len = src_len;
+        if (non_wrap_len > src_len)
+        {
+            non_wrap_len = src_len;
+        }
         uint64_t wrap_len = src_len - non_wrap_len;
 
         // 1. Placement of non-overflow chunks (Targeted memsets only!)
@@ -1541,8 +1546,14 @@ STATIC void num_ssm_depad_wrap(
         }
 
         // 3. Recombination
-        if(is_add) num_ssm_add_mod_immed(num_res, 0, num_aux_1, 0, n0);
-        else       num_ssm_sub_mod_immed(num_res, 0, num_aux_1, 0, n0);
+        if(is_add)
+        {
+            num_ssm_add_mod_immed(num_res, 0, num_aux_1, 0, n0);
+        }
+        else
+        {
+            num_ssm_sub_mod_immed(num_res, 0, num_aux_1, 0, n0);
+        }
     }
 
     num_set_count(num_res, n0);
