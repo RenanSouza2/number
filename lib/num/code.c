@@ -1181,7 +1181,8 @@ STATIC uint64_t ssm_bit_inv(uint64_t i, uint64_t K)
     return res;
 }
 
-static bool num_is_span_zero(num_p num, uint64_t pos, uint64_t count)
+[[gnu::always_inline]]
+static inline bool num_is_span_zero(num_p num, uint64_t pos, uint64_t count)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
