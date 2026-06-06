@@ -1067,7 +1067,7 @@ static num_p num_mul_classic_buffer(num_p num_res, num_p num_1, num_p num_2)
     }
 
     uint64_t target_count = n1 + n2;
-    
+
     // THE CRASH FIX: Safely zero the ENTIRE capacity to prevent trash memory
     num_set_count(num_res, 0); 
     num_res->count = target_count;
@@ -1095,7 +1095,7 @@ static num_p num_mul_classic_buffer(num_p num_res, num_p num_1, num_p num_2)
             uint64_t sum;
             uint64_t c1 = (uint64_t)__builtin_add_overflow(p_low, dest[dest_idx], &sum);
             uint64_t c2 = (uint64_t)__builtin_add_overflow(sum, carry, &dest[dest_idx]);
-            
+
             // Carry is mathematically guaranteed to fit cleanly in 64 bits
             carry = p_high + c1 + c2;
         }
