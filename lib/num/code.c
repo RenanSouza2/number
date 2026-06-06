@@ -1280,7 +1280,7 @@ STATIC inline void num_ssm_denormalize(num_p num, uint64_t pos, uint64_t n)
     num->chunk[pos + n - 1] += 1;
 }
 
-[[gnu::always_inline]]
+ONLY_PRD([[gnu::always_inline]])
 STATIC INLINE void num_ssm_add_mod(
     num_p num_res,
     uint64_t pos_res,
