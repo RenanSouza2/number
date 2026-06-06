@@ -777,20 +777,30 @@ int main()
     // mem_1(21);
 
     #ifdef DEBUG
-    clu_log_level_set(CLU_LOG_DYNAMIC);
     uint64_t base = 20;
     #else
-    uint64_t base = 26;
+    uint64_t base = 27;
     #endif
 
     num_p num_1 = num_generate_1(base, 2);
     num_p num_2 = num_add(num_copy(num_1), num_wrap(1));
 
     TIME_SETUP
-    num_p num_res = num_mul(num_1, num_2);
+    num_p num_res = num_mul(num_copy(num_1), num_2);
     TIME_END(t1)
-    num_free(num_res);
     tprintf("time: %.3f", dtime(t1));
+
+    // TIME_RESET
+    // num_res = num_div(num_res, num_1);
+    // TIME_END(t2)
+    // tprintf("time: %.3f", dtime(t2));
+
+    num_free(num_res);
+
+    #ifdef DEBUG
+    uint64_t count = clu_get_register_count();
+    tprintf("total allocations: " U64P() "", count);
+    #endif
 
     // assert(clu_mem_is_empty());
 
@@ -799,4 +809,5 @@ int main()
 }
 
 // begin:
-//      time 26: 6.3
+// main    | time: 10.997
+// main    | total allocations: 120080

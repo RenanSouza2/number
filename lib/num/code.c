@@ -1055,18 +1055,54 @@ static num_p num_mul_classic_buffer(num_p num_res, num_p num_1, num_p num_2)
     CLU_HANDLER_IS_SAFE(num_res)
     CLU_HANDLER_IS_SAFE(num_1)
     CLU_HANDLER_IS_SAFE(num_2)
-    assert(num_res)
-    assert(num_1)
-    assert(num_2)
+    assert(num_res && num_1 && num_2)
     assert(num_res->size >= num_1->count + num_2->count)
 
-    num_set_count(num_res, 0);
-    for(uint64_t i=0; i<num_2->count; i++)
-    {
-        num_res = num_add_mul_uint_offset(num_res, i, num_1, 0, num_2->chunk[i]);
+    uint64_t n1 = num_1->count;
+    uint64_t n2 = num_2->count;
+
+    if (n1 == 0 || n2 == 0) {
+        num_set_count(num_res, 0);
+        return num_res;
     }
 
-    return num_res;
+    uint64_t target_count = n1 + n2;
+    
+    // THE CRASH FIX: Safely zero the ENTIRE capacity to prevent trash memory
+    num_set_count(num_res, 0); 
+    num_res->count = target_count;
+
+    uint64_t * restrict dest = num_res->chunk;
+    const uint64_t * restrict src1 = num_1->chunk;
+    const uint64_t * restrict src2 = num_2->chunk;
+
+    for(uint64_t i = 0; i < n2; i++)
+    {
+        uint64_t v2 = src2[i];
+        if (v2 == 0) continue;
+
+        uint64_t carry = 0;
+        for(uint64_t j = 0; j < n1; j++)
+        {
+            uint64_t dest_idx = i + j;
+            
+            // 128-bit multiplication maps cleanly to the hardware (mul + umulh)
+            uint128_t u = MUL(src1[j], v2);
+            uint64_t p_low = LOW(u);
+            uint64_t p_high = HIGH(u);
+
+            // THE SPEED FIX: Force 64-bit native ALU additions (Kills 128-bit software emulation)
+            uint64_t sum;
+            uint64_t c1 = (uint64_t)__builtin_add_overflow(p_low, dest[dest_idx], &sum);
+            uint64_t c2 = (uint64_t)__builtin_add_overflow(sum, carry, &dest[dest_idx]);
+            
+            // Carry is mathematically guaranteed to fit cleanly in 64 bits
+            carry = p_high + c1 + c2;
+        }
+        dest[i + n1] = carry;
+    }
+
+    return num_normalize(num_res);
 }
 
 static num_p num_sqr_classic_buffer(num_p num_res, num_p num)
@@ -1190,6 +1226,7 @@ static int64_t num_ssm_cmp_uint_offset(
     return 0;
 }
 
+[[gnu::always_inline]]
 static void num_ssm_add_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value)
 {
     CLU_HANDLER_IS_SAFE(num)
@@ -1202,6 +1239,7 @@ static void num_ssm_add_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value
     }
 }
 
+[[gnu::always_inline]]
 static void num_ssm_sub_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value)
 {
     CLU_HANDLER_IS_SAFE(num)
@@ -1215,6 +1253,7 @@ static void num_ssm_sub_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value
 }
 
 // normalizes coeficient if it is less than 2 modulus
+[[gnu::always_inline]]
 static void num_ssm_normalize(num_p num, uint64_t pos, uint64_t n)
 {
     CLU_HANDLER_IS_SAFE(num)
@@ -1231,6 +1270,7 @@ static void num_ssm_normalize(num_p num, uint64_t pos, uint64_t n)
     }
 }
 
+[[gnu::always_inline]]
 static void num_ssm_denormalize(num_p num, uint64_t pos, uint64_t n)
 {
     CLU_HANDLER_IS_SAFE(num)
@@ -1240,6 +1280,7 @@ static void num_ssm_denormalize(num_p num, uint64_t pos, uint64_t n)
     num->chunk[pos + n - 1] += 1;
 }
 
+[[gnu::always_inline]]
 STATIC void num_ssm_add_mod(
     num_p num_res,
     uint64_t pos_res,
@@ -1273,6 +1314,7 @@ STATIC void num_ssm_add_mod(
     num_ssm_normalize(num_res, pos_res, n);
 }
 
+[[gnu::always_inline]]
 static void num_ssm_add_mod_immed(
     num_p num_1,
     uint64_t pos_1,
@@ -1300,6 +1342,7 @@ static void num_ssm_add_mod_immed(
     num_ssm_normalize(num_1, pos_1, n);
 }
 
+[[gnu::always_inline]]
 STATIC void num_ssm_sub_mod(
     num_p num_res,
     uint64_t pos_res,
@@ -1336,6 +1379,7 @@ STATIC void num_ssm_sub_mod(
     num_ssm_normalize(num_res, pos_res, n);
 }
 
+[[gnu::always_inline]]
 static void num_ssm_sub_mod_immed(
     num_p num_1, uint64_t pos_1,
     num_p num_2, uint64_t pos_2,
@@ -1361,6 +1405,7 @@ static void num_ssm_sub_mod_immed(
     num_ssm_normalize(num_1, pos_1, n);
 }
 
+[[gnu::always_inline]]
 STATIC void num_ssm_opposite(num_p num, uint64_t pos, uint64_t n)
 {
     CLU_HANDLER_IS_SAFE(num)
@@ -1436,6 +1481,7 @@ STATIC num_p num_ssm_depad_no_wrap(num_p num, ssm_params_p p)
 // Separate number to a base 2^(64*b)
 // Each place will be represented in n chunks
 // the final vector is padded to k places
+[[maybe_unused]]
 STATIC void num_ssm_depad_wrap(
     num_p num_aux_1,
     num_p num_aux_2,
@@ -1449,29 +1495,55 @@ STATIC void num_ssm_depad_wrap(
     CLU_HANDLER_IS_SAFE(num_aux_2)
     CLU_HANDLER_IS_SAFE(num_res)
     CLU_HANDLER_IS_SAFE(num)
-    assert(num_aux_1)
-    assert(num_aux_2)
-    assert(num_res)
-    assert(num)
-    assert(num_aux_1->size >= n0)
-    assert(num_aux_2->size >= 2 * n0)
+    assert(num_aux_1 && num_aux_2 && num_res && num)
+    assert(num_aux_1->size >= n0 && num_aux_2->size >= 2 * n0)
+
+    uint64_t K = n0 - 1;
 
     for(uint64_t i=0; i<p->K; i++)
     {
-        num_set_count(num_aux_1, 0);
-        if(num_ssm_cmp_uint_offset(num, (p->n * i) + (2 * p->M), i + 1, p->n - (2 * p->M)) < 0)
-        {
-            memcpy(num_aux_1->chunk, &num->chunk[i * p->n], p->n * sizeof(uint64_t));
-            num_ssm_shl_mod(num_aux_2, num_aux_1, 0, n0, chunk_bits * i * p->M);
-            num_ssm_add_mod_immed(num_res, 0, num_aux_1, 0, n0);
-            continue;
+        uint64_t C = i * p->M;
+        uint64_t src_pos = i * p->n;
+        uint64_t src_len = p->n;
+
+        bool is_add = num_ssm_cmp_uint_offset(num, src_pos + (2 * p->M), i + 1, p->n - (2 * p->M)) < 0;
+
+        if(!is_add) num_ssm_opposite(num, src_pos, src_len);
+
+        // Bypass num_set_count completely to avoid massive memsets
+        num_aux_1->count = n0;
+
+        uint64_t non_wrap_len = (K > C) ? (K - C) : 0;
+        if (non_wrap_len > src_len) non_wrap_len = src_len;
+        uint64_t wrap_len = src_len - non_wrap_len;
+
+        // 1. Placement of non-overflow chunks (Targeted memsets only!)
+        if (non_wrap_len > 0) {
+            memcpy(&num_aux_1->chunk[C], &num->chunk[src_pos], non_wrap_len * sizeof(uint64_t));
+        }
+        if (C > 0) {
+            memset(&num_aux_1->chunk[0], 0, C * sizeof(uint64_t));
+        }
+        uint64_t tail_1 = C + non_wrap_len;
+        if (n0 > tail_1) {
+            memset(&num_aux_1->chunk[tail_1], 0, (n0 - tail_1) * sizeof(uint64_t));
         }
 
-        num_ssm_opposite(num, p->n * i, p->n);
-        memcpy(num_aux_1->chunk, &num->chunk[i * p->n], p->n * sizeof(uint64_t));
-        num_ssm_shl_mod(num_aux_2, num_aux_1, 0, n0, chunk_bits * i * p->M);
-        num_ssm_sub_mod_immed(num_res, 0, num_aux_1, 0, n0);
+        // 2. Placement of overflow chunks (Only if they exist)
+        if (wrap_len > 0) {
+            num_aux_2->count = n0;
+            memcpy(&num_aux_2->chunk[0], &num->chunk[src_pos + non_wrap_len], wrap_len * sizeof(uint64_t));
+            if (n0 > wrap_len) {
+                memset(&num_aux_2->chunk[wrap_len], 0, (n0 - wrap_len) * sizeof(uint64_t));
+            }
+            num_ssm_sub_mod_immed(num_aux_1, 0, num_aux_2, 0, n0);
+        }
+
+        // 3. Recombination
+        if(is_add) num_ssm_add_mod_immed(num_res, 0, num_aux_1, 0, n0);
+        else       num_ssm_sub_mod_immed(num_res, 0, num_aux_1, 0, n0);
     }
+    
     num_set_count(num_res, n0);
     num_normalize(num_res);
 }
@@ -1824,6 +1896,10 @@ static uint64_t ssm_get_last_n(uint64_t count)
     return params.n;
 }
 
+#include "../../mods/macros/time.h"
+
+static bool show = false;
+
 static void num_mul_ssm_fwd_step_buffer(num_p num_aux, num_p num_fft_res, num_p num, ssm_params_p params)
 {
     CLU_HANDLER_IS_SAFE(num_aux)
@@ -1833,7 +1909,15 @@ static void num_mul_ssm_fwd_step_buffer(num_p num_aux, num_p num_fft_res, num_p 
     assert(num_fft_res)
     assert(num)
 
+    TIME_SETUP
     num_ssm_pad(num_fft_res, num, params);
+    TIME_END(t1)
+    if(show)
+    {
+        tprintf("pad: %.3f", dtime(t1));
+    }
+    show = false;
+
     num_ssm_fft_fwd(num_aux, num_fft_res, params);
 }
 
@@ -1846,6 +1930,7 @@ STATIC num_p num_mul_ssm_fwd_transform(num_p num, uint64_t count)
     ssm_params_t params = ssm_get_params(count);
     num_p num_fft = num_create_dirty(CLU_ARGS(params.n * params.K, 0));
     num_p num_aux = num_create_dirty(CLU_ARGS(2 * params.n, 0));
+    // show = true;
     num_mul_ssm_fwd_step_buffer(num_aux, num_fft, num, &params);
 
     uint64_t n = params.n;
@@ -1916,19 +2001,39 @@ static void num_ssm_mul_mod_span(
     CLU_HANDLER_IS_SAFE(num_aux)
     CLU_HANDLER_IS_SAFE(num_1)
     CLU_HANDLER_IS_SAFE(num_2)
-    assert(num_aux)
-    assert(num_1)
-    assert(num_2)
+    assert(num_aux && num_1 && num_2)
 
-    num_t num_t_1, num_t_2;
-    num_span(&num_t_1, num_1, pos, pos + n);
-    num_span(&num_t_2, num_2, pos, pos + n);
+    uint64_t * restrict dest = num_aux->chunk;
+    const uint64_t * restrict src1 = &num_1->chunk[pos];
+    const uint64_t * restrict src2 = &num_2->chunk[pos];
 
-    num_mul_classic_buffer(num_aux, &num_t_1, &num_t_2);
+    // 1. Raw N x N Multiplication (No spans, no normalizations, fixed bounds)
+    memset(dest, 0, 2 * n * sizeof(uint64_t));
+    for(uint64_t i = 0; i < n; i++)
+    {
+        uint64_t v2 = src2[i];
+        if (v2 == 0) continue;
 
-    memmove(&num_aux->chunk[n], &num_aux->chunk[n-1], n * sizeof(uint64_t));
-    num_aux->chunk[n-1] = 0;
-    // NOLINTNEXTLINE(readability-suspicious-call-argument)
+        uint64_t carry = 0;
+        for(uint64_t j = 0; j < n; j++)
+        {
+            uint64_t dest_idx = i + j;
+            uint128_t u = MUL(src1[j], v2);
+            
+            uint64_t sum;
+            uint64_t c1 = (uint64_t)__builtin_add_overflow(LOW(u), dest[dest_idx], &sum);
+            uint64_t c2 = (uint64_t)__builtin_add_overflow(sum, carry, &dest[dest_idx]);
+            
+            carry = HIGH(u) + c1 + c2;
+        }
+        dest[i + n] = carry;
+    }
+
+    // 2. Fermat Ring Wrap-Around Modulo 2^(64*(n-1)) + 1
+    memmove(&dest[n], &dest[n-1], n * sizeof(uint64_t));
+    dest[n-1] = 0;
+    
+    // 3. Modulo Subtraction
     num_ssm_sub_mod(num_1, pos, num_aux, 0, num_aux, n, n);
 }
 
@@ -1945,10 +2050,13 @@ static void num_ssm_pointwise_product(num_ssm_t num_ssm_1, num_ssm_t num_ssm_2)
 
     num_p num_aux = num_create_dirty(CLU_ARGS(2 * n, 0));
     num_aux->cannot_expand = true;
+    
+    // --> IT IS USED HERE <--
     for(uint64_t i=0; i<block_count; i++)
     {
         num_ssm_mul_mod_span(num_aux, num_ssm_1.num_fft, num_ssm_2.num_fft, i * n, n);
     }
+    
     num_free(num_aux);
 }
 
@@ -1973,6 +2081,7 @@ static num_p num_mul_ssm_bwd_transform_rec(num_p num_aux_1, num_p num_aux_2, num
     assert(block_count * params.K * params.n == num_fft->size);
 
     num_p num_tmp = num_create_dirty(CLU_ARGS(block_count * n, 0));
+    // uint64_t t_total = 0;
     for(uint64_t i=0; i<block_count; i++)
     {
         num_t num_in, num_out;
@@ -1980,8 +2089,13 @@ static num_p num_mul_ssm_bwd_transform_rec(num_p num_aux_1, num_p num_aux_2, num
         num_span(&num_out, num_tmp, i * n, (i + 1) * n);
 
         num_ssm_fft_inv(num_aux_2, &num_in, &params);
+
+        // TIME_SETUP
         num_ssm_depad_wrap(num_aux_1, num_aux_2, &num_out, &num_in, &params, n);
+        // TIME_END(t1);
+        // t_total += t1;
     }
+    // tprintf("time depad wraped: %.3f", dtime(t_total));
 
     num_free(num_fft);
     return num_tmp;
@@ -2002,10 +2116,16 @@ STATIC num_p num_mul_ssm_bwd_transform(num_p num_fft, uint64_t count)
 
     num_ssm_fft_inv(num_aux_2, num_tmp, &params);
     num_free(num_aux_2);
-    return num_ssm_depad_no_wrap(num_tmp, &params);
+
+    // TIME_SETUP
+    num_p num_res = num_ssm_depad_no_wrap(num_tmp, &params);
+    // TIME_END(t1)
+    // tprintf("time depad: %.3f", dtime(t1));
+
+    return num_res;
 }
 
-// #include "../../mods/macros/time.h" // DELETE
+#include "../../mods/macros/time.h" // DELETE
 
 // KEEPS NUM_1
 static num_p num_mul_finish_core(num_p num_1, num_ssm_t num_ssm_2)
@@ -2015,14 +2135,23 @@ static num_p num_mul_finish_core(num_p num_1, num_ssm_t num_ssm_2)
     assert(num_ssm_2.num_fft)
     assert(num_1)
 
-    num_ssm_t num_ssm_1 = num_mul_prepare_core(num_1, num_ssm_2.count);
-
+    
     // TIME_SETUP
-    num_ssm_pointwise_product(num_ssm_1, num_ssm_2);
+    num_ssm_t num_ssm_1 = num_mul_prepare_core(num_1, num_ssm_2.count);
     // TIME_END(t1)
-    // tprintf("time pointwise: %.3f", (double)t1 / 1e9);
+    // tprintf("time prepare 2: %.3f", dtime(t1));
 
-    return num_mul_ssm_bwd_transform(num_ssm_1.num_fft, num_ssm_2.count);
+    // TIME_RESET
+    num_ssm_pointwise_product(num_ssm_1, num_ssm_2);
+    // TIME_END(t2)
+    // tprintf("time pointwise: %.3f", dtime(t2));
+
+    // TIME_RESET
+    num_p num_res = num_mul_ssm_bwd_transform(num_ssm_1.num_fft, num_ssm_2.count);
+    // TIME_END(t3)
+    // tprintf("time finish: %.3f", dtime(t3));
+
+    return num_res;
 }
 
 num_p num_mul_finish(num_p num_1, num_ssm_t num_ssm_2)
@@ -2149,7 +2278,7 @@ STATIC num_p num_mul_ssm(num_p num_1, num_p num_2)
     // TIME_SETUP
     num_ssm_t num_ssm_2 = num_mul_prepare_core(num_2, count);
     // TIME_END(t1)
-    // tprintf("time prepare: %.3f", (double)t1 / 1e9);
+    // tprintf("time prepare: %.3f", dtime(t1));
 
     num_p num_res = num_mul_finish_core(num_1, num_ssm_2);
 

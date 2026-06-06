@@ -32,7 +32,7 @@ _clean:
 .PHONY: test
 test t:
 	$(MAKE) dbg --directory=$(LIB_DIR) -s -j
-	$(MAKE) _test -s -j
+	$(MAKE) _test -s
 
 _test:
 	$(MAKE) --directory=test
