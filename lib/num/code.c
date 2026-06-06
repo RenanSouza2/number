@@ -1342,7 +1342,7 @@ static inline void num_ssm_add_mod_immed(
     num_ssm_normalize(num_1, pos_1, n);
 }
 
-[[gnu::always_inline]]
+ONLY_PRD([[gnu::always_inline]])
 STATIC INLINE void num_ssm_sub_mod(
     num_p num_res,
     uint64_t pos_res,
