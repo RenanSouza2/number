@@ -1227,7 +1227,7 @@ static int64_t num_ssm_cmp_uint_offset(
 }
 
 [[gnu::always_inline]]
-static void num_ssm_add_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value)
+STATIC inline void num_ssm_add_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
@@ -1240,7 +1240,7 @@ static void num_ssm_add_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value
 }
 
 [[gnu::always_inline]]
-static void num_ssm_sub_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value)
+STATIC inline void num_ssm_sub_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
@@ -1254,7 +1254,7 @@ static void num_ssm_sub_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value
 
 // normalizes coeficient if it is less than 2 modulus
 [[gnu::always_inline]]
-static void num_ssm_normalize(num_p num, uint64_t pos, uint64_t n)
+STATIC inline void num_ssm_normalize(num_p num, uint64_t pos, uint64_t n)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
@@ -1271,7 +1271,7 @@ static void num_ssm_normalize(num_p num, uint64_t pos, uint64_t n)
 }
 
 [[gnu::always_inline]]
-static void num_ssm_denormalize(num_p num, uint64_t pos, uint64_t n)
+STATIC inline void num_ssm_denormalize(num_p num, uint64_t pos, uint64_t n)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
@@ -1281,7 +1281,7 @@ static void num_ssm_denormalize(num_p num, uint64_t pos, uint64_t n)
 }
 
 [[gnu::always_inline]]
-STATIC void num_ssm_add_mod(
+STATIC inline void num_ssm_add_mod(
     num_p num_res,
     uint64_t pos_res,
     num_p num_1,
@@ -1315,7 +1315,7 @@ STATIC void num_ssm_add_mod(
 }
 
 [[gnu::always_inline]]
-static void num_ssm_add_mod_immed(
+STATIC inline void num_ssm_add_mod_immed(
     num_p num_1,
     uint64_t pos_1,
     num_p num_2,
@@ -1343,7 +1343,7 @@ static void num_ssm_add_mod_immed(
 }
 
 [[gnu::always_inline]]
-STATIC void num_ssm_sub_mod(
+STATIC inline void num_ssm_sub_mod(
     num_p num_res,
     uint64_t pos_res,
     num_p num_1,
@@ -1380,7 +1380,7 @@ STATIC void num_ssm_sub_mod(
 }
 
 [[gnu::always_inline]]
-static void num_ssm_sub_mod_immed(
+STATIC inline void num_ssm_sub_mod_immed(
     num_p num_1, uint64_t pos_1,
     num_p num_2, uint64_t pos_2,
     uint64_t n
@@ -1406,7 +1406,7 @@ static void num_ssm_sub_mod_immed(
 }
 
 [[gnu::always_inline]]
-STATIC void num_ssm_opposite(num_p num, uint64_t pos, uint64_t n)
+STATIC inline void num_ssm_opposite(num_p num, uint64_t pos, uint64_t n)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
