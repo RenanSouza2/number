@@ -776,6 +776,10 @@ int main()
     // flt_num_pi_3(1000);
     // mem_1(21);
 
+    printf("\nwaiting");
+    getchar();
+    printf("\ngoing");
+
     #ifdef DEBUG
     uint64_t base = 20;
     #else

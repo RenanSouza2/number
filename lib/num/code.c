@@ -1078,7 +1078,10 @@ static num_p num_mul_classic_buffer(num_p num_res, num_p num_1, num_p num_2)
     for(uint64_t i = 0; i < n2; i++)
     {
         uint64_t v2 = src2[i];
-        if (v2 == 0) continue;
+        if (v2 == 0)
+        {
+            continue;
+        }
 
         uint64_t carry = 0;
         for(uint64_t j = 0; j < n1; j++)
@@ -2024,7 +2027,10 @@ static void num_ssm_mul_mod_span(
     for(uint64_t i = 0; i < n; i++)
     {
         uint64_t v2 = src2[i];
-        if (v2 == 0) continue;
+        if (v2 == 0)
+        {
+            continue;
+        }
 
         uint64_t carry = 0;
         for(uint64_t j = 0; j < n; j++)
@@ -2046,6 +2052,7 @@ static void num_ssm_mul_mod_span(
     dest[n-1] = 0;
 
     // 3. Modulo Subtraction
+    // NOLINTNEXTLINE(readability-suspicious-call-argument)
     num_ssm_sub_mod(num_1, pos, num_aux, 0, num_aux, n, n);
 }
 
