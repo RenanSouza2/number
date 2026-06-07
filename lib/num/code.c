@@ -2092,7 +2092,7 @@ void num_ssm_free(num_ssm_t num_ssm)
 }
 
 static inline uint64_t num_ssm_add_mul_uint(
-    uint64_t *dest,
+    uint64_t *dest, // NOLINT(readability-non-const-parameter)
     const uint64_t *src,
     uint64_t n,
     uint64_t v2
@@ -2143,8 +2143,7 @@ static inline uint64_t num_ssm_add_mul_uint(
 
     for(uint64_t j = 0; j < n; j++)
     {
-        uint64_t dest_idx = i + j;
-        uint128_t u = MUL(src1[j], v2);
+        uint128_t u = MUL(src[j], v2);
 
         uint64_t sum;
         uint64_t c1 = (uint64_t)__builtin_add_overflow(LOW(u), dest[dest_idx], &sum);
