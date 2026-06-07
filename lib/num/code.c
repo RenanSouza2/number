@@ -1307,6 +1307,8 @@ STATIC INLINE void num_ssm_add_mod(
 
     uint64_t count = n; // Copy n so we don't clobber it for normalize()
 
+#ifdef __linux__
+
     __asm__ volatile (
         "test %[count], %[count]\n\t"
         "jz 2f\n\t"
@@ -1327,6 +1329,19 @@ STATIC INLINE void num_ssm_add_mod(
         : "rax", "cc", "memory"
     );
 
+#else
+
+    uint64_t carry = 0;
+    for(uint64_t i = 0; i < n; i++)
+    {
+        uint64_t sum;
+        uint64_t c1 = (uint64_t)__builtin_add_overflow(src1[i], src2[i], &sum);
+        uint64_t c2 = (uint64_t)__builtin_add_overflow(sum, carry, &dest[i]);
+        carry = c1 | c2;
+    }
+
+#endif
+
     num_ssm_normalize(num_res, pos_res, n);
 }
 
@@ -1343,8 +1358,10 @@ static inline void num_ssm_add_mod_immed(
 
     uint64_t * restrict dest = &num_1->chunk[pos_1];
     const uint64_t * restrict src2 = &num_2->chunk[pos_2];
-    uint64_t count = n;
 
+#ifdef __linux__
+
+    uint64_t count = n;
     __asm__ volatile (
         "test %[count], %[count]\n\t"
         "jz 2f\n\t"
@@ -1362,6 +1379,18 @@ static inline void num_ssm_add_mod_immed(
         :
         : "rax", "cc", "memory"
     );
+
+#else
+
+    uint64_t carry = 0;
+    for(uint64_t i = 0; i < n; i++)
+    {
+        uint64_t c1 = (uint64_t)__builtin_add_overflow(dest[i], src2[i], &dest[i]);
+        uint64_t c2 = (uint64_t)__builtin_add_overflow(dest[i], carry, &dest[i]);
+        carry = c1 | c2;
+    }
+
+#endif
 
     num_ssm_normalize(num_1, pos_1, n);
 }
@@ -1385,8 +1414,9 @@ STATIC INLINE void num_ssm_sub_mod(
     const uint64_t * restrict src1 = &num_1->chunk[pos_1];
     const uint64_t * restrict src2 = &num_2->chunk[pos_2];
 
-    uint64_t count = n;
+#ifdef __linux__
 
+    uint64_t count = n;
     __asm__ volatile (
         "test %[count], %[count]\n\t"
         "jz 2f\n\t"
@@ -1407,6 +1437,19 @@ STATIC INLINE void num_ssm_sub_mod(
         : "rax", "cc", "memory"
     );
 
+#else
+
+    uint64_t borrow = 0;
+    for(uint64_t i=0; i<n; i++)
+    {
+        uint64_t diff;
+        uint64_t b1 = (uint64_t)__builtin_sub_overflow(src1[i], src2[i], &diff);
+        uint64_t b2 = (uint64_t)__builtin_sub_overflow(diff, borrow, &dest[i]);
+        borrow = b1 | b2;
+    }
+
+#endif
+
     num_ssm_normalize(num_1, pos_1, n);
     num_ssm_normalize(num_res, pos_res, n);
 }
@@ -1425,8 +1468,10 @@ static inline void num_ssm_sub_mod_immed(
 
     uint64_t * restrict dest = &num_1->chunk[pos_1];
     const uint64_t * restrict src2 = &num_2->chunk[pos_2];
-    uint64_t count = n;
 
+#ifdef __linux__
+
+    uint64_t count = n;
     __asm__ volatile (
         "test %[count], %[count]\n\t"
         "jz 2f\n\t"
@@ -1444,6 +1489,18 @@ static inline void num_ssm_sub_mod_immed(
         :
         : "rax", "cc", "memory"
     );
+
+#else
+
+    uint64_t borrow = 0;
+    for(uint64_t i=0; i<n; i++)
+    {
+        uint64_t b1 = (uint64_t)__builtin_sub_overflow(dest[i], src2[i], &dest[i]);
+        uint64_t b2 = (uint64_t)__builtin_sub_overflow(dest[i], borrow, &dest[i]);
+        borrow = b1 | b2;
+    }
+
+#endif
 
     num_ssm_normalize(num_1, pos_1, n);
 }
@@ -2035,7 +2092,7 @@ void num_ssm_free(num_ssm_t num_ssm)
     num_free(num_ssm.num_fft);
 }
 
-static inline uint64_t addmul_1(
+static inline uint64_t num_ssm_add_mul_uint(
     uint64_t *dest,
     const uint64_t *src,
     uint64_t n,
@@ -2043,6 +2100,8 @@ static inline uint64_t addmul_1(
 )
 {
     uint64_t carry = 0;
+
+#ifdef __linux__
 
     __asm__ volatile (
         "test %[n], %[n]\n\t"          // Check if n == 0
@@ -2081,6 +2140,23 @@ static inline uint64_t addmul_1(
         : "rax", "rdx", "cc", "memory"
     );
 
+#else
+
+    for(uint64_t j = 0; j < n; j++)
+    {
+        uint64_t dest_idx = i + j;
+        uint128_t u = MUL(src1[j], v2);
+
+        uint64_t sum;
+        uint64_t c1 = (uint64_t)__builtin_add_overflow(LOW(u), dest[dest_idx], &sum);
+        uint64_t c2 = (uint64_t)__builtin_add_overflow(sum, carry, &dest[dest_idx]);
+
+        carry = HIGH(u) + c1 + c2;
+    }
+    carry;
+
+#endif
+
     return carry;
 }
 
@@ -2110,7 +2186,7 @@ static void num_ssm_mul_mod_span(
             continue;
         }
 
-        dest[i + n] = addmul_1(&dest[i], src1, n, v2);
+        dest[i + n] = num_ssm_add_mul_uint(&dest[i], src1, n, v2);
     }
 
     memmove(&dest[n], &dest[n-1], n * sizeof(uint64_t));
