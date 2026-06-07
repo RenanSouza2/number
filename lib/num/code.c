@@ -1305,10 +1305,9 @@ STATIC INLINE void num_ssm_add_mod(
     const uint64_t * restrict src1 = &num_1->chunk[pos_1];
     const uint64_t * restrict src2 = &num_2->chunk[pos_2];
 
-    uint64_t count = n; // Copy n so we don't clobber it for normalize()
-
 #ifdef __linux__
 
+    uint64_t count = n; // Copy n so we don't clobber it for normalize()
     __asm__ volatile (
         "test %[count], %[count]\n\t"
         "jz 2f\n\t"
