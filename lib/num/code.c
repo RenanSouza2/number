@@ -1305,63 +1305,79 @@ STATIC INLINE void num_ssm_add_mod(
     const uint64_t * restrict src1 = &num_1->chunk[pos_1];
     const uint64_t * restrict src2 = &num_2->chunk[pos_2];
 
-    uint64_t carry = 0;
-    for(uint64_t i = 0; i < n; i++)
-    {
-        uint64_t sum;
-        uint64_t c1 = (uint64_t)__builtin_add_overflow(src1[i], src2[i], &sum);
-        uint64_t c2 = (uint64_t)__builtin_add_overflow(sum, carry, &dest[i]);
-        carry = c1 | c2;
-    }
+    uint64_t count = n; // Copy n so we don't clobber it for normalize()
+
+    __asm__ volatile (
+        "test %[count], %[count]\n\t"
+        "jz 2f\n\t"
+        "clc\n"                           // Clear carry flag to start
+        "1:\n\t"
+        "mov (%[src1]), %%rax\n\t"        // rax = *src1
+        "adc (%[src2]), %%rax\n\t"        // rax = rax + *src2 + CF
+        "mov %%rax, (%[dest])\n\t"        // *dest = rax
+
+        "lea 8(%[src1]), %[src1]\n\t"     // src1++ (lea doesn't touch flags)
+        "lea 8(%[src2]), %[src2]\n\t"     // src2++
+        "lea 8(%[dest]), %[dest]\n\t"     // dest++
+        "dec %[count]\n\t"                // count-- (dec doesn't touch CF!)
+        "jnz 1b\n\t"
+        "2:\n"
+        : [dest] "+r" (dest), [src1] "+r" (src1), [src2] "+r" (src2), [count] "+r" (count)
+        :
+        : "rax", "cc", "memory"
+    );
 
     num_ssm_normalize(num_res, pos_res, n);
 }
 
 [[gnu::always_inline]]
 static inline void num_ssm_add_mod_immed(
-    num_p num_1,
-    uint64_t pos_1,
-    num_p num_2,
-    uint64_t pos_2,
+    num_p num_1, uint64_t pos_1,
+    num_p num_2, uint64_t pos_2,
     uint64_t n
 )
 {
     CLU_HANDLER_IS_SAFE(num_1)
     CLU_HANDLER_IS_SAFE(num_2)
-    assert(num_1)
-    assert(num_2)
+    assert(num_1 && num_2)
 
     uint64_t * restrict dest = &num_1->chunk[pos_1];
     const uint64_t * restrict src2 = &num_2->chunk[pos_2];
+    uint64_t count = n;
 
-    uint64_t carry = 0;
-    for(uint64_t i = 0; i < n; i++)
-    {
-        uint64_t c1 = (uint64_t)__builtin_add_overflow(dest[i], src2[i], &dest[i]);
-        uint64_t c2 = (uint64_t)__builtin_add_overflow(dest[i], carry, &dest[i]);
-        carry = c1 | c2;
-    }
+    __asm__ volatile (
+        "test %[count], %[count]\n\t"
+        "jz 2f\n\t"
+        "clc\n"
+        "1:\n\t"
+        "mov (%[src2]), %%rax\n\t"
+        "adc %%rax, (%[dest])\n\t"        // *dest = *dest + rax + CF
+
+        "lea 8(%[src2]), %[src2]\n\t"
+        "lea 8(%[dest]), %[dest]\n\t"
+        "dec %[count]\n\t"
+        "jnz 1b\n\t"
+        "2:\n"
+        : [dest] "+r" (dest), [src2] "+r" (src2), [count] "+r" (count)
+        :
+        : "rax", "cc", "memory"
+    );
 
     num_ssm_normalize(num_1, pos_1, n);
 }
 
 ONLY_PRD([[gnu::always_inline]])
 STATIC INLINE void num_ssm_sub_mod(
-    num_p num_res,
-    uint64_t pos_res,
-    num_p num_1,
-    uint64_t pos_1,
-    num_p num_2,
-    uint64_t pos_2,
+    num_p num_res, uint64_t pos_res,
+    num_p num_1, uint64_t pos_1,
+    num_p num_2, uint64_t pos_2,
     uint64_t n
 )
 {
     CLU_HANDLER_IS_SAFE(num_res)
     CLU_HANDLER_IS_SAFE(num_1)
     CLU_HANDLER_IS_SAFE(num_2)
-    assert(num_res)
-    assert(num_1)
-    assert(num_2)
+    assert(num_res && num_1 && num_2)
 
     num_ssm_denormalize(num_1, pos_1, n);
 
@@ -1369,14 +1385,27 @@ STATIC INLINE void num_ssm_sub_mod(
     const uint64_t * restrict src1 = &num_1->chunk[pos_1];
     const uint64_t * restrict src2 = &num_2->chunk[pos_2];
 
-    uint64_t borrow = 0;
-    for(uint64_t i=0; i<n; i++)
-    {
-        uint64_t diff;
-        uint64_t b1 = (uint64_t)__builtin_sub_overflow(src1[i], src2[i], &diff);
-        uint64_t b2 = (uint64_t)__builtin_sub_overflow(diff, borrow, &dest[i]);
-        borrow = b1 | b2;
-    }
+    uint64_t count = n;
+
+    __asm__ volatile (
+        "test %[count], %[count]\n\t"
+        "jz 2f\n\t"
+        "clc\n"                           // Clear borrow flag
+        "1:\n\t"
+        "mov (%[src1]), %%rax\n\t"
+        "sbb (%[src2]), %%rax\n\t"        // rax = *src1 - *src2 - CF
+        "mov %%rax, (%[dest])\n\t"
+
+        "lea 8(%[src1]), %[src1]\n\t"
+        "lea 8(%[src2]), %[src2]\n\t"
+        "lea 8(%[dest]), %[dest]\n\t"
+        "dec %[count]\n\t"
+        "jnz 1b\n\t"
+        "2:\n"
+        : [dest] "+r" (dest), [src1] "+r" (src1), [src2] "+r" (src2), [count] "+r" (count)
+        :
+        : "rax", "cc", "memory"
+    );
 
     num_ssm_normalize(num_1, pos_1, n);
     num_ssm_normalize(num_res, pos_res, n);
@@ -1396,14 +1425,25 @@ static inline void num_ssm_sub_mod_immed(
 
     uint64_t * restrict dest = &num_1->chunk[pos_1];
     const uint64_t * restrict src2 = &num_2->chunk[pos_2];
+    uint64_t count = n;
 
-    uint64_t borrow = 0;
-    for(uint64_t i=0; i<n; i++)
-    {
-        uint64_t b1 = (uint64_t)__builtin_sub_overflow(dest[i], src2[i], &dest[i]);
-        uint64_t b2 = (uint64_t)__builtin_sub_overflow(dest[i], borrow, &dest[i]);
-        borrow = b1 | b2;
-    }
+    __asm__ volatile (
+        "test %[count], %[count]\n\t"
+        "jz 2f\n\t"
+        "clc\n"
+        "1:\n\t"
+        "mov (%[src2]), %%rax\n\t"
+        "sbb %%rax, (%[dest])\n\t"        // *dest = *dest - rax - CF
+
+        "lea 8(%[src2]), %[src2]\n\t"
+        "lea 8(%[dest]), %[dest]\n\t"
+        "dec %[count]\n\t"
+        "jnz 1b\n\t"
+        "2:\n"
+        : [dest] "+r" (dest), [src2] "+r" (src2), [count] "+r" (count)
+        :
+        : "rax", "cc", "memory"
+    );
 
     num_ssm_normalize(num_1, pos_1, n);
 }
@@ -1911,9 +1951,7 @@ static uint64_t ssm_get_last_n(uint64_t count)
     return params.n;
 }
 
-#include "../../mods/macros/time.h"
-
-static bool show = false;
+// #include "../../mods/macros/time.h"
 
 static void num_mul_ssm_fwd_step_buffer(num_p num_aux, num_p num_fft_res, num_p num, ssm_params_p params)
 {
@@ -1924,15 +1962,7 @@ static void num_mul_ssm_fwd_step_buffer(num_p num_aux, num_p num_fft_res, num_p 
     assert(num_fft_res)
     assert(num)
 
-    TIME_SETUP
     num_ssm_pad(num_fft_res, num, params);
-    TIME_END(t1)
-    if(show)
-    {
-        tprintf("pad: %.3f", dtime(t1));
-    }
-    show = false;
-
     num_ssm_fft_fwd(num_aux, num_fft_res, params);
 }
 
