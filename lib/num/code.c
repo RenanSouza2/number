@@ -2005,6 +2005,55 @@ void num_ssm_free(num_ssm_t num_ssm)
     num_free(num_ssm.num_fft);
 }
 
+static inline uint64_t addmul_1(
+    uint64_t *dest,
+    const uint64_t *src,
+    uint64_t n,
+    uint64_t v2
+)
+{
+    uint64_t carry = 0;
+
+    __asm__ volatile (
+        "test %[n], %[n]\n\t"          // Check if n == 0
+        "jz 2f\n"                      // If zero, jump forward to label 2
+        "1:\n\t"                       // Loop start
+        "mov (%[src]), %%rax\n\t"      // rax = *src
+        "mul %[v2]\n\t"                // rdx:rax = rax * v2
+
+        "add %[carry], %%rax\n\t"      // rax += carry
+        "adc $0, %%rdx\n\t"            // rdx += overflow from previous addition
+
+        "add %%rax, (%[dest])\n\t"     // *dest += rax
+        "adc $0, %%rdx\n\t"            // rdx += overflow from destination addition
+
+        "mov %%rdx, %[carry]\n\t"      // carry = rdx
+
+        "add $8, %[src]\n\t"           // src pointer++ (8 bytes for uint64_t)
+        "add $8, %[dest]\n\t"          // dest pointer++
+        "dec %[n]\n\t"                 // n--
+        "jnz 1b\n"                     // If n != 0, jump backward to label 1
+        "2:\n\t"                       // End
+
+        // --- Output Operands ---
+        // "+&r" means read/write, and early-clobber (modified before inputs are consumed)
+        : [carry] "+&r" (carry),
+          [src] "+r" (src),
+          [dest] "+r" (dest),
+          [n] "+r" (n)
+
+        // --- Input Operands ---
+        // "r" means put this in any available general-purpose register
+        : [v2] "r" (v2)
+
+        // --- Clobbers ---
+        // Tell the compiler we destroy rax, rdx, CPU flags (cc), and memory
+        : "rax", "rdx", "cc", "memory"
+    );
+
+    return carry;
+}
+
 static void num_ssm_mul_mod_span(
     num_p num_aux,
     num_p num_1,
@@ -2022,7 +2071,6 @@ static void num_ssm_mul_mod_span(
     const uint64_t * restrict src1 = &num_1->chunk[pos];
     const uint64_t * restrict src2 = &num_2->chunk[pos];
 
-    // 1. Raw N x N Multiplication (No spans, no normalizations, fixed bounds)
     memset(dest, 0, 2 * n * sizeof(uint64_t));
     for(uint64_t i = 0; i < n; i++)
     {
@@ -2032,26 +2080,12 @@ static void num_ssm_mul_mod_span(
             continue;
         }
 
-        uint64_t carry = 0;
-        for(uint64_t j = 0; j < n; j++)
-        {
-            uint64_t dest_idx = i + j;
-            uint128_t u = MUL(src1[j], v2);
-
-            uint64_t sum;
-            uint64_t c1 = (uint64_t)__builtin_add_overflow(LOW(u), dest[dest_idx], &sum);
-            uint64_t c2 = (uint64_t)__builtin_add_overflow(sum, carry, &dest[dest_idx]);
-
-            carry = HIGH(u) + c1 + c2;
-        }
-        dest[i + n] = carry;
+        dest[i + n] = addmul_1(&dest[i], src1, n, v2);
     }
 
-    // 2. Fermat Ring Wrap-Around Modulo 2^(64*(n-1)) + 1
     memmove(&dest[n], &dest[n-1], n * sizeof(uint64_t));
     dest[n-1] = 0;
 
-    // 3. Modulo Subtraction
     // NOLINTNEXTLINE(readability-suspicious-call-argument)
     num_ssm_sub_mod(num_1, pos, num_aux, 0, num_aux, n, n);
 }
@@ -2070,7 +2104,6 @@ static void num_ssm_pointwise_product(num_ssm_t num_ssm_1, num_ssm_t num_ssm_2)
     num_p num_aux = num_create_dirty(CLU_ARGS(2 * n, 0));
     num_aux->cannot_expand = true;
 
-    // --> IT IS USED HERE <--
     for(uint64_t i=0; i<block_count; i++)
     {
         num_ssm_mul_mod_span(num_aux, num_ssm_1.num_fft, num_ssm_2.num_fft, i * n, n);
@@ -2220,65 +2253,6 @@ STATIC num_p num_mul_classic(num_p num_1, num_p num_2)
 
     num_p num_res = num_create(CLU_ARGS(num_1->count + num_2->count, 0));
     return num_mul_classic_buffer(num_res, num_1, num_2);
-}
-
-static num_p num_mul_karatsuba_buffer(num_p num_res, num_p num_1, num_p num_2)
-{
-    CLU_HANDLER_IS_SAFE(num_res)
-    CLU_HANDLER_IS_SAFE(num_1)
-    CLU_HANDLER_IS_SAFE(num_2)
-    assert(num_res)
-    assert(num_1)
-    assert(num_2)
-    assert(num_res->size >= num_1->count + num_2->count);
-
-    constexpr uint64_t threshold = 32;
-    if(num_1->count < threshold || num_2->count < threshold)
-    {
-        return num_mul_classic_buffer(num_res, num_1, num_2);
-    }
-
-    num_set_count(num_res, 0);
-
-    uint64_t bigger_count = num_1->count > num_2->count ? num_1->count : num_2->count;
-    uint64_t count = (bigger_count + 1) / 2;
-
-    num_p num_res_next = num_create(CLU_ARGS((2 * count) + 2, 0));
-
-    num_t num_1_0, num_1_1, num_2_0, num_2_1;
-    num_span(&num_1_0, num_1, 0, count);
-    num_span(&num_1_1, num_1, count, num_1->count);
-    num_span(&num_2_0, num_2, 0, count);
-    num_span(&num_2_1, num_2, count, num_2->count);
-
-    num_res_next = num_mul_karatsuba_buffer(num_res_next, &num_1_1, &num_2_1);
-    num_res = num_add_offset(num_res, 2 * count, num_res_next, 0);
-    num_res = num_sub_offset(num_res, count, num_res_next);
-
-    num_p num_add_2 = num_add_offset(num_copy(&num_2_0), 0, &num_2_1, 0);
-    num_p num_add_1 = num_add_offset(num_copy(&num_1_0), 0, &num_1_1, 0);
-
-    num_res_next = num_mul_karatsuba_buffer(num_res_next, num_add_1, num_add_2);
-    num_free(num_add_1);
-    num_free(num_add_2);
-    num_res = num_add_offset(num_res, count, num_res_next, 0);
-
-    num_res_next = num_mul_karatsuba_buffer(num_res_next, &num_1_0, &num_2_0);
-    num_res = num_add_offset(num_res, 0, num_res_next, 0);
-    return num_sub_offset(num_res, count, num_res_next);
-}
-
-// KEEPS NUM_1 NUM_2
-[[maybe_unused]]
-STATIC num_p num_mul_karatsuba(num_p num_1, num_p num_2)
-{
-    CLU_HANDLER_IS_SAFE(num_1)
-    CLU_HANDLER_IS_SAFE(num_2)
-    assert(num_1)
-    assert(num_2)
-
-    num_p num_res = num_create(CLU_ARGS(num_1->count + num_2->count, 0));
-    return num_mul_karatsuba_buffer(num_res, num_1, num_2);
 }
 
 // KEEPS NUM_1 NUM_2
