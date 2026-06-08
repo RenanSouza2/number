@@ -483,7 +483,8 @@ STATIC num_p num_normalize(num_p num)
     CLU_HANDLER_IS_SAFE(num);
     assert(num);
 
-    while (num->count > 0 && num->chunk[num->count-1] == 0) {
+    while (num->count > 0 && num->chunk[num->count-1] == 0)
+    {
         num->count--;
     }
 
@@ -1060,7 +1061,8 @@ static num_p num_mul_classic_buffer(num_p num_res, num_p num_1, num_p num_2)
     uint64_t n1 = num_1->count;
     uint64_t n2 = num_2->count;
 
-    if (n1 == 0 || n2 == 0) {
+    if (n1 == 0 || n2 == 0)
+    {
         num_set_count(num_res, 0);
         return num_res;
     }
@@ -1612,9 +1614,7 @@ STATIC void num_ssm_depad_wrap(
             num_ssm_opposite(num, src_pos, src_len);
         }
 
-        // Bypass num_set_count completely to avoid massive memsets
         num_aux_1->count = n0;
-
         uint64_t non_wrap_len = (K > C) ? (K - C) : 0;
         if (non_wrap_len > src_len)
         {
@@ -1623,22 +1623,27 @@ STATIC void num_ssm_depad_wrap(
         uint64_t wrap_len = src_len - non_wrap_len;
 
         // 1. Placement of non-overflow chunks (Targeted memsets only!)
-        if (non_wrap_len > 0) {
+        if (non_wrap_len > 0)
+        {
             memcpy(&num_aux_1->chunk[C], &num->chunk[src_pos], non_wrap_len * sizeof(uint64_t));
         }
-        if (C > 0) {
+        if (C > 0)
+        {
             memset(&num_aux_1->chunk[0], 0, C * sizeof(uint64_t));
         }
         uint64_t tail_1 = C + non_wrap_len;
-        if (n0 > tail_1) {
+        if (n0 > tail_1)
+        {
             memset(&num_aux_1->chunk[tail_1], 0, (n0 - tail_1) * sizeof(uint64_t));
         }
 
         // 2. Placement of overflow chunks (Only if they exist)
-        if (wrap_len > 0) {
+        if (wrap_len > 0)
+        {
             num_aux_2->count = n0;
             memcpy(&num_aux_2->chunk[0], &num->chunk[src_pos + non_wrap_len], wrap_len * sizeof(uint64_t));
-            if (n0 > wrap_len) {
+            if (n0 > wrap_len)
+            {
                 memset(&num_aux_2->chunk[wrap_len], 0, (n0 - wrap_len) * sizeof(uint64_t));
             }
             num_ssm_sub_mod_immed(num_aux_1, 0, num_aux_2, 0, n0);
@@ -1898,7 +1903,7 @@ STATIC void num_ssm_fft_inv(num_p num_aux, num_p num, ssm_params_p p)
     }
 }
 
-#define TRESHOLD 45
+#define TRESHOLD 129
 
 static bool ssm_is_recursive(uint64_t n)
 {
@@ -2006,8 +2011,6 @@ static uint64_t ssm_get_last_n(uint64_t count)
     }
     return params.n;
 }
-
-// #include "../../mods/macros/time.h"
 
 static void num_mul_ssm_fwd_step_buffer(num_p num_aux, num_p num_fft_res, num_p num, ssm_params_p params)
 {
@@ -2221,6 +2224,8 @@ static void num_ssm_pointwise_product(num_ssm_t num_ssm_1, num_ssm_t num_ssm_2)
     num_free(num_aux);
 }
 
+// #include "../../mods/macros/time.h"
+
 static num_p num_mul_ssm_bwd_transform_rec(num_p num_aux_1, num_p num_aux_2, num_p num_fft, uint64_t n)
 {
     CLU_HANDLER_IS_SAFE(num_aux_1)
@@ -2348,7 +2353,7 @@ static void num_ssm_sqr_mod_span(num_p num_aux, num_p num, uint64_t pos, uint64_
 
 static bool mul_is_classic(uint64_t count_1, uint64_t count_2)
 {
-    constexpr uint64_t threshold = 128;
+    constexpr uint64_t threshold = 256;
     return (bool)((count_1 < threshold) || (count_2 < threshold));
 }
 

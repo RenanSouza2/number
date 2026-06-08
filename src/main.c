@@ -744,10 +744,10 @@ int main()
     TIME_END(t1)
     tprintf("time: %.3f", dtime(t1));
 
-    // TIME_RESET
-    // num_res = num_div(num_res, num_1);
-    // TIME_END(t2)
-    // tprintf("time: %.3f", dtime(t2));
+    TIME_RESET
+    num_res = num_div(num_res, num_1); // NOLINT(readability-suspicious-call-argument)
+    TIME_END(t2)
+    tprintf("time: %.3f", dtime(t2));
 
     num_free(num_res);
 
