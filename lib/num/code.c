@@ -1330,6 +1330,29 @@ STATIC INLINE void num_ssm_add_mod(
         : "rax", "cc", "memory"
     );
 
+#elifdef __APPLE__
+
+    uint64_t count = n; // Copy n so we don't clobber it for normalize()
+    uint64_t tmp1, tmp2; // Temporary registers for loading memory
+
+    __asm__ volatile (
+        "cbz %[count], 2f\n\t"               // If count == 0, jump to label 2
+        "adds xzr, xzr, xzr\n\t"             // Clear carry flag (0 + 0 = 0, C=0)
+        "1:\n\t"
+        "ldr %[tmp1], [%[src1]], #8\n\t"     // Load from src1 into tmp1, then src1 += 8
+        "ldr %[tmp2], [%[src2]], #8\n\t"     // Load from src2 into tmp2, then src2 += 8
+        "adcs %[tmp1], %[tmp1], %[tmp2]\n\t" // tmp1 = tmp1 + tmp2 + CF, update CF
+        "str %[tmp1], [%[dest]], #8\n\t"     // Store tmp1 to dest, then dest += 8
+        
+        "sub %[count], %[count], #1\n\t"     // count-- (Standard 'sub' does NOT touch flags)
+        "cbnz %[count], 1b\n\t"              // Loop if count != 0 ('cbnz' does NOT touch flags)
+        "2:\n"
+        : [dest] "+r" (dest), [src1] "+r" (src1), [src2] "+r" (src2), 
+          [count] "+r" (count), [tmp1] "=&r" (tmp1), [tmp2] "=&r" (tmp2)
+        :
+        : "cc", "memory"
+    );
+
 #else
 
     uint64_t carry = 0;
@@ -1379,6 +1402,31 @@ static inline void num_ssm_add_mod_immed(
         : [dest] "+r" (dest), [src2] "+r" (src2), [count] "+r" (count)
         :
         : "rax", "cc", "memory"
+    );
+
+#elifdef __APPLE__
+
+    uint64_t count = n;
+    uint64_t tmp1, tmp2; // Need two temporaries now
+
+    __asm__ volatile (
+        "cbz %[count], 2f\n\t"               // If count == 0, jump to label 2
+        "adds xzr, xzr, xzr\n\t"             // Clear carry flag (C=0)
+        "1:\n\t"
+        "ldr %[tmp1], [%[src2]], #8\n\t"     // tmp1 = *src2, then src2 += 8
+        "ldr %[tmp2], [%[dest]]\n\t"         // tmp2 = *dest (NO post-increment yet)
+        
+        "adcs %[tmp2], %[tmp2], %[tmp1]\n\t" // tmp2 = tmp2 + tmp1 + CF, update CF
+        
+        "str %[tmp2], [%[dest]], #8\n\t"     // *dest = tmp2, then dest += 8
+        
+        "sub %[count], %[count], #1\n\t"     // count-- (leaves CF untouched)
+        "cbnz %[count], 1b\n\t"              // Loop if count != 0
+        "2:\n"
+        : [dest] "+r" (dest), [src2] "+r" (src2), [count] "+r" (count),
+          [tmp1] "=&r" (tmp1), [tmp2] "=&r" (tmp2)
+        :
+        : "cc", "memory"
     );
 
 #else
@@ -1438,6 +1486,33 @@ STATIC INLINE void num_ssm_sub_mod(
         : "rax", "cc", "memory"
     );
 
+#elifdef __APPLE__
+
+    uint64_t count = n;
+    uint64_t tmp1, tmp2;
+
+    __asm__ volatile (
+        "cbz %[count], 2f\n\t"               // If count == 0, jump to label 2
+        
+        "cmp xzr, xzr\n\t"                   // SET the carry flag (C=1 means NO borrow)
+        
+        "1:\n\t"
+        "ldr %[tmp1], [%[src1]], #8\n\t"     // tmp1 = *src1, then src1 += 8
+        "ldr %[tmp2], [%[src2]], #8\n\t"     // tmp2 = *src2, then src2 += 8
+        
+        "sbcs %[tmp1], %[tmp1], %[tmp2]\n\t" // tmp1 = tmp1 - tmp2 - (1 - C), update C
+        
+        "str %[tmp1], [%[dest]], #8\n\t"     // *dest = tmp1, then dest += 8
+        
+        "sub %[count], %[count], #1\n\t"     // count-- (leaves flags untouched)
+        "cbnz %[count], 1b\n\t"              // Loop if count != 0
+        "2:\n"
+        : [dest] "+r" (dest), [src1] "+r" (src1), [src2] "+r" (src2), 
+          [count] "+r" (count), [tmp1] "=&r" (tmp1), [tmp2] "=&r" (tmp2)
+        :
+        : "cc", "memory"
+    );
+
 #else
 
     uint64_t borrow = 0;
@@ -1489,6 +1564,33 @@ static inline void num_ssm_sub_mod_immed(
         : [dest] "+r" (dest), [src2] "+r" (src2), [count] "+r" (count)
         :
         : "rax", "cc", "memory"
+    );
+
+#elifdef __APPLE__
+
+    uint64_t count = n;
+    uint64_t tmp1, tmp2; // Two temporaries required for the in-place math
+
+    __asm__ volatile (
+        "cbz %[count], 2f\n\t"               // If count == 0, jump to label 2
+        
+        "cmp xzr, xzr\n\t"                   // SET the carry flag (C=1 means NO borrow)
+        
+        "1:\n\t"
+        "ldr %[tmp1], [%[src2]], #8\n\t"     // tmp1 = *src2, then src2 += 8
+        "ldr %[tmp2], [%[dest]]\n\t"         // tmp2 = *dest (NO post-increment yet)
+        
+        "sbcs %[tmp2], %[tmp2], %[tmp1]\n\t" // tmp2 = tmp2 - tmp1 - (1 - C), update C
+        
+        "str %[tmp2], [%[dest]], #8\n\t"     // *dest = tmp2, then dest += 8
+        
+        "sub %[count], %[count], #1\n\t"     // count-- (leaves flags untouched)
+        "cbnz %[count], 1b\n\t"              // Loop if count != 0
+        "2:\n"
+        : [dest] "+r" (dest), [src2] "+r" (src2), [count] "+r" (count),
+          [tmp1] "=&r" (tmp1), [tmp2] "=&r" (tmp2)
+        :
+        : "cc", "memory"
     );
 
 #else
@@ -2144,6 +2246,59 @@ static inline uint64_t num_ssm_add_mul_uint(
     return carry;
 }
 
+#elifdef __APPLE__
+
+static inline uint64_t num_ssm_add_mul_uint(
+    uint64_t *dest, 
+    const uint64_t *src,
+    uint64_t n,
+    uint64_t v2
+)
+{
+    uint64_t carry = 0;
+    uint64_t low, high, src_val, dest_val;
+
+    __asm__ volatile (
+        "cbz %[n], 2f\n\t"                   // If n == 0, jump to label 2
+        "1:\n\t"
+        "ldr %[src_val], [%[src]], #8\n\t"   // src_val = *src, then src += 8
+        
+        // 128-bit multiplication (ARM64 separates low and high halves)
+        "mul %[low], %[src_val], %[v2]\n\t"  // low = (src_val * v2) [bottom 64 bits]
+        "umulh %[high], %[src_val], %[v2]\n\t"// high = (src_val * v2) [top 64 bits]
+
+        // Add previous carry
+        "adds %[low], %[low], %[carry]\n\t"  // low += carry (updates CF)
+        "adc %[high], %[high], xzr\n\t"      // high += CF (using zero register xzr)
+
+        // Add to destination
+        "ldr %[dest_val], [%[dest]]\n\t"     // dest_val = *dest (no post-increment yet)
+        "adds %[low], %[low], %[dest_val]\n\t"// low += dest_val (updates CF)
+        "str %[low], [%[dest]], #8\n\t"      // *dest = low, then dest += 8
+
+        // Calculate new carry
+        "adc %[carry], %[high], xzr\n\t"     // carry = high + CF
+
+        // Loop mechanics
+        "sub %[n], %[n], #1\n\t"             // n--
+        "cbnz %[n], 1b\n\t"                  // Loop if n != 0
+        "2:\n\t"
+        
+        : [carry] "+&r" (carry),
+          [src] "+r" (src),
+          [dest] "+r" (dest),
+          [n] "+r" (n),
+          [low] "=&r" (low),
+          [high] "=&r" (high),
+          [src_val] "=&r" (src_val),
+          [dest_val] "=&r" (dest_val)
+        : [v2] "r" (v2)
+        : "cc", "memory"
+    );
+
+    return carry;
+}
+
 #endif
 
 static void num_ssm_mul_mod_span(
@@ -2172,7 +2327,7 @@ static void num_ssm_mul_mod_span(
             continue;
         }
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
 
         dest[i + n] = num_ssm_add_mul_uint(&dest[i], src1, n, v2);
 
