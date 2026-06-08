@@ -1343,11 +1343,11 @@ STATIC INLINE void num_ssm_add_mod(
         "ldr %[tmp2], [%[src2]], #8\n\t"     // Load from src2 into tmp2, then src2 += 8
         "adcs %[tmp1], %[tmp1], %[tmp2]\n\t" // tmp1 = tmp1 + tmp2 + CF, update CF
         "str %[tmp1], [%[dest]], #8\n\t"     // Store tmp1 to dest, then dest += 8
-        
+
         "sub %[count], %[count], #1\n\t"     // count-- (Standard 'sub' does NOT touch flags)
         "cbnz %[count], 1b\n\t"              // Loop if count != 0 ('cbnz' does NOT touch flags)
         "2:\n"
-        : [dest] "+r" (dest), [src1] "+r" (src1), [src2] "+r" (src2), 
+        : [dest] "+r" (dest), [src1] "+r" (src1), [src2] "+r" (src2),
           [count] "+r" (count), [tmp1] "=&r" (tmp1), [tmp2] "=&r" (tmp2)
         :
         : "cc", "memory"
@@ -1415,11 +1415,11 @@ static inline void num_ssm_add_mod_immed(
         "1:\n\t"
         "ldr %[tmp1], [%[src2]], #8\n\t"     // tmp1 = *src2, then src2 += 8
         "ldr %[tmp2], [%[dest]]\n\t"         // tmp2 = *dest (NO post-increment yet)
-        
+
         "adcs %[tmp2], %[tmp2], %[tmp1]\n\t" // tmp2 = tmp2 + tmp1 + CF, update CF
-        
+
         "str %[tmp2], [%[dest]], #8\n\t"     // *dest = tmp2, then dest += 8
-        
+
         "sub %[count], %[count], #1\n\t"     // count-- (leaves CF untouched)
         "cbnz %[count], 1b\n\t"              // Loop if count != 0
         "2:\n"
@@ -1493,21 +1493,21 @@ STATIC INLINE void num_ssm_sub_mod(
 
     __asm__ volatile (
         "cbz %[count], 2f\n\t"               // If count == 0, jump to label 2
-        
+
         "cmp xzr, xzr\n\t"                   // SET the carry flag (C=1 means NO borrow)
-        
+
         "1:\n\t"
         "ldr %[tmp1], [%[src1]], #8\n\t"     // tmp1 = *src1, then src1 += 8
         "ldr %[tmp2], [%[src2]], #8\n\t"     // tmp2 = *src2, then src2 += 8
-        
+
         "sbcs %[tmp1], %[tmp1], %[tmp2]\n\t" // tmp1 = tmp1 - tmp2 - (1 - C), update C
-        
+
         "str %[tmp1], [%[dest]], #8\n\t"     // *dest = tmp1, then dest += 8
-        
+
         "sub %[count], %[count], #1\n\t"     // count-- (leaves flags untouched)
         "cbnz %[count], 1b\n\t"              // Loop if count != 0
         "2:\n"
-        : [dest] "+r" (dest), [src1] "+r" (src1), [src2] "+r" (src2), 
+        : [dest] "+r" (dest), [src1] "+r" (src1), [src2] "+r" (src2),
           [count] "+r" (count), [tmp1] "=&r" (tmp1), [tmp2] "=&r" (tmp2)
         :
         : "cc", "memory"
@@ -1573,17 +1573,17 @@ static inline void num_ssm_sub_mod_immed(
 
     __asm__ volatile (
         "cbz %[count], 2f\n\t"               // If count == 0, jump to label 2
-        
+
         "cmp xzr, xzr\n\t"                   // SET the carry flag (C=1 means NO borrow)
-        
+
         "1:\n\t"
         "ldr %[tmp1], [%[src2]], #8\n\t"     // tmp1 = *src2, then src2 += 8
         "ldr %[tmp2], [%[dest]]\n\t"         // tmp2 = *dest (NO post-increment yet)
-        
+
         "sbcs %[tmp2], %[tmp2], %[tmp1]\n\t" // tmp2 = tmp2 - tmp1 - (1 - C), update C
-        
+
         "str %[tmp2], [%[dest]], #8\n\t"     // *dest = tmp2, then dest += 8
-        
+
         "sub %[count], %[count], #1\n\t"     // count-- (leaves flags untouched)
         "cbnz %[count], 1b\n\t"              // Loop if count != 0
         "2:\n"
@@ -2249,7 +2249,7 @@ static inline uint64_t num_ssm_add_mul_uint(
 #elifdef __APPLE__
 
 static inline uint64_t num_ssm_add_mul_uint(
-    uint64_t *dest, 
+    uint64_t *dest,
     const uint64_t *src,
     uint64_t n,
     uint64_t v2
@@ -2262,7 +2262,7 @@ static inline uint64_t num_ssm_add_mul_uint(
         "cbz %[n], 2f\n\t"                   // If n == 0, jump to label 2
         "1:\n\t"
         "ldr %[src_val], [%[src]], #8\n\t"   // src_val = *src, then src += 8
-        
+
         // 128-bit multiplication (ARM64 separates low and high halves)
         "mul %[low], %[src_val], %[v2]\n\t"  // low = (src_val * v2) [bottom 64 bits]
         "umulh %[high], %[src_val], %[v2]\n\t"// high = (src_val * v2) [top 64 bits]
@@ -2283,7 +2283,7 @@ static inline uint64_t num_ssm_add_mul_uint(
         "sub %[n], %[n], #1\n\t"             // n--
         "cbnz %[n], 1b\n\t"                  // Loop if n != 0
         "2:\n\t"
-        
+
         : [carry] "+&r" (carry),
           [src] "+r" (src),
           [dest] "+r" (dest),
