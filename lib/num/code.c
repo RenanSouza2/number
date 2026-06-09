@@ -2244,7 +2244,7 @@ static uint64_t num_ssm_add_mul_uint(
 #elifdef __APPLE__
 
 static uint64_t num_ssm_add_mul_uint(
-    uint64_t *dest,
+    uint64_t *dest, // NOLINT(readability-non-const-parameter)
     const uint64_t *src,
     uint64_t n,
     uint64_t v2
