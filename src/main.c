@@ -763,7 +763,3 @@ int main()
     printf("\n");
     return 0;
 }
-
-// begin:
-// main    | time: 10.997
-// main    | total allocations: 120080
