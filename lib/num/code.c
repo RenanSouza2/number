@@ -1230,8 +1230,7 @@ static int64_t num_ssm_cmp_uint_offset(
     return 0;
 }
 
-[[gnu::always_inline]]
-STATIC inline void num_ssm_add_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value)
+STATIC void num_ssm_add_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
@@ -1243,8 +1242,7 @@ STATIC inline void num_ssm_add_uint(num_p num, uint64_t pos, uint64_t n, uint64_
     }
 }
 
-[[gnu::always_inline]]
-STATIC inline void num_ssm_sub_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value)
+STATIC void num_ssm_sub_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
@@ -1257,8 +1255,7 @@ STATIC inline void num_ssm_sub_uint(num_p num, uint64_t pos, uint64_t n, uint64_
 }
 
 // normalizes coeficient if it is less than 2 modulus
-[[gnu::always_inline]]
-static inline void num_ssm_normalize(num_p num, uint64_t pos, uint64_t n)
+static void num_ssm_normalize(num_p num, uint64_t pos, uint64_t n)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
@@ -1274,8 +1271,7 @@ static inline void num_ssm_normalize(num_p num, uint64_t pos, uint64_t n)
     }
 }
 
-[[gnu::always_inline]]
-STATIC inline void num_ssm_denormalize(num_p num, uint64_t pos, uint64_t n)
+STATIC void num_ssm_denormalize(num_p num, uint64_t pos, uint64_t n)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
@@ -1284,8 +1280,7 @@ STATIC inline void num_ssm_denormalize(num_p num, uint64_t pos, uint64_t n)
     num->chunk[pos + n - 1] += 1;
 }
 
-ONLY_PRD([[gnu::always_inline]])
-STATIC INLINE void num_ssm_add_mod(
+STATIC void num_ssm_add_mod(
     num_p num_res,
     uint64_t pos_res,
     num_p num_1,
@@ -1368,8 +1363,7 @@ STATIC INLINE void num_ssm_add_mod(
     num_ssm_normalize(num_res, pos_res, n);
 }
 
-[[gnu::always_inline]]
-static inline void num_ssm_add_mod_immed(
+static void num_ssm_add_mod_immed(
     num_p num_1, uint64_t pos_1,
     num_p num_2, uint64_t pos_2,
     uint64_t n
@@ -1443,8 +1437,7 @@ static inline void num_ssm_add_mod_immed(
     num_ssm_normalize(num_1, pos_1, n);
 }
 
-ONLY_PRD([[gnu::always_inline]])
-STATIC INLINE void num_ssm_sub_mod(
+STATIC void num_ssm_sub_mod(
     num_p num_res, uint64_t pos_res,
     num_p num_1, uint64_t pos_1,
     num_p num_2, uint64_t pos_2,
@@ -1529,8 +1522,7 @@ STATIC INLINE void num_ssm_sub_mod(
     num_ssm_normalize(num_res, pos_res, n);
 }
 
-[[gnu::always_inline]]
-static inline void num_ssm_sub_mod_immed(
+static void num_ssm_sub_mod_immed(
     num_p num_1, uint64_t pos_1,
     num_p num_2, uint64_t pos_2,
     uint64_t n
@@ -1827,7 +1819,6 @@ STATIC void num_ssm_shr(
     if(bits == 0)
     {
         memmove(&num_res->chunk[pos_res], &num->chunk[pos + count], (n - count) * sizeof(uint64_t));
-
         memset(&num_res->chunk[pos_res + n - count], 0, count * sizeof(uint64_t));
         return;
     }
@@ -2197,8 +2188,7 @@ void num_ssm_free(num_ssm_t num_ssm)
 
 #ifdef __linux__
 
-[[gnu::always_inline]]
-static inline uint64_t num_ssm_add_mul_uint(
+static uint64_t num_ssm_add_mul_uint(
     uint64_t *dest, // NOLINT(readability-non-const-parameter)
     const uint64_t *src,
     uint64_t n,
@@ -2248,8 +2238,7 @@ static inline uint64_t num_ssm_add_mul_uint(
 
 #elifdef __APPLE__
 
-[[gnu::always_inline]]
-static inline uint64_t num_ssm_add_mul_uint(
+static uint64_t num_ssm_add_mul_uint(
     uint64_t *dest,
     const uint64_t *src,
     uint64_t n,

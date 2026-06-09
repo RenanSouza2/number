@@ -1,6 +1,6 @@
 set -e
 rm -rf thread_log/*
-make build
+time make build
 echo running
 time ./src/main.o $@
 echo
