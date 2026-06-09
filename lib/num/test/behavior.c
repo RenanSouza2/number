@@ -1263,34 +1263,17 @@ static void test_num_ssm_shr(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_SSM_SHR_RES(TAG, NUM, POS, N, BITS, RES)   \
-    {                                                       \
-        TEST_CASE_OPEN(TAG)                                 \
-        {                                                   \
-            num_p num = num_create_immed(ARG_OPEN NUM);     \
-            num_p num_res = num_create(CLU_ARGS(N, N));     \
-            num_ssm_shr(num_res, 0, num, POS, N, BITS);     \
-            assert(num_immed(num_res, ARG_OPEN RES));       \
-            assert(num_immed(num, ARG_OPEN NUM));           \
-        }                                                   \
-        TEST_CASE_CLOSE                                     \
-    }
-
-    #define TEST_SSM_SHR_PLACE(TAG, NUM, POS, N, BITS, RES) \
-    {                                                       \
-        TEST_CASE_OPEN(TAG)                                 \
-        {                                                   \
-            num_p num = num_create_immed(ARG_OPEN NUM);     \
-            num_ssm_shr(num, 0, num, POS, N, BITS);         \
-            assert(num_immed(num, ARG_OPEN RES));           \
-        }                                                   \
-        TEST_CASE_CLOSE                                     \
-    }
-
-    #define TEST_SSM_SHR(TAG, NUM, POS, N, BITS, RES)                   \
-    {                                                                   \
-        TEST_SSM_SHR_RES((10 * (TAG)) + 1, NUM, POS, N, BITS, RES)      \
-        TEST_SSM_SHR_PLACE((10 * (TAG)) + 2, NUM, POS, N, BITS, RES)    \
+    #define TEST_SSM_SHR(TAG, NUM, POS, N, BITS, RES)   \
+    {                                                   \
+        TEST_CASE_OPEN(TAG)                             \
+        {                                               \
+            num_p num = num_create_immed(ARG_OPEN NUM); \
+            num_p num_res = num_create(CLU_ARGS(N, N)); \
+            num_ssm_shr(num_res, 0, num, POS, N, BITS); \
+            assert(num_immed(num_res, ARG_OPEN RES));   \
+            assert(num_immed(num, ARG_OPEN NUM));       \
+        }                                               \
+        TEST_CASE_CLOSE                                 \
     }
 
     TEST_SSM_SHR(1,

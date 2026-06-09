@@ -1230,7 +1230,7 @@ static int64_t num_ssm_cmp_uint_offset(
     return 0;
 }
 
-STATIC void num_ssm_add_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value)
+static void num_ssm_add_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
@@ -1242,7 +1242,7 @@ STATIC void num_ssm_add_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value
     }
 }
 
-STATIC void num_ssm_sub_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value)
+static void num_ssm_sub_uint(num_p num, uint64_t pos, uint64_t n, uint64_t value)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
@@ -1271,7 +1271,7 @@ static void num_ssm_normalize(num_p num, uint64_t pos, uint64_t n)
     }
 }
 
-STATIC void num_ssm_denormalize(num_p num, uint64_t pos, uint64_t n)
+static void num_ssm_denormalize(num_p num, uint64_t pos, uint64_t n)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
@@ -1757,8 +1757,6 @@ STATIC void num_ssm_depad_wrap(
     num_normalize(num_res);
 }
 
-// operation can be done in place if num_res is the same as num and pos_res is pos
-// num_res->size >= pos_res + n
 STATIC void num_ssm_shl(
     num_p num_res,
     uint64_t pos_res,
@@ -1778,25 +1776,27 @@ STATIC void num_ssm_shl(
 
     uint64_t count = bits >> chunk_bits_log_2;
     bits &= mask;
-    if((bits) == 0)
+
+    uint64_t * restrict dest = &num_res->chunk[pos_res];
+    const uint64_t * restrict src = &num->chunk[pos];
+
+    if(bits == 0)
     {
-        memmove(&num_res->chunk[pos_res + count], &num->chunk[pos], (n - count) * sizeof(uint64_t));
-        memset(&num_res->chunk[pos_res], 0, count * sizeof(uint64_t));
+        memcpy(&dest[count], src, (n - count) * sizeof(uint64_t));
+        memset(dest, 0, count * sizeof(uint64_t));
         return;
     }
 
-    for(uint64_t i=n-1; i!=count; i--)
+    uint64_t inv_bits = chunk_bits - bits;
+    for(uint64_t i = count + 1; i < n; i++)
     {
-        uint64_t value_1 = num->chunk[pos + i - count];
-        uint64_t value_0 = num->chunk[pos + i - count - 1];
-        num_res->chunk[pos_res + i] = (value_1 << bits) | (value_0 >> (chunk_bits - bits));
+        dest[i] = (src[i - count] << bits) | (src[i - count - 1] >> inv_bits);
     }
-    num_res->chunk[pos_res + count] = num->chunk[pos] << bits;
-    memset(&num_res->chunk[pos_res], 0, count * sizeof(uint64_t));
+
+    dest[count] = src[0] << bits;
+    memset(dest, 0, count * sizeof(uint64_t));
 }
 
-// operation can be done in place if num_res is the same as num and pos_res is pos
-// num_res->size >= pos_res + n
 STATIC void num_ssm_shr(
     num_p num_res,
     uint64_t pos_res,
@@ -1816,21 +1816,26 @@ STATIC void num_ssm_shr(
 
     uint64_t count = bits >> chunk_bits_log_2;
     bits &= mask;
+
+    uint64_t * restrict dest = &num_res->chunk[pos_res];
+    const uint64_t * restrict src = &num->chunk[pos];
+
     if(bits == 0)
     {
-        memmove(&num_res->chunk[pos_res], &num->chunk[pos + count], (n - count) * sizeof(uint64_t));
-        memset(&num_res->chunk[pos_res + n - count], 0, count * sizeof(uint64_t));
+        memcpy(dest, &src[count], (n - count) * sizeof(uint64_t));
+        memset(&dest[n - count], 0, count * sizeof(uint64_t));
         return;
     }
 
-    for(uint64_t i=0; i!=n-count-1; i++)
+    uint64_t inv_bits = chunk_bits - bits;
+    uint64_t stop = n - count - 1;
+    for(uint64_t i = 0; i < stop; i++)
     {
-        uint64_t value_0 = num->chunk[pos + i + count];
-        uint64_t value_1 = num->chunk[pos + i + count + 1];
-        num_res->chunk[pos_res + i] = (value_0 >> bits) | (value_1 << (chunk_bits - bits));
+        dest[i] = (src[count + i] >> bits) | (src[count + i + 1] << inv_bits);
     }
-    num_res->chunk[pos_res + n - count - 1] = num->chunk[pos + n - 1] >> bits;
-    memset(&num_res->chunk[pos_res + n - count], 0, count * sizeof(uint64_t));
+
+    dest[n - count - 1] = src[n - 1] >> bits;
+    memset(&dest[n - count], 0, count * sizeof(uint64_t));
 }
 
 STATIC void num_ssm_shl_mod(
@@ -1853,9 +1858,9 @@ STATIC void num_ssm_shl_mod(
     }
 
     num_ssm_shr(num_aux, 0, num, pos, n, (chunk_bits * n) - chunk_bits - bits);
-    num_ssm_shl(num, pos, num, pos, n, bits);
-    num->chunk[pos + n - 1] = 0;
-    num_ssm_sub_mod_immed(num, pos, num_aux, 0, n);
+    num_ssm_shl(num_aux, n, num, pos, n, bits);
+    num_aux->chunk[(2 * n) - 1] = 0;
+    num_ssm_sub_mod(num, pos, num_aux, n, num_aux, 0, n);
 }
 
 STATIC void num_ssm_shr_mod(
@@ -1871,7 +1876,7 @@ STATIC void num_ssm_shr_mod(
     assert(num_aux)
     assert(num)
     assert(bits <= 64 * (n - 1))
-    assert(num_aux->size >= n)
+    assert(num_aux->size >= 2 * n)
 
     if(bits == 0 || num_is_span_zero(num, pos, n))
     {
@@ -1879,9 +1884,9 @@ STATIC void num_ssm_shr_mod(
     }
 
     num_ssm_shl(num_aux, 0, num, pos, n, (chunk_bits * n) - chunk_bits - bits);
-    num_ssm_shr(num, pos, num, pos, n, bits);
+    num_ssm_shr(num_aux, n, num, pos, n, bits);
     num_aux->chunk[n - 1] = 0;
-    num_ssm_sub_mod_immed(num, pos, num_aux, 0, n);
+    num_ssm_sub_mod(num, pos, num_aux, n, num_aux, 0, n);
 }
 
 // num_aux->size >= 2 * n

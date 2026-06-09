@@ -3,7 +3,7 @@
 
 
 
-static void test_num_disk()
+static void test_num_mist()
 {
     TEST_LIB
 
@@ -26,7 +26,7 @@ int main()
 {
     setvbuf(stdout, nullptr, _IONBF, 0);
     srand((unsigned int)time(nullptr));
-    test_num_disk();
+    test_num_mist();
     printf("\n\n\tTest successful\n\n");
     return 0;
 }
