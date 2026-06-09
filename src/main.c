@@ -733,8 +733,10 @@ int main()
     #ifdef DEBUG
     uint64_t base = 20;
     #else
-    uint64_t base = 27;
+    uint64_t base = 28;
     #endif
+
+    tprintf("base: " U64P() "", base);
 
     num_p num_1 = num_generate_1(base, 2);
     num_p num_2 = num_add(num_copy(num_1), num_wrap(1));
@@ -742,12 +744,12 @@ int main()
     TIME_SETUP
     num_p num_res = num_mul(num_copy(num_1), num_2);
     TIME_END(t1)
-    tprintf("time: %.3f", dtime(t1));
+    tprintf("time mul: %.3f", dtime(t1));
 
-    TIME_RESET
-    num_res = num_div(num_res, num_1); // NOLINT(readability-suspicious-call-argument)
-    TIME_END(t2)
-    tprintf("time: %.3f", dtime(t2));
+    // TIME_RESET
+    // num_res = num_div(num_res, num_1); // NOLINT(readability-suspicious-call-argument)
+    // TIME_END(t2)
+    // tprintf("time div: %.3f", dtime(t2));
 
     num_free(num_res);
 

@@ -827,7 +827,6 @@ static num_p num_add_mul_uint_offset(
 
     if(num_res->count < target_count)
     {
-        memset(&num_res->chunk[num_res->count], 0, (target_count - num_res->count) * sizeof(uint64_t));
         num_res->count = target_count;
     }
 
@@ -2198,6 +2197,7 @@ void num_ssm_free(num_ssm_t num_ssm)
 
 #ifdef __linux__
 
+[[gnu::always_inline]]
 static inline uint64_t num_ssm_add_mul_uint(
     uint64_t *dest, // NOLINT(readability-non-const-parameter)
     const uint64_t *src,
@@ -2230,9 +2230,9 @@ static inline uint64_t num_ssm_add_mul_uint(
         // --- Output Operands ---
         // "+&r" means read/write, and early-clobber (modified before inputs are consumed)
         : [carry] "+&r" (carry),
-          [src] "+r" (src),
-          [dest] "+r" (dest),
-          [n] "+r" (n)
+          [src] "+&r" (src),
+          [dest] "+&r" (dest),
+          [n] "+&r" (n)
 
         // --- Input Operands ---
         // "r" means put this in any available general-purpose register
@@ -2248,6 +2248,7 @@ static inline uint64_t num_ssm_add_mul_uint(
 
 #elifdef __APPLE__
 
+[[gnu::always_inline]]
 static inline uint64_t num_ssm_add_mul_uint(
     uint64_t *dest,
     const uint64_t *src,
@@ -2284,10 +2285,11 @@ static inline uint64_t num_ssm_add_mul_uint(
         "cbnz %[n], 1b\n\t"                  // Loop if n != 0
         "2:\n\t"
 
+        // --- Output Operands ---
         : [carry] "+&r" (carry),
-          [src] "+r" (src),
-          [dest] "+r" (dest),
-          [n] "+r" (n),
+          [src] "+&r" (src),
+          [dest] "+&r" (dest),
+          [n] "+&r" (n),
           [low] "=&r" (low),
           [high] "=&r" (high),
           [src_val] "=&r" (src_val),
