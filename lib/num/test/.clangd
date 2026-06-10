@@ -1,11 +1,14 @@
 Diagnostics:
   ClangTidy:
     Remove:
+      - "bugprone-suspicious-include"
+      - "bugprone-implicit-widening-of-multiplication-result"
+      - "performance-no-int-to-ptr"
       - "readability-function-cognitive-complexity"
       - "readability-function-size"
-      - "performance-no-int-to-ptr"
-      - "bugprone-implicit-widening-of-multiplication-result"
       - "readability-magic-numbers"
       - "readability-isolate-declaration"
       - "readability-suspicious-call-argument"
       - "cert-dcl03-c"
+      - "cert-msc51-cpp"
+      - "cert-msc32-c"

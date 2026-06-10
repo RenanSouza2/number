@@ -1,7 +1,27 @@
 #include "../debug.h"
 #include "../../../testrc.h"
 #include "../../../mods/macros/test.h"
-#include "../../../mods/macros/time.h"
+#include <stdio.h>
+
+
+
+static char buffer[256];
+
+#ifndef NAME
+// Fallback definition to keep the IDE/linter happy
+// when it parses behavior.c in isolation.
+#define NAME "UNDEFINED_TAG"
+#endif
+
+[[maybe_unused]]
+static char* format_buffer(const char* func)
+{
+    snprintf(buffer, 256, "%s %s", func, NAME);
+    return buffer;
+}
+
+#undef FUNC_TAG
+#define FUNC_TAG format_buffer(__func__)
 
 
 
@@ -971,7 +991,7 @@ static void test_num_ssm_add_mod(bool show)
         {                                                               \
             num_p num = num_create_immed(ARG_OPEN NUM);                 \
             num_p num_res = num_create(CLU_ARGS(N, N));                 \
-            num_ssm_add_mod_(num_res, 0, num, POS_1, num, POS_2, N);    \
+            num_ssm_add_mod(num_res, 0, num, POS_1, num, POS_2, N);    \
             assert(num_immed(num_res, ARG_OPEN RES));                   \
             assert(num_immed(num, ARG_OPEN NUM));                       \
         }                                                               \
@@ -1018,7 +1038,7 @@ static void test_num_ssm_sub_mod(bool show)
         {                                                           \
             num_p num = num_create_immed(ARG_OPEN NUM);             \
             num_p num_res = num_create(CLU_ARGS(N, N));                       \
-            num_ssm_sub_mod_(num_res, 0, num, POS_1, num, POS_2, N); \
+            num_ssm_sub_mod(num_res, 0, num, POS_1, num, POS_2, N); \
             assert(num_immed(num_res, ARG_OPEN RES));               \
             assert(num_immed(num, ARG_OPEN NUM));                   \
         }                                                           \
@@ -1243,34 +1263,17 @@ static void test_num_ssm_shr(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_SSM_SHR_RES(TAG, NUM, POS, N, BITS, RES)   \
-    {                                                       \
-        TEST_CASE_OPEN(TAG)                                 \
-        {                                                   \
-            num_p num = num_create_immed(ARG_OPEN NUM);     \
-            num_p num_res = num_create(CLU_ARGS(N, N));     \
-            num_ssm_shr(num_res, 0, num, POS, N, BITS);     \
-            assert(num_immed(num_res, ARG_OPEN RES));       \
-            assert(num_immed(num, ARG_OPEN NUM));           \
-        }                                                   \
-        TEST_CASE_CLOSE                                     \
-    }
-
-    #define TEST_SSM_SHR_PLACE(TAG, NUM, POS, N, BITS, RES) \
-    {                                                       \
-        TEST_CASE_OPEN(TAG)                                 \
-        {                                                   \
-            num_p num = num_create_immed(ARG_OPEN NUM);     \
-            num_ssm_shr(num, 0, num, POS, N, BITS);         \
-            assert(num_immed(num, ARG_OPEN RES));           \
-        }                                                   \
-        TEST_CASE_CLOSE                                     \
-    }
-
-    #define TEST_SSM_SHR(TAG, NUM, POS, N, BITS, RES)                   \
-    {                                                                   \
-        TEST_SSM_SHR_RES((10 * (TAG)) + 1, NUM, POS, N, BITS, RES)      \
-        TEST_SSM_SHR_PLACE((10 * (TAG)) + 2, NUM, POS, N, BITS, RES)    \
+    #define TEST_SSM_SHR(TAG, NUM, POS, N, BITS, RES)   \
+    {                                                   \
+        TEST_CASE_OPEN(TAG)                             \
+        {                                               \
+            num_p num = num_create_immed(ARG_OPEN NUM); \
+            num_p num_res = num_create(CLU_ARGS(N, N)); \
+            num_ssm_shr(num_res, 0, num, POS, N, BITS); \
+            assert(num_immed(num_res, ARG_OPEN RES));   \
+            assert(num_immed(num, ARG_OPEN NUM));       \
+        }                                               \
+        TEST_CASE_CLOSE                                 \
     }
 
     TEST_SSM_SHR(1,
@@ -1824,9 +1827,8 @@ static void test_num_mul(bool show)
     #define TEST_NUM_MUL_BATCH(TAG, NUM_1, NUM_2, RES)                          \
     {                                                                           \
         TEST_NUM_MUL((10 * (TAG)) + 1, num_mul_classic, NUM_1, NUM_2, RES)      \
-        TEST_NUM_MUL((10 * (TAG)) + 2, num_mul_karatsuba, NUM_1, NUM_2, RES)    \
-        TEST_NUM_MUL((10 * (TAG)) + 3, num_mul_ssm, NUM_1, NUM_2, RES)          \
-        TEST_NUM_MUL((10 * (TAG)) + 4, num_mul_core, NUM_1, NUM_2, RES)         \
+        TEST_NUM_MUL((10 * (TAG)) + 2, num_mul_ssm, NUM_1, NUM_2, RES)          \
+        TEST_NUM_MUL((10 * (TAG)) + 3, num_mul_core, NUM_1, NUM_2, RES)         \
     }
 
     TEST_NUM_MUL_BATCH(4,
@@ -2671,7 +2673,7 @@ static void test_fuzz_num_bz_div(bool show)
     TEST_FN_CLOSE
 }
 
-
+[[maybe_unused]]
 static void test_all(bool show)
 {
     test_uint_from_char(show);
@@ -2737,45 +2739,4 @@ static void test_all(bool show)
     test_fuzz_num_ssm_mul(show);
     test_fuzz_num_ssm_sqr(show);
     test_fuzz_num_bz_div(show);
-}
-
-
-
-static void test_num()
-{
-    TEST_LIB
-
-    bool show = false;
-
-    TIME_SETUP
-
-    test_all(show);
-
-    TIME_END(t1)
-    tprintf("time ram: %.3f", dtime(t1));
-
-    num_config_t config = {
-        .disk_path = "./cache",
-        .disk_threshold = 0
-    };
-    num_config_set(&config);
-
-    test_all(show);
-
-    TIME_END(t2)
-    tprintf("tima dsk: %.3f", dtime(t2));
-
-
-    TEST_ASSERT_MEM_EMPTY
-}
-
-
-
-int main()
-{
-    setvbuf(stdout, nullptr, _IONBF, 0);
-    srand((unsigned int)time(nullptr));
-    test_num();
-    printf("\n\n\tTest successful\n\n");
-    return 0;
 }

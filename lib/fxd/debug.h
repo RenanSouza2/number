@@ -1,7 +1,7 @@
 #ifndef FXD_DEBUG_H
 #define FXD_DEBUG_H
 
-#include "../../mods/macros/static.h"
+#include "../../mods/macros/specifiers.h"
 
 #include "header.h" // IWYU pragma: keep
 

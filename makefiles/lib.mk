@@ -20,18 +20,18 @@ debug.o: code.c
 
 
 clean c:
-	$(MAKE) clean --directory=$(LIB_DIR) -s
+	$(MAKE) clean --directory=$(LIB_DIR) -s -j
 
 _clean:
 	echo "cleaning $(PRJ_NAME) $(DIR)"
 	rm -f *.o
-	$(MAKE) clean --directory=test
+	$(MAKE) clean --directory=test -j
 
 
 
 .PHONY: test
 test t:
-	$(MAKE) dbg --directory=$(LIB_DIR) -s
+	$(MAKE) dbg --directory=$(LIB_DIR) -s -j
 	$(MAKE) _test -s
 
 _test:

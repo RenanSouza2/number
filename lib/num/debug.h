@@ -1,7 +1,7 @@
 #ifndef NUM_DEBUG_H
 #define NUM_DEBUG_H
 
-#include "../../mods/macros/static.h"
+#include "../../mods/macros/specifiers.h"
 
 #include "header.h"
 
@@ -29,7 +29,6 @@ bool num_immed(num_p num, uint64_t n, ...);
 STATIC uint64_t uint_from_char(char c);
 
 STATIC num_p num_expand_to(num_p num, uint64_t target);
-// STATIC uint64_t num_chunk_get(num_p num, uint64_t pos);
 STATIC num_p num_chunk_set(num_p num, uint64_t pos, uint64_t value);
 
 STATIC num_p num_normalize(num_p num);
@@ -48,7 +47,7 @@ STATIC num_p num_sub_offset(num_p num_1, uint64_t pos_1, num_p num_2);
 
 STATIC void num_display_span_full(const char tag[], num_p num, uint64_t n, uint64_t k);
 STATIC uint64_t ssm_bit_inv(uint64_t i, uint64_t K);
-STATIC void num_ssm_add_mod_(
+STATIC void num_ssm_add_mod(
     num_p num_res,
     uint64_t pos_res,
     num_p num_1,
@@ -57,7 +56,7 @@ STATIC void num_ssm_add_mod_(
     uint64_t pos_2,
     uint64_t n
 );
-STATIC void num_ssm_sub_mod_(
+STATIC void num_ssm_sub_mod(
     num_p num_res,
     uint64_t pos_res,
     num_p num_1,
@@ -111,7 +110,6 @@ STATIC void num_ssm_fft_inv(num_p num_aux, num_p num, ssm_params_p p);
 STATIC num_p num_mul_ssm_fwd_transform(num_p num, uint64_t count);
 STATIC num_p num_mul_ssm_bwd_transform(num_p num_fft, uint64_t count);
 
-STATIC num_p num_mul_karatsuba(num_p num_1, num_p num_2);
 STATIC num_p num_mul_classic(num_p num_1, num_p num_2);
 STATIC num_p num_mul_ssm(num_p num_1, num_p num_2);
 STATIC num_p num_mul_core(num_p num_1, num_p num_2);
