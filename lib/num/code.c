@@ -1692,6 +1692,7 @@ STATIC void num_ssm_depad_wrap(
     assert(num_aux_2)
     assert(num_res)
     assert(num)
+    assert(num_res->size >= n0)
     assert(num_aux_1->size >= n0)
     assert(num_aux_2->size >= 2 * n0)
 
@@ -2062,7 +2063,7 @@ static ssm_params_t ssm_get_params(uint64_t count)
 // NOLINTEND(readability-magic-numbers)
 
 // NOLINTBEGIN(readability-magic-numbers)
-static ssm_params_t ssm_get_params_wrap(uint64_t n)
+STATIC ssm_params_t ssm_get_params_wrap(uint64_t n)
 {
     uint64_t K1 = 2 * B(stdc_bit_width(n-1) / 2);
     uint64_t K2 = (n - 1) & (1 - n);
@@ -2576,7 +2577,6 @@ STATIC void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n)
     assert(num_2)
 
     ssm_params_t p = ssm_get_params_wrap(n);
-    num_p num_a_1 = num_create_dirty(CLU_ARGS(n, 0));
     num_p num_a_2 = num_create_dirty(CLU_ARGS(2 * n, 0));
     num_p num_aux_1 = num_create_dirty(CLU_ARGS(p.n * p.K, 0));
     num_p num_aux_2 = num_create_dirty(CLU_ARGS(p.n * p.K, 0));
@@ -2589,6 +2589,9 @@ STATIC void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n)
     }
 
     num_ssm_fft_inv(num_a_2, num_aux_1, &p);
+
+    num_p num_a_1 = num_create_dirty(CLU_ARGS(n, 0));
+    num_set_count(num_1, 0);
     num_ssm_depad_wrap(num_a_1, num_a_2, num_1, num_aux_1, &p, n); // NOLINT(readability-suspicious-call-argument)
 
     num_free(num_a_1);

@@ -1546,6 +1546,32 @@ static void test_num_ssm_fft(bool show)
     TEST_FN_CLOSE
 }
 
+static void test_num_ssm_depad_wrap(bool show)
+{
+    TEST_FN_OPEN
+
+    TEST_CASE_OPEN(1)
+    {
+        num_p num = num_create_immed(32,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
+        );
+        uint64_t n = 9;
+        ssm_params_t p = ssm_get_params_wrap(n);
+        num_p num_aux_1 = num_create(CLU_ARGS(n, 0));
+        num_p num_aux_2 = num_create(CLU_ARGS(2 * n, 0));
+        num_p num_res = num_create(CLU_ARGS(n, 0));
+        num_ssm_depad_wrap(num_aux_1, num_aux_2, num_res, num, &p, n);
+        assert(num_immed(num_res, 1, 1));
+        num_free(num_aux_1);
+        num_free(num_aux_2);
+        num_free(num);
+    }
+    TEST_CASE_CLOSE
+
+    TEST_FN_CLOSE
+}
+
 static void test_num_ssm_mul_rec(bool show)
 {
     TEST_FN_OPEN
@@ -2804,6 +2830,7 @@ static void test_all(bool show)
     test_num_ssm_shl_mod(show);
     test_num_ssm_shr_mod(show);
     test_num_ssm_fft(show);
+    test_num_ssm_depad_wrap(show);
     test_num_ssm_mul_rec(show);
     test_num_mul_ssm_wrap(show);
 
