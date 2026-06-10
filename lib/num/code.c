@@ -2569,7 +2569,7 @@ static void num_ssm_prepare(num_p num_aux, num_p num_res, num_p num, ssm_params_
     num_ssm_fft_fwd(num_aux, num_res, p);
 }
 
-// Keeps NUM_1 NUM_2
+// KEEPS NUM_1 NUM_2
 static void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n)
 {
     CLU_HANDLER_IS_SAFE(num_1)
@@ -2592,6 +2592,11 @@ static void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n)
 
     num_ssm_fft_inv(num_a_2, num_aux_1, &p);
     num_ssm_depad_wrap(num_a_1, num_a_2, num_1, num_aux_1, &p, n); // NOLINT(readability-suspicious-call-argument)
+
+    num_free(num_a_1);
+    num_free(num_a_2);
+    num_free(num_aux_1);
+    num_free(num_aux_2);
 }
 
 // KEEPS NUM_1 NUM_2
