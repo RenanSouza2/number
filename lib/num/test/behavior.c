@@ -1553,7 +1553,7 @@ static void test_num_ssm_depad_wrap(bool show)
     TEST_CASE_OPEN(1)
     {
         num_p num = num_create_immed(32,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
         );
         uint64_t n = 9;
