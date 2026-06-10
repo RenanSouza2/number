@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1599,8 +1598,7 @@ static void num_ssm_sub_mod_immed(
     num_ssm_normalize(num_1, pos_1, n);
 }
 
-ONLY_PRD([[gnu::always_inline]])
-STATIC INLINE void num_ssm_opposite(num_p num, uint64_t pos, uint64_t n)
+STATIC void num_ssm_opposite(num_p num, uint64_t pos, uint64_t n)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
@@ -1675,7 +1673,8 @@ STATIC num_p num_ssm_depad_no_wrap(num_p num, ssm_params_p p)
 // Separate number to a base 2^(64*b)
 // Each place will be represented in n chunks
 // the final vector is padded to k places
-[[maybe_unused]]
+// num_aux_1->size >= n0
+// num_aux_2->size >= 2 * n0
 STATIC void num_ssm_depad_wrap(
     num_p num_aux_1,
     num_p num_aux_2,
@@ -1689,8 +1688,12 @@ STATIC void num_ssm_depad_wrap(
     CLU_HANDLER_IS_SAFE(num_aux_2)
     CLU_HANDLER_IS_SAFE(num_res)
     CLU_HANDLER_IS_SAFE(num)
-    assert(num_aux_1 && num_aux_2 && num_res && num)
-    assert(num_aux_1->size >= n0 && num_aux_2->size >= 2 * n0)
+    assert(num_aux_1)
+    assert(num_aux_2)
+    assert(num_res)
+    assert(num)
+    assert(num_aux_1->size >= n0)
+    assert(num_aux_2->size >= 2 * n0)
 
     uint64_t K = n0 - 1;
 
@@ -1838,6 +1841,7 @@ STATIC void num_ssm_shr(
     memset(&dest[n - count], 0, count * sizeof(uint64_t));
 }
 
+// num_aux->size >= 2 * n
 STATIC void num_ssm_shl_mod(
     num_p num_aux,
     num_p num,
@@ -1863,6 +1867,7 @@ STATIC void num_ssm_shl_mod(
     num_ssm_sub_mod(num, pos, num_aux, n, num_aux, 0, n);
 }
 
+// num_aux->size >= 2 * p->n
 STATIC void num_ssm_shr_mod(
     num_p num_aux,
     num_p num,
@@ -1982,6 +1987,7 @@ static void num_ssm_fft_inv_rec(
     }
 }
 
+// num_aux->size >= 2 * p->n
 STATIC void num_ssm_fft_inv(num_p num_aux, num_p num, ssm_params_p p)
 {
     CLU_HANDLER_IS_SAFE(num_aux)
