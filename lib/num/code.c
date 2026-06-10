@@ -2489,26 +2489,6 @@ num_p num_mul_finish(num_p num_1, num_ssm_t num_ssm_2)
 
 
 
-static void num_ssm_sqr_mod_span(num_p num_aux, num_p num, uint64_t pos, uint64_t n)
-{
-    CLU_HANDLER_IS_SAFE(num_aux)
-    CLU_HANDLER_IS_SAFE(num)
-    assert(num_aux)
-    assert(num)
-    assert(num_aux->size >= 2 * n)
-
-    num_t num_aux_piece;
-    num_span(&num_aux_piece, num, pos, pos + n);
-
-    num_sqr_classic_buffer(num_aux, &num_aux_piece);
-
-    memmove(&num_aux->chunk[n], &num_aux->chunk[n-1], n * sizeof(uint64_t));
-    num_aux->chunk[n-1] = 0;
-    num_ssm_sub_mod(num, pos, num_aux, 0, num_aux, n, n);
-}
-
-
-
 static bool mul_is_classic(uint64_t count_1, uint64_t count_2)
 {
     constexpr uint64_t threshold = 256;
@@ -2647,6 +2627,47 @@ STATIC num_p num_mul_ssm(num_p num_1, num_p num_2)
     return num_res;
 }
 
+// KEEPS NUM_1 NUM_2
+STATIC num_p num_mul_core(num_p num_1, num_p num_2)
+{
+    CLU_HANDLER_IS_SAFE(num_1)
+    CLU_HANDLER_IS_SAFE(num_2)
+    assert(num_1)
+    assert(num_2)
+
+    if(num_1->count == 0 || num_2->count == 0)
+    {
+        return num_wrap(0);
+    }
+
+    if(mul_is_classic(num_1->count, num_2->count))
+    {
+        return num_mul_classic(num_1, num_2);
+    }
+
+    return num_mul_ssm(num_1, num_2);
+}
+
+
+
+static void num_ssm_sqr_mod_span(num_p num_aux, num_p num, uint64_t pos, uint64_t n)
+{
+    CLU_HANDLER_IS_SAFE(num_aux)
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num_aux)
+    assert(num)
+    assert(num_aux->size >= 2 * n)
+
+    num_t num_aux_piece;
+    num_span(&num_aux_piece, num, pos, pos + n);
+
+    num_sqr_classic_buffer(num_aux, &num_aux_piece);
+
+    memmove(&num_aux->chunk[n], &num_aux->chunk[n-1], n * sizeof(uint64_t));
+    num_aux->chunk[n-1] = 0;
+    num_ssm_sub_mod(num, pos, num_aux, 0, num_aux, n, n);
+}
+
 STATIC num_p num_sqr_ssm(num_p num)
 {
     CLU_HANDLER_IS_SAFE(num)
@@ -2667,27 +2688,6 @@ STATIC num_p num_sqr_ssm(num_p num)
     num_free(num_aux);
 
     return num_mul_ssm_bwd_transform(num_ssm.num_fft, count);
-}
-
-// KEEPS NUM_1 NUM_2
-STATIC num_p num_mul_core(num_p num_1, num_p num_2)
-{
-    CLU_HANDLER_IS_SAFE(num_1)
-    CLU_HANDLER_IS_SAFE(num_2)
-    assert(num_1)
-    assert(num_2)
-
-    if(num_1->count == 0 || num_2->count == 0)
-    {
-        return num_wrap(0);
-    }
-
-    if(mul_is_classic(num_1->count, num_2->count))
-    {
-        return num_mul_classic(num_1, num_2);
-    }
-
-    return num_mul_ssm(num_1, num_2);
 }
 
 
