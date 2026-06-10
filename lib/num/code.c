@@ -2526,6 +2526,108 @@ STATIC num_p num_mul_classic(num_p num_1, num_p num_2)
     return num_mul_classic_buffer(num_res, num_1, num_2);
 }
 
+static void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n);
+
+static void num_ssm_mul_rec(num_p num_1, num_p num_2, uint64_t pos, uint64_t n)
+{
+    CLU_HANDLER_IS_SAFE(num_1)
+    CLU_HANDLER_IS_SAFE(num_2)
+    assert(num_1)
+    assert(num_2)
+
+    num_t num_t_1, num_t_2;
+    num_span(&num_t_1, num_1, pos, pos + n);
+    num_span(&num_t_2, num_2, pos, pos + n);
+
+    if(ssm_is_recursive(n))
+    {
+        num_mul_ssm_wrap(&num_t_1, &num_t_2, n);
+        return;
+    }
+
+    num_p num_aux = num_create_dirty(CLU_ARGS(2 * n, 0));
+    num_mul_classic_buffer(num_aux, &num_t_1, &num_t_2);
+
+    memmove(&num_aux->chunk[n], &num_aux->chunk[n-1], n * sizeof(uint64_t));
+    num_aux->chunk[n-1] = 0;
+    num_ssm_sub_mod(num_1, pos, num_aux, 0, num_aux, n, n); // NOLINT(readability-suspicious-call-argument)
+    num_free(num_aux);
+}
+
+// num_aux->size >= 2 * n
+static void num_ssm_prepare(num_p num_aux, num_p num_res, num_p num, ssm_params_p p)
+{
+    CLU_HANDLER_IS_SAFE(num_aux)
+    CLU_HANDLER_IS_SAFE(num_res)
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num_aux)
+    assert(num_res)
+    assert(num)
+    assert(num_aux->size >= 2 * p->n)
+
+    num_ssm_pad(num_res, num, p);
+    num_ssm_fft_fwd(num_aux, num_res, p);
+}
+
+// Keeps NUM_1 NUM_2
+static void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n)
+{
+    CLU_HANDLER_IS_SAFE(num_1)
+    CLU_HANDLER_IS_SAFE(num_2)
+    assert(num_1)
+    assert(num_2)
+
+    ssm_params_t p = ssm_get_params_wrap(n);
+    num_p num_a_1 = num_create_dirty(CLU_ARGS(p.n, 0));
+    num_p num_a_2 = num_create_dirty(CLU_ARGS(2 * p.n, 0));
+    num_p num_aux_1 = num_create_dirty(CLU_ARGS(p.n * p.K, 0));
+    num_p num_aux_2 = num_create_dirty(CLU_ARGS(p.n * p.K, 0));
+    num_ssm_prepare(num_a_2, num_aux_1, num_1, &p); // NOLINT(readability-suspicious-call-argument)
+    num_ssm_prepare(num_a_2, num_aux_2, num_2, &p); // NOLINT(readability-suspicious-call-argument)
+
+    for(uint64_t i=0; i<p.K; i++)
+    {
+        num_ssm_mul_rec(num_aux_1, num_aux_2, i * p.n, p.n);
+    }
+
+    num_ssm_fft_inv(num_a_1, num_aux_1, &p);
+    num_ssm_depad_wrap(num_a_1, num_a_2, num_1, num_aux_1, &p, n); // NOLINT(readability-suspicious-call-argument)
+}
+
+// KEEPS NUM_1 NUM_2
+static void num_mul_ssm_buffer(num_p num_res, num_p num_1, num_p num_2)
+{
+    CLU_HANDLER_IS_SAFE(num_res)
+    CLU_HANDLER_IS_SAFE(num_1)
+    CLU_HANDLER_IS_SAFE(num_2)
+    assert(num_res)
+    assert(num_1)
+    assert(num_2)
+    assert(num_res->size >= num_1->count + num_2->count)
+
+    ssm_params_t p = ssm_get_params(num_1->count + num_2->count);
+    num_p num_aux = num_create_dirty(CLU_ARGS(2 * p.n, 0));
+    num_p num_aux_1 = num_create_dirty(CLU_ARGS(p.n * p.K, 0));
+    num_p num_aux_2 = num_create_dirty(CLU_ARGS(p.n * p.K, 0));
+    num_ssm_prepare(num_aux, num_aux_1, num_1, &p);
+    num_ssm_prepare(num_aux, num_aux_2, num_2, &p);
+
+    for(uint64_t i=0; i<p.K; i++)
+    {
+        num_ssm_mul_rec(num_aux_1, num_aux_2, i * p.n, p.n);
+    }
+
+    num_ssm_fft_inv(num_aux, num_aux_1, &p);
+    num_aux_1 = num_ssm_depad_no_wrap(num_aux_1, &p);
+
+    num_set_count(num_res, num_aux_1->count);
+    memcpy(num_res->chunk, num_aux_1->chunk, num_aux_1->count * sizeof(uint64_t));
+
+    num_free(num_aux_1);
+    num_free(num_aux_2);
+    num_free(num_aux);
+}
+
 // KEEPS NUM_1 NUM_2
 STATIC num_p num_mul_ssm(num_p num_1, num_p num_2)
 {
@@ -2534,16 +2636,8 @@ STATIC num_p num_mul_ssm(num_p num_1, num_p num_2)
     assert(num_1)
     assert(num_2)
 
-    uint64_t count = num_1->count + num_2->count;
-
-    // TIME_SETUP
-    num_ssm_t num_ssm_2 = num_mul_prepare_core(num_2, count);
-    // TIME_END(t1)
-    // tprintf("time prepare: %.3f", dtime(t1));
-
-    num_p num_res = num_mul_finish_core(num_1, num_ssm_2);
-
-    num_ssm_free(num_ssm_2);
+    num_p num_res = num_create(CLU_ARGS(num_1->count + num_2->count, 0));
+    num_mul_ssm_buffer(num_res, num_1, num_2);
     return num_res;
 }
 
