@@ -2526,9 +2526,7 @@ STATIC num_p num_mul_classic(num_p num_1, num_p num_2)
     return num_mul_classic_buffer(num_res, num_1, num_2);
 }
 
-static void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n);
-
-static void num_ssm_mul_rec(num_p num_1, num_p num_2, uint64_t pos, uint64_t n)
+STATIC void num_ssm_mul_rec(num_p num_1, num_p num_2, uint64_t pos, uint64_t n)
 {
     CLU_HANDLER_IS_SAFE(num_1)
     CLU_HANDLER_IS_SAFE(num_2)
@@ -2570,7 +2568,7 @@ static void num_ssm_prepare(num_p num_aux, num_p num_res, num_p num, ssm_params_
 }
 
 // KEEPS NUM_1 NUM_2
-static void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n)
+STATIC void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n)
 {
     CLU_HANDLER_IS_SAFE(num_1)
     CLU_HANDLER_IS_SAFE(num_2)

@@ -1546,6 +1546,97 @@ static void test_num_ssm_fft(bool show)
     TEST_FN_CLOSE
 }
 
+static void test_num_ssm_mul_rec(bool show)
+{
+    TEST_FN_OPEN
+
+    TEST_CASE_OPEN(1)
+    {
+        num_p num_1 = num_create_immed(2, 1, 0);
+        num_p num_2 = num_create_immed(2, 1, 0);
+        num_ssm_mul_rec(num_1, num_2, 0, 2);
+        num_1->cannot_expand = false;
+        num_1->count = 2;
+        assert(num_immed(num_1, 2, 0, 1));
+        num_free(num_2);
+    }
+    TEST_CASE_CLOSE
+
+    TEST_FN_CLOSE
+}
+
+static void test_num_mul_ssm_wrap(bool show)
+{
+    TEST_FN_OPEN
+
+    #define TEST_NUM_MUL_SSM_WRAP(TAG, NUM_1, NUM_2, N, RES)    \
+    {                                                           \
+        TEST_CASE_OPEN(TAG)                                     \
+        {                                                       \
+            num_p num_1 = num_create_immed(ARG_OPEN NUM_1);     \
+            num_p num_2 = num_create_immed(ARG_OPEN NUM_2);     \
+            num_mul_ssm_wrap(num_1, num_2, N);                  \
+            assert(num_immed(num_1, ARG_OPEN RES))              \
+            num_free(num_2);                                    \
+        }                                                       \
+        TEST_CASE_CLOSE                                         \
+    }
+
+    TEST_NUM_MUL_SSM_WRAP(1,
+        (9, 0, 0, 0, 0, 0, 0, 0, 0, 1),
+        (9, 0, 0, 0, 0, 0, 0, 0, 0, 1), 9,
+        (1, 1)
+    )
+    TEST_NUM_MUL_SSM_WRAP(2,
+        (9, 0, 0, 0, 0, 0, 0, 0, 1, 0),
+        (9, 0, 0, 0, 0, 0, 0, 0, 1, 0), 9,
+        (3, 1, 0, 0)
+    )
+    TEST_NUM_MUL_SSM_WRAP(3,
+        (9, 0, 0, 0, 0, 0, 1, 0, 0, 0),
+        (9, 0, 0, 0, 0, 0, 1, 0, 0, 0), 9,
+        (7, 1, 0, 0, 0, 0, 0, 0)
+    )
+    TEST_NUM_MUL_SSM_WRAP(4,
+        (9, 0, 0, 0, 0, 1, 0, 0, 0, 0),
+        (9, 0, 0, 0, 0, 1, 0, 0, 0, 0), 9,
+        (9, 1, 0, 0, 0, 0, 0, 0, 0, 0)
+    )
+    TEST_NUM_MUL_SSM_WRAP(5,
+        (9, 1, 0, 0, 0, 0, 0, 0, 0, 0),
+        (9, 1, 0, 0, 0, 0, 0, 0, 0, 0), 9,
+        (1, 1)
+    )
+    TEST_NUM_MUL_SSM_WRAP(6,
+        (9, 0, 0, 0, 0, 0, 0, 0, 0, UINT64_MAX),
+        (9, 0, 0, 0, 0, 0, 0, 0, 0, UINT64_MAX), 9,
+        (2, UINT64_MAX - 1, 1)
+    )
+    TEST_NUM_MUL_SSM_WRAP(7,
+        (
+            9,
+                     0, UINT64_MAX, UINT64_MAX,
+            UINT64_MAX, UINT64_MAX, UINT64_MAX,
+            UINT64_MAX, UINT64_MAX, UINT64_MAX
+        ),
+        (
+            9,
+                     0, UINT64_MAX, UINT64_MAX,
+            UINT64_MAX, UINT64_MAX, UINT64_MAX,
+            UINT64_MAX, UINT64_MAX, UINT64_MAX
+        ),
+        9,
+        (1, 4)
+    )
+    TEST_NUM_MUL_SSM_WRAP(8,
+        (9, 0, 1, 0, 0, 0, 0, 0, 0, 0),
+        (9, 0, 1, 0, 0, 0, 0, 0, 0, 0), 9,
+        (8, UINT64_MAX, UINT64_MAX, 0, 0, 0, 0, 0, 1)
+    )
+
+    TEST_FN_CLOSE
+}
+
 
 
 static void test_num_div_normalize(bool show)
@@ -2713,6 +2804,8 @@ static void test_all(bool show)
     test_num_ssm_shl_mod(show);
     test_num_ssm_shr_mod(show);
     test_num_ssm_fft(show);
+    test_num_ssm_mul_rec(show);
+    test_num_mul_ssm_wrap(show);
 
     test_num_div_normalize(show);
 
