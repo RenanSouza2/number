@@ -2578,8 +2578,8 @@ static void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n)
     assert(num_2)
 
     ssm_params_t p = ssm_get_params_wrap(n);
-    num_p num_a_1 = num_create_dirty(CLU_ARGS(p.n, 0));
-    num_p num_a_2 = num_create_dirty(CLU_ARGS(2 * p.n, 0));
+    num_p num_a_1 = num_create_dirty(CLU_ARGS(n, 0));
+    num_p num_a_2 = num_create_dirty(CLU_ARGS(2 * n, 0));
     num_p num_aux_1 = num_create_dirty(CLU_ARGS(p.n * p.K, 0));
     num_p num_aux_2 = num_create_dirty(CLU_ARGS(p.n * p.K, 0));
     num_ssm_prepare(num_a_2, num_aux_1, num_1, &p); // NOLINT(readability-suspicious-call-argument)
@@ -2590,7 +2590,7 @@ static void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n)
         num_ssm_mul_rec(num_aux_1, num_aux_2, i * p.n, p.n);
     }
 
-    num_ssm_fft_inv(num_a_1, num_aux_1, &p);
+    num_ssm_fft_inv(num_a_2, num_aux_1, &p);
     num_ssm_depad_wrap(num_a_1, num_a_2, num_1, num_aux_1, &p, n); // NOLINT(readability-suspicious-call-argument)
 }
 
@@ -2663,6 +2663,7 @@ STATIC num_p num_sqr_ssm(num_p num)
     return num_mul_ssm_bwd_transform(num_ssm.num_fft, count);
 }
 
+// KEEPS NUM_1 NUM_2
 STATIC num_p num_mul_core(num_p num_1, num_p num_2)
 {
     CLU_HANDLER_IS_SAFE(num_1)
