@@ -1550,24 +1550,32 @@ static void test_num_ssm_depad_wrap(bool show)
 {
     TEST_FN_OPEN
 
-    TEST_CASE_OPEN(1)
-    {
-        num_p num = num_create_immed(32,
+    #define TEST_NUM_SSM_FFT(TAG, NUM_FFT, N, NUM_RES)                          \
+    {                                                                           \
+        TEST_CASE_OPEN(TAG)                                                     \
+        {                                                                       \
+            num_p num_fft = num_create_immed(ARG_OPEN NUM_FFT);                 \
+            ssm_params_t p = ssm_get_params_wrap(N);                            \
+            num_p num_aux_1 = num_create(CLU_ARGS(p.n, 0));                     \
+            num_p num_aux_2 = num_create(CLU_ARGS(2 * p.n, 0));                 \
+            num_p num_res = num_create(CLU_ARGS(N, 0));                         \
+            num_ssm_depad_wrap(num_aux_1, num_aux_2, num_res, num_fft, &p, N);  \
+            assert(num_immed(num_res, ARG_OPEN NUM_RES));                       \
+            num_free(num_aux_1);                                                \
+            num_free(num_aux_2);                                                \
+            num_free(num_fft);                                                  \
+        }                                                                       \
+        TEST_CASE_CLOSE                                                         \
+    }
+
+    TEST_NUM_SSM_FFT(1,
+        (32,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
-        );
-        uint64_t n = 9;
-        ssm_params_t p = ssm_get_params_wrap(n);
-        num_p num_aux_1 = num_create(CLU_ARGS(n, 0));
-        num_p num_aux_2 = num_create(CLU_ARGS(2 * n, 0));
-        num_p num_res = num_create(CLU_ARGS(n, 0));
-        num_ssm_depad_wrap(num_aux_1, num_aux_2, num_res, num, &p, n);
-        assert(num_immed(num_res, 1, 1));
-        num_free(num_aux_1);
-        num_free(num_aux_2);
-        num_free(num);
-    }
-    TEST_CASE_CLOSE
+        ),
+        9,
+        (1, 1)
+    )
 
     TEST_FN_CLOSE
 }
@@ -1594,6 +1602,8 @@ static void test_num_ssm_mul_rec(bool show)
 static void test_num_mul_ssm_wrap(bool show)
 {
     TEST_FN_OPEN
+
+    show = true;
 
     #define TEST_NUM_MUL_SSM_WRAP(TAG, NUM_1, NUM_2, N, RES)    \
     {                                                           \
@@ -1630,15 +1640,20 @@ static void test_num_mul_ssm_wrap(bool show)
     )
     TEST_NUM_MUL_SSM_WRAP(5,
         (9, 1, 0, 0, 0, 0, 0, 0, 0, 0),
+        (9, 0, 0, 0, 0, 0, 0, 0, 0, 1), 9,
+        (9, 1, 0, 0, 0, 0, 0, 0, 0, 0)
+    )
+    TEST_NUM_MUL_SSM_WRAP(6,
+        (9, 1, 0, 0, 0, 0, 0, 0, 0, 0),
         (9, 1, 0, 0, 0, 0, 0, 0, 0, 0), 9,
         (1, 1)
     )
-    TEST_NUM_MUL_SSM_WRAP(6,
+    TEST_NUM_MUL_SSM_WRAP(7,
         (9, 0, 0, 0, 0, 0, 0, 0, 0, UINT64_MAX),
         (9, 0, 0, 0, 0, 0, 0, 0, 0, UINT64_MAX), 9,
         (2, UINT64_MAX - 1, 1)
     )
-    TEST_NUM_MUL_SSM_WRAP(7,
+    TEST_NUM_MUL_SSM_WRAP(8,
         (
             9,
                      0, UINT64_MAX, UINT64_MAX,
@@ -1654,7 +1669,7 @@ static void test_num_mul_ssm_wrap(bool show)
         9,
         (1, 4)
     )
-    TEST_NUM_MUL_SSM_WRAP(8,
+    TEST_NUM_MUL_SSM_WRAP(9,
         (9, 0, 1, 0, 0, 0, 0, 0, 0, 0),
         (9, 0, 1, 0, 0, 0, 0, 0, 0, 0), 9,
         (8, UINT64_MAX, UINT64_MAX, 0, 0, 0, 0, 0, 1)
@@ -2793,6 +2808,9 @@ static void test_fuzz_num_bz_div(bool show)
 [[maybe_unused]]
 static void test_all(bool show)
 {
+    test_num_ssm_depad_wrap(show);
+    test_num_mul_ssm_wrap(show);
+
     test_uint_from_char(show);
     test_uint128(show);
 
