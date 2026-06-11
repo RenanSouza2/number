@@ -105,9 +105,10 @@ STATIC void num_ssm_shr_mod(
     uint64_t n,
     uint64_t bits
 );
+STATIC ssm_params_t ssm_get_params(uint64_t count);
+STATIC ssm_params_t ssm_get_params_wrap(uint64_t n);
 STATIC void num_ssm_fft_fwd(num_p num_aux, num_p num, ssm_params_p p);
 STATIC void num_ssm_fft_inv(num_p num_aux, num_p num, ssm_params_p p);
-STATIC ssm_params_t ssm_get_params_wrap(uint64_t n);
 STATIC num_p num_mul_ssm_fwd_transform(num_p num, uint64_t count);
 STATIC num_p num_mul_ssm_bwd_transform(num_p num_fft, uint64_t count);
 STATIC void num_ssm_mul_rec(num_p num_1, num_p num_2, uint64_t pos, uint64_t n);

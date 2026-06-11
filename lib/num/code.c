@@ -1215,7 +1215,7 @@ static int64_t num_ssm_cmp_uint_offset(
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
 
-    if(!num_is_span_zero(num, pos + 1, n - 1))
+    if(!num_is_span_zero(num, pos + 1, n))
     {
         return 1;
     }
