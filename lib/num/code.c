@@ -1618,34 +1618,32 @@ STATIC void num_ssm_opposite(num_p num, uint64_t pos, uint64_t n)
 // Separate number to a base 2^(64*M)
 // Each place will be represented in n chunks
 // the final vector is padded to K places
-STATIC void num_ssm_pad(num_p num_res, num_p num, ssm_params_p p)
+STATIC void num_ssm_pad(num_p num_fft, num_p num, ssm_params_p p)
 {
-    CLU_HANDLER_IS_SAFE(num_res)
+    CLU_HANDLER_IS_SAFE(num_fft)
     CLU_HANDLER_IS_SAFE(num)
-    assert(num_res)
+    assert(num_fft)
     assert(num)
-    assert(num_res->size >= p->n * p->K)
+    assert(num_fft->size >= p->n * p->K)
 
-    num_set_count(num_res, 0);
-    num_res->count = p->n * p->K;
+    num_set_count(num_fft, 0);
+    num_fft->count = p->n * p->K;
 
-    uint64_t * restrict dest = num_res->chunk;
+    uint64_t * restrict dest = num_fft->chunk;
     const uint64_t * restrict src = num->chunk;
 
-    for(uint64_t i=0; i<p->K-1; i++)
-    {
-        for(uint64_t j=0; j<p->M; j++)
-        {
-            uint64_t src_idx = (p->M * i) + j;
-            dest[(p->n * i) + j] = (src_idx < num->count) ? src[src_idx] : 0;
-        }
+    memset(dest, 0, p->n * p->K * sizeof(uint64_t));
+    uint64_t full_chunks = num->count / p->M;
+    for(uint64_t i=0; i < full_chunks; i++) {
+        memcpy(&dest[p->n * i], &src[p->M * i], p->M * sizeof(uint64_t));
     }
 
-    for(uint64_t j=0; j<=p->M; j++)
+    uint64_t tail = num->count % p->M;
+    if(tail)
     {
-        uint64_t src_idx = (p->M * (p->K-1)) + j;
-        dest[(p->n * (p->K-1)) + j] = (src_idx < num->count) ? src[src_idx] : 0;
+        memcpy(&dest[p->n * full_chunks], &src[p->M * full_chunks], tail * sizeof(uint64_t));
     }
+
 }
 
 // Separate number to a base 2^(64*M)
@@ -2534,18 +2532,18 @@ STATIC void num_ssm_mul_rec(num_p num_1, num_p num_2, uint64_t pos, uint64_t n)
 }
 
 // num_aux->size >= 2 * n
-static void num_ssm_prepare(num_p num_aux, num_p num_res, num_p num, ssm_params_p p)
+static void num_ssm_prepare(num_p num_aux, num_p num_fft, num_p num, ssm_params_p p)
 {
     CLU_HANDLER_IS_SAFE(num_aux)
-    CLU_HANDLER_IS_SAFE(num_res)
+    CLU_HANDLER_IS_SAFE(num_fft)
     CLU_HANDLER_IS_SAFE(num)
     assert(num_aux)
-    assert(num_res)
+    assert(num_fft)
     assert(num)
     assert(num_aux->size >= 2 * p->n)
 
-    num_ssm_pad(num_res, num, p);
-    num_ssm_fft_fwd(num_aux, num_res, p);
+    num_ssm_pad(num_fft, num, p);
+    num_ssm_fft_fwd(num_aux, num_fft, p);
 }
 
 // KEEPS NUM_1 NUM_2
@@ -2593,24 +2591,24 @@ static void num_mul_ssm_buffer(num_p num_res, num_p num_1, num_p num_2)
 
     ssm_params_t p = ssm_get_params(num_1->count + num_2->count);
     num_p num_aux = num_create_dirty(CLU_ARGS(2 * p.n, 0));
-    num_p num_aux_1 = num_create_dirty(CLU_ARGS(p.n * p.K, 0));
-    num_p num_aux_2 = num_create_dirty(CLU_ARGS(p.n * p.K, 0));
-    num_ssm_prepare(num_aux, num_aux_1, num_1, &p);
-    num_ssm_prepare(num_aux, num_aux_2, num_2, &p);
+    num_p num_fft_1 = num_create_dirty(CLU_ARGS(p.n * p.K, 0));
+    num_p num_fft_2 = num_create_dirty(CLU_ARGS(p.n * p.K, 0));
+    num_ssm_prepare(num_aux, num_fft_1, num_1, &p);
+    num_ssm_prepare(num_aux, num_fft_2, num_2, &p);
 
     for(uint64_t i=0; i<p.K; i++)
     {
-        num_ssm_mul_rec(num_aux_1, num_aux_2, i * p.n, p.n);
+        num_ssm_mul_rec(num_fft_1, num_fft_2, i * p.n, p.n);
     }
 
-    num_ssm_fft_inv(num_aux, num_aux_1, &p);
-    num_aux_1 = num_ssm_depad_no_wrap(num_aux_1, &p);
+    num_ssm_fft_inv(num_aux, num_fft_1, &p);
+    num_fft_1 = num_ssm_depad_no_wrap(num_fft_1, &p);
 
-    num_set_count(num_res, num_aux_1->count);
-    memcpy(num_res->chunk, num_aux_1->chunk, num_aux_1->count * sizeof(uint64_t));
+    num_set_count(num_res, num_fft_1->count);
+    memcpy(num_res->chunk, num_fft_1->chunk, num_fft_1->count * sizeof(uint64_t));
 
-    num_free(num_aux_1);
-    num_free(num_aux_2);
+    num_free(num_fft_1);
+    num_free(num_fft_2);
     num_free(num_aux);
 }
 

@@ -66,7 +66,7 @@ STATIC void num_ssm_sub_mod(
     uint64_t n
 );
 STATIC void num_ssm_opposite(num_p num, uint64_t pos, uint64_t n);
-STATIC void num_ssm_pad(num_p num_res, num_p num, ssm_params_p p);
+STATIC void num_ssm_pad(num_p num_fft, num_p num, ssm_params_p p);
 STATIC num_p num_ssm_depad_no_wrap(num_p num, ssm_params_p p);
 STATIC void num_ssm_depad_wrap(num_p num_aux_1,
     num_p num_aux_2,
