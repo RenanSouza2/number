@@ -1145,30 +1145,35 @@ STATIC num_p num_sqr_classic(num_p num)
     return num_res;
 }
 
-static void num_display_span(num_p num, uint64_t pos, uint64_t count)
+static void num_display_span(num_p num_fft, uint64_t pos, uint64_t count)
 {
-    CLU_HANDLER_IS_SAFE(num)
-    assert(num)
-    assert(num->size >= pos + count);
+    CLU_HANDLER_IS_SAFE(num_fft)
+    assert(num_fft)
+    assert(num_fft->size >= pos + count);
 
     for(uint64_t i=count-1; i!=UINT64_MAX; i--)
     {
-        printf("" U64PX " ", num->chunk[pos + i]);
+        printf("" U64PX " ", num_fft->chunk[pos + i]);
     }
 }
 
 [[maybe_unused]]
-STATIC void num_display_span_full(const char tag[], num_p num, uint64_t n, uint64_t k)
+STATIC void num_display_span_full(
+    const char tag[],
+    num_p num_fft,
+    uint64_t n,
+    uint64_t k
+)
 {
-    CLU_HANDLER_IS_SAFE(num)
-    assert(num)
+    CLU_HANDLER_IS_SAFE(num_fft)
+    assert(num_fft)
 
     printf("\n");
     printf("\n%s", tag);
     for(uint64_t i=0; i<k; i++)
     {
         printf("\nc[" U64P() "]\t:", i);
-        num_display_span(num, i * n, n);
+        num_display_span(num_fft, i * n, n);
     }
 }
 
@@ -1634,8 +1639,15 @@ STATIC void num_ssm_pad(num_p num_fft, num_p num, ssm_params_p p)
 
     memset(dest, 0, p->n * p->K * sizeof(uint64_t));
     uint64_t full_chunks = num->count / p->M;
-    for(uint64_t i=0; i < full_chunks; i++) {
+    for(uint64_t i=0; i < full_chunks; i++)
+    {
         memcpy(&dest[p->n * i], &src[p->M * i], p->M * sizeof(uint64_t));
+    }
+
+    if(num->count == (p->M * p->K) + 1)
+    {
+        dest[(p->n * p->K) - 1] = src[num->count - 1];
+        return;
     }
 
     uint64_t tail = num->count % p->M;
@@ -1643,7 +1655,6 @@ STATIC void num_ssm_pad(num_p num_fft, num_p num, ssm_params_p p)
     {
         memcpy(&dest[p->n * full_chunks], &src[p->M * full_chunks], tail * sizeof(uint64_t));
     }
-
 }
 
 // Separate number to a base 2^(64*M)
@@ -2554,28 +2565,36 @@ STATIC void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n)
     assert(num_1)
     assert(num_2)
 
+    num_p num_aux_1 = num_create_dirty(CLU_ARGS(n, 0));
+    num_p num_aux_2 = num_create_dirty(CLU_ARGS(2 * n, 0));
+
     ssm_params_t p = ssm_get_params_wrap(n);
-    num_p num_a_2 = num_create_dirty(CLU_ARGS(2 * n, 0));
-    num_p num_aux_1 = num_create_dirty(CLU_ARGS(p.n * p.K, 0));
-    num_p num_aux_2 = num_create_dirty(CLU_ARGS(p.n * p.K, 0));
-    num_ssm_prepare(num_a_2, num_aux_1, num_1, &p); // NOLINT(readability-suspicious-call-argument)
-    num_ssm_prepare(num_a_2, num_aux_2, num_2, &p); // NOLINT(readability-suspicious-call-argument)
+    num_p num_fft_1 = num_create_dirty(CLU_ARGS(p.n * p.K, 0));
+    num_p num_fft_2 = num_create_dirty(CLU_ARGS(p.n * p.K, 0));
+    num_ssm_prepare(num_aux_2, num_fft_1, num_1, &p);
+    num_ssm_prepare(num_aux_2, num_fft_2, num_2, &p);
+
+    num_display_span_full("num_fft_1", num_fft_1, p.n, p.K);
+    num_display_span_full("num_fft_2", num_fft_2, p.n, p.K);
 
     for(uint64_t i=0; i<p.K; i++)
     {
-        num_ssm_mul_rec(num_aux_1, num_aux_2, i * p.n, p.n);
+        num_ssm_mul_rec(num_fft_1, num_fft_2, i * p.n, p.n);
     }
 
-    num_ssm_fft_inv(num_a_2, num_aux_1, &p);
+    num_ssm_fft_inv(num_aux_2, num_fft_1, &p);
 
-    num_p num_a_1 = num_create_dirty(CLU_ARGS(n, 0));
+    num_display_span_full("num_fft_1", num_fft_1, p.n, p.K);
+
     num_set_count(num_1, 0);
-    num_ssm_depad_wrap(num_a_1, num_a_2, num_1, num_aux_1, &p, n); // NOLINT(readability-suspicious-call-argument)
+    num_ssm_depad_wrap(num_aux_1, num_aux_2, num_1, num_fft_1, &p, n);
 
-    num_free(num_a_1);
-    num_free(num_a_2);
+    num_display_tag("num_res", num_1);
+
     num_free(num_aux_1);
     num_free(num_aux_2);
+    num_free(num_fft_1);
+    num_free(num_fft_2);
 }
 
 // KEEPS NUM_1 NUM_2
