@@ -1636,6 +1636,11 @@ STATIC void num_ssm_pad(num_p num_fft, num_p num, ssm_params_p p)
 
     memset(dest, 0, p->n * p->K * sizeof(uint64_t));
     uint64_t full_chunks = num->count / p->M;
+    if(full_chunks > p->K)
+    {
+        full_chunks = p->K;
+    }
+
     for(uint64_t i=0; i < full_chunks; i++)
     {
         memcpy(&dest[p->n * i], &src[p->M * i], p->M * sizeof(uint64_t));
