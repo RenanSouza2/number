@@ -2014,7 +2014,7 @@ static bool ssm_is_recursive(uint64_t n)
 // NOLINTBEGIN(readability-magic-numbers)
 STATIC ssm_params_t ssm_get_params(uint64_t count)
 {
-    uint64_t M = 1 << (stdc_bit_width(count) / 2);
+    uint64_t M = B(stdc_bit_width(count) / 2);
     uint64_t K = 4 * stdc_bit_ceil((count + M - 1) / M);
     M = (count / K) + 1;
 
@@ -2551,6 +2551,19 @@ static void num_ssm_prepare(num_p num_aux, num_p num_fft, num_p num, ssm_params_
     num_ssm_fft_fwd(num_aux, num_fft, p);
 }
 
+static void num_ssm_mul_pointwise(
+    num_p num_aux,
+    num_p num_fft_1,
+    num_p num_fft_2,
+    ssm_params_p p
+)
+{
+    for(uint64_t i=0; i<p->K; i++)
+    {
+        num_ssm_mul_rec(num_aux, num_fft_1, num_fft_2, i * p->n, p->n);
+    }
+}
+
 // KEEPS NUM_1 NUM_2
 STATIC void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n)
 {
@@ -2568,10 +2581,8 @@ STATIC void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n)
     num_ssm_prepare(num_aux_2, num_fft_1, num_1, &p);
     num_ssm_prepare(num_aux_2, num_fft_2, num_2, &p);
 
-    for(uint64_t i=0; i<p.K; i++)
-    {
-        num_ssm_mul_rec(num_aux_2, num_fft_1, num_fft_2, i * p.n, p.n);
-    }
+    num_ssm_mul_pointwise(num_aux_2, num_fft_1, num_fft_2, &p);
+    num_free(num_fft_2);
 
     num_ssm_fft_inv(num_aux_2, num_fft_1, &p);
     num_ssm_depad_wrap(num_aux_1, num_aux_2, num_1, num_fft_1, &p, n);
@@ -2579,41 +2590,6 @@ STATIC void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n)
     num_free(num_aux_1);
     num_free(num_aux_2);
     num_free(num_fft_1);
-    num_free(num_fft_2);
-}
-
-// KEEPS NUM_1 NUM_2
-static void num_mul_ssm_buffer(num_p num_res, num_p num_1, num_p num_2)
-{
-    CLU_HANDLER_IS_SAFE(num_res)
-    CLU_HANDLER_IS_SAFE(num_1)
-    CLU_HANDLER_IS_SAFE(num_2)
-    assert(num_res)
-    assert(num_1)
-    assert(num_2)
-    assert(num_res->size >= num_1->count + num_2->count)
-
-    ssm_params_t p = ssm_get_params(num_1->count + num_2->count);
-    num_p num_aux = num_create_dirty(CLU_ARGS(2 * p.n, 0));
-    num_p num_fft_1 = num_create_dirty(CLU_ARGS(p.n * p.K, 0));
-    num_p num_fft_2 = num_create_dirty(CLU_ARGS(p.n * p.K, 0));
-    num_ssm_prepare(num_aux, num_fft_1, num_1, &p);
-    num_ssm_prepare(num_aux, num_fft_2, num_2, &p);
-
-    for(uint64_t i=0; i<p.K; i++)
-    {
-        num_ssm_mul_rec(num_aux, num_fft_1, num_fft_2, i * p.n, p.n);
-    }
-
-    num_ssm_fft_inv(num_aux, num_fft_1, &p);
-    num_fft_1 = num_ssm_depad_no_wrap(num_fft_1, &p);
-
-    num_set_count(num_res, num_fft_1->count);
-    memcpy(num_res->chunk, num_fft_1->chunk, num_fft_1->count * sizeof(uint64_t));
-
-    num_free(num_fft_1);
-    num_free(num_fft_2);
-    num_free(num_aux);
 }
 
 // KEEPS NUM_1 NUM_2
@@ -2624,9 +2600,21 @@ STATIC num_p num_mul_ssm(num_p num_1, num_p num_2)
     assert(num_1)
     assert(num_2)
 
-    num_p num_res = num_create(CLU_ARGS(num_1->count + num_2->count, 0));
-    num_mul_ssm_buffer(num_res, num_1, num_2);
-    return num_res;
+    ssm_params_t p = ssm_get_params(num_1->count + num_2->count);
+    num_p num_aux = num_create_dirty(CLU_ARGS(2 * p.n, 0));
+    num_p num_fft_1 = num_create_dirty(CLU_ARGS(p.n * p.K, 0));
+    num_p num_fft_2 = num_create_dirty(CLU_ARGS(p.n * p.K, 0));
+    num_ssm_prepare(num_aux, num_fft_1, num_1, &p);
+    num_ssm_prepare(num_aux, num_fft_2, num_2, &p);
+
+    num_ssm_mul_pointwise(num_aux, num_fft_1, num_fft_2, &p);
+
+    num_free(num_fft_2);
+
+    num_ssm_fft_inv(num_aux, num_fft_1, &p);
+    num_free(num_aux);
+
+    return num_ssm_depad_no_wrap(num_fft_1, &p);
 }
 
 // KEEPS NUM_1 NUM_2
