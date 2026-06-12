@@ -741,6 +741,9 @@ int main()
     num_p num_1 = num_generate_1(base, 2);
     num_p num_2 = num_add(num_copy(num_1), num_wrap(1));
 
+    tprintf("num_1->count: " U64P() "", num_1->count);
+    tprintf("num_2->count: " U64P() "", num_2->count);
+
     TIME_SETUP
     // clu_log_level_set(CLU_LOG_DYNAMIC);
     num_p num_res = num_mul(num_copy(num_1), num_2);

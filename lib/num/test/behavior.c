@@ -1645,27 +1645,6 @@ static void test_num_ssm_depad_wrap(bool show)
     TEST_FN_CLOSE
 }
 
-static void test_num_ssm_mul_rec(bool show)
-{
-    TEST_FN_OPEN
-
-    TEST_CASE_OPEN(1)
-    {
-        num_p num_1 = num_create_immed(2, 1, 0);
-        num_p num_2 = num_create_immed(2, 1, 0);
-        num_p num_aux = num_create_rand(4);
-        num_ssm_mul_rec(num_aux, num_1, num_2, 0, 2);
-        num_1->cannot_expand = false;
-        num_1->count = 2;
-        assert(num_immed(num_1, 2, 0, 1));
-        num_free(num_2);
-        num_free(num_aux);
-    }
-    TEST_CASE_CLOSE
-
-    TEST_FN_CLOSE
-}
-
 static void test_num_mul_ssm_wrap(bool show)
 {
     TEST_FN_OPEN
@@ -1676,7 +1655,7 @@ static void test_num_mul_ssm_wrap(bool show)
         {                                                       \
             num_p num_1 = num_create_immed(ARG_OPEN NUM_1);     \
             num_p num_2 = num_create_immed(ARG_OPEN NUM_2);     \
-            num_mul_ssm_wrap(num_1, num_2, N);                  \
+            num_mul_ssm_wrap(num_1, num_2, 0, N);               \
             assert(num_immed(num_1, ARG_OPEN RES))              \
             num_free(num_2);                                    \
         }                                                       \
@@ -2840,10 +2819,12 @@ static void test_fuzz_num_ssm_mul(bool show)
         TEST_FUZZ_CASE_CLOSE                            \
     }
 
+    show = true;
+
     TEST_FUZZ_NUM_SSM_MUL(1, 500, 100)
     TEST_FUZZ_NUM_SSM_MUL(2, 1000, 10)
     TEST_FUZZ_NUM_SSM_MUL(3, 5000,  2)
-    // TEST_FUZZ_NUM_SSM_MUL(1, 4, 20000)
+    TEST_FUZZ_NUM_SSM_MUL(4, 80000, 1)
 
     #undef TEST_FUZZ_NUM_SSM_MUL
 
@@ -2858,9 +2839,9 @@ static void test_fuzz_num_ssm_mul(bool show)
         TEST_FUZZ_CASE_CLOSE                                        \
     }
 
-    TEST_FUZZ_NUM_SSM_MUL(4, 10, 20, 100);
-    TEST_FUZZ_NUM_SSM_MUL(5, 50, 100, 100);
-    TEST_FUZZ_NUM_SSM_MUL(6, 500, 5000, 100);
+    TEST_FUZZ_NUM_SSM_MUL(5, 10, 20, 100);
+    TEST_FUZZ_NUM_SSM_MUL(6, 50, 100, 100);
+    TEST_FUZZ_NUM_SSM_MUL(7, 500, 5000, 100);
 
     #undef TEST_FUZZ_NUM_SSM_MUL
 
@@ -2949,6 +2930,12 @@ static void test_fuzz_num_bz_div(bool show)
 [[maybe_unused]]
 static void test_all(bool show)
 {
+    test_fuzz_num_ssm_mul(show);
+    tprintf("\nDEU MERDA");
+    assert(false);
+
+    return;
+
     test_uint_from_char(show);
     test_uint128(show);
 
@@ -2987,7 +2974,6 @@ static void test_all(bool show)
     test_num_ssm_shr_mod(show);
     test_num_ssm_fft(show);
     test_num_ssm_depad_wrap(show);
-    test_num_ssm_mul_rec(show);
     test_num_mul_ssm_wrap(show);
 
     test_num_div_normalize(show);
