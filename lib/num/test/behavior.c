@@ -1653,11 +1653,13 @@ static void test_num_ssm_mul_rec(bool show)
     {
         num_p num_1 = num_create_immed(2, 1, 0);
         num_p num_2 = num_create_immed(2, 1, 0);
-        num_ssm_mul_rec(num_1, num_2, 0, 2);
+        num_p num_aux = num_create_rand(4);
+        num_ssm_mul_rec(num_aux, num_1, num_2, 0, 2);
         num_1->cannot_expand = false;
         num_1->count = 2;
         assert(num_immed(num_1, 2, 0, 1));
         num_free(num_2);
+        num_free(num_aux);
     }
     TEST_CASE_CLOSE
 

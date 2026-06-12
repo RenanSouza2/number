@@ -2504,12 +2504,21 @@ STATIC num_p num_mul_classic(num_p num_1, num_p num_2)
     return num_mul_classic_buffer(num_res, num_1, num_2);
 }
 
-STATIC void num_ssm_mul_rec(num_p num_1, num_p num_2, uint64_t pos, uint64_t n)
+STATIC void num_ssm_mul_rec(
+    num_p num_aux,
+    num_p num_1,
+    num_p num_2,
+    uint64_t pos,
+    uint64_t n
+)
 {
+    CLU_HANDLER_IS_SAFE(num_aux)
     CLU_HANDLER_IS_SAFE(num_1)
     CLU_HANDLER_IS_SAFE(num_2)
+    assert(num_aux)
     assert(num_1)
     assert(num_2)
+    assert(num_aux->size >= 2 * n)
 
     num_t num_t_1, num_t_2;
     num_span(&num_t_1, num_1, pos, pos + n);
@@ -2521,13 +2530,10 @@ STATIC void num_ssm_mul_rec(num_p num_1, num_p num_2, uint64_t pos, uint64_t n)
         return;
     }
 
-    num_p num_aux = num_create_dirty(CLU_ARGS(2 * n, 0));
     num_mul_classic_buffer(num_aux, &num_t_1, &num_t_2);
-
     memmove(&num_aux->chunk[n], &num_aux->chunk[n-1], n * sizeof(uint64_t));
     num_aux->chunk[n-1] = 0;
     num_ssm_sub_mod(num_1, pos, num_aux, 0, num_aux, n, n); // NOLINT(readability-suspicious-call-argument)
-    num_free(num_aux);
 }
 
 // num_aux->size >= 2 * n
@@ -2564,7 +2570,7 @@ STATIC void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n)
 
     for(uint64_t i=0; i<p.K; i++)
     {
-        num_ssm_mul_rec(num_fft_1, num_fft_2, i * p.n, p.n);
+        num_ssm_mul_rec(num_aux_2, num_fft_1, num_fft_2, i * p.n, p.n);
     }
 
     num_ssm_fft_inv(num_aux_2, num_fft_1, &p);
@@ -2596,7 +2602,7 @@ static void num_mul_ssm_buffer(num_p num_res, num_p num_1, num_p num_2)
 
     for(uint64_t i=0; i<p.K; i++)
     {
-        num_ssm_mul_rec(num_fft_1, num_fft_2, i * p.n, p.n);
+        num_ssm_mul_rec(num_aux, num_fft_1, num_fft_2, i * p.n, p.n);
     }
 
     num_ssm_fft_inv(num_aux, num_fft_1, &p);
