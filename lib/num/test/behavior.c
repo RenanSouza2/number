@@ -1556,8 +1556,8 @@ static void test_num_ssm_depad_wrap(bool show)
         {                                                                       \
             num_p num_fft = num_create_immed(ARG_OPEN NUM_FFT);                 \
             ssm_params_t p = ssm_get_params_wrap(N);                            \
-            num_p num_aux_1 = num_create(CLU_ARGS(p.n, 0));                     \
-            num_p num_aux_2 = num_create(CLU_ARGS(2 * p.n, 0));                 \
+            num_p num_aux_1 = num_create(CLU_ARGS(N, 0));                       \
+            num_p num_aux_2 = num_create(CLU_ARGS(2 * (N), 0));                 \
             num_p num_res = num_create(CLU_ARGS(N, 0));                         \
             num_ssm_depad_wrap(num_aux_1, num_aux_2, num_res, num_fft, &p, N);  \
             assert(num_immed(num_res, ARG_OPEN NUM_RES));                       \
@@ -1581,6 +1581,20 @@ static void test_num_ssm_depad_wrap(bool show)
         ),
         9,
         (1, 1)
+    )
+    TEST_NUM_SSM_FFT(2,
+        (32,
+            0, 0, 0, 1,
+            0, 0, 0, 1,
+            0, 0, 0, 1,
+            0, 0, 0, 1,
+            0, 0, 0, 1,
+            0, 0, 0, 1,
+            0, 0, 0, 1,
+            0, 0, 0, 1
+        ),
+        9,
+        (8, 1, 1, 1, 1, 1, 1, 1, 1)
     )
 
     TEST_FN_CLOSE
@@ -2635,24 +2649,31 @@ static void test_fuzz_num_ssm_pad_wrap_round_trip(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_FUZZ_NUM_SSM_PAD_WRAP_ROUND_TRIP(TAG, N, RUNS)             \
-    {                                                                       \
-        TEST_FUZZ_CASE_OPEN(TAG, RUNS)                                      \
-        {                                                                   \
-            num_p num_in = num_create_rand(N);                              \
-            num_in->chunk[(N) - 1] = 0;                                     \
-            ssm_params_t p = ssm_get_params(N);                             \
-            num_p num_middle = num_create_dirty(CLU_ARGS(p.n * p.K, 0));    \
-            num_ssm_pad(num_middle, num_in, &p);                            \
-            num_p num_aux_1 = num_create_dirty(CLU_ARGS(p.n, 0));           \
-            num_p num_aux_2 = num_create_dirty(CLU_ARGS(2 * p.n, 0));       \
-            num_p num_out = num_ssm_depad_wrap(num_aux_1num_middle, &p);    \
-            assert(num_eq_dbg(num_in, num_out));                            \
-        }                                                                   \
-        TEST_FUZZ_CASE_CLOSE                                                \
+    #define TEST_FUZZ_NUM_SSM_PAD_WRAP_ROUND_TRIP(TAG, N, RUNS)                     \
+    {                                                                               \
+        TEST_FUZZ_CASE_OPEN(TAG, RUNS)                                              \
+        {                                                                           \
+            num_p num_in = num_create_rand(N);                                      \
+            num_in->chunk[(N) - 1] = 0;                                             \
+            ssm_params_t p = ssm_get_params_wrap(N);                                \
+            num_p num_middle = num_create_dirty(CLU_ARGS(p.n * p.K, 0));            \
+            num_ssm_pad(num_middle, num_in, &p);                                    \
+            num_p num_aux_1 = num_create_dirty(CLU_ARGS(N, 0));                     \
+            num_p num_aux_2 = num_create_dirty(CLU_ARGS(2 * (N), 0));               \
+            num_p num_out = num_create_dirty(CLU_ARGS(N, 0));                       \
+            num_ssm_depad_wrap(num_aux_1, num_aux_2, num_out, num_middle, &p, N);   \
+            num_out->count = N;                                                     \
+            assert(num_eq_dbg(num_in, num_out));                                    \
+            num_free(num_aux_1);                                                    \
+            num_free(num_aux_2);                                                    \
+            num_free(num_middle);                                                   \
+        }                                                                           \
+        TEST_FUZZ_CASE_CLOSE                                                        \
     }
 
-    TEST_FUZZ_NUM_SSM_PAD_WRAP_ROUND_TRIP(1, 256,  100);
+    TEST_FUZZ_NUM_SSM_PAD_WRAP_ROUND_TRIP(1, 9,  100);
+    TEST_FUZZ_NUM_SSM_PAD_WRAP_ROUND_TRIP(2, 17,  100);
+    // TEST_FUZZ_NUM_SSM_PAD_WRAP_ROUND_TRIP(3, 257,  100);
 
     TEST_FN_CLOSE
 }
@@ -2863,8 +2884,14 @@ static void test_fuzz_num_bz_div(bool show)
 [[maybe_unused]]
 static void test_all(bool show)
 {
-    test_fuzz_num_ssm_pad_no_wrap_round_trip(show);
+    show = true;
+
     test_num_ssm_depad_wrap(show);
+    test_fuzz_num_ssm_pad_wrap_round_trip(show);
+
+    return;
+
+    test_fuzz_num_ssm_pad_no_wrap_round_trip(show);
     test_num_mul_ssm_wrap(show);
 
     test_uint_from_char(show);

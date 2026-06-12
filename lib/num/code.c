@@ -1188,8 +1188,7 @@ STATIC uint64_t ssm_bit_inv(uint64_t i, uint64_t K)
     return res;
 }
 
-[[gnu::always_inline]]
-static inline bool num_is_span_zero(num_p num, uint64_t pos, uint64_t count)
+static bool num_is_span_zero(num_p num, uint64_t pos, uint64_t count)
 {
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
@@ -1215,7 +1214,7 @@ static int64_t num_ssm_cmp_uint_offset(
     CLU_HANDLER_IS_SAFE(num)
     assert(num)
 
-    if(!num_is_span_zero(num, pos + 1, n))
+    if(!num_is_span_zero(num, pos + 1, n - 1))
     {
         return 1;
     }
@@ -1632,8 +1631,6 @@ STATIC void num_ssm_pad(num_p num_fft, num_p num, ssm_params_p p)
     assert(num_fft->size >= p->n * p->K)
 
     num_set_count(num_fft, 0);
-    num_fft->count = p->n * p->K;
-
     uint64_t * restrict dest = num_fft->chunk;
     const uint64_t * restrict src = num->chunk;
 
@@ -1679,18 +1676,15 @@ STATIC num_p num_ssm_depad_no_wrap(num_p num, ssm_params_p p)
     return num_res;
 }
 
-// Separate number to a base 2^(64*b)
-// Each place will be represented in n chunks
-// the final vector is padded to k places
-// num_aux_1->size >= n0
-// num_aux_2->size >= 2 * n0
+// num_aux_1->size >= n
+// num_aux_2->size >= 2 * n
 STATIC void num_ssm_depad_wrap(
     num_p num_aux_1,
     num_p num_aux_2,
     num_p num_res,
     num_p num,
     ssm_params_p p,
-    uint64_t n0
+    uint64_t n
 )
 {
     CLU_HANDLER_IS_SAFE(num_aux_1)
@@ -1701,72 +1695,27 @@ STATIC void num_ssm_depad_wrap(
     assert(num_aux_2)
     assert(num_res)
     assert(num)
-    assert(num_res->size >= n0)
-    assert(num_aux_1->size >= n0)
-    assert(num_aux_2->size >= 2 * n0)
+    assert(num_aux_1->size >= n)
+    assert(num_aux_2->size >= 2 * n)
 
-    uint64_t K = n0 - 1;
-
+    num_set_count(num_res, 0);
     for(uint64_t i=0; i<p->K; i++)
     {
-        uint64_t C = i * p->M;
-        uint64_t src_pos = i * p->n;
-        uint64_t src_len = p->n;
-
-        bool is_add = num_ssm_cmp_uint_offset(num, src_pos + (2 * p->M), i + 1, p->n - (2 * p->M)) < 0;
-
-        if(!is_add)
+        num_set_count(num_aux_1, 0);
+        if(num_ssm_cmp_uint_offset(num, (p->n * i) + (2 * p->M), i + 1, p->n - (2 * p->M)) < 0)
         {
-            num_ssm_opposite(num, src_pos, src_len);
+            memcpy(num_aux_1->chunk, &num->chunk[i * p->n], p->n * sizeof(uint64_t));
+            num_ssm_shl_mod(num_aux_2, num_aux_1, 0, n, chunk_bits * i * p->M);
+            num_ssm_add_mod_immed(num_res, 0, num_aux_1, 0, n);
+            continue;
         }
 
-        num_aux_1->count = n0;
-        uint64_t non_wrap_len = (K > C) ? (K - C) : 0;
-        if (non_wrap_len > src_len)
-        {
-            non_wrap_len = src_len;
-        }
-        uint64_t wrap_len = src_len - non_wrap_len;
-
-        // 1. Placement of non-overflow chunks (Targeted memsets only!)
-        if (non_wrap_len > 0)
-        {
-            memcpy(&num_aux_1->chunk[C], &num->chunk[src_pos], non_wrap_len * sizeof(uint64_t));
-        }
-        if (C > 0)
-        {
-            memset(&num_aux_1->chunk[0], 0, C * sizeof(uint64_t));
-        }
-        uint64_t tail_1 = C + non_wrap_len;
-        if (n0 > tail_1)
-        {
-            memset(&num_aux_1->chunk[tail_1], 0, (n0 - tail_1) * sizeof(uint64_t));
-        }
-
-        // 2. Placement of overflow chunks (Only if they exist)
-        if (wrap_len > 0)
-        {
-            num_aux_2->count = n0;
-            memcpy(&num_aux_2->chunk[0], &num->chunk[src_pos + non_wrap_len], wrap_len * sizeof(uint64_t));
-            if (n0 > wrap_len)
-            {
-                memset(&num_aux_2->chunk[wrap_len], 0, (n0 - wrap_len) * sizeof(uint64_t));
-            }
-            num_ssm_sub_mod_immed(num_aux_1, 0, num_aux_2, 0, n0);
-        }
-
-        // 3. Recombination
-        if(is_add)
-        {
-            num_ssm_add_mod_immed(num_res, 0, num_aux_1, 0, n0);
-        }
-        else
-        {
-            num_ssm_sub_mod_immed(num_res, 0, num_aux_1, 0, n0);
-        }
+        num_ssm_opposite(num, p->n * i, p->n);
+        memcpy(num_aux_1->chunk, &num->chunk[i * p->n], p->n * sizeof(uint64_t));
+        num_ssm_shl_mod(num_aux_2, num_aux_1, 0, n, chunk_bits * i * p->M);
+        num_ssm_sub_mod_immed(num_res, 0, num_aux_1, 0, n);
     }
-
-    num_set_count(num_res, n0);
+    num_set_count(num_res, n);
     num_normalize(num_res);
 }
 
@@ -2024,7 +1973,7 @@ static bool ssm_is_recursive(uint64_t n)
 }
 
 // NOLINTBEGIN(readability-magic-numbers)
-static ssm_params_t ssm_get_params(uint64_t count)
+STATIC ssm_params_t ssm_get_params(uint64_t count)
 {
     uint64_t M = 1 << (stdc_bit_width(count) / 2);
     uint64_t K = 4 * stdc_bit_ceil((count + M - 1) / M);

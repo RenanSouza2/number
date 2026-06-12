@@ -73,7 +73,7 @@ STATIC void num_ssm_depad_wrap(num_p num_aux_1,
     num_p num_res,
     num_p num,
     ssm_params_p p,
-    uint64_t n0
+    uint64_t n
 );
 STATIC void num_ssm_shl(
     num_p num_res,
