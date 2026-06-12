@@ -392,8 +392,6 @@ num_p num_create(CLU_PARAMS(uint64_t size, uint64_t count))
     {
         .size = size,
         .count = count,
-        .cannot_expand = false,
-        .is_mmap = false,
         .chunk = (chunk_p)&num[1]
     };
     return num;
@@ -410,7 +408,7 @@ num_p num_create_dirty(CLU_PARAMS(uint64_t size, uint64_t count))
         return num_create_disk(CLU_ARGS_RELAY(size, count));
     }
 
-    num_p num = calloc_tag(1, total_size, CLU_STACK_TAG);
+    num_p num = malloc_tag(total_size, CLU_STACK_TAG);
     assert(num);
 
     *num = (num_t)
@@ -1616,9 +1614,6 @@ STATIC void num_ssm_opposite(num_p num, uint64_t pos, uint64_t n)
     num_ssm_normalize(num, pos, n);
 }
 
-// Separate number to a base 2^(64*M)
-// Each place will be represented in n chunks
-// the final vector is padded to K places
 STATIC void num_ssm_pad(num_p num_fft, num_p num, ssm_params_p p)
 {
     CLU_HANDLER_IS_SAFE(num_fft)
@@ -1693,30 +1688,68 @@ STATIC void num_ssm_depad_wrap(
     CLU_HANDLER_IS_SAFE(num_aux_2)
     CLU_HANDLER_IS_SAFE(num_res)
     CLU_HANDLER_IS_SAFE(num)
-    assert(num_aux_1)
-    assert(num_aux_2)
-    assert(num_res)
-    assert(num)
-    assert(num_aux_1->size >= n)
-    assert(num_aux_2->size >= 2 * n)
+    assert(num_aux_1 && num_aux_2 && num_res && num)
+    assert(num_aux_1->size >= n && num_aux_2->size >= 2 * n)
+
+    uint64_t wrap_boundary = n - 1;
 
     num_set_count(num_res, 0);
     for(uint64_t i=0; i<p->K; i++)
     {
-        num_set_count(num_aux_1, 0);
-        if(num_ssm_cmp_uint_offset(num, (p->n * i) + (2 * p->M), i + 1, p->n - (2 * p->M)) < 0)
+        uint64_t dest_pos = i * p->M;
+        uint64_t src_pos = i * p->n;
+        uint64_t src_len = p->n;
+
+        bool is_add = num_ssm_cmp_uint_offset(num, src_pos + (2 * p->M), i + 1, p->n - (2 * p->M)) < 0;
+
+        if(!is_add)
         {
-            memcpy(num_aux_1->chunk, &num->chunk[i * p->n], p->n * sizeof(uint64_t));
-            num_ssm_shl_mod(num_aux_2, num_aux_1, 0, n, chunk_bits * i * p->M);
-            num_ssm_add_mod_immed(num_res, 0, num_aux_1, 0, n);
-            continue;
+            num_ssm_opposite(num, src_pos, src_len);
         }
 
-        num_ssm_opposite(num, p->n * i, p->n);
-        memcpy(num_aux_1->chunk, &num->chunk[i * p->n], p->n * sizeof(uint64_t));
-        num_ssm_shl_mod(num_aux_2, num_aux_1, 0, n, chunk_bits * i * p->M);
-        num_ssm_sub_mod_immed(num_res, 0, num_aux_1, 0, n);
+        uint64_t non_wrap_len = (wrap_boundary > dest_pos) ? (wrap_boundary - dest_pos) : 0;
+        if (non_wrap_len > src_len)
+        {
+            non_wrap_len = src_len;
+        }
+        uint64_t wrap_len = src_len - non_wrap_len;
+        uint64_t tail_1 = dest_pos + non_wrap_len;
+
+        if (dest_pos > 0)
+        {
+            memset(&num_aux_1->chunk[0], 0, dest_pos * sizeof(uint64_t));
+        }
+        if (non_wrap_len > 0)
+        {
+            memcpy(&num_aux_1->chunk[dest_pos], &num->chunk[src_pos], non_wrap_len * sizeof(uint64_t));
+        }
+        if (n > tail_1)
+        {
+            memset(&num_aux_1->chunk[tail_1], 0, (n - tail_1) * sizeof(uint64_t));
+        }
+
+        if (wrap_len > 0)
+        {
+            num_aux_2->count = n;
+            memcpy(&num_aux_2->chunk[0], &num->chunk[src_pos + non_wrap_len], wrap_len * sizeof(uint64_t));
+            if (n > wrap_len)
+            {
+                memset(&num_aux_2->chunk[wrap_len], 0, (n - wrap_len) * sizeof(uint64_t));
+            }
+            num_ssm_sub_mod_immed(num_aux_1, 0, num_aux_2, 0, n);
+        }
+
+        // 3. Recombination
+        if(is_add)
+        {
+            num_ssm_add_mod_immed(num_res, 0, num_aux_1, 0, n);
+        }
+        else
+        {
+            num_ssm_sub_mod_immed(num_res, 0, num_aux_1, 0, n);
+        }
     }
+
     num_set_count(num_res, n);
     num_normalize(num_res);
 }
