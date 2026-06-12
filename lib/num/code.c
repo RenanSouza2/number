@@ -1714,7 +1714,7 @@ STATIC void num_ssm_depad_wrap(
 
     uint64_t wrap_boundary = n - 1;
 
-    num_set_count(num_res, 0);
+    memset(&num_res->chunk[pos], 0, n * sizeof(uint64_t));
     for(uint64_t i=0; i<p->K; i++)
     {
         uint64_t dest_pos = i * p->M;
@@ -1751,7 +1751,6 @@ STATIC void num_ssm_depad_wrap(
 
         if (wrap_len > 0)
         {
-            num_aux_2->count = n;
             memcpy(&num_aux_2->chunk[0], &num_fft->chunk[src_pos + non_wrap_len], wrap_len * sizeof(uint64_t));
             if (n > wrap_len)
             {
@@ -1770,9 +1769,6 @@ STATIC void num_ssm_depad_wrap(
             num_ssm_sub_mod_immed(num_res, pos, num_aux_1, 0, n);
         }
     }
-
-    num_set_count(num_res, n);
-    num_normalize(num_res);
 }
 
 STATIC void num_ssm_shl(
