@@ -2527,22 +2527,13 @@ STATIC void num_mul_ssm_wrap(num_p num_1, num_p num_2, uint64_t n)
     num_ssm_prepare(num_aux_2, num_fft_1, num_1, &p);
     num_ssm_prepare(num_aux_2, num_fft_2, num_2, &p);
 
-    num_display_span_full("num_fft_1", num_fft_1, p.n, p.K);
-    num_display_span_full("num_fft_2", num_fft_2, p.n, p.K);
-
     for(uint64_t i=0; i<p.K; i++)
     {
         num_ssm_mul_rec(num_fft_1, num_fft_2, i * p.n, p.n);
     }
 
     num_ssm_fft_inv(num_aux_2, num_fft_1, &p);
-
-    num_display_span_full("num_fft_1", num_fft_1, p.n, p.K);
-
-    num_set_count(num_1, 0);
     num_ssm_depad_wrap(num_aux_1, num_aux_2, num_1, num_fft_1, &p, n);
-
-    num_display_tag("num_res", num_1);
 
     num_free(num_aux_1);
     num_free(num_aux_2);
