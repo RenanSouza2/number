@@ -1067,7 +1067,6 @@ static num_p num_mul_classic_buffer(num_p num_res, num_p num_1, num_p num_2)
 
     uint64_t target_count = n1 + n2;
 
-    // THE CRASH FIX: Safely zero the ENTIRE capacity to prevent trash memory
     num_set_count(num_res, 0);
     num_res->count = target_count;
 
@@ -1088,12 +1087,10 @@ static num_p num_mul_classic_buffer(num_p num_res, num_p num_1, num_p num_2)
         {
             uint64_t dest_idx = i + j;
 
-            // 128-bit multiplication maps cleanly to the hardware (mul + umulh)
             uint128_t u = MUL(src1[j], v2);
             uint64_t p_low = LOW(u);
             uint64_t p_high = HIGH(u);
 
-            // THE SPEED FIX: Force 64-bit native ALU additions (Kills 128-bit software emulation)
             uint64_t sum;
             uint64_t c1 = (uint64_t)__builtin_add_overflow(p_low, dest[dest_idx], &sum);
             uint64_t c2 = (uint64_t)__builtin_add_overflow(sum, carry, &dest[dest_idx]);
@@ -1648,7 +1645,7 @@ STATIC void num_ssm_pad(num_p num_fft, num_p num, ssm_params_p p)
 
     if(num->count == (p->M * p->K) + 1)
     {
-        dest[(p->n * p->K) - 1] = src[num->count - 1];
+        dest[(p->n * (p->K - 1)) + p->M] = src[num->count - 1];
         return;
     }
 
@@ -1825,6 +1822,7 @@ STATIC void num_ssm_shl_mod(
         return;
     }
 
+    num_set_count(num_aux, 0);
     num_ssm_shr(num_aux, 0, num, pos, n, (chunk_bits * n) - chunk_bits - bits);
     num_ssm_shl(num_aux, n, num, pos, n, bits);
     num_aux->chunk[(2 * n) - 1] = 0;
@@ -1852,6 +1850,7 @@ STATIC void num_ssm_shr_mod(
         return;
     }
 
+    num_set_count(num_aux, 0);
     num_ssm_shl(num_aux, 0, num, pos, n, (chunk_bits * n) - chunk_bits - bits);
     num_ssm_shr(num_aux, n, num, pos, n, bits);
     num_aux->chunk[n - 1] = 0;

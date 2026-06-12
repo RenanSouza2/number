@@ -990,8 +990,8 @@ static void test_num_ssm_add_mod(bool show)
         TEST_CASE_OPEN(TAG)                                             \
         {                                                               \
             num_p num = num_create_immed(ARG_OPEN NUM);                 \
-            num_p num_res = num_create(CLU_ARGS(N, N));                 \
-            num_ssm_add_mod(num_res, 0, num, POS_1, num, POS_2, N);    \
+            num_p num_res = num_create_rand(N);                         \
+            num_ssm_add_mod(num_res, 0, num, POS_1, num, POS_2, N);     \
             assert(num_immed(num_res, ARG_OPEN RES));                   \
             assert(num_immed(num, ARG_OPEN NUM));                       \
         }                                                               \
@@ -1037,7 +1037,7 @@ static void test_num_ssm_sub_mod(bool show)
         TEST_CASE_OPEN(TAG)                                         \
         {                                                           \
             num_p num = num_create_immed(ARG_OPEN NUM);             \
-            num_p num_res = num_create(CLU_ARGS(N, N));                       \
+            num_p num_res = num_create_rand(N);                     \
             num_ssm_sub_mod(num_res, 0, num, POS_1, num, POS_2, N); \
             assert(num_immed(num_res, ARG_OPEN RES));               \
             assert(num_immed(num, ARG_OPEN NUM));                   \
@@ -1134,24 +1134,24 @@ static void test_num_ssm_pad(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_SSM_PAD(TAG, NUM, Mv, Nv, Kv, RES)                         \
-    {                                                                       \
-        TEST_CASE_OPEN(TAG)                                                 \
-        {                                                                   \
-            num_p num = num_create_immed(ARG_OPEN NUM);                     \
-            num_p num_res = num_create(CLU_ARGS((Nv) * (Kv), (Nv) * (Kv))); \
-            ssm_params_t p = (ssm_params_t)                                 \
-            {                                                               \
-                .M = (Mv),                                                  \
-                .K = (Kv),                                                  \
-                .n = (Nv)                                                   \
-            };                                                              \
-            num_ssm_pad(num_res, num, &p);                                  \
-            num_res->count = (Nv) * (Kv);                                   \
-            assert(num_immed(num_res, ARG_OPEN RES))                        \
-            assert(num_immed(num, ARG_OPEN NUM))                            \
-        }                                                                   \
-        TEST_CASE_CLOSE                                                     \
+    #define TEST_SSM_PAD(TAG, NUM, Mv, Nv, Kv, RES)         \
+    {                                                       \
+        TEST_CASE_OPEN(TAG)                                 \
+        {                                                   \
+            num_p num = num_create_immed(ARG_OPEN NUM);     \
+            num_p num_res = num_create_rand((Nv) * (Kv));   \
+            ssm_params_t p = (ssm_params_t)                 \
+            {                                               \
+                .M = (Mv),                                  \
+                .K = (Kv),                                  \
+                .n = (Nv)                                   \
+            };                                              \
+            num_ssm_pad(num_res, num, &p);                  \
+            num_res->count = (Nv) * (Kv);                   \
+            assert(num_immed(num_res, ARG_OPEN RES))        \
+            assert(num_immed(num, ARG_OPEN NUM))            \
+        }                                                   \
+        TEST_CASE_CLOSE                                     \
     }
 
     TEST_SSM_PAD(1,
@@ -1182,6 +1182,20 @@ static void test_num_ssm_pad(bool show)
         (3, 0, UINT64_MAX, UINT64_MAX), 1, 2, 2,
         (4, 0, UINT64_MAX, 0, UINT64_MAX)
     )
+    TEST_SSM_PAD(8,
+        (9, 1, 0, 0, 0, 0, 0, 0, 0, 0),
+        1, 4, 8,
+        (32,
+            0, 0, 1, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0
+        )
+    )
 
     #undef TEST_SSM_PAD
 
@@ -1197,7 +1211,7 @@ static void test_num_ssm_shl(bool show)
         TEST_CASE_OPEN(TAG)                             \
         {                                               \
             num_p num = num_create_immed(ARG_OPEN NUM); \
-            num_p num_res = num_create(CLU_ARGS(N, N)); \
+            num_p num_res = num_create_rand(N);         \
             num_ssm_shl(num_res, 0, num, POS, N, BITS); \
             assert(num_immed(num_res, ARG_OPEN RES));   \
             assert(num_immed(num, ARG_OPEN NUM));       \
@@ -1268,7 +1282,7 @@ static void test_num_ssm_shr(bool show)
         TEST_CASE_OPEN(TAG)                             \
         {                                               \
             num_p num = num_create_immed(ARG_OPEN NUM); \
-            num_p num_res = num_create(CLU_ARGS(N, N)); \
+            num_p num_res = num_create_rand(N);         \
             num_ssm_shr(num_res, 0, num, POS, N, BITS); \
             assert(num_immed(num_res, ARG_OPEN RES));   \
             assert(num_immed(num, ARG_OPEN NUM));       \
@@ -1339,7 +1353,7 @@ static void test_num_ssm_shl_mod(bool show)
         TEST_CASE_OPEN(TAG)                             \
         {                                               \
             num_p num = num_create_immed(ARG_OPEN NUM); \
-            num_p num_aux = num_create(CLU_ARGS(6, 0)); \
+            num_p num_aux = num_create_rand(6);         \
             num_ssm_shl_mod(num_aux, num, 0, 3, BITS);  \
             num_free(num_aux);                          \
             assert(num_immed(num, ARG_OPEN RES));       \
@@ -1418,7 +1432,7 @@ static void test_num_ssm_shr_mod(bool show)
         TEST_CASE_OPEN(TAG)                             \
         {                                               \
             num_p num = num_create_immed(ARG_OPEN NUM); \
-            num_p num_aux = num_create(CLU_ARGS(6, 0)); \
+            num_p num_aux = num_create_rand(6);         \
             num_ssm_shr_mod(num_aux, num, 0, 3, BITS);  \
             num_free(num_aux);                          \
             assert(num_immed(num, ARG_OPEN RES));       \
@@ -1496,24 +1510,24 @@ static void test_num_ssm_fft(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_SSM_FFT(TAG, NUM, Nv, Kv, RES)                 \
-    {                                                           \
-        TEST_CASE_OPEN(TAG)                                     \
-        {                                                       \
-            num_p num = num_create_immed(ARG_OPEN NUM);         \
-            uint64_t Q = 64 * ((Nv) - 1) / (Kv);                \
-            ssm_params_t p = (ssm_params_t)                     \
-            {                                                   \
-                .K = (Kv),                                      \
-                .Q = Q,                                         \
-                .n = (Nv),                                      \
-            };                                                  \
-            num_p num_aux = num_create(CLU_ARGS(2 * (Nv), 0));  \
-            num_ssm_fft_fwd(num_aux, num, &p);                  \
-            num_free(num_aux);                                  \
-            assert(num_immed(num, ARG_OPEN RES));               \
-        }                                                       \
-        TEST_CASE_CLOSE                                         \
+    #define TEST_SSM_FFT(TAG, NUM, Nv, Kv, RES)         \
+    {                                                   \
+        TEST_CASE_OPEN(TAG)                             \
+        {                                               \
+            num_p num = num_create_immed(ARG_OPEN NUM); \
+            uint64_t Q = 64 * ((Nv) - 1) / (Kv);        \
+            ssm_params_t p = (ssm_params_t)             \
+            {                                           \
+                .K = (Kv),                              \
+                .Q = Q,                                 \
+                .n = (Nv),                              \
+            };                                          \
+            num_p num_aux = num_create_rand(2 * (Nv));  \
+            num_ssm_fft_fwd(num_aux, num, &p);          \
+            num_free(num_aux);                          \
+            assert(num_immed(num, ARG_OPEN RES));       \
+        }                                               \
+        TEST_CASE_CLOSE                                 \
     }
 
     TEST_SSM_FFT(1,
@@ -1550,15 +1564,15 @@ static void test_num_ssm_depad_wrap(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_NUM_SSM_FFT(TAG, NUM_FFT, N, NUM_RES)                          \
+    #define TEST_NUM_SSM_DEPAD_WRAP(TAG, NUM_FFT, N, NUM_RES)                   \
     {                                                                           \
         TEST_CASE_OPEN(TAG)                                                     \
         {                                                                       \
             num_p num_fft = num_create_immed(ARG_OPEN NUM_FFT);                 \
             ssm_params_t p = ssm_get_params_wrap(N);                            \
-            num_p num_aux_1 = num_create(CLU_ARGS(N, 0));                       \
-            num_p num_aux_2 = num_create(CLU_ARGS(2 * (N), 0));                 \
-            num_p num_res = num_create(CLU_ARGS(N, 0));                         \
+            num_p num_aux_1 = num_create_rand(N);                               \
+            num_p num_aux_2 = num_create_rand(2 * (N));                         \
+            num_p num_res = num_create_rand(N);                                 \
             num_ssm_depad_wrap(num_aux_1, num_aux_2, num_res, num_fft, &p, N);  \
             assert(num_immed(num_res, ARG_OPEN NUM_RES));                       \
             num_free(num_aux_1);                                                \
@@ -1568,7 +1582,7 @@ static void test_num_ssm_depad_wrap(bool show)
         TEST_CASE_CLOSE                                                         \
     }
 
-    TEST_NUM_SSM_FFT(1,
+    TEST_NUM_SSM_DEPAD_WRAP(1,
         (32,
             0, 0, 0, 0,
             0, 0, 0, 0,
@@ -1582,7 +1596,7 @@ static void test_num_ssm_depad_wrap(bool show)
         9,
         (1, 1)
     )
-    TEST_NUM_SSM_FFT(2,
+    TEST_NUM_SSM_DEPAD_WRAP(2,
         (32,
             0, 0, 0, 1,
             0, 0, 0, 1,
@@ -1596,6 +1610,37 @@ static void test_num_ssm_depad_wrap(bool show)
         9,
         (8, 1, 1, 1, 1, 1, 1, 1, 1)
     )
+    TEST_NUM_SSM_DEPAD_WRAP(3,
+        (32,
+            0, 0, 0, 8,
+            0, 0, 0, 7,
+            0, 0, 0, 6,
+            0, 0, 0, 5,
+            0, 0, 0, 4,
+            0, 0, 0, 3,
+            0, 0, 0, 2,
+            0, 0, 0, 1
+        ),
+        9,
+        (8, 8, 7, 6, 5, 4, 3, 2, 1)
+    )
+    TEST_NUM_SSM_DEPAD_WRAP(4,
+        (32,
+            0, 0, 1, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0
+        ),
+        9,
+        (9, 1, 0, 0, 0, 0, 0, 0, 0, 0)
+    )
+
+    TEST_CASE_OPEN(6)
+    TEST_CASE_CLOSE
 
     TEST_FN_CLOSE
 }
@@ -1622,8 +1667,6 @@ static void test_num_ssm_mul_rec(bool show)
 static void test_num_mul_ssm_wrap(bool show)
 {
     TEST_FN_OPEN
-
-    show = true;
 
     #define TEST_NUM_MUL_SSM_WRAP(TAG, NUM_1, NUM_2, N, RES)    \
     {                                                           \
@@ -2595,7 +2638,7 @@ static void test_fuzz_num_ssm_sh(bool show)
             num_p num = num_create_rand(N);                         \
             num->chunk[(N) - 1] = 0;                                \
             num_p num_res = num_copy(num);                          \
-            num_p num_aux = num_create(CLU_ARGS(2 *(N), 0));        \
+            num_p num_aux = num_create_rand(2 *(N));                \
             num_ssm_shl_mod(num_aux, num_res, 0, N, BITS);          \
             num_ssm_shr_mod(num_aux, num_res, 0, N, BITS);          \
             num_free(num_aux);                                      \
@@ -2604,7 +2647,7 @@ static void test_fuzz_num_ssm_sh(bool show)
                 printf("\ncase: (n: %d) (bits: %d)", N, BITS);      \
                 printf("\nentrie");                                 \
                 num_display_span_full("num", num, N, 1);            \
-                printf("\nroundrip results in");                    \
+                printf("\nround trip results in");                  \
                 num_display_span_full("num_res", num_res, N, 1);    \
                 assert(false);                                      \
             }                                                       \
@@ -2649,6 +2692,25 @@ static void test_fuzz_num_ssm_pad_wrap_round_trip(bool show)
 {
     TEST_FN_OPEN
 
+    TEST_CASE_OPEN(1)
+    {
+        uint64_t N = 9;
+        num_p num_in = num_create_immed(9, 1, 0, 0, 0, 0, 0, 0, 0, 0);
+        ssm_params_t p = ssm_get_params_wrap(N);
+        num_p num_middle = num_create_dirty(CLU_ARGS(p.n * p.K, 0));
+        num_ssm_pad(num_middle, num_in, &p);
+        num_p num_aux_1 = num_create_rand(N);
+        num_p num_aux_2 = num_create_rand(2 * (N));
+        num_p num_out = num_create_rand(N);
+        num_ssm_depad_wrap(num_aux_1, num_aux_2, num_out, num_middle, &p, N);
+        num_out->count = N;
+        assert(num_eq_dbg(num_in, num_out));
+        num_free(num_aux_1);
+        num_free(num_aux_2);
+        num_free(num_middle);
+    }
+    TEST_CASE_CLOSE
+
     #define TEST_FUZZ_NUM_SSM_PAD_WRAP_ROUND_TRIP(TAG, N, RUNS)                     \
     {                                                                               \
         TEST_FUZZ_CASE_OPEN(TAG, RUNS)                                              \
@@ -2658,9 +2720,9 @@ static void test_fuzz_num_ssm_pad_wrap_round_trip(bool show)
             ssm_params_t p = ssm_get_params_wrap(N);                                \
             num_p num_middle = num_create_dirty(CLU_ARGS(p.n * p.K, 0));            \
             num_ssm_pad(num_middle, num_in, &p);                                    \
-            num_p num_aux_1 = num_create_dirty(CLU_ARGS(N, 0));                     \
-            num_p num_aux_2 = num_create_dirty(CLU_ARGS(2 * (N), 0));               \
-            num_p num_out = num_create_dirty(CLU_ARGS(N, 0));                       \
+            num_p num_aux_1 = num_create_rand(N);                                   \
+            num_p num_aux_2 = num_create_rand(2 * (N));                             \
+            num_p num_out = num_create_rand(N);                                     \
             num_ssm_depad_wrap(num_aux_1, num_aux_2, num_out, num_middle, &p, N);   \
             num_out->count = N;                                                     \
             assert(num_eq_dbg(num_in, num_out));                                    \
@@ -2671,9 +2733,9 @@ static void test_fuzz_num_ssm_pad_wrap_round_trip(bool show)
         TEST_FUZZ_CASE_CLOSE                                                        \
     }
 
-    TEST_FUZZ_NUM_SSM_PAD_WRAP_ROUND_TRIP(1, 9,  100);
-    TEST_FUZZ_NUM_SSM_PAD_WRAP_ROUND_TRIP(2, 17,  100);
-    // TEST_FUZZ_NUM_SSM_PAD_WRAP_ROUND_TRIP(3, 257,  100);
+    TEST_FUZZ_NUM_SSM_PAD_WRAP_ROUND_TRIP(2, 9,  100);
+    TEST_FUZZ_NUM_SSM_PAD_WRAP_ROUND_TRIP(3, 17,  100);
+    TEST_FUZZ_NUM_SSM_PAD_WRAP_ROUND_TRIP(4, 257,  100);
 
     TEST_FN_CLOSE
 }
@@ -2699,7 +2761,7 @@ static void test_fuzz_num_ssm_fft(bool show)
             num_ssm_pad(num, num_0, &p);                                \
             num_free(num_0);                                            \
             num_p num_res = num_copy(num);                              \
-            num_p num_aux = num_create(CLU_ARGS(2 * (Nv), 0));          \
+            num_p num_aux = num_create_rand(2 * (Nv));                  \
             num_ssm_fft_fwd(num_aux, num_res, &p);                      \
             num_ssm_fft_inv(num_aux, num_res, &p);                      \
             num_free(num_aux);                                          \
