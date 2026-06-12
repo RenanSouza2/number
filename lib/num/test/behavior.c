@@ -2884,16 +2884,6 @@ static void test_fuzz_num_bz_div(bool show)
 [[maybe_unused]]
 static void test_all(bool show)
 {
-    show = true;
-
-    test_num_ssm_depad_wrap(show);
-    test_fuzz_num_ssm_pad_wrap_round_trip(show);
-
-    return;
-
-    test_fuzz_num_ssm_pad_no_wrap_round_trip(show);
-    test_num_mul_ssm_wrap(show);
-
     test_uint_from_char(show);
     test_uint128(show);
 
@@ -2956,6 +2946,7 @@ static void test_all(bool show)
 
     test_fuzz_num_ssm_sh(show);
     test_fuzz_num_ssm_pad_no_wrap_round_trip(show);
+    test_fuzz_num_ssm_pad_wrap_round_trip(show);
     test_fuzz_num_ssm_fft(show);
     test_fuzz_num_ssm_fft_round_trip(show);
     test_fuzz_num_ssm_mul(show);
