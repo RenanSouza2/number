@@ -2748,8 +2748,8 @@ static void test_fuzz_num_ssm_fft(bool show)
     {                                                                   \
         TEST_FUZZ_CASE_OPEN(TAG, RUNS)                                  \
         {                                                               \
-            num_p num_0 = num_create_rand(((Nv)-1) * (Kv));             \
-            num_p num = num_create(CLU_ARGS((Nv) * (Kv), (Nv) * (Kv))); \
+            num_p num = num_create_rand(((Nv)-1) * (Kv));               \
+            num_p num_fft = num_create_rand((Nv) * (Kv));               \
             uint64_t Q = 64 * ((Nv)-1) / (Kv);                          \
             ssm_params_t p = (ssm_params_t)                             \
             {                                                           \
@@ -2758,24 +2758,25 @@ static void test_fuzz_num_ssm_fft(bool show)
                 .Q = Q,                                                 \
                 .n = (Nv),                                              \
             };                                                          \
-            num_ssm_pad(num, num_0, &p);                                \
-            num_free(num_0);                                            \
-            num_p num_res = num_copy(num);                              \
+            num_ssm_pad(num_fft, num, &p);                              \
+            num_free(num);                                              \
+            num_fft->count = (Nv) * (Kv);                               \
+            num_p num_res = num_copy(num_fft);                          \
             num_p num_aux = num_create_rand(2 * (Nv));                  \
             num_ssm_fft_fwd(num_aux, num_res, &p);                      \
             num_ssm_fft_inv(num_aux, num_res, &p);                      \
             num_free(num_aux);                                          \
-            if(!num_eq_dbg(num_copy(num_res), num_copy(num)))           \
+            if(!num_eq_dbg(num_copy(num_res), num_copy(num_fft)))       \
             {                                                           \
                 printf("\ncase: (K: %d) (n: %d)", (Kv), (Nv));          \
                 printf("\nentrie");                                     \
-                num_display_span_full("num", num, (Nv), (Kv));          \
+                num_display_span_full("num_fft", num_fft, (Nv), (Kv));  \
                 printf("\nroundrip results in");                        \
                 num_display_span_full("num_res", num_res, (Nv), (Kv));  \
                 assert(false);                                          \
             }                                                           \
             num_free(num_res);                                          \
-            num_free(num);                                              \
+            num_free(num_fft);                                          \
         }                                                               \
         TEST_FUZZ_CASE_CLOSE                                            \
     }

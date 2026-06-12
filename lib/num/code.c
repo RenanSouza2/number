@@ -1816,6 +1816,7 @@ STATIC void num_ssm_shl_mod(
     assert(num_aux)
     assert(num)
     assert(num_aux->size >= 2 * n)
+    assert(num->size >= pos + n);
 
     if(bits == 0 || num_is_span_zero(num, pos, n))
     {
@@ -1904,6 +1905,7 @@ STATIC void num_ssm_fft_fwd(num_p num_aux, num_p num, ssm_params_p p)
     assert(num_aux)
     assert(num)
     assert(num_aux->size >= 2 * p->n)
+    assert(num->size >= p->n * p->K)
 
     for(uint64_t i=0; i<p->K; i++)
     {
