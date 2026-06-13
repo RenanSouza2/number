@@ -660,36 +660,6 @@ flt_num_t flt_num_div(flt_num_t flt_1, flt_num_t flt_2) // TODO TEST
 
 
 
-flt_num_ssm_t flt_num_mul_prepare(flt_num_t flt, uint64_t count)
-{
-    CLU_FLT_IS_SAFE(flt);
-
-    return (flt_num_ssm_t)
-    {
-        .exponent = flt.exponent,
-        .size = flt.size,
-        .sig_ssm = sig_num_mul_prepare(flt.sig, count)
-    };
-}
-
-flt_num_t flt_num_mul_finish(flt_num_t flt_1, flt_num_ssm_t flt_ssm_2)
-{
-    CLU_FLT_IS_SAFE(flt_1);
-
-    int64_t exponent = int64_add(flt_1.exponent, flt_ssm_2.exponent);
-    uint64_t size = flt_1.size;
-
-    sig_num_t sig = sig_num_mul_finish(flt_1.sig, flt_ssm_2.sig_ssm);
-    return flt_num_create(exponent, size, sig);
-}
-
-void flt_num_ssm_free(flt_num_ssm_t flt_ssm)
-{
-    sig_num_ssm_free(flt_ssm.sig_ssm);
-}
-
-
-
 flt_num_t flt_num_mul_sig(flt_num_t flt, sig_num_t sig) // TODO TEST
 {
     CLU_FLT_IS_SAFE(flt);

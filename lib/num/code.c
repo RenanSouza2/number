@@ -1043,31 +1043,52 @@ static num_p num_mul_uint_buffer(num_p num_res, num_p num, uint64_t value) // TO
     return num_normalize(num_res);
 }
 
-// Keeps NUM_1
-// Keeps NUM_2
-// num_res->size >= num_1->count + num_2->count
-static num_p num_mul_classic_buffer(num_p num_res, num_p num_1, num_p num_2)
+static num_p num_sqr_classic_buffer(num_p num_res, num_p num)
 {
     CLU_HANDLER_IS_SAFE(num_res)
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num_res)
+    assert(num)
+    assert(num_res->size >= 2 * num->count)
+
+    num_set_count(num_res, 0);
+    for(uint64_t i=0; i<num->count; i++)
+    {
+        uint64_t value = num->chunk[i];
+
+        uint128_t u = MUL(value, value);
+        num_res = num_add_uint_offset(num_res, (2 * i), LOW(u));
+        num_res = num_add_uint_offset(num_res, (2 * i) + 1, HIGH(u));
+
+        num_res = num_add_mul_uint_offset(num_res, (2 * i) + 1, num, i + 1, value << 1);
+
+        constexpr uint64_t msb_set = 0x8000000000000000;
+        if(value >= msb_set)
+        {
+            num_res = num_add_offset(num_res, (2 * i) + 2, num, i + 1);
+        }
+    }
+    return num_res;
+}
+
+// KEEPS NUM_1 NUM_2
+STATIC num_p num_mul_classic(num_p num_1, num_p num_2)
+{
     CLU_HANDLER_IS_SAFE(num_1)
     CLU_HANDLER_IS_SAFE(num_2)
-    assert(num_res && num_1 && num_2)
-    assert(num_res->size >= num_1->count + num_2->count)
+    assert(num_1 && num_2)
 
     uint64_t n1 = num_1->count;
     uint64_t n2 = num_2->count;
 
     if (n1 == 0 || n2 == 0)
     {
-        num_set_count(num_res, 0);
-        return num_res;
+        return num_create(CLU_ARGS(0, 0));
     }
 
     uint64_t target_count = n1 + n2;
 
-    num_set_count(num_res, 0);
-    num_res->count = target_count;
-
+    num_p num_res = num_create(CLU_ARGS(target_count, target_count));
     uint64_t * restrict dest = num_res->chunk;
     const uint64_t * restrict src1 = num_1->chunk;
     const uint64_t * restrict src2 = num_2->chunk;
@@ -1102,34 +1123,6 @@ static num_p num_mul_classic_buffer(num_p num_res, num_p num_1, num_p num_2)
     return num_normalize(num_res);
 }
 
-static num_p num_sqr_classic_buffer(num_p num_res, num_p num)
-{
-    CLU_HANDLER_IS_SAFE(num_res)
-    CLU_HANDLER_IS_SAFE(num)
-    assert(num_res)
-    assert(num)
-    assert(num_res->size >= 2 * num->count)
-
-    num_set_count(num_res, 0);
-    for(uint64_t i=0; i<num->count; i++)
-    {
-        uint64_t value = num->chunk[i];
-
-        uint128_t u = MUL(value, value);
-        num_res = num_add_uint_offset(num_res, (2 * i), LOW(u));
-        num_res = num_add_uint_offset(num_res, (2 * i) + 1, HIGH(u));
-
-        num_res = num_add_mul_uint_offset(num_res, (2 * i) + 1, num, i + 1, value << 1);
-
-        constexpr uint64_t msb_set = 0x8000000000000000;
-        if(value >= msb_set)
-        {
-            num_res = num_add_offset(num_res, (2 * i) + 2, num, i + 1);
-        }
-    }
-    return num_res;
-}
-
 STATIC num_p num_sqr_classic(num_p num)
 {
     num_p num_res = num_create(CLU_ARGS(2 * num->count, 0));
@@ -1139,6 +1132,8 @@ STATIC num_p num_sqr_classic(num_p num)
     num_free(num);
     return num_res;
 }
+
+
 
 static void num_display_span(num_p num_fft, uint64_t pos, uint64_t count)
 {
@@ -1614,163 +1609,6 @@ STATIC void num_ssm_opposite(num_p num, uint64_t pos, uint64_t n)
     num_ssm_normalize(num, pos, n);
 }
 
-STATIC void num_ssm_pad(num_p num_fft, num_p num, ssm_params_p p)
-{
-    CLU_HANDLER_IS_SAFE(num_fft)
-    CLU_HANDLER_IS_SAFE(num)
-    assert(num_fft)
-    assert(num)
-    assert(num_fft->size >= p->n * p->K)
-
-    memset(num_fft->chunk, 0, p->n * p->K * sizeof(uint64_t));
-    uint64_t * restrict dest = num_fft->chunk;
-    const uint64_t * restrict src = num->chunk;
-
-    memset(dest, 0, p->n * p->K * sizeof(uint64_t));
-    uint64_t full_chunks = num->count / p->M;
-    if(full_chunks > p->K)
-    {
-        full_chunks = p->K;
-    }
-
-    for(uint64_t i=0; i < full_chunks; i++)
-    {
-        memcpy(&dest[p->n * i], &src[p->M * i], p->M * sizeof(uint64_t));
-    }
-
-    if(num->count == (p->M * p->K) + 1)
-    {
-        dest[(p->n * (p->K - 1)) + p->M] = src[num->count - 1];
-        return;
-    }
-
-    uint64_t tail = num->count % p->M;
-    if(tail)
-    {
-        memcpy(&dest[p->n * full_chunks], &src[p->M * full_chunks], tail * sizeof(uint64_t));
-    }
-}
-
-STATIC void num_ssm_pad_wrap(num_p num_fft, num_p num, uint64_t pos, ssm_params_p p)
-{
-    CLU_HANDLER_IS_SAFE(num_fft)
-    CLU_HANDLER_IS_SAFE(num)
-    assert(num_fft)
-    assert(num)
-    assert(num->size >= pos + p->count)
-    assert(num_fft->size >= p->n * p->K)
-
-    memset(num_fft->chunk, 0, p->n * p->K * sizeof(uint64_t));
-    uint64_t * restrict dest = num_fft->chunk;
-    const uint64_t * restrict src = &num->chunk[pos];
-
-    memset(dest, 0, p->n * p->K * sizeof(uint64_t));
-    for(uint64_t i=0; i < p->K; i++)
-    {
-        memcpy(&dest[p->n * i], &src[p->M * i], p->M * sizeof(uint64_t));
-    }
-
-    dest[(p->n * (p->K - 1)) + p->M] = src[p->count - 1];
-}
-
-STATIC num_p num_ssm_depad_no_wrap(num_p num, ssm_params_p p)
-{
-    CLU_HANDLER_IS_SAFE(num)
-    assert(num)
-
-    uint64_t target_count = (p->M * (p->K - 1)) + p->n;
-    num_p num_res = num_create(CLU_ARGS(target_count, 0));
-
-    for(uint64_t i = 0; i < p->K; i++)
-    {
-        num_t block;
-        num_span(&block, num, p->n * i, p->n * (i + 1));
-        num_res = num_add_offset(num_res, p->M * i, &block, 0);
-    }
-
-    num_free(num);
-    return num_res;
-}
-
-// num_aux_1->size >= n
-// num_aux_2->size >= 2 * n
-STATIC void num_ssm_depad_wrap(
-    num_p num_aux_1,
-    num_p num_aux_2,
-    num_p num_res,
-    uint64_t pos,
-    num_p num_fft,
-    ssm_params_p p,
-    uint64_t n // TODO DELETE BEFORE PR
-)
-{
-    CLU_HANDLER_IS_SAFE(num_aux_1)
-    CLU_HANDLER_IS_SAFE(num_aux_2)
-    CLU_HANDLER_IS_SAFE(num_res)
-    CLU_HANDLER_IS_SAFE(num_fft)
-    assert(num_res->size >= pos + n)
-    assert(num_aux_1 && num_aux_2 && num_res && num_fft)
-    assert(num_aux_1->size >= n && num_aux_2->size >= 2 * n)
-
-    uint64_t wrap_boundary = n - 1;
-
-    memset(&num_res->chunk[pos], 0, n * sizeof(uint64_t));
-    for(uint64_t i=0; i<p->K; i++)
-    {
-        uint64_t dest_pos = i * p->M;
-        uint64_t src_pos = i * p->n;
-        uint64_t src_len = p->n;
-
-        bool is_add = num_ssm_cmp_uint_offset(num_fft, src_pos + (2 * p->M), i + 1, p->n - (2 * p->M)) < 0;
-
-        if(!is_add)
-        {
-            num_ssm_opposite(num_fft, src_pos, src_len);
-        }
-
-        uint64_t non_wrap_len = (wrap_boundary > dest_pos) ? (wrap_boundary - dest_pos) : 0;
-        if (non_wrap_len > src_len)
-        {
-            non_wrap_len = src_len;
-        }
-        uint64_t wrap_len = src_len - non_wrap_len;
-        uint64_t tail_1 = dest_pos + non_wrap_len;
-
-        if (dest_pos > 0)
-        {
-            memset(&num_aux_1->chunk[0], 0, dest_pos * sizeof(uint64_t));
-        }
-        if (non_wrap_len > 0)
-        {
-            memcpy(&num_aux_1->chunk[dest_pos], &num_fft->chunk[src_pos], non_wrap_len * sizeof(uint64_t));
-        }
-        if (n > tail_1)
-        {
-            memset(&num_aux_1->chunk[tail_1], 0, (n - tail_1) * sizeof(uint64_t));
-        }
-
-        if (wrap_len > 0)
-        {
-            memcpy(&num_aux_2->chunk[0], &num_fft->chunk[src_pos + non_wrap_len], wrap_len * sizeof(uint64_t));
-            if (n > wrap_len)
-            {
-                memset(&num_aux_2->chunk[wrap_len], 0, (n - wrap_len) * sizeof(uint64_t));
-            }
-            num_ssm_sub_mod_immed(num_aux_1, 0, num_aux_2, 0, n);
-        }
-
-        // 3. Recombination
-        if(is_add)
-        {
-            num_ssm_add_mod_immed(num_res, pos, num_aux_1, 0, n);
-        }
-        else
-        {
-            num_ssm_sub_mod_immed(num_res, pos, num_aux_1, 0, n);
-        }
-    }
-}
-
 STATIC void num_ssm_shl(
     num_p num_res,
     uint64_t pos_res,
@@ -2123,98 +1961,6 @@ STATIC ssm_params_t ssm_get_params_wrap(uint64_t n)
 }
 // NOLINTEND(readability-magic-numbers)
 
-static uint64_t ssm_get_last_n(uint64_t count)
-{
-    ssm_params_t params = ssm_get_params(count);
-    while(ssm_is_recursive(params.n))
-    {
-        params = ssm_get_params_wrap(params.n);
-    }
-    return params.n;
-}
-
-static void num_mul_ssm_fwd_step_buffer(num_p num_aux, num_p num_fft_res, num_p num, ssm_params_p params)
-{
-    CLU_HANDLER_IS_SAFE(num_aux)
-    CLU_HANDLER_IS_SAFE(num_fft_res)
-    CLU_HANDLER_IS_SAFE(num)
-    assert(num_aux)
-    assert(num_fft_res)
-    assert(num)
-
-    num_ssm_pad(num_fft_res, num, params);
-    num_ssm_fft_fwd(num_aux, num_fft_res, params);
-}
-
-// KEEP NUM
-STATIC num_p num_mul_ssm_fwd_transform(num_p num, uint64_t count)
-{
-    CLU_HANDLER_IS_SAFE(num)
-    assert(num)
-
-    ssm_params_t params = ssm_get_params(count);
-    num_p num_fft = num_create_dirty(CLU_ARGS(params.n * params.K, 0));
-    num_p num_aux = num_create_dirty(CLU_ARGS(2 * params.n, 0));
-    // show = true;
-    num_mul_ssm_fwd_step_buffer(num_aux, num_fft, num, &params);
-
-    uint64_t n = params.n;
-    uint64_t K = params.K;
-    while(ssm_is_recursive(n))
-    {
-        ssm_params_t params_next = ssm_get_params_wrap(n);
-        num_p num_fft_next = num_create(CLU_ARGS(K * params_next.K * params_next.n, 0));
-
-        for(uint64_t i=0; i<K; i++)
-        {
-            num_t num_in, num_out;
-            num_span(&num_in,  num_fft, i * n, (i + 1) * n);
-            num_span(&num_out, num_fft_next, i * params_next.K * params_next.n, (i + 1) * params_next.K * params_next.n);
-            num_mul_ssm_fwd_step_buffer(num_aux, &num_out, &num_in, &params_next);
-        }
-
-        num_free(num_fft);
-        num_fft = num_fft_next;
-
-        n  = params_next.n;
-        K *= params_next.K;
-    }
-    num_free(num_aux);
-
-    return num_fft;
-}
-
-// KEEP NUM
-static num_ssm_t num_mul_prepare_core(num_p num, uint64_t count)
-{
-    CLU_HANDLER_IS_SAFE(num)
-    assert(num)
-
-    return (num_ssm_t)
-    {
-        .count = count,
-        .num_fft = num_mul_ssm_fwd_transform(num, count)
-    };
-}
-
-num_ssm_t num_mul_prepare(num_p num, uint64_t count)
-{
-    CLU_HANDLER_IS_SAFE(num)
-    assert(num)
-
-    num_ssm_t num_ssm = num_mul_prepare_core(num, count);
-    num_free(num);
-    return num_ssm;
-}
-
-void num_ssm_free(num_ssm_t num_ssm)
-{
-    CLU_HANDLER_IS_SAFE(num_ssm.num_fft)
-    assert(num_ssm.num_fft)
-
-    num_free(num_ssm.num_fft);
-}
-
 #ifdef __linux__
 
 static uint64_t num_ssm_add_mul_uint(
@@ -2379,171 +2125,108 @@ static void num_ssm_mul_mod_span(
     num_ssm_sub_mod(num_1, pos, num_aux, 0, num_aux, n, n);
 }
 
-static void num_ssm_pointwise_product(num_ssm_t num_ssm_1, num_ssm_t num_ssm_2)
+
+
+STATIC void num_ssm_pad_wrap(num_p num_fft, num_p num, uint64_t pos, ssm_params_p p)
 {
-    CLU_HANDLER_IS_SAFE(num_ssm_1.num_fft)
-    CLU_HANDLER_IS_SAFE(num_ssm_2.num_fft)
-    assert(num_ssm_1.num_fft)
-    assert(num_ssm_2.num_fft)
+    CLU_HANDLER_IS_SAFE(num_fft)
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num_fft)
+    assert(num)
+    assert(num->size >= pos + p->count)
+    assert(num_fft->size >= p->n * p->K)
 
-    uint64_t n = ssm_get_last_n(num_ssm_2.count);
-    uint64_t block_count = num_ssm_1.num_fft->size / n;
-    assert(block_count * n == num_ssm_1.num_fft->size);
+    memset(num_fft->chunk, 0, p->n * p->K * sizeof(uint64_t));
+    uint64_t * restrict dest = num_fft->chunk;
+    const uint64_t * restrict src = &num->chunk[pos];
 
-    num_p num_aux = num_create_dirty(CLU_ARGS(2 * n, 0));
-    num_aux->cannot_expand = true;
-
-    for(uint64_t i=0; i<block_count; i++)
+    memset(dest, 0, p->n * p->K * sizeof(uint64_t));
+    for(uint64_t i=0; i < p->K; i++)
     {
-        num_ssm_mul_mod_span(num_aux, num_ssm_1.num_fft, num_ssm_2.num_fft, i * n, n);
+        memcpy(&dest[p->n * i], &src[p->M * i], p->M * sizeof(uint64_t));
     }
 
-    num_free(num_aux);
+    dest[(p->n * (p->K - 1)) + p->M] = src[p->count - 1];
 }
 
-// #include "../../mods/macros/time.h"
-
-static num_p num_mul_ssm_bwd_transform_rec(num_p num_aux_1, num_p num_aux_2, num_p num_fft, uint64_t n)
+// num_aux_1->size >= n
+// num_aux_2->size >= 2 * n
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+STATIC void num_ssm_depad_wrap(
+    num_p num_aux_1,
+    num_p num_aux_2,
+    num_p num_res,
+    uint64_t pos,
+    num_p num_fft,
+    ssm_params_p p,
+    uint64_t n // TODO DELETE BEFORE PR
+)
 {
     CLU_HANDLER_IS_SAFE(num_aux_1)
     CLU_HANDLER_IS_SAFE(num_aux_2)
+    CLU_HANDLER_IS_SAFE(num_res)
     CLU_HANDLER_IS_SAFE(num_fft)
-    assert(num_aux_1)
-    assert(num_aux_2)
-    assert(num_fft)
+    assert(num_res->size >= pos + n)
+    assert(num_aux_1 && num_aux_2 && num_res && num_fft)
+    assert(num_aux_1->size >= n && num_aux_2->size >= 2 * n)
 
-    if(!ssm_is_recursive(n))
+    uint64_t wrap_boundary = n - 1;
+
+    memset(&num_res->chunk[pos], 0, n * sizeof(uint64_t));
+    for(uint64_t i=0; i<p->K; i++)
     {
-        return num_fft;
+        uint64_t dest_pos = i * p->M;
+        uint64_t src_pos = i * p->n;
+        uint64_t src_len = p->n;
+
+        bool is_add = num_ssm_cmp_uint_offset(num_fft, src_pos + (2 * p->M), i + 1, p->n - (2 * p->M)) < 0;
+
+        if(!is_add)
+        {
+            num_ssm_opposite(num_fft, src_pos, src_len);
+        }
+
+        uint64_t non_wrap_len = (wrap_boundary > dest_pos) ? (wrap_boundary - dest_pos) : 0;
+        if (non_wrap_len > src_len)
+        {
+            non_wrap_len = src_len;
+        }
+        uint64_t wrap_len = src_len - non_wrap_len;
+        uint64_t tail_1 = dest_pos + non_wrap_len;
+
+        if (dest_pos > 0)
+        {
+            memset(&num_aux_1->chunk[0], 0, dest_pos * sizeof(uint64_t));
+        }
+        if (non_wrap_len > 0)
+        {
+            memcpy(&num_aux_1->chunk[dest_pos], &num_fft->chunk[src_pos], non_wrap_len * sizeof(uint64_t));
+        }
+        if (n > tail_1)
+        {
+            memset(&num_aux_1->chunk[tail_1], 0, (n - tail_1) * sizeof(uint64_t));
+        }
+
+        if (wrap_len > 0)
+        {
+            memcpy(&num_aux_2->chunk[0], &num_fft->chunk[src_pos + non_wrap_len], wrap_len * sizeof(uint64_t));
+            if (n > wrap_len)
+            {
+                memset(&num_aux_2->chunk[wrap_len], 0, (n - wrap_len) * sizeof(uint64_t));
+            }
+            num_ssm_sub_mod_immed(num_aux_1, 0, num_aux_2, 0, n);
+        }
+
+        // 3. Recombination
+        if(is_add)
+        {
+            num_ssm_add_mod_immed(num_res, pos, num_aux_1, 0, n);
+        }
+        else
+        {
+            num_ssm_sub_mod_immed(num_res, pos, num_aux_1, 0, n);
+        }
     }
-
-    ssm_params_t p = ssm_get_params_wrap(n);
-    num_fft = num_mul_ssm_bwd_transform_rec(num_aux_1, num_aux_2, num_fft, p.n);
-
-    uint64_t block_count = num_fft->size / (p.K * p.n);
-    assert(block_count * p.K * p.n == num_fft->size);
-
-    num_p num_tmp = num_create_dirty(CLU_ARGS(block_count * n, 0));
-    // uint64_t t_total = 0;
-    for(uint64_t i=0; i<block_count; i++)
-    {
-        num_t num_in, num_out;
-        num_span(&num_in, num_fft, i * p.K * p.n, (i + 1) * p.K * p.n);
-        num_span(&num_out, num_tmp, i * n, (i + 1) * n);
-
-        num_ssm_fft_inv(num_aux_2, &num_in, &p);
-
-        // TIME_SETUP
-        num_ssm_depad_wrap(num_aux_1, num_aux_2, &num_out, 0, &num_in, &p, n);
-        // TIME_END(t1);
-        // t_total += t1;
-    }
-    // tprintf("time depad wraped: %.3f", dtime(t_total));
-
-    num_free(num_fft);
-    return num_tmp;
-}
-
-STATIC num_p num_mul_ssm_bwd_transform(num_p num_fft, uint64_t count)
-{
-    CLU_HANDLER_IS_SAFE(num_fft)
-    assert(num_fft)
-
-    ssm_params_t params = ssm_get_params(count);
-    num_p num_aux_1 = num_create_dirty(CLU_ARGS(params.n, 0));
-    num_p num_aux_2 = num_create_dirty(CLU_ARGS(2 * params.n, 0));
-    num_aux_1->cannot_expand = true;
-    num_aux_2->cannot_expand = true;
-    num_p num_tmp = num_mul_ssm_bwd_transform_rec(num_aux_1, num_aux_2, num_fft, params.n);
-    num_free(num_aux_1);
-
-    num_ssm_fft_inv(num_aux_2, num_tmp, &params);
-    num_free(num_aux_2);
-
-    // TIME_SETUP
-    num_p num_res = num_ssm_depad_no_wrap(num_tmp, &params);
-    // TIME_END(t1)
-    // tprintf("time depad: %.3f", dtime(t1));
-
-    return num_res;
-}
-
-// KEEPS NUM_1
-static num_p num_mul_finish_core(num_p num_1, num_ssm_t num_ssm_2)
-{
-    CLU_HANDLER_IS_SAFE(num_ssm_2.num_fft)
-    CLU_HANDLER_IS_SAFE(num_1)
-    assert(num_ssm_2.num_fft)
-    assert(num_1)
-
-    // TIME_SETUP
-    num_ssm_t num_ssm_1 = num_mul_prepare_core(num_1, num_ssm_2.count);
-    // TIME_END(t1)
-    // tprintf("time prepare 2: %.3f", dtime(t1));
-
-    // TIME_RESET
-    num_ssm_pointwise_product(num_ssm_1, num_ssm_2);
-    // TIME_END(t2)
-    // tprintf("time pointwise: %.3f", dtime(t2));
-
-    // TIME_RESET
-    num_p num_res = num_mul_ssm_bwd_transform(num_ssm_1.num_fft, num_ssm_2.count);
-    // TIME_END(t3)
-    // tprintf("time finish: %.3f", dtime(t3));
-
-    return num_res;
-}
-
-num_p num_mul_finish(num_p num_1, num_ssm_t num_ssm_2)
-{
-    CLU_HANDLER_IS_SAFE(num_ssm_2.num_fft)
-    CLU_HANDLER_IS_SAFE(num_1)
-    assert(num_ssm_2.num_fft)
-    assert(num_1)
-
-    num_p num_res = num_mul_finish_core(num_1, num_ssm_2);
-    num_free(num_1);
-    return num_res;
-}
-
-
-
-static bool mul_is_classic(uint64_t count_1, uint64_t count_2)
-{
-    constexpr uint64_t threshold = 256;
-    return (bool)((count_1 < threshold) || (count_2 < threshold));
-}
-
-// KEEPS NUM_1 NUM_2
-STATIC num_p num_mul_classic(num_p num_1, num_p num_2)
-{
-    CLU_HANDLER_IS_SAFE(num_1)
-    CLU_HANDLER_IS_SAFE(num_2)
-    assert(num_1)
-    assert(num_2)
-
-    num_p num_res = num_create(CLU_ARGS(num_1->count + num_2->count, 0));
-    return num_mul_classic_buffer(num_res, num_1, num_2);
-}
-
-// num_aux->size >= 2 * n
-static void num_ssm_prepare(
-    num_p num_aux,
-    num_p num_fft,
-    num_p num,
-    ssm_params_p p
-)
-{
-    CLU_HANDLER_IS_SAFE(num_aux)
-    CLU_HANDLER_IS_SAFE(num_fft)
-    CLU_HANDLER_IS_SAFE(num)
-    assert(num_aux)
-    assert(num_fft)
-    assert(num)
-    assert(num_aux->size >= 2 * p->n)
-
-    num_ssm_pad(num_fft, num, p);
-    num_ssm_fft_fwd(num_aux, num_fft, p);
 }
 
 // num_aux->size >= 2 * n
@@ -2566,6 +2249,56 @@ static void num_ssm_prepare_wrap(
     num_ssm_pad_wrap(num_fft, num, pos, p);
     num_ssm_fft_fwd(num_aux, num_fft, p);
 }
+
+static void num_ssm_mul_pointwise(
+    num_p num_aux_1,
+    num_p num_aux_2,
+    num_p num_fft_1,
+    num_p num_fft_2,
+    ssm_params_p p
+);
+
+// KEEPS NUM_1 NUM_2
+STATIC void num_ssm_mul_wrap(
+    num_p num_aux_1,
+    num_p num_aux_2,
+    num_p num_fft_1,
+    num_p num_fft_2,
+    num_p num_1,
+    num_p num_2,
+    uint64_t pos,
+    ssm_params_p p
+)
+{
+    CLU_HANDLER_IS_SAFE(num_1)
+    CLU_HANDLER_IS_SAFE(num_2)
+    assert(num_1)
+    assert(num_2)
+
+    num_ssm_prepare_wrap(num_aux_2, num_fft_1, num_1, pos, p);
+    num_ssm_prepare_wrap(num_aux_2, num_fft_2, num_2, pos, p);
+
+    num_ssm_mul_pointwise(
+        num_aux_1,
+        num_aux_2,
+        num_fft_1,
+        num_fft_2,
+        p
+    );
+
+    num_ssm_fft_inv(num_aux_2, num_fft_1, p);
+    num_ssm_depad_wrap(
+        num_aux_1,
+        num_aux_2,
+        num_1,
+        pos,
+        num_fft_1,
+        p,
+        p->count
+    );
+}
+
+
 
 // num_aux_1->size >= p->n
 // num_aux_2->size >= 2 * p->n
@@ -2618,44 +2351,75 @@ static void num_ssm_mul_pointwise(
     num_free(num_fft_2_next);
 }
 
-// KEEPS NUM_1 NUM_2
-STATIC void num_ssm_mul_wrap(
-    num_p num_aux_1,
-    num_p num_aux_2,
-    num_p num_fft_1,
-    num_p num_fft_2,
-    num_p num_1,
-    num_p num_2,
-    uint64_t pos,
-    ssm_params_p p
-)
+
+
+STATIC num_p num_ssm_pad_no_wrap(num_p num, ssm_params_p p)
 {
-    CLU_HANDLER_IS_SAFE(num_1)
-    CLU_HANDLER_IS_SAFE(num_2)
-    assert(num_1)
-    assert(num_2)
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num)
 
-    num_ssm_prepare_wrap(num_aux_2, num_fft_1, num_1, pos, p);
-    num_ssm_prepare_wrap(num_aux_2, num_fft_2, num_2, pos, p);
+    num_p num_fft = num_create(CLU_ARGS(p->n * p->K, 0));
+    uint64_t * restrict dest = num_fft->chunk;
+    const uint64_t * restrict src = num->chunk;
 
-    num_ssm_mul_pointwise(
-        num_aux_1,
-        num_aux_2,
-        num_fft_1,
-        num_fft_2,
-        p
-    );
+    memset(dest, 0, p->n * p->K * sizeof(uint64_t));
+    uint64_t full_chunks = num->count / p->M;
+    if(full_chunks > p->K)
+    {
+        full_chunks = p->K;
+    }
 
-    num_ssm_fft_inv(num_aux_2, num_fft_1, p);
-    num_ssm_depad_wrap(
-        num_aux_1,
-        num_aux_2,
-        num_1,
-        pos,
-        num_fft_1,
-        p,
-        p->count
-    );
+    for(uint64_t i=0; i < full_chunks; i++)
+    {
+        memcpy(&dest[p->n * i], &src[p->M * i], p->M * sizeof(uint64_t));
+    }
+
+    if(num->count == (p->M * p->K) + 1)
+    {
+        dest[(p->n * (p->K - 1)) + p->M] = src[num->count - 1];
+        return num_fft;
+    }
+
+    uint64_t tail = num->count % p->M;
+    if(tail)
+    {
+        memcpy(&dest[p->n * full_chunks], &src[p->M * full_chunks], tail * sizeof(uint64_t));
+    }
+
+    return num_fft;
+}
+
+STATIC num_p num_ssm_depad_no_wrap(num_p num, ssm_params_p p)
+{
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num)
+
+    uint64_t target_count = (p->M * (p->K - 1)) + p->n;
+    num_p num_res = num_create(CLU_ARGS(target_count, 0));
+
+    for(uint64_t i = 0; i < p->K; i++)
+    {
+        num_t block;
+        num_span(&block, num, p->n * i, p->n * (i + 1));
+        num_res = num_add_offset(num_res, p->M * i, &block, 0);
+    }
+
+    num_free(num);
+    return num_res;
+}
+
+// num_aux->size >= 2 * n
+static num_p num_ssm_prepare_no_wrap(num_p num_aux, num_p num, ssm_params_p p)
+{
+    CLU_HANDLER_IS_SAFE(num_aux)
+    CLU_HANDLER_IS_SAFE(num)
+    assert(num_aux)
+    assert(num)
+    assert(num_aux->size >= 2 * p->n)
+
+    num_p num_fft = num_ssm_pad_no_wrap(num, p);
+    num_ssm_fft_fwd(num_aux, num_fft, p);
+    return num_fft;
 }
 
 // KEEPS NUM_1 NUM_2
@@ -2669,10 +2433,8 @@ STATIC num_p num_mul_ssm(num_p num_1, num_p num_2)
     ssm_params_t p = ssm_get_params(num_1->count + num_2->count);
     num_p num_aux_1 = num_create_dirty(CLU_ARGS(p.n, 0));
     num_p num_aux_2 = num_create_dirty(CLU_ARGS(2 * p.n, 0));
-    num_p num_fft_1 = num_create_dirty(CLU_ARGS(p.n * p.K, 0));
-    num_p num_fft_2 = num_create_dirty(CLU_ARGS(p.n * p.K, 0));
-    num_ssm_prepare(num_aux_2, num_fft_1, num_1, &p);
-    num_ssm_prepare(num_aux_2, num_fft_2, num_2, &p);
+    num_p num_fft_1 = num_ssm_prepare_no_wrap(num_aux_2, num_1, &p);
+    num_p num_fft_2 = num_ssm_prepare_no_wrap(num_aux_2, num_2, &p);
 
     num_ssm_mul_pointwise(
         num_aux_1,
@@ -2681,13 +2443,22 @@ STATIC num_p num_mul_ssm(num_p num_1, num_p num_2)
         num_fft_2,
         &p
     );
+    num_free(num_aux_1);
     num_free(num_fft_2);
 
     num_ssm_fft_inv(num_aux_2, num_fft_1, &p);
-    num_free(num_aux_1);
     num_free(num_aux_2);
 
     return num_ssm_depad_no_wrap(num_fft_1, &p);
+}
+
+
+
+
+static bool mul_is_classic(uint64_t count_1, uint64_t count_2)
+{
+    constexpr uint64_t threshold = 256;
+    return (bool)((count_1 < threshold) || (count_2 < threshold));
 }
 
 // KEEPS NUM_1 NUM_2
@@ -2724,6 +2495,7 @@ static void num_ssm_sqr_mod_span(num_p num_aux, num_p num, uint64_t pos, uint64_
     num_t num_aux_piece;
     num_span(&num_aux_piece, num, pos, pos + n);
 
+    // TODO: USE ASSEMBLY
     num_sqr_classic_buffer(num_aux, &num_aux_piece);
 
     memmove(&num_aux->chunk[n], &num_aux->chunk[n-1], n * sizeof(uint64_t));
@@ -2737,20 +2509,22 @@ STATIC num_p num_sqr_ssm(num_p num)
     assert(num)
 
     uint64_t count = 2 * num->count;
-    num_ssm_t num_ssm = num_mul_prepare(num, count);
+    ssm_params_t p = ssm_get_params(count);
+    num_p num_aux_2 = num_create_dirty(CLU_ARGS(2 * p.n, 0));
+    num_p num_fft = num_ssm_prepare_no_wrap(num_aux_2, num, &p);
+    num_free(num);
 
-    uint64_t n = ssm_get_last_n(count);
-    uint64_t block_count = num_ssm.num_fft->size / n;
-    assert(block_count * n == num_ssm.num_fft->size);
-    num_p num_aux = num_create_dirty(CLU_ARGS(2 * n, 0));
-    num_aux->cannot_expand = true;
-    for(uint64_t i=0; i<block_count; i++)
+    // num_ssm_sqr_pointwise();
+    for(uint64_t i=0; i<p.K; i++)
     {
-        num_ssm_sqr_mod_span(num_aux, num_ssm.num_fft, i * n, n);
+        // TODO: recursive fft
+        num_ssm_sqr_mod_span(num_aux_2, num_fft, i * p.n, p.n);
     }
-    num_free(num_aux);
 
-    return num_mul_ssm_bwd_transform(num_ssm.num_fft, count);
+    num_ssm_fft_inv(num_aux_2, num_fft, &p);
+    num_free(num_aux_2);
+
+    return num_ssm_depad_no_wrap(num_fft, &p);
 }
 
 
@@ -2877,9 +2651,6 @@ STRUCT(bz_frame)
 {
     bool memoized;
     num_t num_2_1, num_2_0;
-
-    bool mul_memoized;
-    num_ssm_t num_ssm_2_0;
 };
 
 // Input expected to be normalized
@@ -2934,26 +2705,7 @@ static num_p num_div_mod_bz_rec(
             continue;
         }
 
-        // if(
-        //     k > 128 &&
-        //     num_q_tmp->count > 128 &&
-        //     memoize &&
-        //     !f->mul_memoized
-        // ) {
-        //     f->mul_memoized = true;
-        //     f->num_ssm_2_0 = num_mul_prepare_core(&f->num_2_0, num_2->count);
-        // }
-
-        num_p num_aux_2;
-        // if(k > 128 && num_q_tmp->count > 128 && f->mul_memoized)
-        // {
-        //     num_aux_2 = num_mul_finish_core(num_q_tmp, f->num_ssm_2_0);
-        // }
-        // else
-        {
-            num_aux_2 = num_mul_core(num_q_tmp, &f->num_2_0);
-        }
-
+        num_p num_aux_2 = num_mul_core(num_q_tmp, &f->num_2_0);
         while(num_cmp_offset(num_1, k * i, num_aux_2) < 0)
         {
             num_q_tmp = num_sub_uint(num_q_tmp, 1);
@@ -2982,7 +2734,6 @@ static num_p num_div_mod_bz(num_p num_1, num_p num_2)
     assert(num_1)
     assert(num_2)
 
-    uint64_t frame_count = stdc_bit_width(num_2->count) + 1;
     bz_frame_t f[chunk_bits];
     memset(f, 0, sizeof(f));
 
@@ -3009,14 +2760,6 @@ static num_p num_div_mod_bz(num_p num_1, num_p num_2)
     num_q_tmp = num_add_offset(num_q_tmp, n_1 - n_2, num_q, 0);
     num_free(num_aux);
     num_free(num_q);
-
-    for(uint64_t i=0; i<frame_count && f[i].memoized; i++)
-    {
-        if(f[i].mul_memoized)
-        {
-            num_ssm_free(f[i].num_ssm_2_0);
-        }
-    }
 
     return num_q_tmp;
 }

@@ -556,33 +556,6 @@ sig_num_t sig_num_div(sig_num_t sig_1, sig_num_t sig_2)
 
 
 
-sig_num_ssm_t sig_num_mul_prepare(sig_num_t sig, uint64_t count)
-{
-    CLU_SIG_IS_SAFE(sig);
-
-    return (sig_num_ssm_t)
-    {
-        .signal = sig.signal,
-        .num_ssm = num_mul_prepare(sig.num, count)
-    };
-}
-
-sig_num_t sig_num_mul_finish(sig_num_t sig_1, sig_num_ssm_t sig_ssm_2)
-{
-    CLU_SIG_IS_SAFE(sig_1);
-
-    num_p num = num_mul_finish(sig_1.num, sig_ssm_2.num_ssm);
-    uint64_t signal = sig_signal_mul(sig_1.signal, sig_ssm_2.signal);
-    return sig_num_create(signal, num);
-}
-
-void sig_num_ssm_free(sig_num_ssm_t sig_ssm)
-{
-    num_ssm_free(sig_ssm.num_ssm);
-}
-
-
-
 sig_num_t sig_num_mul_int(sig_num_t sig, int64_t value)
 {
     if(value < 0)
