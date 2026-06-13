@@ -772,3 +772,6 @@ int main()
 // main    | base: 22
 // main    | max occupancy     : 38976296
 // main    | max occupancy     : 20323888
+// main    | max occupancy     : 15950712
+
+// main    | total allocations : 16488
