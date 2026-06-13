@@ -2075,11 +2075,6 @@ static void num_ssm_mul_mod_span(
     for(uint64_t i = 0; i < n; i++)
     {
         uint64_t v2 = src2[i];
-        if (v2 == 0)
-        {
-            continue;
-        }
-
 #if defined(__linux__) || defined(__APPLE__)
 
         dest[i + n] = num_ssm_add_mul_uint(&dest[i], src1, n, v2);
