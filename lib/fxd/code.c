@@ -390,28 +390,6 @@ fxd_num_t fxd_num_div(fxd_num_t fxd_1, fxd_num_t fxd_2) // TODO test
 
 
 
-fxd_num_ssm_t fxd_num_mul_prepare(fxd_num_t fxd, uint64_t count)
-{
-    CLU_FXD_IS_SAFE(fxd);
-
-    return (fxd_num_ssm_t)
-    {
-        .pos = fxd.pos,
-        .sig_ssm = sig_num_mul_prepare(fxd.sig, count)
-    };
-}
-
-fxd_num_t fxd_num_mul_finish(fxd_num_t fxd_1, fxd_num_ssm_t fxd_ssm_2)
-{
-    CLU_FXD_IS_SAFE(fxd_1);
-
-    sig_num_t sig = sig_num_mul_finish(fxd_1.sig, fxd_ssm_2.sig_ssm);
-    sig = sig_num_head_trim(sig, fxd_ssm_2.pos);
-    return fxd_num_create(sig, fxd_1.pos);
-}
-
-
-
 fxd_num_t fxd_num_mul_sig(fxd_num_t fxd, sig_num_t sig) // TODO test
 {
     CLU_FXD_IS_SAFE(fxd);

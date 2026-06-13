@@ -731,7 +731,7 @@ int main()
     // printf("\ngoing");
 
     #ifdef DEBUG
-    uint64_t base = 20;
+    uint64_t base = 22;
     #else
     uint64_t base = 28;
     #endif
@@ -741,8 +741,14 @@ int main()
     num_p num_1 = num_generate_1(base, 2);
     num_p num_2 = num_add(num_copy(num_1), num_wrap(1));
 
+    tprintf("num_1->count: " U64P() "", num_1->count);
+    tprintf("num_2->count: " U64P() "", num_2->count);
+
+    num_p num_1_c = num_copy(num_1);
+
     TIME_SETUP
-    num_p num_res = num_mul(num_copy(num_1), num_2);
+    // clu_log_level_set(CLU_LOG_DYNAMIC);
+    num_p num_res = num_mul(num_1_c, num_2);
     TIME_END(t1)
     tprintf("time mul: %.3f", dtime(t1));
 
@@ -755,7 +761,8 @@ int main()
 
     #ifdef DEBUG
     uint64_t count = clu_get_register_count();
-    tprintf("total allocations: " U64P() "", count);
+    tprintf("total allocations : " U64P() "", count);
+    tprintf("max occupancy     : " U64P() "", clu_get_max_occupancy());
     #endif
 
     // assert(clu_mem_is_empty());
@@ -763,3 +770,10 @@ int main()
     printf("\n");
     return 0;
 }
+
+// main    | base: 22
+// main    | max occupancy     : 38976296
+// main    | max occupancy     : 20323888
+// main    | max occupancy     : 15950712
+
+// main    | total allocations : 16488

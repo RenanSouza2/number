@@ -652,39 +652,6 @@ static void test_sig_num_div(bool show)
     TEST_FN_CLOSE
 }
 
-static void test_fuzz_sig_num_mul_ssm(bool show)
-{
-    TEST_FN_OPEN
-
-    #define TEST_FUZZ_SIG_NUM_MUL_SSM(TAG, COUNT_1, COUNT_2, RUNS)  \
-    {                                                               \
-        TEST_FUZZ_CASE_OPEN(TAG, RUNS)                              \
-        {                                                           \
-            uint64_t count = (COUNT_1) + (COUNT_2);                 \
-            sig_num_t sig_1 = sig_num_create_rand(COUNT_1);         \
-            sig_num_t sig_2 = sig_num_create_rand(COUNT_2);         \
-            sig_num_ssm_t sig_ssm_2 = sig_num_mul_prepare(          \
-                sig_num_copy(sig_2),                                \
-                count                                               \
-            );                                                      \
-            sig_num_t sig_res_1 = sig_num_mul_finish(               \
-                sig_num_copy(sig_1),                                \
-                sig_ssm_2                                           \
-            );                                                      \
-            sig_num_ssm_free(sig_ssm_2);                            \
-            sig_num_t sig_res_2 = sig_num_mul(sig_1, sig_2);        \
-            assert(sig_num_eq_dbg(sig_res_1, sig_res_2));           \
-        }                                                           \
-        TEST_FUZZ_CASE_CLOSE                                        \
-    }
-
-    TEST_FUZZ_SIG_NUM_MUL_SSM(1, 256, 256, 256);
-    TEST_FUZZ_SIG_NUM_MUL_SSM(2, 1000, 2000, 100);
-    TEST_FUZZ_SIG_NUM_MUL_SSM(3, 500000, 200000, 5);
-
-    TEST_FN_CLOSE
-}
-
 
 
 static void test_sig_num()
@@ -712,8 +679,6 @@ static void test_sig_num()
     test_sig_num_sub(show);
     test_sig_num_mul(show);
     test_sig_num_div(show);
-
-    test_fuzz_sig_num_mul_ssm(show);
 
     TEST_ASSERT_MEM_EMPTY
 }

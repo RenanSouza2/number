@@ -8,9 +8,9 @@ FLAGS_LNK = -r -nostdlib
 FLAGS_EXE =
 
 ifeq ($(shell uname -s),Linux)
-	FLAGS += -fanalyzer -Wduplicated-cond -Wduplicated-branches -Wlogical-op -Wcast-align=strict -Walloc-zero -Wtrailing-whitespace -Wleading-whitespace=spaces
+	FLAGS += -Wduplicated-cond -Wduplicated-branches -Wlogical-op -Wcast-align=strict -Walloc-zero -Wtrailing-whitespace -Wleading-whitespace=spaces
 
-    FLAGS_PRD += -fstack-clash-protection -fcf-protection=full
+    FLAGS_PRD += -fanalyzer -fstack-clash-protection -fcf-protection=full
 	FLAGS_DBG += -fsanitize=leak
 
 	FLAGS_CMP += -fPIE

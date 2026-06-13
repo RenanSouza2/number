@@ -38,10 +38,6 @@ sig_num_t sig_num_div(sig_num_t sig_1, sig_num_t sig_2);
 
 sig_num_t sig_num_mul_int(sig_num_t sig, int64_t value);
 
-sig_num_ssm_t sig_num_mul_prepare(sig_num_t sig, uint64_t count);
-sig_num_t sig_num_mul_finish(sig_num_t sig_1, sig_num_ssm_t sig_ssm_2);
-void sig_num_ssm_free(sig_num_ssm_t sig_ssm);
-
 file_t file_write_open(const char file_path[], uint64_t amount);
 void file_write_close(file_p fp);
 void file_write_uint64(file_p fp, uint64_t value);

@@ -25,10 +25,4 @@ STRUCT(sig_num)
     num_p num;
 };
 
-STRUCT(sig_num_ssm)
-{
-    uint64_t signal;
-    num_ssm_t num_ssm;
-};
-
 #endif

@@ -60,3 +60,4 @@ thread_log/*
 runner*
 
 **/out*.txt
+*.out
