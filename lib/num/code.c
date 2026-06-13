@@ -797,10 +797,8 @@ STATIC num_p num_sub_uint_offset(num_p num, uint64_t pos, uint64_t value)
 
 // keeps NUM
 static num_p num_add_mul_uint_offset(
-    num_p num_res,
-    uint64_t pos_res,
-    num_p num,
-    uint64_t pos,
+    num_p num_res, uint64_t pos_res,
+    num_p num, uint64_t pos,
     uint64_t value
 )
 {
@@ -1610,10 +1608,8 @@ STATIC void num_ssm_opposite(num_p num, uint64_t pos, uint64_t n)
 }
 
 STATIC void num_ssm_shl(
-    num_p num_res,
-    uint64_t pos_res,
-    num_p num,
-    uint64_t pos,
+    num_p num_res, uint64_t pos_res,
+    num_p num, uint64_t pos,
     uint64_t n,
     uint64_t bits
 )
@@ -1650,10 +1646,8 @@ STATIC void num_ssm_shl(
 }
 
 STATIC void num_ssm_shr(
-    num_p num_res,
-    uint64_t pos_res,
-    num_p num,
-    uint64_t pos,
+    num_p num_res, uint64_t pos_res,
+    num_p num, uint64_t pos,
     uint64_t n,
     uint64_t bits
 )
@@ -1711,7 +1705,6 @@ STATIC void num_ssm_shl_mod(
         return;
     }
 
-    memset(num_aux->chunk, 0, 2 * n * sizeof(uint64_t));
     num_ssm_shr(num_aux, 0, num, pos, n, (chunk_bits * n) - chunk_bits - bits);
     num_ssm_shl(num_aux, n, num, pos, n, bits);
     num_aux->chunk[(2 * n) - 1] = 0;
@@ -1739,7 +1732,6 @@ STATIC void num_ssm_shr_mod(
         return;
     }
 
-    memset(num_aux->chunk, 0, 2 * n * sizeof(uint64_t));
     num_ssm_shl(num_aux, 0, num, pos, n, (chunk_bits * n) - chunk_bits - bits);
     num_ssm_shr(num_aux, n, num, pos, n, bits);
     num_aux->chunk[n - 1] = 0;
