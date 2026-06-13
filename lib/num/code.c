@@ -1257,6 +1257,12 @@ static void num_ssm_normalize(num_p num, uint64_t pos, uint64_t n)
     {
         num->chunk[pos + n - 1] = 0;
         num_ssm_sub_uint(num, pos, n, value);
+
+        if(num->chunk[pos + n - 1] == UINT64_MAX)
+        {
+            memset(&num->chunk[pos], 0, (n - 1) * sizeof(uint64_t));
+            num->chunk[pos + n - 1] = 1;
+        }
     }
 }
 
