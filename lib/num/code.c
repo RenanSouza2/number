@@ -2341,7 +2341,6 @@ STATIC num_p num_ssm_pad_no_wrap(num_p num, ssm_params_p p)
     uint64_t * restrict dest = num_fft->chunk;
     const uint64_t * restrict src = num->chunk;
 
-    memset(dest, 0, p->n * p->K * sizeof(uint64_t));
     uint64_t full_chunks = num->count / p->M;
     if(full_chunks > p->K)
     {
