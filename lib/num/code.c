@@ -1271,88 +1271,85 @@ static void num_ssm_denormalize(num_p num, uint64_t pos, uint64_t n)
     num->chunk[pos + n - 1] += 1;
 }
 
-STATIC void num_ssm_add_mod(
-    num_p num_res,
-    uint64_t pos_res,
-    num_p num_1,
-    uint64_t pos_1,
-    num_p num_2,
-    uint64_t pos_2,
-    uint64_t n
-)
-{
-    CLU_HANDLER_IS_SAFE(num_res)
-    CLU_HANDLER_IS_SAFE(num_1)
-    CLU_HANDLER_IS_SAFE(num_2)
-    assert(num_res)
-    assert(num_1)
-    assert(num_2)
+// STATIC void num_ssm_add_mod(
+//     num_p num_res, uint64_t pos_res,
+//     num_p num_1, uint64_t pos_1,
+//     num_p num_2, uint64_t pos_2,
+//     uint64_t n
+// )
+// {
+//     CLU_HANDLER_IS_SAFE(num_res)
+//     CLU_HANDLER_IS_SAFE(num_1)
+//     CLU_HANDLER_IS_SAFE(num_2)
+//     assert(num_res)
+//     assert(num_1)
+//     assert(num_2)
 
-    uint64_t * restrict dest = &num_res->chunk[pos_res];
-    const uint64_t * restrict src1 = &num_1->chunk[pos_1];
-    const uint64_t * restrict src2 = &num_2->chunk[pos_2];
+//     uint64_t * restrict dest = &num_res->chunk[pos_res];
+//     const uint64_t * restrict src1 = &num_1->chunk[pos_1];
+//     const uint64_t * restrict src2 = &num_2->chunk[pos_2];
 
-#ifdef __linux__
+// #ifdef __linux__
 
-    uint64_t count = n; // Copy n so we don't clobber it for normalize()
-    __asm__ volatile (
-        "test %[count], %[count]\n\t"
-        "jz 2f\n\t"
-        "clc\n"                           // Clear carry flag to start
-        "1:\n\t"
-        "mov (%[src1]), %%rax\n\t"        // rax = *src1
-        "adc (%[src2]), %%rax\n\t"        // rax = rax + *src2 + CF
-        "mov %%rax, (%[dest])\n\t"        // *dest = rax
+//     uint64_t count = n; // Copy n so we don't clobber it for normalize()
+//     __asm__ volatile (
+//         "test %[count], %[count]\n\t"
+//         "jz 2f\n\t"
+//         "clc\n"                           // Clear carry flag to start
+//         "1:\n\t"
+//         "mov (%[src1]), %%rax\n\t"        // rax = *src1
+//         "adc (%[src2]), %%rax\n\t"        // rax = rax + *src2 + CF
+//         "mov %%rax, (%[dest])\n\t"        // *dest = rax
 
-        "lea 8(%[src1]), %[src1]\n\t"     // src1++ (lea doesn't touch flags)
-        "lea 8(%[src2]), %[src2]\n\t"     // src2++
-        "lea 8(%[dest]), %[dest]\n\t"     // dest++
-        "dec %[count]\n\t"                // count-- (dec doesn't touch CF!)
-        "jnz 1b\n\t"
-        "2:\n"
-        : [dest] "+r" (dest), [src1] "+r" (src1), [src2] "+r" (src2), [count] "+r" (count)
-        :
-        : "rax", "cc", "memory"
-    );
+//         "lea 8(%[src1]), %[src1]\n\t"     // src1++ (lea doesn't touch flags)
+//         "lea 8(%[src2]), %[src2]\n\t"     // src2++
+//         "lea 8(%[dest]), %[dest]\n\t"     // dest++
+//         "dec %[count]\n\t"                // count-- (dec doesn't touch CF!)
+//         "jnz 1b\n\t"
+//         "2:\n"
+//         : [dest] "+r" (dest), [src1] "+r" (src1), [src2] "+r" (src2), [count] "+r" (count)
+//         :
+//         : "rax", "cc", "memory"
+//     );
 
-#elifdef __APPLE__
+// #elifdef __APPLE__
 
-    uint64_t count = n; // Copy n so we don't clobber it for normalize()
-    uint64_t tmp1, tmp2; // Temporary registers for loading memory
+//     uint64_t count = n; // Copy n so we don't clobber it for normalize()
+//     uint64_t tmp1, tmp2; // Temporary registers for loading memory
 
-    __asm__ volatile (
-        "cbz %[count], 2f\n\t"               // If count == 0, jump to label 2
-        "adds xzr, xzr, xzr\n\t"             // Clear carry flag (0 + 0 = 0, C=0)
-        "1:\n\t"
-        "ldr %[tmp1], [%[src1]], #8\n\t"     // Load from src1 into tmp1, then src1 += 8
-        "ldr %[tmp2], [%[src2]], #8\n\t"     // Load from src2 into tmp2, then src2 += 8
-        "adcs %[tmp1], %[tmp1], %[tmp2]\n\t" // tmp1 = tmp1 + tmp2 + CF, update CF
-        "str %[tmp1], [%[dest]], #8\n\t"     // Store tmp1 to dest, then dest += 8
+//     __asm__ volatile (
+//         "cbz %[count], 2f\n\t"               // If count == 0, jump to label 2
+//         "adds xzr, xzr, xzr\n\t"             // Clear carry flag (0 + 0 = 0, C=0)
+//         "1:\n\t"
+//         "ldr %[tmp1], [%[src1]], #8\n\t"     // Load from src1 into tmp1, then src1 += 8
+//         "ldr %[tmp2], [%[src2]], #8\n\t"     // Load from src2 into tmp2, then src2 += 8
+//         "adcs %[tmp1], %[tmp1], %[tmp2]\n\t" // tmp1 = tmp1 + tmp2 + CF, update CF
+//         "str %[tmp1], [%[dest]], #8\n\t"     // Store tmp1 to dest, then dest += 8
 
-        "sub %[count], %[count], #1\n\t"     // count-- (Standard 'sub' does NOT touch flags)
-        "cbnz %[count], 1b\n\t"              // Loop if count != 0 ('cbnz' does NOT touch flags)
-        "2:\n"
-        : [dest] "+r" (dest), [src1] "+r" (src1), [src2] "+r" (src2),
-          [count] "+r" (count), [tmp1] "=&r" (tmp1), [tmp2] "=&r" (tmp2)
-        :
-        : "cc", "memory"
-    );
+//         "sub %[count], %[count], #1\n\t"     // count-- (Standard 'sub' does NOT touch flags)
+//         "cbnz %[count], 1b\n\t"              // Loop if count != 0 ('cbnz' does NOT touch flags)
+//         "2:\n"
+//         : [dest] "+r" (dest), [src1] "+r" (src1), [src2] "+r" (src2),
+//           [count] "+r" (count), [tmp1] "=&r" (tmp1), [tmp2] "=&r" (tmp2)
+//         :
+//         : "cc", "memory"
+//     );
 
-#else
+// #else
 
-    uint64_t carry = 0;
-    for(uint64_t i = 0; i < n; i++)
-    {
-        uint64_t sum;
-        uint64_t c1 = (uint64_t)__builtin_add_overflow(src1[i], src2[i], &sum);
-        uint64_t c2 = (uint64_t)__builtin_add_overflow(sum, carry, &dest[i]);
-        carry = c1 | c2;
-    }
+//     uint64_t carry = 0;
+//     for(uint64_t i = 0; i < n; i++)
+//     {
+//         uint64_t sum;
+//         uint64_t c1 = (uint64_t)__builtin_add_overflow(src1[i], src2[i], &sum);
+//         uint64_t c2 = (uint64_t)__builtin_add_overflow(sum, carry, &dest[i]);
+//         carry = c1 | c2;
+//     }
 
-#endif
+// #endif
 
-    num_ssm_normalize(num_res, pos_res, n);
-}
+//     num_ssm_normalize(num_res, pos_res, n);
+// }
 
 static void num_ssm_add_mod_immed(
     num_p num_1, uint64_t pos_1,
@@ -1769,11 +1766,9 @@ static void num_ssm_fft_fwd_rec(
         uint64_t shift = ssm_bit_inv(i, K / 2) * bits;
         num_ssm_shl_mod(num_aux, num, pos_2, n, shift);
 
-        num_ssm_add_mod(num_aux, 0, num, pos_1, num, pos_2, n);
-        num_ssm_sub_mod(num_aux, n, num, pos_1, num, pos_2, n);
-
-        memcpy(&num->chunk[pos_1],  num_aux->chunk   , n * sizeof(uint64_t));
-        memcpy(&num->chunk[pos_2], &num_aux->chunk[n], n * sizeof(uint64_t));
+        num_ssm_sub_mod(num_aux, 0, num, pos_1, num, pos_2, n);
+        num_ssm_add_mod_immed(num, pos_1, num, pos_2, n);
+        memcpy(&num->chunk[pos_2], num_aux->chunk, n * sizeof(uint64_t));
     }
 }
 
@@ -1824,11 +1819,9 @@ static void num_ssm_fft_inv_rec(
 
         num_ssm_shr_mod(num_aux, num, pos_2, n, i * bits);
 
-        num_ssm_add_mod(num_aux, 0, num, pos_1, num, pos_2, n);
-        num_ssm_sub_mod(num_aux, n, num, pos_1, num, pos_2, n);
-
-        memcpy(&num->chunk[pos_1],  num_aux->chunk   , n * sizeof(uint64_t));
-        memcpy(&num->chunk[pos_2], &num_aux->chunk[n], n * sizeof(uint64_t));
+        num_ssm_sub_mod(num_aux, 0, num, pos_1, num, pos_2, n);
+        num_ssm_add_mod_immed(num, pos_1, num, pos_2, n);
+        memcpy(&num->chunk[pos_2], num_aux->chunk, n * sizeof(uint64_t));
     }
 }
 
