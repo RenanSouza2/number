@@ -744,6 +744,9 @@ int main()
     tprintf("num_1->count: " U64P() "", num_1->count);
     tprintf("num_2->count: " U64P() "", num_2->count);
 
+    // tprintf("waiting");
+    // getchar();
+
     TIME_SETUP
     // clu_log_level_set(CLU_LOG_DYNAMIC);
     num_p num_res = num_mul(num_copy(num_1), num_2);

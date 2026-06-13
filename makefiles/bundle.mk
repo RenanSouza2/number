@@ -24,14 +24,14 @@ debug.o: $(DBG_FILES)
 	echo " linking $(PRJ_NAME) debug $(DIR)"
 	gcc -o $@ $^ $(FLAGS) $(FLAGS_DBG) $(FLAGS_LNK)
 
+FORCE:
 
 
-.PHONY: $(LIB_FILES)
-$(LIB_FILES):
+
+$(LIB_FILES): FORCE
 	$(MAKE) -C $(dir $@)
 
-.PHONY: $(DBG_FILES)
-$(DBG_FILES):
+$(DBG_FILES): FORCE
 	$(MAKE) dbg -C $(dir $@)
 
 
