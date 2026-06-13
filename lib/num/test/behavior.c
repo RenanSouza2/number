@@ -985,42 +985,40 @@ static void test_num_ssm_add_mod(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_SSM_ADD_MOD(TAG, NUM, POS_1, POS_2, N, RES)            \
-    {                                                                   \
-        TEST_CASE_OPEN(TAG)                                             \
-        {                                                               \
-            num_p num = num_create_immed(ARG_OPEN NUM);                 \
-            num_p num_res = num_create_rand(N);                         \
-            num_ssm_add_mod(num_res, 0, num, POS_1, num, POS_2, N);     \
-            assert(num_immed(num_res, ARG_OPEN RES));                   \
-            assert(num_immed(num, ARG_OPEN NUM));                       \
-        }                                                               \
-        TEST_CASE_CLOSE                                                 \
+    #define TEST_SSM_ADD_MOD(TAG, NUM, N, RES)          \
+    {                                                   \
+        TEST_CASE_OPEN(TAG)                             \
+        {                                               \
+            num_p num = num_create_immed(ARG_OPEN NUM); \
+            num_ssm_add_mod_immed(num, 0, num, N, N);   \
+            assert(num_immed(num, ARG_OPEN NUM));       \
+        }                                               \
+        TEST_CASE_CLOSE                                 \
     }
 
     TEST_SSM_ADD_MOD(1,
-        (6, 0, 0, 1, 0, 0, 2), 0, 3, 3,
-        (3, 0, 0, 3)
+        (6, 0, 0, 1, 0, 0, 2), 3,
+        (6, 0, 0, 3, 0, 0, 2)
     );
     TEST_SSM_ADD_MOD(2,
-        (6, 0, B(63), 0, 0, B(63), 0), 0, 3, 3,
+        (6, 0, B(63), 0, 0, B(63), 0), 3,
         (3, 1, 0, 0)
     );
     TEST_SSM_ADD_MOD(3,
-        (6, 1, 0, 0, 0, 0, 1), 0, 3, 3,
-        (3, 0, 0, 0)
+        (6, 1, 0, 0, 0, 0, 1), 3,
+        (6, 0, 0, 0, 0, 0, 1)
     );
     TEST_SSM_ADD_MOD(4,
-        (6, 1, 0, 0, 1, 0, 0), 0, 3, 3,
-        (3, 0, UINT64_MAX, UINT64_MAX)
+        (6, 1, 0, 0, 1, 0, 0), 3,
+        (6, 0, UINT64_MAX, UINT64_MAX, 1, 0, 0)
     );
     TEST_SSM_ADD_MOD(5,
-        (6, 0, UINT64_MAX, UINT64_MAX, 1, 0, 0), 0, 3, 3,
-        (3, 0, UINT64_MAX, UINT64_MAX - 1)
+        (6, 0, UINT64_MAX, UINT64_MAX, 1, 0, 0), 3,
+        (6, 0, UINT64_MAX, UINT64_MAX - 1, 0, 0)
     );
     TEST_SSM_ADD_MOD(6,
-        (6, 0, UINT64_MAX, UINT64_MAX, 0, UINT64_MAX, UINT64_MAX), 0, 3, 3,
-        (3, 0, UINT64_MAX, UINT64_MAX - 2)
+        (6, 0, UINT64_MAX, UINT64_MAX, 0, UINT64_MAX, UINT64_MAX), 3,
+        (6, 0, UINT64_MAX, UINT64_MAX - 2, UINT64_MAX, UINT64_MAX)
     );
 
     #undef TEST_SSM_ADD_MOD
@@ -1563,22 +1561,22 @@ static void test_num_ssm_depad_wrap(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_NUM_SSM_DEPAD_WRAP(TAG, NUM_FFT, N, NUM_RES)                       \
-    {                                                                               \
-        TEST_CASE_OPEN(TAG)                                                         \
-        {                                                                           \
-            num_p num_fft = num_create_immed(ARG_OPEN NUM_FFT);                     \
-            ssm_params_t p = ssm_get_params_wrap(N);                                \
-            num_p num_aux_1 = num_create_rand(N);                                   \
-            num_p num_aux_2 = num_create_rand(2 * (N));                             \
-            num_p num_res = num_create_rand(N);                                     \
-            num_ssm_depad_wrap(num_aux_1, num_aux_2, num_res, 0, num_fft, &p, N);   \
-            assert(num_immed(num_res, ARG_OPEN NUM_RES));                           \
-            num_free(num_aux_1);                                                    \
-            num_free(num_aux_2);                                                    \
-            num_free(num_fft);                                                      \
-        }                                                                           \
-        TEST_CASE_CLOSE                                                             \
+    #define TEST_NUM_SSM_DEPAD_WRAP(TAG, NUM_FFT, N, NUM_RES)                   \
+    {                                                                           \
+        TEST_CASE_OPEN(TAG)                                                     \
+        {                                                                       \
+            num_p num_fft = num_create_immed(ARG_OPEN NUM_FFT);                 \
+            ssm_params_t p = ssm_get_params_wrap(N);                            \
+            num_p num_aux_1 = num_create_rand(N);                               \
+            num_p num_aux_2 = num_create_rand(2 * (N));                         \
+            num_p num_res = num_create_rand(N);                                 \
+            num_ssm_depad_wrap(num_aux_1, num_aux_2, num_res, 0, num_fft, &p);  \
+            assert(num_immed(num_res, ARG_OPEN NUM_RES));                       \
+            num_free(num_aux_1);                                                \
+            num_free(num_aux_2);                                                \
+            num_free(num_fft);                                                  \
+        }                                                                       \
+        TEST_CASE_CLOSE                                                         \
     }
 
     TEST_NUM_SSM_DEPAD_WRAP(1,
@@ -2688,20 +2686,20 @@ static void test_fuzz_num_ssm_pad_wrap_round_trip(bool show)
 {
     TEST_FN_OPEN
 
-    #define TEST_FUZZ_NUM_SSM_PAD_WRAP(N)                                           \
-    {                                                                               \
-        ssm_params_t p = ssm_get_params_wrap(N);                                    \
-        num_p num_middle = num_create_dirty(CLU_ARGS(p.n * p.K, 0));                \
-        num_ssm_pad_wrap(num_middle, num_in, 0, &p);                                \
-        num_p num_aux_1 = num_create_rand(N);                                       \
-        num_p num_aux_2 = num_create_rand(2 * (N));                                 \
-        num_p num_out = num_create_rand(N);                                         \
-        num_ssm_depad_wrap(num_aux_1, num_aux_2, num_out, 0, num_middle, &p, N);    \
-        num_out->count = N;                                                         \
-        assert(num_eq_dbg(num_in, num_out));                                        \
-        num_free(num_aux_1);                                                        \
-        num_free(num_aux_2);                                                        \
-        num_free(num_middle);                                                       \
+    #define TEST_FUZZ_NUM_SSM_PAD_WRAP(N)                                       \
+    {                                                                           \
+        ssm_params_t p = ssm_get_params_wrap(N);                                \
+        num_p num_middle = num_create_dirty(CLU_ARGS(p.n * p.K, 0));            \
+        num_ssm_pad_wrap(num_middle, num_in, 0, &p);                            \
+        num_p num_aux_1 = num_create_rand(N);                                   \
+        num_p num_aux_2 = num_create_rand(2 * (N));                             \
+        num_p num_out = num_create_rand(N);                                     \
+        num_ssm_depad_wrap(num_aux_1, num_aux_2, num_out, 0, num_middle, &p);   \
+        num_out->count = N;                                                     \
+        assert(num_eq_dbg(num_in, num_out));                                    \
+        num_free(num_aux_1);                                                    \
+        num_free(num_aux_2);                                                    \
+        num_free(num_middle);                                                   \
     }
 
     TEST_CASE_OPEN(1)
