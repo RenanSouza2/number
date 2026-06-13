@@ -2136,7 +2136,6 @@ STATIC void num_ssm_pad_wrap(num_p num_fft, num_p num, uint64_t pos, ssm_params_
     assert(num->size >= pos + p->count)
     assert(num_fft->size >= p->n * p->K)
 
-    memset(num_fft->chunk, 0, p->n * p->K * sizeof(uint64_t));
     uint64_t * restrict dest = num_fft->chunk;
     const uint64_t * restrict src = &num->chunk[pos];
 

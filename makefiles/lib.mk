@@ -36,3 +36,5 @@ test t:
 
 _test:
 	$(MAKE) --directory=test
+
+export
