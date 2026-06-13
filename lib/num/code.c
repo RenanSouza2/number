@@ -1252,13 +1252,11 @@ static void num_ssm_normalize(num_p num, uint64_t pos, uint64_t n)
     assert(num)
     assert(num->chunk[pos + n - 1] <= 2)
 
-    if(
-         num->chunk[pos + n - 1] == 2 ||
-        (num->chunk[pos + n - 1] == 1 && !num_is_span_zero(num, pos, n - 1))
-    )
+    uint64_t value = num->chunk[pos + n - 1];
+    if(value)
     {
-        num_ssm_sub_uint(num, pos, n, 1);
-        num->chunk[pos + n - 1] -= 1;
+        num->chunk[pos + n - 1] = 0;
+        num_ssm_sub_uint(num, pos, n, value);
     }
 }
 
