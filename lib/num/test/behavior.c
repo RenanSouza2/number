@@ -1,7 +1,6 @@
 #include "../debug.h"
 #include "../../../testrc.h"
 #include "../../../mods/macros/test.h"
-#include <stdio.h>
 
 
 
@@ -991,34 +990,34 @@ static void test_num_ssm_add_mod(bool show)
         {                                               \
             num_p num = num_create_immed(ARG_OPEN NUM); \
             num_ssm_add_mod_immed(num, 0, num, N, N);   \
-            assert(num_immed(num, ARG_OPEN NUM));       \
+            assert(num_immed(num, ARG_OPEN RES));       \
         }                                               \
         TEST_CASE_CLOSE                                 \
     }
 
     TEST_SSM_ADD_MOD(1,
         (6, 0, 0, 1, 0, 0, 2), 3,
-        (6, 0, 0, 3, 0, 0, 2)
+        (6, 0, 0, 1, 0, 0, 3)
     );
     TEST_SSM_ADD_MOD(2,
         (6, 0, B(63), 0, 0, B(63), 0), 3,
-        (3, 1, 0, 0)
+        (6, 0, B(63), 0, 1, 0, 0)
     );
     TEST_SSM_ADD_MOD(3,
         (6, 1, 0, 0, 0, 0, 1), 3,
-        (6, 0, 0, 0, 0, 0, 1)
+        (6, 1, 0, 0, 0, 0, 0)
     );
     TEST_SSM_ADD_MOD(4,
         (6, 1, 0, 0, 1, 0, 0), 3,
-        (6, 0, UINT64_MAX, UINT64_MAX, 1, 0, 0)
+        (6, 1, 0, 0, 0, UINT64_MAX, UINT64_MAX)
     );
     TEST_SSM_ADD_MOD(5,
         (6, 0, UINT64_MAX, UINT64_MAX, 1, 0, 0), 3,
-        (6, 0, UINT64_MAX, UINT64_MAX - 1, 0, 0)
+        (6, 0, UINT64_MAX, UINT64_MAX, 0, UINT64_MAX, UINT64_MAX - 1)
     );
     TEST_SSM_ADD_MOD(6,
         (6, 0, UINT64_MAX, UINT64_MAX, 0, UINT64_MAX, UINT64_MAX), 3,
-        (6, 0, UINT64_MAX, UINT64_MAX - 2, UINT64_MAX, UINT64_MAX)
+        (6, 0, UINT64_MAX, UINT64_MAX, 0, UINT64_MAX, UINT64_MAX - 2)
     );
 
     #undef TEST_SSM_ADD_MOD
